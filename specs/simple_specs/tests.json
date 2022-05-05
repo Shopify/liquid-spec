@@ -1,0 +1,4534 @@
+{
+    "tests": [
+        {
+            "template": "{% for i in choices %}{% unless i %}{{ forloop.index }}{% endunless %}{% endfor %}",
+            "environment": "{\"choices\":[1,null,false]}",
+            "expected": "23"
+        },
+        {
+            "template": "{% unless true %} NO {% else %} YES {% endunless %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% unless false %} YES {% else %} NO {% endunless %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% unless \"foo\" %} NO {% else %} YES {% endunless %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": " {% unless true %} this text should not go into the output {% endunless %} ",
+            "environment": "{}",
+            "expected": "  "
+        },
+        {
+            "template": " {% unless false %} this text should go into the output {% endunless %} ",
+            "environment": "{}",
+            "expected": "  this text should go into the output  "
+        },
+        {
+            "template": "{% unless true %} you suck {% endunless %} {% unless false %} you rock {% endunless %}?",
+            "environment": "{}",
+            "expected": "  you rock ?"
+        },
+        {
+            "template": "{% for i in choices %}{% unless i %} {{ forloop.index }} {% else %} TRUE {% endunless %}{% endfor %}",
+            "environment": "{\"choices\":[1,null,false]}",
+            "expected": " TRUE  2  3 "
+        },
+        {
+            "template": "{% for i in array.items %}{% break %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{{ i }}{% break %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": "1"
+        },
+        {
+            "template": "{% for i in array.items %}{% break %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{{ i }}{% if i > 3 %}{% break %}{% endif %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": "1234"
+        },
+        {
+            "template": "{% for item in array %}{% for i in item %}{% if i == 1 %}{% break %}{% endif %}{{ i }}{% endfor %}{% endfor %}",
+            "environment": "{\"array\":[[1,2],[3,4],[5,6]]}",
+            "expected": "3456"
+        },
+        {
+            "template": "{% for i in array.items %}{% if i == 9999 %}{% break %}{% endif %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "12345"
+        },
+        {
+            "template": "{%for i in array.items limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 offset:1000 %}{{i}}{%endfor%}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "123\n      next\n      456\n      next\n      "
+        },
+        {
+            "template": "{%for i in array offset:7 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "890"
+        },
+        {
+            "template": "{% for i in array.items %}{% continue %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{{ i }}{% continue %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "12345"
+        },
+        {
+            "template": "{% for i in array.items %}{% continue %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{% if i > 3 %}{% continue %}{% endif %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "123"
+        },
+        {
+            "template": "{% for i in array.items %}{% if i == 3 %}{% continue %}{% else %}{{ i }}{% endif %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "1245"
+        },
+        {
+            "template": "{% for item in array %}{% for i in item %}{% if i == 1 %}{% continue %}{% endif %}{{ i }}{% endfor %}{% endfor %}",
+            "environment": "{\"array\":[[1,2],[3,4],[5,6]]}",
+            "expected": "23456"
+        },
+        {
+            "template": "{% for i in array.items %}{% if i == 9999 %}{% continue %}{% endif %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "12345"
+        },
+        {
+            "template": "{% for char in characters %}I WILL NOT BE OUTPUT{% endfor %}",
+            "environment": "{\"characters\":\"\"}",
+            "expected": ""
+        },
+        {
+            "template": "{%for item in array%} {{item}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "123"
+        },
+        {
+            "template": "{% for item in array %}{{item}}{% endfor %}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "123"
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[\"a\",\"b\",\"c\",\"d\"]}",
+            "expected": "abcd"
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[\"a\",\" \",\"b\",\" \",\"c\"]}",
+            "expected": "a b c"
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[\"a\",\"\",\"b\",\"\",\"c\"]}",
+            "expected": "abc"
+        },
+        {
+            "template": "{% for inner in outer %}{% for k in inner %}{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}{% endfor %}",
+            "environment": "{\"outer\":[[1,1,1],[1,1,1]]}",
+            "expected": "1.1 1.2 1.3 2.1 2.2 2.3 "
+        },
+        {
+            "template": "{% for       item   in   items %}{{item}}{% endfor %}",
+            "environment": "{\"items\":[1,2,3,4,5]}",
+            "expected": "12345"
+        },
+        {
+            "template": "{%for item in array%} {{forloop.index}}/{{forloop.length}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 1/3  2/3  3/3 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.index}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.index0}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 0  1  2 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.rindex0}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 2  1  0 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.rindex}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 3  2  1 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.first}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " true  false  false "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.last}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " false  false  true "
+        },
+        {
+            "template": "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}",
+            "environment": "{\"items\":[1,2,3,4,5]}",
+            "expected": "34"
+        },
+        {
+            "template": "{%for i in array limit: limit offset: offset %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0],\"limit\":2,\"offset\":2}",
+            "expected": "34"
+        },
+        {
+            "template": "{%for item in array%}{%for i in item%}{{ i }}{%endfor%}{%endfor%}",
+            "environment": "{\"array\":[[1,2],[3,4],[5,6]]}",
+            "expected": "123456"
+        },
+        {
+            "template": "{%for item in (1..foobar) %} {{item}} {%endfor%}",
+            "environment": "{\"foobar\":3}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{%for item in array%}+{%else%}-{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "+++"
+        },
+        {
+            "template": "{%for item in array%}+{%else%}-{%endfor%}",
+            "environment": "{\"array\":[]}",
+            "expected": "-"
+        },
+        {
+            "template": "{%for item in array%}+{%else%}-{%endfor%}",
+            "environment": "{\"array\":null}",
+            "expected": "-"
+        },
+        {
+            "template": "{%for item in array%}{% if forloop.first %}+{% else %}-{% endif %}{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "+--"
+        },
+        {
+            "template": "{%for i in array limit:2 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "12"
+        },
+        {
+            "template": "{%for i in array limit:4 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "1234"
+        },
+        {
+            "template": "{%for i in array limit:4 offset:2 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "3456"
+        },
+        {
+            "template": "{%for i in array limit: 4 offset: 2 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "3456"
+        },
+        {
+            "template": "{%for val in string%}{{val}}{%endfor%}",
+            "environment": "{\"string\":\"test string\"}",
+            "expected": "test string"
+        },
+        {
+            "template": "{%for val in string limit:1%}{{val}}{%endfor%}",
+            "environment": "{\"string\":\"test string\"}",
+            "expected": "test string"
+        },
+        {
+            "template": "{%for val in string%}{{forloop.name}}-{{forloop.index}}-{{forloop.length}}-{{forloop.index0}}-{{forloop.rindex}}-{{forloop.rindex0}}-{{forloop.first}}-{{forloop.last}}-{{val}}{%endfor%}",
+            "environment": "{\"string\":\"test string\"}",
+            "expected": "val-string-1-1-0-1-0-true-true-test string"
+        },
+        {
+            "template": "{% for a in (1..2) %}o{% for b in empty %}{% endfor %}{% endfor %}",
+            "environment": "{}",
+            "expected": "oo"
+        },
+        {
+            "template": "{%for item in array reversed %}{{item}}{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "321"
+        },
+        {
+            "template": "{%for item in (1..3) %} {{item}} {%endfor%}",
+            "environment": "{}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{% for item in (a..3) %} {{item}} {% endfor %}",
+            "environment": "{\"a\":\"invalid integer\"}",
+            "expected": " 0  1  2  3 "
+        },
+        {
+            "template": "{% for inner in outer %}{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}",
+            "environment": "{\"outer\":[[1,1,1],[1,1,1]]}",
+            "expected": ".1 .2 "
+        },
+        {
+            "template": "{%for item in (1..foobar.value) %} {{item}} {%endfor%}",
+            "environment": "{\"foobar\":{\"value\":3}}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "      {%for i in array.items limit: 3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit: 3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit: 3 %}{{i}}{%endfor%}\n",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "      123\n      next\n      456\n      next\n      789\n"
+        },
+        {
+            "template": "      {%for i in array.items limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:1000 %}{{i}}{%endfor%}\n",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "      123\n      next\n      456\n      next\n      7890\n"
+        },
+        {
+            "template": "      {%for i in array.items limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:1 %}{{i}}{%endfor%}\n",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "      123\n      next\n      456\n      next\n      7\n"
+        },
+        {
+            "template": "{%for item in array%} yo {%endfor%}",
+            "environment": "{\"array\":[1,2,3,4]}",
+            "expected": " yo  yo  yo  yo "
+        },
+        {
+            "template": "{%for item in array%}yo{%endfor%}",
+            "environment": "{\"array\":[1,2]}",
+            "expected": "yoyo"
+        },
+        {
+            "template": "{%for item in array%} yo {%endfor%}",
+            "environment": "{\"array\":[1]}",
+            "expected": " yo "
+        },
+        {
+            "template": "{%for item in array%}{%endfor%}",
+            "environment": "{\"array\":[1,2]}",
+            "expected": ""
+        },
+        {
+            "template": "{%for item in array%}\n  yo\n{%endfor%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "\n  yo\n\n  yo\n\n  yo\n\n"
+        },
+        {
+            "template": "{% assign v = false %}{% if v %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " NO "
+        },
+        {
+            "template": "{% assign v = nil %}{% if v == nil %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":{}}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 'bob' contains 'o' %}yes{% endif %}",
+            "environment": "{}",
+            "expected": "yes"
+        },
+        {
+            "template": "{% if 'bob' contains 'f' %}yes{% else %}no{% endif %}",
+            "environment": "{}",
+            "expected": "no"
+        },
+        {
+            "template": "{% if a == 'and' and b == 'or' and c == 'foo and bar' and d == 'bar or baz' and e == 'foo' and foo and bar %} YES {% endif %}",
+            "environment": "{\"a\":\"and\",\"b\":\"or\",\"c\":\"foo and bar\",\"d\":\"bar or baz\",\"e\":\"foo\",\"foo\":true,\"bar\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if 0 == 0 %}0{% elsif 1 == 1%}1{% else %}2{% endif %}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{% if 0 != 0 %}0{% elsif 1 == 1%}1{% else %}2{% endif %}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{% if 0 != 0 %}0{% elsif 1 != 1%}1{% else %}2{% endif %}",
+            "environment": "{}",
+            "expected": "2"
+        },
+        {
+            "template": "{% if false %}if{% elsif true %}elsif{% endif %}",
+            "environment": "{}",
+            "expected": "elsif"
+        },
+        {
+            "template": " {% if false %} this text should not go into the output {% endif %} ",
+            "environment": "{}",
+            "expected": "  "
+        },
+        {
+            "template": " {% if true %} this text should go into the output {% endif %} ",
+            "environment": "{}",
+            "expected": "  this text should go into the output  "
+        },
+        {
+            "template": "{% if false %} you suck {% endif %} {% if true %} you rock {% endif %}?",
+            "environment": "{}",
+            "expected": "  you rock ?"
+        },
+        {
+            "template": "{% if null < 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null <= 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null >= 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null > 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 < null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 <= null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 >= null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 > null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if a == true or b == true %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a == true or b == false %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a == false or b == false %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": ""
+        },
+        {
+            "template": "{% if false %} NO {% else %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if \"foo\" %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if android.name == 'Roy' %}YES{% endif %}",
+            "environment": "{\"order\":{\"items_count\":0},\"android\":{\"name\":\"Roy\"}}",
+            "expected": "YES"
+        },
+        {
+            "template": "{% if order.items_count == 0 %}YES{% endif %}",
+            "environment": "{\"order\":{\"items_count\":0},\"android\":{\"name\":\"Roy\"}}",
+            "expected": "YES"
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":false}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":false}",
+            "expected": ""
+        },
+        {
+            "template": "{% if a or b or c %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":false,\"c\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b or c %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":false,\"c\":false}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 'gnomeslab-and-or-liquid' contains 'gnomeslab-and-or-liquid' %}yes{% endif %}",
+            "environment": "{}",
+            "expected": "yes"
+        },
+        {
+            "template": "{% if var %} NO {% endif %}",
+            "environment": "{\"var\":false}",
+            "expected": ""
+        },
+        {
+            "template": "{% if var %} NO {% endif %}",
+            "environment": "{\"var\":null}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":{\"bar\":false}}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":{}}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":null}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":true}",
+            "expected": ""
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":\"text\"}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":1}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":{}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":[]}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if \"foo\" %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":\"text\"}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":1}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":{}}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":[]}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} NO {% else %} YES {% endif %}",
+            "environment": "{\"var\":false}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} NO {% else %} YES {% endif %}",
+            "environment": "{\"var\":null}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% else %} NO {% endif %}",
+            "environment": "{\"var\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if \"foo\" %} YES {% else %} NO {% endif %}",
+            "environment": "{\"var\":\"text\"}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":false}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% else %} NO {% endif %}",
+            "environment": "{\"foo\":{\"bar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% else %} NO {% endif %}",
+            "environment": "{\"foo\":{\"bar\":\"text\"}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"foo\":{\"notbar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"foo\":{}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"notfoo\":{\"bar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false %}{% if false %} NO {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if false %}{% if true %} NO {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true %}{% if false %} NO {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true %}{% if true %} YES {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true %}{% if true %} YES {% else %} NO {% endif %}{% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true %}{% if false %} NO {% else %} YES {% endif %}{% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false %}{% if true %} NO {% else %} NONO {% endif %}{% else %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true and true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false and true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if false and true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% tablerow n in collections.frontpage cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"collections\":{\"frontpage\":[1,2,3,4,5,6]}}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in collections['frontpage'] cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"collections\":{\"frontpage\":[1,2,3,4,5,6]}}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:2%}{{tablerowloop.col}}{% endtablerow %}",
+            "environment": "{\"numbers\":[1,2,3,4,5,6]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n<tr class=\"row2\"><td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n<tr class=\"row3\"><td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:5%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[1,2,3,4,5,6]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td><td class=\"col4\"> 4 </td><td class=\"col5\"> 5 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:3 offset:1 limit:6%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[0,1,2,3,4,5,6,7]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow char in characters cols:3 %}I WILL NOT BE OUTPUT{% endtablerow %}",
+            "environment": "{\"characters\":\"\"}",
+            "expected": "<tr class=\"row1\">\n</tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[1,2,3,4,5,6]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[]}",
+            "expected": "<tr class=\"row1\">\n</tr>\n"
+        },
+        {
+            "template": "{% break %}",
+            "environment": "{\"i\":1}",
+            "expected": ""
+        },
+        {
+            "template": " {% if 'test' == 'test' %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if array == empty %} true {% else %} false {% endif %} ",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if var == nil %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":null}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == null %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":null}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 0 < 1 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == 'hello there!' %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == \"hello there!\" %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if \"hello there!\" == var %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if true != true %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if 'hello there!' == var %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 0 >= 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if array == empty %} true {% else %} false {% endif %} ",
+            "environment": "{\"array\":[]}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 'test' != 'test' %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if null <= 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if 0 <= null %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if true == true %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 0 <= 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var != nil %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":1}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var != null %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":1}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 1 > 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 0 > 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": "{{ blank.x }}",
+            "environment": "{\"blank\":{\"x\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{{ blank['x'] }}",
+            "environment": "{\"blank\":{\"x\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{% for i in (1...5) %}{{ i }}{% endfor %}",
+            "environment": "{}",
+            "expected": "12345"
+        },
+        {
+            "template": "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif %}",
+            "environment": "{\"b\":\"bar\",\"c\":\"baz\"}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% assign 123foo = 'bar' %}{{ 123foo }}",
+            "environment": "{}",
+            "expected": "bar"
+        },
+        {
+            "template": "{% assign 123 = 'bar' %}{{ 123 }}",
+            "environment": "{}",
+            "expected": "123"
+        },
+        {
+            "template": "{{}}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ 'hi there' | split$$$:' ' | first }}",
+            "environment": "{}",
+            "expected": "hi"
+        },
+        {
+            "template": "{{ 'X' | downcase) }}",
+            "environment": "{}",
+            "expected": "x"
+        },
+        {
+            "template": "{{ 'hi there' | split:\"t\"\" | reverse | first}}",
+            "environment": "{}",
+            "expected": "here"
+        },
+        {
+            "template": "{{ 'hi there' | split:\"t\"\" | remove:\"i\" | first}}",
+            "environment": "{}",
+            "expected": "hi "
+        },
+        {
+            "template": "{% if containsallshipments == true %} YES {% endif %}",
+            "environment": "{\"containsallshipments\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true && false %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false || true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%- echo variable-name | upcase -%}\n",
+            "environment": "{\"variable-name\":\"bar\"}",
+            "expected": "BAR"
+        },
+        {
+            "template": "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{{ 17 | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ -17 | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ '17' | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ '-17' | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ 0 | abs }}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{{ '0' | abs }}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{{ 17.42 | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ -17.42 | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ '17.42' | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ '-17.42' | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ false | default: 'bar' }}",
+            "environment": "{}",
+            "expected": "bar"
+        },
+        {
+            "template": "{{ drop | default: 'bar' }}",
+            "environment": "{\"drop\":\"Yay\"}",
+            "expected": "Yay"
+        },
+        {
+            "template": "{{ \"foo\" | map: \"__id__\" }}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ \"foo\" | map: \"inspect\" }}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% assign key = 'foo' %}{{ thing | map: key | map: 'bar' }}",
+            "environment": "{\"thing\":{\"foo\":{\"bar\":42}}}",
+            "expected": "42"
+        },
+        {
+            "template": "{{ input | floor }}",
+            "environment": "{\"input\":4.6}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ '4.3' | floor }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ '' | date: '%D' }}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ 'abc' | date: '%D' }}",
+            "environment": "{}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ source | strip_newlines }}",
+            "environment": "{\"source\":\"a\\nb\\nc\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ source | strip_newlines }}",
+            "environment": "{\"source\":\"a\\r\\nb\\nc\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ 'a a a a' | remove_first: 'a ' }}",
+            "environment": "{}",
+            "expected": "a a a"
+        },
+        {
+            "template": "{{ 12 | divided_by:3 }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ 14 | divided_by:3 }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ 15 | divided_by:3 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 2.0 | divided_by:4 }}",
+            "environment": "{}",
+            "expected": "0.5"
+        },
+        {
+            "template": "{{ a | append: 'd'}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"d\"}",
+            "expected": "bcd"
+        },
+        {
+            "template": "{{ a | append: b}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"d\"}",
+            "expected": "bcd"
+        },
+        {
+            "template": "{{ source | strip }}",
+            "environment": "{\"source\":\" ab c  \"}",
+            "expected": "ab c"
+        },
+        {
+            "template": "{{ source | strip }}",
+            "environment": "{\"source\":\" \\tab c  \\n \\t\"}",
+            "expected": "ab c"
+        },
+        {
+            "template": "{{ foo | truncate: 5 }}",
+            "environment": "{\"foo\":\"woot: 0\"}",
+            "expected": "wo..."
+        },
+        {
+            "template": "{{ thing | map: \"foo\" | map: \"bar\" }}",
+            "environment": "{\"thing\":{\"foo\":[{\"bar\":42},{\"bar\":17}]}}",
+            "expected": "4217"
+        },
+        {
+            "template": "{{ a | prepend: 'a'}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"a\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ a | prepend: b}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"a\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ 5 | at_most:4 }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ 5 | at_most:5 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 5 | at_most:6 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 4.5 | at_most:5 }}",
+            "environment": "{}",
+            "expected": "4.5"
+        },
+        {
+            "template": "{{ 5 | at_least:4 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 5 | at_least:5 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 5 | at_least:6 }}",
+            "environment": "{}",
+            "expected": "6"
+        },
+        {
+            "template": "{{ 4.5 | at_least:5 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ width | at_least:5 }}",
+            "environment": "{\"width\":\"NumberLikeThing\"}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ input | ceil }}",
+            "environment": "{\"input\":4.6}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ '4.3' | ceil }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 3 | modulo:2 }}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{{ 1 | plus:1 }}",
+            "environment": "{}",
+            "expected": "2"
+        },
+        {
+            "template": "{{ '1' | plus:'1.0' }}",
+            "environment": "{}",
+            "expected": "2.0"
+        },
+        {
+            "template": "{{ input | minus:operand }}",
+            "environment": "{\"input\":5,\"operand\":1}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ '4.3' | minus:'2' }}",
+            "environment": "{}",
+            "expected": "2.3"
+        },
+        {
+            "template": "{{ input | round }}",
+            "environment": "{\"input\":4.6}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ '4.3' | round }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ input | round: 2 }}",
+            "environment": "{\"input\":4.5612}",
+            "expected": "4.56"
+        },
+        {
+            "template": "{{ source | rstrip }}",
+            "environment": "{\"source\":\" ab c  \"}",
+            "expected": " ab c"
+        },
+        {
+            "template": "{{ source | rstrip }}",
+            "environment": "{\"source\":\" \\tab c  \\n \\t\"}",
+            "expected": " \tab c"
+        },
+        {
+            "template": "{{ ary | map:'foo' | map:'bar' }}",
+            "environment": "{\"ary\":[{\"foo\":{\"bar\":\"a\"}},{\"foo\":{\"bar\":\"b\"}},{\"foo\":{\"bar\":\"c\"}}]}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ false | default: 'bar', allow_false: true }}",
+            "environment": "{}",
+            "expected": "false"
+        },
+        {
+            "template": "{{ drop | default: 'bar', allow_false: true }}",
+            "environment": "{\"drop\":\"Nay\"}",
+            "expected": "Nay"
+        },
+        {
+            "template": "{{ drop | default: 'bar', allow_false: true }}",
+            "environment": "{\"drop\":\"Yay\"}",
+            "expected": "Yay"
+        },
+        {
+            "template": "{{ 'a' | to_number }}",
+            "environment": "{}",
+            "expected": "a"
+        },
+        {
+            "template": "{{ 'foo|bar' | remove: '|' }}",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "{{ '1 1 1 1' | replace_first: '1', 2 }}",
+            "environment": "{}",
+            "expected": "2 1 1 1"
+        },
+        {
+            "template": "{{ 3 | times:4 }}",
+            "environment": "{}",
+            "expected": "12"
+        },
+        {
+            "template": "{{ 'foo' | times:4 }}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{{ '2.1' | times:3 | replace: '.','-' | plus:0}}",
+            "environment": "{}",
+            "expected": "6"
+        },
+        {
+            "template": "{{ 0.0725 | times:100 }}",
+            "environment": "{}",
+            "expected": "7.25"
+        },
+        {
+            "template": "{{ \"-0.0725\" | times:100 }}",
+            "environment": "{}",
+            "expected": "-7.25"
+        },
+        {
+            "template": "{{ \"-0.0725\" | times: -100 }}",
+            "environment": "{}",
+            "expected": "7.25"
+        },
+        {
+            "template": "{{ source | lstrip }}",
+            "environment": "{\"source\":\" ab c  \"}",
+            "expected": "ab c  "
+        },
+        {
+            "template": "{{ source | lstrip }}",
+            "environment": "{\"source\":\" \\tab c  \\n \\t\"}",
+            "expected": "ab c  \n \t"
+        },
+        {
+            "template": "{{ source | newline_to_br }}",
+            "environment": "{\"source\":\"a\\nb\\nc\"}",
+            "expected": "a<br />\nb<br />\nc"
+        },
+        {
+            "template": "{{ source | newline_to_br }}",
+            "environment": "{\"source\":\"a\\r\\nb\\nc\"}",
+            "expected": "a<br />\nb<br />\nc"
+        },
+        {
+            "template": "{% continue %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "      <div>\n        {%- if true -%}\n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        {%- endif -%}\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div><p>John</p></div>\n"
+        },
+        {
+            "template": "<p> {%- if true %} yes {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {%- if false %} no {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p> </p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true -%}\n          yes\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>yes</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false -%}\n          no\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p></p>\n      </div>\n"
+        },
+        {
+            "template": "foo {{-}} bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "<p> {%- if true %} yes {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {%- if false %} no {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p></p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n\n\n          {%- if true -%}\n          yes\n          {%- endif -%}\n\n\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>yes</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{ 'John' }}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          John\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true -%}\n          yes\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>yes</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false -%}\n          no\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p></p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' -}}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if true -%}\n          yes\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n          </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if false -%}\n          no\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' -}}\n          {{- '30' -}}\n        </p>\n        <b>\n          {{ 'John' -}}\n          {{- '30' }}\n        </b>\n        <i>\n          {{- 'John' }}\n          {{ '30' -}}\n        </i>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John30</p>\n        <b>\n          John30\n        </b>\n        <i>John\n          30</i>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n\n\n          {{- 'John' -}}\n\n\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John</p>\n      </div>\n"
+        },
+        {
+            "template": "<p>{{- 'John' -}}</p>",
+            "environment": "{}",
+            "expected": "<p>John</p>"
+        },
+        {
+            "template": "<p>{%- if true -%}yes{%- endif -%}</p>",
+            "environment": "{}",
+            "expected": "<p>yes</p>"
+        },
+        {
+            "template": "<p>{%- if false -%}no{%- endif -%}</p>",
+            "environment": "{}",
+            "expected": "<p></p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' }}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{ 'John' -}}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          John</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' -}},\n          {{- '30' -}}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John,30</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        {% raw %}\n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        {% endraw %}\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        \n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        \n      </div>\n"
+        },
+        {
+            "template": "<p> {% if true -%} yes {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {% if false -%} no {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p> </p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true %}\n          yes\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false %}\n          no\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "<p> {% if true -%} yes {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {% if false -%} no {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p>  </p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if true -%}\n          yes\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if false -%}\n          no\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+        },
+        {
+            "template": "{{ \"a\" -}}{{ \"b\" }} c",
+            "environment": "{}",
+            "expected": "ab c"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true %}\n          yes\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n          </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false %}\n          no\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p></p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if true %}\n          yes\n          {% endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          \n          yes\n          \n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if false %}\n          no\n          {% endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+        },
+        {
+            "template": "hash has {{ hash.size }} elements",
+            "environment": "{\"hash\":{\"a\":1,\"b\":2,\"c\":3,\"d\":4}}",
+            "expected": "hash has 4 elements"
+        },
+        {
+            "template": "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}",
+            "environment": "{\"condition\":5}",
+            "expected": " hit "
+        },
+        {
+            "template": "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}",
+            "environment": "{\"condition\":6}",
+            "expected": " else "
+        },
+        {
+            "template": "{% case condition %} {% when 5 %} hit {% else %} else {% endcase %}",
+            "environment": "{\"condition\":6}",
+            "expected": " else "
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[]}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1]}",
+            "expected": "1"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1]}",
+            "expected": "2"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1,1]}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1]}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1,1]}",
+            "expected": ""
+        },
+        {
+            "template": "{{ var2 }}{% capture var2 %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2 }}",
+            "environment": "{\"var\":\"content\"}",
+            "expected": "content foo content foo "
+        },
+        {
+            "template": "0{%\nfor i in (1..3)\n%} {{\ni\n}}{%\nendfor\n%}",
+            "environment": "{}",
+            "expected": "0 1 2 3"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1]}",
+            "expected": "1"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1]}",
+            "expected": "2"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1,1]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1,1]}",
+            "expected": "else"
+        },
+        {
+            "template": "var2:{{var2}} {%assign var2 = var%} var2:{{var2}}",
+            "environment": "{\"var\":\"content\"}",
+            "expected": "var2:  var2:content"
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":2}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":3}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":4}",
+            "expected": " its 4 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":5}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"string\"}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":null}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"something else\"}",
+            "expected": ""
+        },
+        {
+            "template": "{%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%}",
+            "environment": "{}",
+            "expected": "1 2 1 1 2 3 1"
+        },
+        {
+            "template": "the comment block should be removed {%comment%} be gone.. {%endcomment%} .. right?",
+            "environment": "{}",
+            "expected": "the comment block should be removed  .. right?"
+        },
+        {
+            "template": "{%comment%}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}comment{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}comment{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %} 1 {% comment %} 2 {% endcomment %} 3 {% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}{%blabla%}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% blabla %}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}{% endif %}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% endwhatever %}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% raw %} {{%%%%}}  }} { {% endcomment %} {% comment {% endraw %} {% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "foo{%comment%}comment{%endcomment%}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo{% comment %}comment{% endcomment %}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo{%comment%} comment {%endcomment%}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo{% comment %} comment {% endcomment %}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo {%comment%} {%endcomment%} bar",
+            "environment": "{}",
+            "expected": "foo  bar"
+        },
+        {
+            "template": "foo {%comment%}comment{%endcomment%} bar",
+            "environment": "{}",
+            "expected": "foo  bar"
+        },
+        {
+            "template": "foo {%comment%} comment {%endcomment%} bar",
+            "environment": "{}",
+            "expected": "foo  bar"
+        },
+        {
+            "template": "foo{%comment%}\n                                     {%endcomment%}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2 %} {% assign r = \"result\" %} {% endcase %}{{ r }}",
+            "environment": "{\"condition\":2}",
+            "expected": "result"
+        },
+        {
+            "template": "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}",
+            "environment": "{\"condition\":2}",
+            "expected": " its 2 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}",
+            "environment": "{\"condition\":3}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when \"string here\" %} hit {% endcase %}",
+            "environment": "{\"condition\":\"string here\"}",
+            "expected": " hit "
+        },
+        {
+            "template": "{% case condition %}{% when \"string here\" %} hit {% endcase %}",
+            "environment": "{\"condition\":\"bad string here\"}",
+            "expected": ""
+        },
+        {
+            "template": "{%cycle var1: \"one\", \"two\" %} {%cycle var2: \"one\", \"two\" %} {%cycle var1: \"one\", \"two\" %} {%cycle var2: \"one\", \"two\" %} {%cycle var1: \"one\", \"two\" %} {%cycle var2: \"one\", \"two\" %}",
+            "environment": "{\"var1\":1,\"var2\":2}",
+            "expected": "one one two two one one"
+        },
+        {
+            "template": "{% assign a = \"\"%}{{a}}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true == empty %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true == null %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if empty == true %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null == true %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% assign a = \"variable\"%}{{a}}",
+            "environment": "{}",
+            "expected": "variable"
+        },
+        {
+            "template": "{%cycle \"one\", \"two\"%}",
+            "environment": "{}",
+            "expected": "one"
+        },
+        {
+            "template": "{%cycle \"one\", \"two\"%} {%cycle \"one\", \"two\"%}",
+            "environment": "{}",
+            "expected": "one two"
+        },
+        {
+            "template": "{%cycle \"\", \"two\"%} {%cycle \"\", \"two\"%}",
+            "environment": "{}",
+            "expected": " two"
+        },
+        {
+            "template": "{%cycle \"one\", \"two\"%} {%cycle \"one\", \"two\"%} {%cycle \"one\", \"two\"%}",
+            "environment": "{}",
+            "expected": "one two one"
+        },
+        {
+            "template": "{%cycle \"text-align: left\", \"text-align: right\" %} {%cycle \"text-align: left\", \"text-align: right\"%}",
+            "environment": "{}",
+            "expected": "text-align: left text-align: right"
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":2}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":3}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":4}",
+            "expected": " its 4 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":5}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"string\"}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":null}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"something else\"}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.empty? %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case false %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "false"
+        },
+        {
+            "template": "{% case true %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "true"
+        },
+        {
+            "template": "{% case NULL %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "else"
+        },
+        {
+            "template": "array has {{ array.size }} elements",
+            "environment": "{\"array\":[1,2,3,4]}",
+            "expected": "array has 4 elements"
+        },
+        {
+            "template": "this text should come out of the template without change...",
+            "environment": "{}",
+            "expected": "this text should come out of the template without change..."
+        },
+        {
+            "template": "blah",
+            "environment": "{}",
+            "expected": "blah"
+        },
+        {
+            "template": "<blah>",
+            "environment": "{}",
+            "expected": "<blah>"
+        },
+        {
+            "template": "|,.:",
+            "environment": "{}",
+            "expected": "|,.:"
+        },
+        {
+            "template": "",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "this shouldnt see any transformation either but has multiple lines\n              as you can clearly see here ...",
+            "environment": "{}",
+            "expected": "this shouldnt see any transformation either but has multiple lines\n              as you can clearly see here ..."
+        },
+        {
+            "template": "{%for i in (1..2) %}{% assign a = \"variable\"%}{% endfor %}{{a}}",
+            "environment": "{}",
+            "expected": "variable"
+        },
+        {
+            "template": "{%cycle 1: \"one\", \"two\" %} {%cycle 2: \"one\", \"two\" %} {%cycle 1: \"one\", \"two\" %} {%cycle 2: \"one\", \"two\" %} {%cycle 1: \"one\", \"two\" %} {%cycle 2: \"one\", \"two\" %}",
+            "environment": "{}",
+            "expected": "one one two two one one"
+        },
+        {
+            "template": "{%assign var2 = var[\"a:b c\"].paged %}var2: {{var2}}",
+            "environment": "{\"var\":{\"a:b c\":{\"paged\":\"1\"}}}",
+            "expected": "var2: 1"
+        },
+        {
+            "template": "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}",
+            "environment": "{\"array\":[1,1,2,2,3,3]}",
+            "expected": "123"
+        },
+        {
+            "template": "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}",
+            "environment": "{\"array\":[1,1,1,1]}",
+            "expected": "1"
+        },
+        {
+            "template": "a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}",
+            "environment": "{\"a-b\":\"1\"}",
+            "expected": "a-b:1 a-b:2"
+        },
+        {
+            "template": "{% assign foo = values %}.{{ foo[0] }}.",
+            "environment": "{\"values\":[\"foo\",\"bar\",\"baz\"]}",
+            "expected": ".foo."
+        },
+        {
+            "template": "{% assign foo = values %}.{{ foo[1] }}.",
+            "environment": "{\"values\":[\"foo\",\"bar\",\"baz\"]}",
+            "expected": ".bar."
+        },
+        {
+            "template": "{% assign r = a[ 'b' ] %}{{ r }}",
+            "environment": "{\"a\":{\"b\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{% assign foo = values | split: \",\" %}.{{ foo[1] }}.",
+            "environment": "{\"values\":\"foo,bar,baz\"}",
+            "expected": ".bar."
+        },
+        {
+            "template": "{% for i in (1..10) %} {% comment %} whatever {% endcomment %} {% endfor %}{% if true %} {% comment %} whatever {% endcomment %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}{% endfor %}{% if true %}{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}\n      {% if true %} but this is not {% endif %}{% endfor %}{% if true %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}\n      {% if true %} but this is not {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": "\n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not "
+        },
+        {
+            "template": "{% for i in (1..10) %}{% cycle ' ', ' ' %}{% endfor %}{% if true %}{% cycle ' ', ' ' %}{% endif %}",
+            "environment": "{}",
+            "expected": "           "
+        },
+        {
+            "template": "{% for i in (1..10) %} {% endfor %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% capture foo %} whatever {% endcapture %} {% endfor %}{% if true %} {% capture foo %} whatever {% endcapture %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% raw %} {% endraw %}{% endfor %}{% if true %} {% raw %} {% endraw %}{% endif %}",
+            "environment": "{}",
+            "expected": "                      "
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endfor %}{% if true %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endif %}",
+            "environment": "{}",
+            "expected": "   x     x     x     x     x     x     x     x     x     x     x  "
+        },
+        {
+            "template": "{% for i in (1..10) %}     x {% endfor %}{% if true %}     x {% endif %}",
+            "environment": "{}",
+            "expected": "     x      x      x      x      x      x      x      x      x      x      x "
+        },
+        {
+            "template": "{% if true %} {% elsif false %} {% else %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}\t{% endfor %}{% if true %}\t{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% unless true %} {% endunless %}{% endfor %}{% if true %}{% unless true %} {% endunless %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% if false %} this never happens, but still, this block is not blank {% endif %}{% endfor %}{% if true %} {% if false %} this never happens, but still, this block is not blank {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": "           "
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = \"bar\" %} {% endfor %}{% if true %} {% assign foo = \"bar\" %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% assign foo = 0 %} {% increment foo %} {% decrement foo %}{% endfor %}{% if true %}{% assign foo = 0 %} {% increment foo %} {% decrement foo %}{% endif %}",
+            "environment": "{}",
+            "expected": " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        },
+        {
+            "template": "{%- liquid\n  echo array | join: \" \"\n-%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "1 2 3"
+        },
+        {
+            "template": "{%- liquid\n  for value in array\n    echo value\n    unless forloop.last\n      echo \" \"\n    endunless\n  endfor\n-%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "1 2 3"
+        },
+        {
+            "template": "{%- liquid\n  for value in array\n    assign double_value = value | times: 2\n    echo double_value | times: 2\n    unless forloop.last\n      echo \" \"\n    endunless\n  endfor\n\n  echo \" \"\n  echo double_value\n-%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "4 8 12 6"
+        },
+        {
+            "template": "{%- liquid echo \"a\" -%}\nb\n{%- liquid echo \"c\" -%}\n",
+            "environment": "{}",
+            "expected": "abc"
+        },
+        {
+            "template": "{% raw %}{% liquid echo 'test' %}{% endraw %}\n",
+            "environment": "{}",
+            "expected": "{% liquid echo 'test' %}\n"
+        },
+        {
+            "template": "{%- if true %}\n  {%- liquid\n    echo \"good\"\n  %}\n{%- endif -%}\n",
+            "environment": "{}",
+            "expected": "good"
+        },
+        {
+            "template": "{%decrement port %}",
+            "environment": "{\"port\":10}",
+            "expected": "9"
+        },
+        {
+            "template": "{%decrement port %} {%decrement port%}",
+            "environment": "{}",
+            "expected": "-1 -2"
+        },
+        {
+            "template": "{%increment port %} {%increment starboard%} {%increment port %} {%decrement port%} {%decrement starboard %}",
+            "environment": "{\"port\":1,\"starboard\":5}",
+            "expected": "1 5 2 2 5"
+        },
+        {
+            "template": "{%increment port %}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{%increment port %} {%increment port%}",
+            "environment": "{}",
+            "expected": "0 1"
+        },
+        {
+            "template": "{%increment port %} {%increment starboard%} {%increment port %} {%increment port%} {%increment starboard %}",
+            "environment": "{}",
+            "expected": "0 0 1 2 1"
+        },
+        {
+            "template": "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{% raw %}{% comment %} test {% endcomment %}{% endraw %}",
+            "environment": "{}",
+            "expected": "{% comment %} test {% endcomment %}"
+        },
+        {
+            "template": "{% raw %} Foobar {% invalid {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% invalid "
+        },
+        {
+            "template": "{% raw %} Foobar invalid %} {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar invalid %} "
+        },
+        {
+            "template": "{% raw %} Foobar {{ invalid {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {{ invalid "
+        },
+        {
+            "template": "{% raw %} Foobar invalid }} {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar invalid }} "
+        },
+        {
+            "template": "{% raw %} Foobar {% invalid {% {% endraw {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% invalid {% {% endraw "
+        },
+        {
+            "template": "{% raw %} Foobar {% {% {% {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% {% {% "
+        },
+        {
+            "template": "{% raw %} test {% raw %} {% {% endraw %}endraw %}",
+            "environment": "{}",
+            "expected": " test {% raw %} {% endraw %}"
+        },
+        {
+            "template": "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}",
+            "environment": "{}",
+            "expected": " Foobar {{ invalid 1"
+        },
+        {
+            "template": "{% raw %} Foobar {% foo {% bar %}{% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% foo {% bar %}"
+        },
+        {
+            "template": "{% raw %}{{ test }}{% endraw %}",
+            "environment": "{}",
+            "expected": "{{ test }}"
+        },
+        {
+            "template": "{% unless foo %}true{% endunless %}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": ""
+        },
+        {
+            "template": "{{ a[ 'b' ] }}",
+            "environment": "{\"a\":{\"b\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{{ a[ [ 'b' ] ] }}",
+            "environment": "{\"b\":\"c\",\"a\":{\"c\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{{ [key] }}",
+            "environment": "{\"key\":\"foo\",\"foo\":\"bar\"}",
+            "expected": "bar"
+        },
+        {
+            "template": "{{ test.test }}",
+            "environment": "{\"test\":{\"test\":\"worked\"}}",
+            "expected": "worked"
+        },
+        {
+            "template": "{{ test . test }}",
+            "environment": "{\"test\":{\"test\":\"worked\"}}",
+            "expected": "worked"
+        },
+        {
+            "template": "{{ foo }}",
+            "environment": "{\"foo\":\"bar\"}",
+            "expected": "bar"
+        },
+        {
+            "template": "{% if foo %}true{% endif %}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": "true"
+        },
+        {
+            "template": "{% if foo == true %}True{% endif %}",
+            "environment": "{\"foo\":\"Nay\"}",
+            "expected": ""
+        },
+        {
+            "template": "{{ [key] }}",
+            "environment": "{\"key\":\"foo\",\"foo\":\"bar\"}",
+            "expected": "bar"
+        },
+        {
+            "template": "{{ foo }}",
+            "environment": "{\"foo\":\"1\"}",
+            "expected": "1"
+        },
+        {
+            "template": "{{ list[foo] }}",
+            "environment": "{\"foo\":\"1\",\"list\":{\"1\":\"one\"}}",
+            "expected": "one"
+        },
+        {
+            "template": "{{ foo }}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": "Yay"
+        },
+        {
+            "template": "{{ foo | upcase }}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": "YAY"
+        },
+        {
+            "template": "{% capture 'var' %}test string{% endcapture %}{{var}}",
+            "environment": "{}",
+            "expected": "test string"
+        },
+        {
+            "template": "{% raw %} Foobar {% invalid {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% invalid "
+        },
+        {
+            "template": "{% raw %} Foobar invalid %} {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar invalid %} "
+        },
+        {
+            "template": "{% raw %} Foobar {{ invalid {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {{ invalid "
+        },
+        {
+            "template": "{% raw %} Foobar invalid }} {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar invalid }} "
+        },
+        {
+            "template": "{% raw %} Foobar {% invalid {% {% endraw {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% invalid {% {% endraw "
+        },
+        {
+            "template": "{% raw %} Foobar {% {% {% {% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% {% {% "
+        },
+        {
+            "template": "{% raw %} test {% raw %} {% {% endraw %}endraw %}",
+            "environment": "{}",
+            "expected": " test {% raw %} {% endraw %}"
+        },
+        {
+            "template": "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}",
+            "environment": "{}",
+            "expected": " Foobar {{ invalid 1"
+        },
+        {
+            "template": "{% raw %} Foobar {% foo {% bar %}{% endraw %}",
+            "environment": "{}",
+            "expected": " Foobar {% foo {% bar %}"
+        },
+        {
+            "template": "{% raw %}{{ test }}{% endraw %}",
+            "environment": "{}",
+            "expected": "{{ test }}"
+        },
+        {
+            "template": "{% raw %}{% comment %} test {% endcomment %}{% endraw %}",
+            "environment": "{}",
+            "expected": "{% comment %} test {% endcomment %}"
+        },
+        {
+            "template": " {% if true != true %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if 0 < 1 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 1 > 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == nil %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":null}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == null %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":null}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if true == true %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if array == empty %} true {% else %} false {% endif %} ",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if 0 >= 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 'test' == 'test' %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == \"hello there!\" %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var != nil %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":1}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var != null %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":1}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if var == 'hello there!' %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 0 <= 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if \"hello there!\" == var %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if array == empty %} true {% else %} false {% endif %} ",
+            "environment": "{\"array\":[]}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 'test' != 'test' %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if null <= 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if 0 <= null %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": " {% if 'hello there!' == var %} true {% else %} false {% endif %} ",
+            "environment": "{\"var\":\"hello there!\"}",
+            "expected": "  true  "
+        },
+        {
+            "template": " {% if 0 > 0 %} true {% else %} false {% endif %} ",
+            "environment": "{}",
+            "expected": "  false  "
+        },
+        {
+            "template": "{{ false | default: 'bar' }}",
+            "environment": "{}",
+            "expected": "bar"
+        },
+        {
+            "template": "{{ drop | default: 'bar' }}",
+            "environment": "{\"drop\":\"Yay\"}",
+            "expected": "Yay"
+        },
+        {
+            "template": "{{ source | lstrip }}",
+            "environment": "{\"source\":\" ab c  \"}",
+            "expected": "ab c  "
+        },
+        {
+            "template": "{{ source | lstrip }}",
+            "environment": "{\"source\":\" \\tab c  \\n \\t\"}",
+            "expected": "ab c  \n \t"
+        },
+        {
+            "template": "{{ 17 | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ -17 | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ '17' | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ '-17' | abs }}",
+            "environment": "{}",
+            "expected": "17"
+        },
+        {
+            "template": "{{ 0 | abs }}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{{ '0' | abs }}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{{ 17.42 | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ -17.42 | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ '17.42' | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{{ '-17.42' | abs }}",
+            "environment": "{}",
+            "expected": "17.42"
+        },
+        {
+            "template": "{% assign key = 'foo' %}{{ thing | map: key | map: 'bar' }}",
+            "environment": "{\"thing\":{\"foo\":{\"bar\":42}}}",
+            "expected": "42"
+        },
+        {
+            "template": "{{ 5 | at_least:4 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 5 | at_least:5 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 5 | at_least:6 }}",
+            "environment": "{}",
+            "expected": "6"
+        },
+        {
+            "template": "{{ 4.5 | at_least:5 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ width | at_least:5 }}",
+            "environment": "{\"width\":\"NumberLikeThing\"}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 12 | divided_by:3 }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ 14 | divided_by:3 }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ 15 | divided_by:3 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 2.0 | divided_by:4 }}",
+            "environment": "{}",
+            "expected": "0.5"
+        },
+        {
+            "template": "{{ ary | map:'foo' | map:'bar' }}",
+            "environment": "{\"ary\":[{\"foo\":{\"bar\":\"a\"}},{\"foo\":{\"bar\":\"b\"}},{\"foo\":{\"bar\":\"c\"}}]}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ '' | date: '%D' }}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ 'abc' | date: '%D' }}",
+            "environment": "{}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ input | minus:operand }}",
+            "environment": "{\"input\":5,\"operand\":1}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ '4.3' | minus:'2' }}",
+            "environment": "{}",
+            "expected": "2.3"
+        },
+        {
+            "template": "{{ 'a a a a' | remove_first: 'a ' }}",
+            "environment": "{}",
+            "expected": "a a a"
+        },
+        {
+            "template": "{{ false | default: 'bar', allow_false: true }}",
+            "environment": "{}",
+            "expected": "false"
+        },
+        {
+            "template": "{{ drop | default: 'bar', allow_false: true }}",
+            "environment": "{\"drop\":\"Nay\"}",
+            "expected": "Nay"
+        },
+        {
+            "template": "{{ drop | default: 'bar', allow_false: true }}",
+            "environment": "{\"drop\":\"Yay\"}",
+            "expected": "Yay"
+        },
+        {
+            "template": "{{ 'a' | to_number }}",
+            "environment": "{}",
+            "expected": "a"
+        },
+        {
+            "template": "{{ input | floor }}",
+            "environment": "{\"input\":4.6}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ '4.3' | floor }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ foo | truncate: 5 }}",
+            "environment": "{\"foo\":\"woot: 0\"}",
+            "expected": "wo..."
+        },
+        {
+            "template": "{{ 3 | times:4 }}",
+            "environment": "{}",
+            "expected": "12"
+        },
+        {
+            "template": "{{ 'foo' | times:4 }}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{{ '2.1' | times:3 | replace: '.','-' | plus:0}}",
+            "environment": "{}",
+            "expected": "6"
+        },
+        {
+            "template": "{{ 0.0725 | times:100 }}",
+            "environment": "{}",
+            "expected": "7.25"
+        },
+        {
+            "template": "{{ \"-0.0725\" | times:100 }}",
+            "environment": "{}",
+            "expected": "-7.25"
+        },
+        {
+            "template": "{{ \"-0.0725\" | times: -100 }}",
+            "environment": "{}",
+            "expected": "7.25"
+        },
+        {
+            "template": "{{ input | ceil }}",
+            "environment": "{\"input\":4.6}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ '4.3' | ceil }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ thing | map: \"foo\" | map: \"bar\" }}",
+            "environment": "{\"thing\":{\"foo\":[{\"bar\":42},{\"bar\":17}]}}",
+            "expected": "4217"
+        },
+        {
+            "template": "{{ '1 1 1 1' | replace_first: '1', 2 }}",
+            "environment": "{}",
+            "expected": "2 1 1 1"
+        },
+        {
+            "template": "{{ source | rstrip }}",
+            "environment": "{\"source\":\" ab c  \"}",
+            "expected": " ab c"
+        },
+        {
+            "template": "{{ source | rstrip }}",
+            "environment": "{\"source\":\" \\tab c  \\n \\t\"}",
+            "expected": " \tab c"
+        },
+        {
+            "template": "{{ 5 | at_most:4 }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ 5 | at_most:5 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 5 | at_most:6 }}",
+            "environment": "{}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ 4.5 | at_most:5 }}",
+            "environment": "{}",
+            "expected": "4.5"
+        },
+        {
+            "template": "{{ source | strip_newlines }}",
+            "environment": "{\"source\":\"a\\nb\\nc\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ source | strip_newlines }}",
+            "environment": "{\"source\":\"a\\r\\nb\\nc\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ a | prepend: 'a'}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"a\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ a | prepend: b}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"a\"}",
+            "expected": "abc"
+        },
+        {
+            "template": "{{ 'foo|bar' | remove: '|' }}",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "{{ source | strip }}",
+            "environment": "{\"source\":\" ab c  \"}",
+            "expected": "ab c"
+        },
+        {
+            "template": "{{ source | strip }}",
+            "environment": "{\"source\":\" \\tab c  \\n \\t\"}",
+            "expected": "ab c"
+        },
+        {
+            "template": "{{ \"foo\" | map: \"__id__\" }}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ \"foo\" | map: \"inspect\" }}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ 3 | modulo:2 }}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{{ input | round }}",
+            "environment": "{\"input\":4.6}",
+            "expected": "5"
+        },
+        {
+            "template": "{{ '4.3' | round }}",
+            "environment": "{}",
+            "expected": "4"
+        },
+        {
+            "template": "{{ input | round: 2 }}",
+            "environment": "{\"input\":4.5612}",
+            "expected": "4.56"
+        },
+        {
+            "template": "{{ 1 | plus:1 }}",
+            "environment": "{}",
+            "expected": "2"
+        },
+        {
+            "template": "{{ '1' | plus:'1.0' }}",
+            "environment": "{}",
+            "expected": "2.0"
+        },
+        {
+            "template": "{{ source | newline_to_br }}",
+            "environment": "{\"source\":\"a\\nb\\nc\"}",
+            "expected": "a<br />\nb<br />\nc"
+        },
+        {
+            "template": "{{ source | newline_to_br }}",
+            "environment": "{\"source\":\"a\\r\\nb\\nc\"}",
+            "expected": "a<br />\nb<br />\nc"
+        },
+        {
+            "template": "{{ a | append: 'd'}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"d\"}",
+            "expected": "bcd"
+        },
+        {
+            "template": "{{ a | append: b}}",
+            "environment": "{\"a\":\"bc\",\"b\":\"d\"}",
+            "expected": "bcd"
+        },
+        {
+            "template": "{%- liquid\n  echo array | join: \" \"\n-%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "1 2 3"
+        },
+        {
+            "template": "{%- liquid\n  for value in array\n    echo value\n    unless forloop.last\n      echo \" \"\n    endunless\n  endfor\n-%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "1 2 3"
+        },
+        {
+            "template": "{%- liquid\n  for value in array\n    assign double_value = value | times: 2\n    echo double_value | times: 2\n    unless forloop.last\n      echo \" \"\n    endunless\n  endfor\n\n  echo \" \"\n  echo double_value\n-%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "4 8 12 6"
+        },
+        {
+            "template": "{%- liquid echo \"a\" -%}\nb\n{%- liquid echo \"c\" -%}\n",
+            "environment": "{}",
+            "expected": "abc"
+        },
+        {
+            "template": "{%- if true %}\n  {%- liquid\n    echo \"good\"\n  %}\n{%- endif -%}\n",
+            "environment": "{}",
+            "expected": "good"
+        },
+        {
+            "template": "{% raw %}{% liquid echo 'test' %}{% endraw %}\n",
+            "environment": "{}",
+            "expected": "{% liquid echo 'test' %}\n"
+        },
+        {
+            "template": "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{% break %}",
+            "environment": "{\"i\":1}",
+            "expected": ""
+        },
+        {
+            "template": "{% unless foo %}true{% endunless %}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": ""
+        },
+        {
+            "template": "{{ a[ 'b' ] }}",
+            "environment": "{\"a\":{\"b\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{{ a[ [ 'b' ] ] }}",
+            "environment": "{\"b\":\"c\",\"a\":{\"c\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{% if foo %}true{% endif %}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": "true"
+        },
+        {
+            "template": "{% if foo == true %}True{% endif %}",
+            "environment": "{\"foo\":\"Nay\"}",
+            "expected": ""
+        },
+        {
+            "template": "{{ foo }}",
+            "environment": "{\"foo\":\"1\"}",
+            "expected": "1"
+        },
+        {
+            "template": "{{ list[foo] }}",
+            "environment": "{\"foo\":\"1\",\"list\":{\"1\":\"one\"}}",
+            "expected": "one"
+        },
+        {
+            "template": "{{ foo }}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": "Yay"
+        },
+        {
+            "template": "{{ foo | upcase }}",
+            "environment": "{\"foo\":\"Yay\"}",
+            "expected": "YAY"
+        },
+        {
+            "template": "{{ [key] }}",
+            "environment": "{\"key\":\"foo\",\"foo\":\"bar\"}",
+            "expected": "bar"
+        },
+        {
+            "template": "{{ test.test }}",
+            "environment": "{\"test\":{\"test\":\"worked\"}}",
+            "expected": "worked"
+        },
+        {
+            "template": "{{ test . test }}",
+            "environment": "{\"test\":{\"test\":\"worked\"}}",
+            "expected": "worked"
+        },
+        {
+            "template": "{{ [key] }}",
+            "environment": "{\"key\":\"foo\",\"foo\":\"bar\"}",
+            "expected": "bar"
+        },
+        {
+            "template": "{{ foo }}",
+            "environment": "{\"foo\":\"bar\"}",
+            "expected": "bar"
+        },
+        {
+            "template": "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}",
+            "environment": "{\"condition\":5}",
+            "expected": " hit "
+        },
+        {
+            "template": "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}",
+            "environment": "{\"condition\":6}",
+            "expected": " else "
+        },
+        {
+            "template": "{% case condition %} {% when 5 %} hit {% else %} else {% endcase %}",
+            "environment": "{\"condition\":6}",
+            "expected": " else "
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[]}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1]}",
+            "expected": "1"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1]}",
+            "expected": "2"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1,1]}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1]}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1,1]}",
+            "expected": ""
+        },
+        {
+            "template": "{%assign var2 = var[\"a:b c\"].paged %}var2: {{var2}}",
+            "environment": "{\"var\":{\"a:b c\":{\"paged\":\"1\"}}}",
+            "expected": "var2: 1"
+        },
+        {
+            "template": "{%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%}",
+            "environment": "{}",
+            "expected": "1 2 1 1 2 3 1"
+        },
+        {
+            "template": "this text should come out of the template without change...",
+            "environment": "{}",
+            "expected": "this text should come out of the template without change..."
+        },
+        {
+            "template": "blah",
+            "environment": "{}",
+            "expected": "blah"
+        },
+        {
+            "template": "<blah>",
+            "environment": "{}",
+            "expected": "<blah>"
+        },
+        {
+            "template": "|,.:",
+            "environment": "{}",
+            "expected": "|,.:"
+        },
+        {
+            "template": "",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "this shouldnt see any transformation either but has multiple lines\n              as you can clearly see here ...",
+            "environment": "{}",
+            "expected": "this shouldnt see any transformation either but has multiple lines\n              as you can clearly see here ..."
+        },
+        {
+            "template": "{{ var2 }}{% capture var2 %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2 }}",
+            "environment": "{\"var\":\"content\"}",
+            "expected": "content foo content foo "
+        },
+        {
+            "template": "{% case a.empty? %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case false %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "false"
+        },
+        {
+            "template": "{% case true %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "true"
+        },
+        {
+            "template": "{% case NULL %}{% when true %}true{% when false %}false{% else %}else{% endcase %}",
+            "environment": "{}",
+            "expected": "else"
+        },
+        {
+            "template": "{%cycle var1: \"one\", \"two\" %} {%cycle var2: \"one\", \"two\" %} {%cycle var1: \"one\", \"two\" %} {%cycle var2: \"one\", \"two\" %} {%cycle var1: \"one\", \"two\" %} {%cycle var2: \"one\", \"two\" %}",
+            "environment": "{\"var1\":1,\"var2\":2}",
+            "expected": "one one two two one one"
+        },
+        {
+            "template": "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}",
+            "environment": "{\"condition\":2}",
+            "expected": " its 2 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}",
+            "environment": "{\"condition\":3}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when \"string here\" %} hit {% endcase %}",
+            "environment": "{\"condition\":\"string here\"}",
+            "expected": " hit "
+        },
+        {
+            "template": "{% case condition %}{% when \"string here\" %} hit {% endcase %}",
+            "environment": "{\"condition\":\"bad string here\"}",
+            "expected": ""
+        },
+        {
+            "template": "{%cycle \"one\", \"two\"%}",
+            "environment": "{}",
+            "expected": "one"
+        },
+        {
+            "template": "{%cycle \"one\", \"two\"%} {%cycle \"one\", \"two\"%}",
+            "environment": "{}",
+            "expected": "one two"
+        },
+        {
+            "template": "{%cycle \"\", \"two\"%} {%cycle \"\", \"two\"%}",
+            "environment": "{}",
+            "expected": " two"
+        },
+        {
+            "template": "{%cycle \"one\", \"two\"%} {%cycle \"one\", \"two\"%} {%cycle \"one\", \"two\"%}",
+            "environment": "{}",
+            "expected": "one two one"
+        },
+        {
+            "template": "{%cycle \"text-align: left\", \"text-align: right\" %} {%cycle \"text-align: left\", \"text-align: right\"%}",
+            "environment": "{}",
+            "expected": "text-align: left text-align: right"
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":2}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":3}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":4}",
+            "expected": " its 4 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":5}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"string\"}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":null}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1, \"string\", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"something else\"}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when 1, 2 %} {% assign r = \"result\" %} {% endcase %}{{ r }}",
+            "environment": "{\"condition\":2}",
+            "expected": "result"
+        },
+        {
+            "template": "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}",
+            "environment": "{\"array\":[1,1,2,2,3,3]}",
+            "expected": "123"
+        },
+        {
+            "template": "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}",
+            "environment": "{\"array\":[1,1,1,1]}",
+            "expected": "1"
+        },
+        {
+            "template": "the comment block should be removed {%comment%} be gone.. {%endcomment%} .. right?",
+            "environment": "{}",
+            "expected": "the comment block should be removed  .. right?"
+        },
+        {
+            "template": "{%comment%}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}comment{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}comment{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %} 1 {% comment %} 2 {% endcomment %} 3 {% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}{%blabla%}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% blabla %}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{%comment%}{% endif %}{%endcomment%}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% endwhatever %}{% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% comment %}{% raw %} {{%%%%}}  }} { {% endcomment %} {% comment {% endraw %} {% endcomment %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "foo{%comment%}comment{%endcomment%}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo{% comment %}comment{% endcomment %}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo{%comment%} comment {%endcomment%}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo{% comment %} comment {% endcomment %}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "foo {%comment%} {%endcomment%} bar",
+            "environment": "{}",
+            "expected": "foo  bar"
+        },
+        {
+            "template": "foo {%comment%}comment{%endcomment%} bar",
+            "environment": "{}",
+            "expected": "foo  bar"
+        },
+        {
+            "template": "foo {%comment%} comment {%endcomment%} bar",
+            "environment": "{}",
+            "expected": "foo  bar"
+        },
+        {
+            "template": "foo{%comment%}\n                                     {%endcomment%}bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "array has {{ array.size }} elements",
+            "environment": "{\"array\":[1,2,3,4]}",
+            "expected": "array has 4 elements"
+        },
+        {
+            "template": "a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}",
+            "environment": "{\"a-b\":\"1\"}",
+            "expected": "a-b:1 a-b:2"
+        },
+        {
+            "template": "{% if true == empty %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true == null %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if empty == true %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null == true %}?{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1]}",
+            "expected": "1"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1]}",
+            "expected": "2"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1,1]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}",
+            "environment": "{\"a\":[1,1,1,1,1]}",
+            "expected": "else"
+        },
+        {
+            "template": "{% assign a = \"variable\"%}{{a}}",
+            "environment": "{}",
+            "expected": "variable"
+        },
+        {
+            "template": "{% assign a = \"\"%}{{a}}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":2}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":3}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":4}",
+            "expected": " its 4 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":5}",
+            "expected": ""
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":1}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"string\"}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":null}",
+            "expected": " its 1 or 2 or 3 "
+        },
+        {
+            "template": "{% case condition %}{% when 1 or \"string\" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}",
+            "environment": "{\"condition\":\"something else\"}",
+            "expected": ""
+        },
+        {
+            "template": "hash has {{ hash.size }} elements",
+            "environment": "{\"hash\":{\"a\":1,\"b\":2,\"c\":3,\"d\":4}}",
+            "expected": "hash has 4 elements"
+        },
+        {
+            "template": "0{%\nfor i in (1..3)\n%} {{\ni\n}}{%\nendfor\n%}",
+            "environment": "{}",
+            "expected": "0 1 2 3"
+        },
+        {
+            "template": "{%cycle 1: \"one\", \"two\" %} {%cycle 2: \"one\", \"two\" %} {%cycle 1: \"one\", \"two\" %} {%cycle 2: \"one\", \"two\" %} {%cycle 1: \"one\", \"two\" %} {%cycle 2: \"one\", \"two\" %}",
+            "environment": "{}",
+            "expected": "one one two two one one"
+        },
+        {
+            "template": "var2:{{var2}} {%assign var2 = var%} var2:{{var2}}",
+            "environment": "{\"var\":\"content\"}",
+            "expected": "var2:  var2:content"
+        },
+        {
+            "template": "{%for i in (1..2) %}{% assign a = \"variable\"%}{% endfor %}{{a}}",
+            "environment": "{}",
+            "expected": "variable"
+        },
+        {
+            "template": "{% if a == 'and' and b == 'or' and c == 'foo and bar' and d == 'bar or baz' and e == 'foo' and foo and bar %} YES {% endif %}",
+            "environment": "{\"a\":\"and\",\"b\":\"or\",\"c\":\"foo and bar\",\"d\":\"bar or baz\",\"e\":\"foo\",\"foo\":true,\"bar\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if 0 == 0 %}0{% elsif 1 == 1%}1{% else %}2{% endif %}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{% if 0 != 0 %}0{% elsif 1 == 1%}1{% else %}2{% endif %}",
+            "environment": "{}",
+            "expected": "1"
+        },
+        {
+            "template": "{% if 0 != 0 %}0{% elsif 1 != 1%}1{% else %}2{% endif %}",
+            "environment": "{}",
+            "expected": "2"
+        },
+        {
+            "template": "{% if false %}if{% elsif true %}elsif{% endif %}",
+            "environment": "{}",
+            "expected": "elsif"
+        },
+        {
+            "template": "{% if true and true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false and true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if false and true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null < 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null <= 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null >= 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if null > 10 %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 < null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 <= null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 >= null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 10 > null %} NO {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if var %} NO {% endif %}",
+            "environment": "{\"var\":false}",
+            "expected": ""
+        },
+        {
+            "template": "{% if var %} NO {% endif %}",
+            "environment": "{\"var\":null}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":{\"bar\":false}}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":{}}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":null}",
+            "expected": ""
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":true}",
+            "expected": ""
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":\"text\"}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":1}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":{}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":[]}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if \"foo\" %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":\"text\"}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":1}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":{}}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":[]}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} NO {% else %} YES {% endif %}",
+            "environment": "{\"var\":false}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} NO {% else %} YES {% endif %}",
+            "environment": "{\"var\":null}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if var %} YES {% else %} NO {% endif %}",
+            "environment": "{\"var\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if \"foo\" %} YES {% else %} NO {% endif %}",
+            "environment": "{\"var\":\"text\"}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"foo\":{\"bar\":false}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% else %} NO {% endif %}",
+            "environment": "{\"foo\":{\"bar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} YES {% else %} NO {% endif %}",
+            "environment": "{\"foo\":{\"bar\":\"text\"}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"foo\":{\"notbar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"foo\":{}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% else %} YES {% endif %}",
+            "environment": "{\"notfoo\":{\"bar\":true}}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if android.name == 'Roy' %}YES{% endif %}",
+            "environment": "{\"order\":{\"items_count\":0},\"android\":{\"name\":\"Roy\"}}",
+            "expected": "YES"
+        },
+        {
+            "template": "{% if order.items_count == 0 %}YES{% endif %}",
+            "environment": "{\"order\":{\"items_count\":0},\"android\":{\"name\":\"Roy\"}}",
+            "expected": "YES"
+        },
+        {
+            "template": "{% if false %}{% if false %} NO {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if false %}{% if true %} NO {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true %}{% if false %} NO {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% if true %}{% if true %} YES {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true %}{% if true %} YES {% else %} NO {% endif %}{% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true %}{% if false %} NO {% else %} YES {% endif %}{% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false %}{% if true %} NO {% else %} NONO {% endif %}{% else %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if foo.bar %} NO {% endif %}",
+            "environment": "{\"foo\":{}}",
+            "expected": ""
+        },
+        {
+            "template": "{% if false %} NO {% else %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if \"foo\" %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":false}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":false}",
+            "expected": ""
+        },
+        {
+            "template": "{% if a or b or c %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":false,\"c\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a or b or c %} YES {% endif %}",
+            "environment": "{\"a\":false,\"b\":false,\"c\":false}",
+            "expected": ""
+        },
+        {
+            "template": "{% if 'bob' contains 'o' %}yes{% endif %}",
+            "environment": "{}",
+            "expected": "yes"
+        },
+        {
+            "template": "{% if 'bob' contains 'f' %}yes{% else %}no{% endif %}",
+            "environment": "{}",
+            "expected": "no"
+        },
+        {
+            "template": "{% if 'gnomeslab-and-or-liquid' contains 'gnomeslab-and-or-liquid' %}yes{% endif %}",
+            "environment": "{}",
+            "expected": "yes"
+        },
+        {
+            "template": "{% assign v = false %}{% if v %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " NO "
+        },
+        {
+            "template": "{% assign v = nil %}{% if v == nil %} YES {% else %} NO {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a == true or b == true %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a == true or b == false %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if a == false or b == false %} YES {% endif %}",
+            "environment": "{\"a\":true,\"b\":true}",
+            "expected": ""
+        },
+        {
+            "template": "{% if var %} YES {% endif %}",
+            "environment": "{\"var\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": " {% if false %} this text should not go into the output {% endif %} ",
+            "environment": "{}",
+            "expected": "  "
+        },
+        {
+            "template": " {% if true %} this text should go into the output {% endif %} ",
+            "environment": "{}",
+            "expected": "  this text should go into the output  "
+        },
+        {
+            "template": "{% if false %} you suck {% endif %} {% if true %} you rock {% endif %}?",
+            "environment": "{}",
+            "expected": "  you rock ?"
+        },
+        {
+            "template": "{% assign foo = values | split: \",\" %}.{{ foo[1] }}.",
+            "environment": "{\"values\":\"foo,bar,baz\"}",
+            "expected": ".bar."
+        },
+        {
+            "template": "{% assign foo = values %}.{{ foo[0] }}.",
+            "environment": "{\"values\":[\"foo\",\"bar\",\"baz\"]}",
+            "expected": ".foo."
+        },
+        {
+            "template": "{% assign foo = values %}.{{ foo[1] }}.",
+            "environment": "{\"values\":[\"foo\",\"bar\",\"baz\"]}",
+            "expected": ".bar."
+        },
+        {
+            "template": "{% assign r = a[ 'b' ] %}{{ r }}",
+            "environment": "{\"a\":{\"b\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{%decrement port %}",
+            "environment": "{\"port\":10}",
+            "expected": "9"
+        },
+        {
+            "template": "{%decrement port %} {%decrement port%}",
+            "environment": "{}",
+            "expected": "-1 -2"
+        },
+        {
+            "template": "{%increment port %} {%increment starboard%} {%increment port %} {%decrement port%} {%decrement starboard %}",
+            "environment": "{\"port\":1,\"starboard\":5}",
+            "expected": "1 5 2 2 5"
+        },
+        {
+            "template": "{%increment port %}",
+            "environment": "{}",
+            "expected": "0"
+        },
+        {
+            "template": "{%increment port %} {%increment port%}",
+            "environment": "{}",
+            "expected": "0 1"
+        },
+        {
+            "template": "{%increment port %} {%increment starboard%} {%increment port %} {%increment port%} {%increment starboard %}",
+            "environment": "{}",
+            "expected": "0 0 1 2 1"
+        },
+        {
+            "template": "{%- echo variable-name | upcase -%}\n",
+            "environment": "{\"variable-name\":\"bar\"}",
+            "expected": "BAR"
+        },
+        {
+            "template": "{%for item in array%} yo {%endfor%}",
+            "environment": "{\"array\":[1,2,3,4]}",
+            "expected": " yo  yo  yo  yo "
+        },
+        {
+            "template": "{%for item in array%}yo{%endfor%}",
+            "environment": "{\"array\":[1,2]}",
+            "expected": "yoyo"
+        },
+        {
+            "template": "{%for item in array%} yo {%endfor%}",
+            "environment": "{\"array\":[1]}",
+            "expected": " yo "
+        },
+        {
+            "template": "{%for item in array%}{%endfor%}",
+            "environment": "{\"array\":[1,2]}",
+            "expected": ""
+        },
+        {
+            "template": "{%for item in array%}\n  yo\n{%endfor%}\n",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "\n  yo\n\n  yo\n\n  yo\n\n"
+        },
+        {
+            "template": "{%for item in array%} {{item}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "123"
+        },
+        {
+            "template": "{% for item in array %}{{item}}{% endfor %}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "123"
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[\"a\",\"b\",\"c\",\"d\"]}",
+            "expected": "abcd"
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[\"a\",\" \",\"b\",\" \",\"c\"]}",
+            "expected": "a b c"
+        },
+        {
+            "template": "{%for item in array%}{{item}}{%endfor%}",
+            "environment": "{\"array\":[\"a\",\"\",\"b\",\"\",\"c\"]}",
+            "expected": "abc"
+        },
+        {
+            "template": "{% for char in characters %}I WILL NOT BE OUTPUT{% endfor %}",
+            "environment": "{\"characters\":\"\"}",
+            "expected": ""
+        },
+        {
+            "template": "{% for inner in outer %}{% for k in inner %}{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}{% endfor %}",
+            "environment": "{\"outer\":[[1,1,1],[1,1,1]]}",
+            "expected": "1.1 1.2 1.3 2.1 2.2 2.3 "
+        },
+        {
+            "template": "{%for item in array%}{%for i in item%}{{ i }}{%endfor%}{%endfor%}",
+            "environment": "{\"array\":[[1,2],[3,4],[5,6]]}",
+            "expected": "123456"
+        },
+        {
+            "template": "{%for i in array offset:7 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "890"
+        },
+        {
+            "template": "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}",
+            "environment": "{\"items\":[1,2,3,4,5]}",
+            "expected": "34"
+        },
+        {
+            "template": "{%for i in array limit:2 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "12"
+        },
+        {
+            "template": "{%for i in array limit:4 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "1234"
+        },
+        {
+            "template": "{%for i in array limit:4 offset:2 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "3456"
+        },
+        {
+            "template": "{%for i in array limit: 4 offset: 2 %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0]}",
+            "expected": "3456"
+        },
+        {
+            "template": "{%for val in string%}{{val}}{%endfor%}",
+            "environment": "{\"string\":\"test string\"}",
+            "expected": "test string"
+        },
+        {
+            "template": "{%for val in string limit:1%}{{val}}{%endfor%}",
+            "environment": "{\"string\":\"test string\"}",
+            "expected": "test string"
+        },
+        {
+            "template": "{%for val in string%}{{forloop.name}}-{{forloop.index}}-{{forloop.length}}-{{forloop.index0}}-{{forloop.rindex}}-{{forloop.rindex0}}-{{forloop.first}}-{{forloop.last}}-{{val}}{%endfor%}",
+            "environment": "{\"string\":\"test string\"}",
+            "expected": "val-string-1-1-0-1-0-true-true-test string"
+        },
+        {
+            "template": "      {%for i in array.items limit: 3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit: 3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit: 3 %}{{i}}{%endfor%}\n",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "      123\n      next\n      456\n      next\n      789\n"
+        },
+        {
+            "template": "{% for       item   in   items %}{{item}}{% endfor %}",
+            "environment": "{\"items\":[1,2,3,4,5]}",
+            "expected": "12345"
+        },
+        {
+            "template": "{%for item in (1..foobar.value) %} {{item}} {%endfor%}",
+            "environment": "{\"foobar\":{\"value\":3}}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{%for item in (1..3) %} {{item}} {%endfor%}",
+            "environment": "{}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{% for item in (a..3) %} {{item}} {% endfor %}",
+            "environment": "{\"a\":\"invalid integer\"}",
+            "expected": " 0  1  2  3 "
+        },
+        {
+            "template": "{%for i in array limit: limit offset: offset %}{{ i }}{%endfor%}",
+            "environment": "{\"array\":[1,2,3,4,5,6,7,8,9,0],\"limit\":2,\"offset\":2}",
+            "expected": "34"
+        },
+        {
+            "template": "{%for item in array%}{% if forloop.first %}+{% else %}-{% endif %}{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "+--"
+        },
+        {
+            "template": "{% for inner in outer %}{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}",
+            "environment": "{\"outer\":[[1,1,1],[1,1,1]]}",
+            "expected": ".1 .2 "
+        },
+        {
+            "template": "{% for i in array.items %}{% continue %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{{ i }}{% continue %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "12345"
+        },
+        {
+            "template": "{% for i in array.items %}{% continue %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{% if i > 3 %}{% continue %}{% endif %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "123"
+        },
+        {
+            "template": "{% for i in array.items %}{% if i == 3 %}{% continue %}{% else %}{{ i }}{% endif %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "1245"
+        },
+        {
+            "template": "{% for item in array %}{% for i in item %}{% if i == 1 %}{% continue %}{% endif %}{{ i }}{% endfor %}{% endfor %}",
+            "environment": "{\"array\":[[1,2],[3,4],[5,6]]}",
+            "expected": "23456"
+        },
+        {
+            "template": "{% for i in array.items %}{% if i == 9999 %}{% continue %}{% endif %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "12345"
+        },
+        {
+            "template": "{%for item in array%}+{%else%}-{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "+++"
+        },
+        {
+            "template": "{%for item in array%}+{%else%}-{%endfor%}",
+            "environment": "{\"array\":[]}",
+            "expected": "-"
+        },
+        {
+            "template": "{%for item in array%}+{%else%}-{%endfor%}",
+            "environment": "{\"array\":null}",
+            "expected": "-"
+        },
+        {
+            "template": "{%for item in array%} {{forloop.index}}/{{forloop.length}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 1/3  2/3  3/3 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.index}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.index0}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 0  1  2 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.rindex0}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 2  1  0 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.rindex}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " 3  2  1 "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.first}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " true  false  false "
+        },
+        {
+            "template": "{%for item in array%} {{forloop.last}} {%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": " false  false  true "
+        },
+        {
+            "template": "      {%for i in array.items limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:1000 %}{{i}}{%endfor%}\n",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "      123\n      next\n      456\n      next\n      7890\n"
+        },
+        {
+            "template": "{% for a in (1..2) %}o{% for b in empty %}{% endfor %}{% endfor %}",
+            "environment": "{}",
+            "expected": "oo"
+        },
+        {
+            "template": "{%for i in array.items limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 offset:1000 %}{{i}}{%endfor%}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "123\n      next\n      456\n      next\n      "
+        },
+        {
+            "template": "{%for item in array reversed %}{{item}}{%endfor%}",
+            "environment": "{\"array\":[1,2,3]}",
+            "expected": "321"
+        },
+        {
+            "template": "{% for i in array.items %}{% break %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{{ i }}{% break %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": "1"
+        },
+        {
+            "template": "{% for i in array.items %}{% break %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in array.items %}{{ i }}{% if i > 3 %}{% break %}{% endif %}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,10]}}",
+            "expected": "1234"
+        },
+        {
+            "template": "{% for item in array %}{% for i in item %}{% if i == 1 %}{% break %}{% endif %}{{ i }}{% endfor %}{% endfor %}",
+            "environment": "{\"array\":[[1,2],[3,4],[5,6]]}",
+            "expected": "3456"
+        },
+        {
+            "template": "{% for i in array.items %}{% if i == 9999 %}{% break %}{% endif %}{{ i }}{% endfor %}",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5]}}",
+            "expected": "12345"
+        },
+        {
+            "template": "{%for item in (1..foobar) %} {{item}} {%endfor%}",
+            "environment": "{\"foobar\":3}",
+            "expected": " 1  2  3 "
+        },
+        {
+            "template": "      {%for i in array.items limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}\n      next\n      {%for i in array.items offset:continue limit:1 %}{{i}}{%endfor%}\n",
+            "environment": "{\"array\":{\"items\":[1,2,3,4,5,6,7,8,9,0]}}",
+            "expected": "      123\n      next\n      456\n      next\n      7\n"
+        },
+        {
+            "template": " {% unless true %} this text should not go into the output {% endunless %} ",
+            "environment": "{}",
+            "expected": "  "
+        },
+        {
+            "template": " {% unless false %} this text should go into the output {% endunless %} ",
+            "environment": "{}",
+            "expected": "  this text should go into the output  "
+        },
+        {
+            "template": "{% unless true %} you suck {% endunless %} {% unless false %} you rock {% endunless %}?",
+            "environment": "{}",
+            "expected": "  you rock ?"
+        },
+        {
+            "template": "{% unless true %} NO {% else %} YES {% endunless %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% unless false %} YES {% else %} NO {% endunless %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% unless \"foo\" %} NO {% else %} YES {% endunless %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% for i in choices %}{% unless i %}{{ forloop.index }}{% endunless %}{% endfor %}",
+            "environment": "{\"choices\":[1,null,false]}",
+            "expected": "23"
+        },
+        {
+            "template": "{% for i in choices %}{% unless i %} {{ forloop.index }} {% else %} TRUE {% endunless %}{% endfor %}",
+            "environment": "{\"choices\":[1,null,false]}",
+            "expected": " TRUE  2  3 "
+        },
+        {
+            "template": "<p> {%- if true %} yes {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {%- if false %} no {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p> </p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{ 'John' -}}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          John</p>\n      </div>\n"
+        },
+        {
+            "template": "<p> {% if true -%} yes {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {% if false -%} no {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p> </p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true %}\n          yes\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false %}\n          no\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "<p>{{- 'John' -}}</p>",
+            "environment": "{}",
+            "expected": "<p>John</p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true -%}\n          yes\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>yes</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false -%}\n          no\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p></p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true %}\n          yes\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n          </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false %}\n          no\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p></p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if true -%}\n          yes\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>yes</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {%- if false -%}\n          no\n          {%- endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p></p>\n      </div>\n"
+        },
+        {
+            "template": "<p> {% if true -%} yes {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {% if false -%} no {%- endif %} </p>",
+            "environment": "{}",
+            "expected": "<p>  </p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n\n\n          {{- 'John' -}}\n\n\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if true -%}\n          yes\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if false -%}\n          no\n          {%- endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' -}}\n          {{- '30' -}}\n        </p>\n        <b>\n          {{ 'John' -}}\n          {{- '30' }}\n        </b>\n        <i>\n          {{- 'John' }}\n          {{ '30' -}}\n        </i>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John30</p>\n        <b>\n          John30\n        </b>\n        <i>John\n          30</i>\n      </div>\n"
+        },
+        {
+            "template": "{{ \"a\" -}}{{ \"b\" }} c",
+            "environment": "{}",
+            "expected": "ab c"
+        },
+        {
+            "template": "<p>{%- if true -%}yes{%- endif -%}</p>",
+            "environment": "{}",
+            "expected": "<p>yes</p>"
+        },
+        {
+            "template": "<p>{%- if false -%}no{%- endif -%}</p>",
+            "environment": "{}",
+            "expected": "<p></p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' -}},\n          {{- '30' -}}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John,30</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        {% raw %}\n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        {% endraw %}\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        \n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        \n      </div>\n"
+        },
+        {
+            "template": "<p> {%- if true %} yes {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p> yes </p>"
+        },
+        {
+            "template": "<p> {%- if false %} no {% endif -%} </p>",
+            "environment": "{}",
+            "expected": "<p></p>"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if true -%}\n          yes\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          yes\n          </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if false -%}\n          no\n          {% endif -%}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          </p>\n      </div>\n"
+        },
+        {
+            "template": "foo {{-}} bar",
+            "environment": "{}",
+            "expected": "foobar"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' -}}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John</p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{ 'John' }}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          John\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        {%- if true -%}\n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        {%- endif -%}\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div><p>John</p></div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {{- 'John' }}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>John\n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if true %}\n          yes\n          {% endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          \n          yes\n          \n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n          {% if false %}\n          no\n          {% endif %}\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+        },
+        {
+            "template": "      <div>\n        <p>\n\n\n          {%- if true -%}\n          yes\n          {%- endif -%}\n\n\n        </p>\n      </div>\n",
+            "environment": "{}",
+            "expected": "      <div>\n        <p>yes</p>\n      </div>\n"
+        },
+        {
+            "template": "{{}}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1...5) %}{{ i }}{% endfor %}",
+            "environment": "{}",
+            "expected": "12345"
+        },
+        {
+            "template": "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif %}",
+            "environment": "{\"b\":\"bar\",\"c\":\"baz\"}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if true && false %} YES {% endif %}",
+            "environment": "{}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% if false || true %} YES {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{{ 'hi there' | split$$$:' ' | first }}",
+            "environment": "{}",
+            "expected": "hi"
+        },
+        {
+            "template": "{{ 'X' | downcase) }}",
+            "environment": "{}",
+            "expected": "x"
+        },
+        {
+            "template": "{{ 'hi there' | split:\"t\"\" | reverse | first}}",
+            "environment": "{}",
+            "expected": "here"
+        },
+        {
+            "template": "{{ 'hi there' | split:\"t\"\" | remove:\"i\" | first}}",
+            "environment": "{}",
+            "expected": "hi "
+        },
+        {
+            "template": "{% assign 123foo = 'bar' %}{{ 123foo }}",
+            "environment": "{}",
+            "expected": "bar"
+        },
+        {
+            "template": "{% assign 123 = 'bar' %}{{ 123 }}",
+            "environment": "{}",
+            "expected": "123"
+        },
+        {
+            "template": "{{ blank.x }}",
+            "environment": "{\"blank\":{\"x\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{{ blank['x'] }}",
+            "environment": "{\"blank\":{\"x\":\"result\"}}",
+            "expected": "result"
+        },
+        {
+            "template": "{% if containsallshipments == true %} YES {% endif %}",
+            "environment": "{\"containsallshipments\":true}",
+            "expected": " YES "
+        },
+        {
+            "template": "{% for i in (1..10) %}{% cycle ' ', ' ' %}{% endfor %}{% if true %}{% cycle ' ', ' ' %}{% endif %}",
+            "environment": "{}",
+            "expected": "           "
+        },
+        {
+            "template": "{% for i in (1..10) %} {% capture foo %} whatever {% endcapture %} {% endfor %}{% if true %} {% capture foo %} whatever {% endcapture %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% endfor %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = \"bar\" %} {% endfor %}{% if true %} {% assign foo = \"bar\" %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}{% endfor %}{% if true %}{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}\n      {% if true %} but this is not {% endif %}{% endfor %}{% if true %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}\n      {% if true %} but this is not {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": "\n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not "
+        },
+        {
+            "template": "{% for i in (1..10) %}     x {% endfor %}{% if true %}     x {% endif %}",
+            "environment": "{}",
+            "expected": "     x      x      x      x      x      x      x      x      x      x      x "
+        },
+        {
+            "template": "{% for i in (1..10) %} {% if false %} this never happens, but still, this block is not blank {% endif %}{% endfor %}{% if true %} {% if false %} this never happens, but still, this block is not blank {% endif %}{% endif %}",
+            "environment": "{}",
+            "expected": "           "
+        },
+        {
+            "template": "{% for i in (1..10) %}{% unless true %} {% endunless %}{% endfor %}{% if true %}{% unless true %} {% endunless %}{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endfor %}{% if true %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endif %}",
+            "environment": "{}",
+            "expected": "   x     x     x     x     x     x     x     x     x     x     x  "
+        },
+        {
+            "template": "{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}\t{% endfor %}{% if true %}\t{% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %}{% assign foo = 0 %} {% increment foo %} {% decrement foo %}{% endfor %}{% if true %}{% assign foo = 0 %} {% increment foo %} {% decrement foo %}{% endif %}",
+            "environment": "{}",
+            "expected": " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        },
+        {
+            "template": "{% if true %} {% elsif false %} {% else %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% comment %} whatever {% endcomment %} {% endfor %}{% if true %} {% comment %} whatever {% endcomment %} {% endif %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..10) %} {% raw %} {% endraw %}{% endfor %}{% if true %} {% raw %} {% endraw %}{% endif %}",
+            "environment": "{}",
+            "expected": "                      "
+        },
+        {
+            "template": "{% capture 'var' %}test string{% endcapture %}{{var}}",
+            "environment": "{}",
+            "expected": "test string"
+        },
+        {
+            "template": "{% tablerow n in collections.frontpage cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"collections\":{\"frontpage\":[1,2,3,4,5,6]}}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in collections['frontpage'] cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"collections\":{\"frontpage\":[1,2,3,4,5,6]}}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[1,2,3,4,5,6]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[]}",
+            "expected": "<tr class=\"row1\">\n</tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:3 offset:1 limit:6%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[0,1,2,3,4,5,6,7]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 4 </td><td class=\"col2\"> 5 </td><td class=\"col3\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:5%} {{n}} {% endtablerow %}",
+            "environment": "{\"numbers\":[1,2,3,4,5,6]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\"> 1 </td><td class=\"col2\"> 2 </td><td class=\"col3\"> 3 </td><td class=\"col4\"> 4 </td><td class=\"col5\"> 5 </td></tr>\n<tr class=\"row2\"><td class=\"col1\"> 6 </td></tr>\n"
+        },
+        {
+            "template": "{% tablerow char in characters cols:3 %}I WILL NOT BE OUTPUT{% endtablerow %}",
+            "environment": "{\"characters\":\"\"}",
+            "expected": "<tr class=\"row1\">\n</tr>\n"
+        },
+        {
+            "template": "{% tablerow n in numbers cols:2%}{{tablerowloop.col}}{% endtablerow %}",
+            "environment": "{\"numbers\":[1,2,3,4,5,6]}",
+            "expected": "<tr class=\"row1\">\n<td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n<tr class=\"row2\"><td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n<tr class=\"row3\"><td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n"
+        },
+        {
+            "template": "{% continue %}",
+            "environment": "{}",
+            "expected": ""
+        },
+        {
+            "template": "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}",
+            "environment": "{}",
+            "expected": "1"
+        }
+    ]
+}

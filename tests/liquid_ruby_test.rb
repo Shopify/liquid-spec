@@ -22,13 +22,25 @@ class LiquidRubyTest < MiniTest::Test
   end
 end
 
-spec_folders = File.join(File.dirname(__FILE__), '..', 'specs/**')
+spec_folders = File.join(File.dirname(__FILE__), '..', 'specs/complex_specs/**')
 Dir[spec_folders].each do |folder_path|
   function_name = folder_path.split("/").last
 
   LiquidRubyTest.class_eval do
     define_method :"test_spec_#{function_name}" do
       assert_liquid_spec(folder_path)
+    end
+  end
+end
+
+json = JSON.parse(File.read('./specs/simple_specs/tests.json'))
+json['tests'].each_with_index do |t, i|
+  LiquidRubyTest.class_eval do
+    define_method :"test_simple_spec_#{i}" do
+      template = Liquid::Template.parse(t['template'])
+      environment = JSON.parse(t['environment'])
+      output = template.render(environment)
+      assert_equal(t['expected'], output)
     end
   end
 end
