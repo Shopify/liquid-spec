@@ -1,0 +1,2 @@
+gem 'liquid'
+gem 'json'

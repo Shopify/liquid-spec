@@ -1,0 +1,18 @@
+PATH
+  remote: /Users/michaelgo/src/github.com/Shopify/liquid
+  specs:
+    liquid (5.1.0)
+
+GEM
+  specs:
+    json (2.6.1)
+
+PLATFORMS
+  arm64-darwin-21
+
+DEPENDENCIES
+  json
+  liquid!
+
+BUNDLED WITH
+   2.3.11
