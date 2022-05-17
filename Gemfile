@@ -1,3 +1,5 @@
+source "https://rubygems.org"
+
 gem 'liquid', git: "https://github.com/Shopify/liquid"
 gem 'json'
 gem 'rake'
