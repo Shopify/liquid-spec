@@ -1,7 +1,6 @@
 require "liquid/spec/source"
 require "liquid/spec/yaml_source"
 require "liquid/spec/test_generator"
-require "liquid/spec/adapter/liquid_ruby"
 
 module Liquid
   module Spec
