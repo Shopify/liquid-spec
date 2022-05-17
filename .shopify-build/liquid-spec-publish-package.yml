@@ -3,21 +3,12 @@ containers:
     build:
       from: ubuntu-latest
       type: ci
+      ruby: 3.1.0
 
 # Documentation: https://shopify-build.docs.shopify.io/jobs/publish_packages_to_cloudsmith/
 steps:
   - label: Publish to Cloudsmith
     timeout: 10m
-    git:
-      history: shallow
     run:
-      - bundle: ~
-      - bundle exec rake build
-      - ls -R pkg/
-    publish:
-      package:
-        repository_name: gems
-        package_type: ruby
-        artifacts:
-          - path: pkg
-            patterns: ["*.gem"]
+      - publish:
+          type: gem
