@@ -1,11 +1,26 @@
-PATH
-  remote: /Users/michaelgo/src/github.com/Shopify/liquid
+GIT
+  remote: https://github.com/Shopify/liquid
+  revision: 05d768c6ab67d0ac355d7c8f5d69d235562ba445
   specs:
-    liquid (5.1.0)
+    liquid (5.4.0.alpha)
 
 GEM
   specs:
+    byebug (11.1.3)
+    coderay (1.1.3)
     json (2.6.1)
+    method_source (1.0.0)
+    minitest (5.15.0)
+    minitest-focus (1.3.1)
+      minitest (>= 4, < 6)
+    mocha (1.13.0)
+    pry (0.13.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    pry-byebug (3.9.0)
+      byebug (~> 11.0)
+      pry (~> 0.13.0)
+    rake (13.0.6)
 
 PLATFORMS
   arm64-darwin-21
@@ -13,6 +28,11 @@ PLATFORMS
 DEPENDENCIES
   json
   liquid!
+  minitest
+  minitest-focus
+  mocha
+  pry-byebug
+  rake
 
 BUNDLED WITH
    2.3.11

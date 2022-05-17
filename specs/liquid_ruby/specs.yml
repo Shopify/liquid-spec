@@ -1,0 +1,4088 @@
+---
+- template: "{% case false %}{% huh %}true{% endcase %}"
+  environment: {}
+  expected: ''
+  name: block_0d3777e2184a920c0e1150c0fb4bd168
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if %}"
+  environment: {}
+  expected: ''
+  name: block_13835a88461fae50520731e1d2fdf1f8
+- template: "{{ 1.0 | divided_by: 0.0 | ceil }}"
+  environment: {}
+  expected: '4'
+  name: block_18a1228c1a316c52b4e602cd573f7ea5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if true && false %} YES {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: block_1cc00467b5aa773cac0d9a33205f332b
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% if false || true %} YES {% endif %}"
+  environment: {}
+  expected: ''
+  name: block_1ce005f8222697824b97183cc7589e66
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% if jerry == 1 %}"
+  environment: {}
+  expected: ''
+  name: block_207cdb1c472413e83aac0501dcda76e3
+- template: "{% for i in (1...5) %}{{ i }}{% endfor %}"
+  environment: {}
+  expected: '12345'
+  name: block_3cd429f16f1172799a5b0db2737653d1
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign 123 = 'bar' %}{{ 123 }}"
+  environment: {}
+  expected: '123'
+  name: block_3e74e70be85b4cfdf90de0a6eb6414a0
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif
+    %}"
+  environment:
+    b: bar
+    c: baz
+  expected: " YES "
+  name: block_4c18229d0eb0a46ada28138d5d9ed842
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ 1.0 | divided_by: 0.0 | floor }}"
+  environment: {}
+  expected: '4'
+  name: block_534c5a58797c3d2a98aa6a011fb89f4b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case false %}{% when %}true{% endcase %}"
+  environment: {}
+  expected: ''
+  name: block_62b7ccdd482047e61dd8d36880e71fff
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if 1 or throw or or 1 %}yes{% endif %}"
+  environment: {}
+  expected: ''
+  name: block_98601e9d7465ae719977770db31c913a
+- template: '{{ ''hi there'' | split:"t"" | remove:"i" | first}}'
+  environment: {}
+  expected: 'hi '
+  name: block_a4d4da69c996292a4fd2ee9ded4168db
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ 'X' | downcase) }}"
+  environment: {}
+  expected: x
+  name: block_a6cfce51d1ee7b7a02f6462590f8cfee
+  filesystem: !ruby/object:TestFileSystem {}
+- template: '{{ ''hi there'' | split:"t"" | reverse | first}}'
+  environment: {}
+  expected: here
+  name: block_af4b4185f04f440c7bfd1b33fe2ae763
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ 1 | modulo: 0 }}"
+  environment: {}
+  expected: '4'
+  name: block_b40ce2639b0610d2749a17f17dbd32f3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %}{% foobar %}{% endfor %}"
+  environment: {}
+  expected: "          "
+  name: block_d2e5025ad43b5e37a1a8dade411fb3c5
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ var2 }}{% capture %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2
+    }}"
+  environment:
+    var: content
+  expected: 'content foo content foo '
+  name: block_e2e115b9b183397f04570f4b290da1c1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 1.0 | divided_by: 0.0 | round }}"
+  environment: {}
+  expected: '4'
+  name: block_f21f8b7418b55479ef36541d8a1c647c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% assign 123foo = 'bar' %}{{ 123foo }}"
+  environment: {}
+  expected: bar
+  name: block_f2ba4bddb96a0ab02b7fb26cedfb99f5
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ 'hi there' | split$$$:' ' | first }}"
+  environment: {}
+  expected: hi
+  name: block_f753d5048d6977057c8e3b610d7913ad
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ -17.42 | abs }}"
+  environment: {}
+  expected: '17.42'
+  name: test_abs_10efc76e96c05d458201399f4865ebfd
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '0' | abs }}"
+  environment: {}
+  expected: '0'
+  name: test_abs_273ae11197e37b8a5fc733fefddb3983
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '-17.42' | abs }}"
+  environment: {}
+  expected: '17.42'
+  name: test_abs_4498cd28e12e25e2bcef48ccad8f3577
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 0 | abs }}"
+  environment: {}
+  expected: '0'
+  name: test_abs_58488f88e69aac1a03a18b19940650d5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '17' | abs }}"
+  environment: {}
+  expected: '17'
+  name: test_abs_5b059be5003dff605e0a1774f2dc343f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '-17' | abs }}"
+  environment: {}
+  expected: '17'
+  name: test_abs_7312a46821c81e277daf49e3b1ad533d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 17.42 | abs }}"
+  environment: {}
+  expected: '17.42'
+  name: test_abs_78365174f233a5b69c29acc0afddd939
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ -17 | abs }}"
+  environment: {}
+  expected: '17'
+  name: test_abs_99ef47d05ae6adc5305b336316db6c3f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 17 | abs }}"
+  environment: {}
+  expected: '17'
+  name: test_abs_b00f2e8ee9c54e06ffdbeca8d4496a15
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '17.42' | abs }}"
+  environment: {}
+  expected: '17.42'
+  name: test_abs_c5104b94f7668c005da18ec194c97596
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ a | append: 'd'}}"
+  environment:
+    a: bc
+    b: d
+  expected: bcd
+  name: test_append_04f25bb5a826a5872f1deb9eb07d5e43
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ a | append: b}}"
+  environment:
+    a: bc
+    b: d
+  expected: bcd
+  name: test_append_24d5fd52024c7c6c0626bed410d7b72f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% assign a = "variable"%}{{a}}'
+  environment: {}
+  expected: variable
+  name: test_assign_0112026c62b12a91087bddb79233a4c2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% assign a = ""%}{{a}}'
+  environment: {}
+  expected: ''
+  name: test_assign_an_empty_string_2ea22b14ffb53ffeb739b997c21fbb7a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%for i in (1..2) %}{% assign a = "variable"%}{% endfor %}{{a}}'
+  environment: {}
+  expected: variable
+  name: test_assign_is_global_e4d41e18be4131cecdb180c7c31476e1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: var2:{{var2}} {%assign var2 = var%} var2:{{var2}}
+  environment:
+    var: content
+  expected: 'var2:  var2:content'
+  name: test_assign_unassigned_c8f4200c2d87a273f6a596cfef836b59
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%assign var2 = var["a:b c"].paged %}var2: {{var2}}'
+  environment:
+    var:
+      a:b c:
+        paged: '1'
+  expected: 'var2: 1'
+  name: test_assign_with_colon_and_spaces_d8ca25e63813fd3b20249cc5e57f4ffe
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% assign foo = values | split: "," %}.{{ foo[1] }}.'
+  environment:
+    values: foo,bar,baz
+  expected: ".bar."
+  name: test_assign_with_filter_8bc1413bfc97dca77327eb725ddc544c
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign foo = values %}.{{ foo[0] }}."
+  environment:
+    values:
+    - foo
+    - bar
+    - baz
+  expected: ".foo."
+  name: test_assigned_variable_1ee746cde19c2712aca79674002189c7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign foo = values %}.{{ foo[1] }}."
+  environment:
+    values:
+    - foo
+    - bar
+    - baz
+  expected: ".bar."
+  name: test_assigned_variable_694d08f55e8d1793cd9e61a6b4ff08ec
+  filesystem: !ruby/object:TestFileSystem {}
+- template: '{% for i in (1..10) %} {% assign foo = "bar" %} {% endfor %}{% if true
+    %} {% assign foo = "bar" %} {% endif %}'
+  environment: {}
+  expected: ''
+  name: test_assigns_are_blank_209fa67dd9380828d9a130ebf030d21b
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ 5 | at_least:5 }}"
+  environment: {}
+  expected: '5'
+  name: test_at_least_2992337a4ffe64ddc3ea8cc2c8a244e1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_least: width }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 6
+  expected: '6'
+  name: test_at_least_87b826daa465c6039ede59a8f07f9da4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ width | at_least:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 4
+  expected: '5'
+  name: test_at_least_9bcca56294c232faf709a0bf33737e06
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 4.5 | at_least:5 }}"
+  environment: {}
+  expected: '5'
+  name: test_at_least_a3f6560f00e3f7b2cf4bf59794ac7374
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ width | at_least:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 6
+  expected: '6'
+  name: test_at_least_c252e74752f60daa91998a04456929e2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_least:6 }}"
+  environment: {}
+  expected: '6'
+  name: test_at_least_d4062e1cfeaf6738d2d3e8fd7ca63dd4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_least:4 }}"
+  environment: {}
+  expected: '5'
+  name: test_at_least_f766c2a506e06cf7a760f127a27ec64e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_most:5 }}"
+  environment: {}
+  expected: '5'
+  name: test_at_most_1c656666dae2e661e427bb14ba1b6069
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_most: width }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 4
+  expected: '4'
+  name: test_at_most_3ea650c861acce19c2f1d68b7efc6051
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 4.5 | at_most:5 }}"
+  environment: {}
+  expected: '4.5'
+  name: test_at_most_602d89116b73d03023b22c0ae62f4b39
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ width | at_most:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 6
+  expected: '5'
+  name: test_at_most_812d3e7d90e2effb3c4dfffe3a864aec
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_most:4 }}"
+  environment: {}
+  expected: '4'
+  name: test_at_most_8995b77ad23d7aee63a5b58a74d5bdbc
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ width | at_most:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 4
+  expected: '4'
+  name: test_at_most_b46fac8f1b98fe8989f50c13329465c0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 5 | at_most:6 }}"
+  environment: {}
+  expected: '5'
+  name: test_at_most_de512743dc70acb3630c2483eaeb03e1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for char in characters %}I WILL NOT BE OUTPUT{% endfor %}"
+  environment:
+    characters: ''
+  expected: ''
+  name: test_blank_string_not_iterable_4b210c8beb7c06cc0ce13f4983a7df71
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% tablerow char in characters cols:3 %}I WILL NOT BE OUTPUT{% endtablerow
+    %}"
+  environment:
+    characters: ''
+  expected: |
+    <tr class="row1">
+    </tr>
+  name: test_blank_string_not_iterable_bbf9758e150669831d95c764b50ce36f
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{}}"
+  environment: {}
+  expected: ''
+  name: test_blank_variable_markup_23a768cb5f4cb5ec09be7db5b1ceda1b
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}"
+  environment: {}
+  expected: '1'
+  name: test_break_through_include_4a02c72cab29ae474e69597283517138
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..3) %}{{ i }}{% include 'break' %}{{ i }}{% endfor %}"
+  environment: {}
+  expected: '1'
+  name: test_break_through_include_b56271f7a9da7cc4441d7a8c1d1316cd
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}"
+  environment: {}
+  expected: '1'
+  name: test_break_through_render_9548e3f544e027a6558025285a5261eb
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      break: "{% break %}"
+- template: '{% for i in (1..3) %}{{ i }}{% render "break" %}{{ i }}{% endfor %}'
+  environment: {}
+  expected: '112233'
+  name: test_break_through_render_b34204121fd1a39f1d6a39050f833e6f
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      break: "{% break %}"
+- template: "{% break %}"
+  environment:
+    i: 1
+  expected: ''
+  name: test_break_with_no_block_1ba9019a16fd9036d43e143174f32f29
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 'a' | to_number }}"
+  environment: {}
+  expected: a
+  name: test_cannot_access_private_methods_2b652ad0892aabd45daaafa673d21e13
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ var2 }}{% capture var2 %}{{ var }} foo {% endcapture %}{{ var2 }}{{
+    var2 }}"
+  environment:
+    var: content
+  expected: 'content foo content foo '
+  name: test_capture_1eb4e4d24ebcc0c741b14e8792d97db0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %} {% capture foo %} whatever {% endcapture %} {%
+    endfor %}{% if true %} {% capture foo %} whatever {% endcapture %} {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_captures_are_blank_a1960b907a07aa7ac09336ff26b5e325
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% capture 'var' %}test string{% endcapture %}{{var}}"
+  environment: {}
+  expected: test string
+  name: test_captures_block_content_in_variable_d34ab62d0e6e3c15032cb119e3e7403d
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase
+    %}"
+  environment:
+    condition: 2
+  expected: " its 2 "
+  name: test_case_4b82d2f880e63ae7a46af3e511bd45d9
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when "string here" %} hit {% endcase %}'
+  environment:
+    condition: bad string here
+  expected: ''
+  name: test_case_6bc804660359facc51dd115b24cbd2e5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when "string here" %} hit {% endcase %}'
+  environment:
+    condition: string here
+  expected: " hit "
+  name: test_case_796bc440bfa12c789ff4f5a99df266f0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase
+    %}"
+  environment:
+    condition: 1
+  expected: " its 1 "
+  name: test_case_f2c32297d5bcd99dab91e0af6ca4a6cf
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase
+    %}"
+  environment:
+    condition: 3
+  expected: ''
+  name: test_case_f8cbe66d8257ce396e75e9118f452be9
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when
+    'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true
+    %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever'
+    %} {% else %} {% endcase %} {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_case_is_blank_abf806e5a1c376c2aa13b6cd6695d4eb
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when
+    'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endfor %}{% if true
+    %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever'
+    %} {% else %} x {% endcase %} {% endif %}"
+  environment: {}
+  expected: "   x     x     x     x     x     x     x     x     x     x     x  "
+  name: test_case_is_blank_d1f8d1b87cde29650355a89382e0593e
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..10) %} {% assign foo = 'bar' %} {% case foo %} {% when
+    'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true
+    %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever'
+    %} {% else %} {% endcase %} {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_case_is_blank_fef462e6839ab7cb3d5859539e0efd62
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% case false %}{% when true %}true{% when false %}false{% else %}else{%
+    endcase %}"
+  environment: {}
+  expected: 'false'
+  name: test_case_on_length_with_else_14d7b5ab9ab669b590812e52854db9dd
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case NULL %}{% when true %}true{% when false %}false{% else %}else{%
+    endcase %}"
+  environment: {}
+  expected: else
+  name: test_case_on_length_with_else_45dc6349c52efc0c980e5ec70ffe492d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case true %}{% when true %}true{% when false %}false{% else %}else{%
+    endcase %}"
+  environment: {}
+  expected: 'true'
+  name: test_case_on_length_with_else_baa414e082bba2d8d132011f06995f2b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.empty? %}{% when true %}true{% when false %}false{% else %}else{%
+    endcase %}"
+  environment: {}
+  expected: else
+  name: test_case_on_length_with_else_f07519ff3b3adc2b672fdf25f97af596
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+  environment:
+    a:
+    - 1
+  expected: '1'
+  name: test_case_on_size_0f4211ab340038f5a3b9c06e6f2aa621
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+    - 1
+    - 1
+  expected: ''
+  name: test_case_on_size_11df6afb73338ed5a0c24b6fd955cf33
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+  expected: ''
+  name: test_case_on_size_18289480ad898ae17f3ee47577098358
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+  expected: '2'
+  name: test_case_on_size_2c76b0384b2c6f59939f16b2ad86d12f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+  environment:
+    a: []
+  expected: ''
+  name: test_case_on_size_65f5b737fe5c637c738b362439c9e104
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+    - 1
+  expected: ''
+  name: test_case_on_size_8216309a6f0b104f3e5d4b5d4505721f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+    - 1
+  expected: else
+  name: test_case_on_size_with_else_60d270487266c3721d7c3850ecd2e3ba
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+  expected: else
+  name: test_case_on_size_with_else_a4bc1a9989cd41716ea38187d1212dcd
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+  environment:
+    a: []
+  expected: else
+  name: test_case_on_size_with_else_aba0ac9d52d43d644766f68873598935
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+  expected: '2'
+  name: test_case_on_size_with_else_da10f9da6af6ac3ca087743675345591
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+  environment:
+    a:
+    - 1
+  expected: '1'
+  name: test_case_on_size_with_else_e36b2457c0984599b2ef55e41cb12f07
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+  environment:
+    a:
+    - 1
+    - 1
+    - 1
+    - 1
+  expected: else
+  name: test_case_on_size_with_else_fbbc13f9e7a4723dbfa7daf7d2a5e453
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case foo %}{% when 1 %}One{% endcase %}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+  expected: One
+  name: test_case_tag_calls_to_liquid_value_1fc4f67984ab4e1a631055762377dbb9
+- template: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its
+    4 {% endcase %}"
+  environment:
+    condition: 3
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_comma_140814990e1d97d91093fcb292fa7cf2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when
+    4 %} its 4 {% endcase %}'
+  environment:
+    condition: string
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_comma_252d49cf61038f158999417bce6d2271
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when
+    4 %} its 4 {% endcase %}'
+  environment:
+    condition: something else
+  expected: ''
+  name: test_case_when_comma_380bc80d7e07a695dbecaec1b7abff12
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its
+    4 {% endcase %}"
+  environment:
+    condition: 1
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_comma_59af68f30a00db8123dd64381a0be361
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its
+    4 {% endcase %}"
+  environment:
+    condition: 4
+  expected: " its 4 "
+  name: test_case_when_comma_8a16ca0a27a832b4402e82b59023ee7e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its
+    4 {% endcase %}"
+  environment:
+    condition: 5
+  expected: ''
+  name: test_case_when_comma_a29a042124b5d771fccd5d04109b3875
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1, 2 %} {% assign r = "result" %} {% endcase
+    %}{{ r }}'
+  environment:
+    condition: 2
+  expected: result
+  name: test_case_when_comma_and_blank_body_05bac6af6b0c50b9bbef531dbb1e49e5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its
+    4 {% endcase %}"
+  environment:
+    condition: 2
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_comma_cc632a56b372e53588ab24a7331382f9
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when
+    4 %} its 4 {% endcase %}'
+  environment:
+    condition: 1
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_comma_f643240c48b920709fdd41b963f9be3d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when
+    4 %} its 4 {% endcase %}'
+  environment:
+    condition:
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_comma_fbba4877894a042fa69b9598c1fa9bac
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3
+    {% when 4 %} its 4 {% endcase %}'
+  environment:
+    condition: 1
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_or_0dff435c351fd55441af7c1c962da0ee
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4
+    %} its 4 {% endcase %}"
+  environment:
+    condition: 3
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_or_46437b2f522f5defa5005f3d9833a3d6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4
+    %} its 4 {% endcase %}"
+  environment:
+    condition: 2
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_or_4c8aba2c725f9ca1f771ad336dbd8a3d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4
+    %} its 4 {% endcase %}"
+  environment:
+    condition: 5
+  expected: ''
+  name: test_case_when_or_790ea3b97fc0f51a99a97b223d69d461
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4
+    %} its 4 {% endcase %}"
+  environment:
+    condition: 4
+  expected: " its 4 "
+  name: test_case_when_or_8b445089b05b920501b29487cf3767ff
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3
+    {% when 4 %} its 4 {% endcase %}'
+  environment:
+    condition:
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_or_8d82aa21a149da4c34e1dd6dcac8a029
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4
+    %} its 4 {% endcase %}"
+  environment:
+    condition: 1
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_or_bfe88b205c89b7d459aa683f5c9ac6fe
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3
+    {% when 4 %} its 4 {% endcase %}'
+  environment:
+    condition: string
+  expected: " its 1 or 2 or 3 "
+  name: test_case_when_or_cf97cd88544c83a24b1d2aa321e2ba3b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3
+    {% when 4 %} its 4 {% endcase %}'
+  environment:
+    condition: something else
+  expected: ''
+  name: test_case_when_or_fc5685a2f85ac285e2621a5f2b397cca
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}"
+  environment:
+    condition: 5
+  expected: " hit "
+  name: test_case_with_else_13421e727723d75c7249401bff3a01b3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %} {% when 5 %} hit {% else %} else {% endcase %}"
+  environment:
+    condition: 6
+  expected: " else "
+  name: test_case_with_else_5dae0384cf02d697c05368574d9a737f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}"
+  environment:
+    condition: 6
+  expected: " else "
+  name: test_case_with_else_c3f5a0ea3682b87f0597eef9a03885bc
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | ceil }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 4.6
+  expected: '5'
+  name: test_ceil_7c0895bea130f1a72361cb96a950b863
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '4.3' | ceil }}"
+  environment: {}
+  expected: '5'
+  name: test_ceil_96f0f78756087e68439b53b6f184a6f3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ input | ceil }}"
+  environment:
+    input: 4.6
+  expected: '5'
+  name: test_ceil_b00a2421c88ae25b22be09885d580dba
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %} {% comment %} whatever {% endcomment %} {% endfor
+    %}{% if true %} {% comment %} whatever {% endcomment %} {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comments_are_blank_51a29cc16c4299989627df185a0a5497
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% if android.name == 'Roy' %}YES{% endif %}"
+  environment:
+    order:
+      items_count: 0
+    android:
+      name: Roy
+  expected: 'YES'
+  name: test_comparison_of_expressions_starting_with_and_or_or_17f5fcf454f242e0e2f3b7a83616acb5
+- template: "{% if order.items_count == 0 %}YES{% endif %}"
+  environment:
+    order:
+      items_count: 0
+    android:
+      name: Roy
+  expected: 'YES'
+  name: test_comparison_of_expressions_starting_with_and_or_or_ff296063073d85d6c641974c34082597
+- template: "{% if a == 'and' and b == 'or' and c == 'foo and bar' and d == 'bar or
+    baz' and e == 'foo' and foo and bar %} YES {% endif %}"
+  environment:
+    a: and
+    b: or
+    c: foo and bar
+    d: bar or baz
+    e: foo
+    foo: true
+    bar: true
+  expected: " YES "
+  name: test_comparison_of_strings_containing_and_or_or_aa098750e4a4e2d97a6d57f7af2f5803
+- template: "{% if 10 <= null %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_30fcb92be39a12c73759ea1ea286a17c
+- template: "{% if 10 > null %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_5198a708612a12163e71e83580ae4360
+- template: "{% if null < 10 %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_657f213360ba8fa1acca3c138b2ad2b4
+- template: "{% if null <= 10 %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_757d79714261271e5a2a798d76f4f7e6
+- template: "{% if 10 >= null %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_7d72100193e430e6963437593645613e
+- template: "{% if null > 10 %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_ac1652b13176248d02bdab3399d196ae
+- template: "{% if null >= 10 %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_c2f336f968ce32aae98d181a33d1bc97
+- template: "{% if 10 < null %} NO {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_comparisons_on_null_e8c51818116aeab945687b190b2f32a0
+- template: |2
+          <div>
+            {%- if true -%}
+              {%- if true -%}
+                <p>
+                  {{- 'John' -}}
+                </p>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+  environment: {}
+  expected: "      <div><p>John</p></div>\n"
+  name: test_complex_trim_016848d0c5090f4185916cc82edef14a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {{- 'John' -}}
+              {{- '30' -}}
+            </p>
+            <b>
+              {{ 'John' -}}
+              {{- '30' }}
+            </b>
+            <i>
+              {{- 'John' }}
+              {{ '30' -}}
+            </i>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>John30</p>
+            <b>
+              John30
+            </b>
+            <i>John
+              30</i>
+          </div>
+  name: test_complex_trim_output_13ac9c984cd2ebea50841a800f4dcf99
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if containsallshipments == true %} YES {% endif %}"
+  environment:
+    containsallshipments: true
+  expected: " YES "
+  name: test_contains_in_id_02c92c23de96cd179039b5b02ca70982
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% continue %}"
+  environment: {}
+  expected: ''
+  name: test_continue_with_no_block_7b5d84fbbbaf407a81b79ce7bfc3ba9f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle "one", "two"%} {%cycle "one", "two"%} {%cycle "one", "two"%}'
+  environment: {}
+  expected: one two one
+  name: test_cycle_0f0ce244d62fa0afbd3198bc9d99c8ab
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle "text-align: left", "text-align: right" %} {%cycle "text-align:
+    left", "text-align: right"%}'
+  environment: {}
+  expected: 'text-align: left text-align: right'
+  name: test_cycle_8f290ce9156b75b0daa2fba02abeea40
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle "", "two"%} {%cycle "", "two"%}'
+  environment: {}
+  expected: " two"
+  name: test_cycle_c3316136434a0f3a7248e6a7e4f407ff
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle "one", "two"%} {%cycle "one", "two"%}'
+  environment: {}
+  expected: one two
+  name: test_cycle_cd127103efd58843eddcd34d9db3476b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle "one", "two"%}'
+  environment: {}
+  expected: one
+  name: test_cycle_f7eca39ce5420e933a016e7176a036d4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %}{% cycle ' ', ' ' %}{% endfor %}{% if true %}{%
+    cycle ' ', ' ' %}{% endif %}"
+  environment: {}
+  expected: "           "
+  name: test_cycle_is_not_blank_7563689600570f2a1cce4abdecaf3b75
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ '' | date: '%D' }}"
+  environment: {}
+  expected: ''
+  name: test_date_raises_nothing_90b4ae556488dffffa688c5470af5104
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 'abc' | date: '%D' }}"
+  environment: {}
+  expected: abc
+  name: test_date_raises_nothing_916c49ebae884bdba078803cb50a68d8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%decrement port %}"
+  environment:
+    port: 10
+  expected: '9'
+  name: test_dec_6d950b480c74d87aa393bfdf17acfc4e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%increment port %} {%increment starboard%} {%increment port %} {%decrement
+    port%} {%decrement starboard %}"
+  environment:
+    port: 1
+    starboard: 5
+  expected: 1 5 2 2 5
+  name: test_dec_e175c68a91582e6a9f61bdb99c636e1c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%decrement port %} {%decrement port%}"
+  environment: {}
+  expected: "-1 -2"
+  name: test_dec_e247bf08cdf7d1ed5991e839f267aa8a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% decrement %}{% decrement %}{% render "decr" %}'
+  environment: {}
+  expected: "-1-2-1"
+  name: test_decrement_is_isolated_between_renders_ebecfdf9ca9384e21bb124943e61ac9b
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      decr: "{% decrement %}"
+- template: "{{ drop | default: 'bar' }}"
+  environment:
+    drop: !ruby/object:BooleanDrop
+      value: true
+  expected: Yay
+  name: test_default_0917b10fa5185117ddcfd82d8df18ba6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ false | default: 'bar' }}"
+  environment: {}
+  expected: bar
+  name: test_default_5f041efdf47a2c87302aa34b50bfe140
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ drop | default: 'bar' }}"
+  environment:
+    drop: !ruby/object:BooleanDrop
+      value: false
+  expected: bar
+  name: test_default_cd36549c8c97fd81561d2d5f19a39b28
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ false | default: 'bar', allow_false: true }}"
+  environment: {}
+  expected: 'false'
+  name: test_default_handle_false_17339ee9cc11ac55fac3bf061ca3a572
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ drop | default: 'bar', allow_false: true }}"
+  environment:
+    drop: !ruby/object:BooleanDrop
+      value: true
+  expected: Yay
+  name: test_default_handle_false_50f5842271f8eb3e9620c0d72322b7b2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ drop | default: 'bar', allow_false: true }}"
+  environment:
+    drop: !ruby/object:BooleanDrop
+      value: false
+  expected: Nay
+  name: test_default_handle_false_9b14447c960f70e815ba85247ea49600
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 14 | divided_by:3 }}"
+  environment: {}
+  expected: '4'
+  name: test_divided_by_5584e29de29e97c8544d6a555536ac98
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | divided_by:2 }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 10
+  expected: '5'
+  name: test_divided_by_61fba95d4d37dc4eaefbb7d60e72fc7d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 2.0 | divided_by:4 }}"
+  environment: {}
+  expected: '0.5'
+  name: test_divided_by_85b2c9ed7e71ca2283ed4c82b87fe1aa
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 15 | divided_by:3 }}"
+  environment: {}
+  expected: '5'
+  name: test_divided_by_86517b6ee9ef6937f325f98038ee78aa
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 12 | divided_by:3 }}"
+  environment: {}
+  expected: '4'
+  name: test_divided_by_d186093f589970460385c15226d8e26e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ [key] }}"
+  environment:
+    key: foo
+    foo: bar
+  expected: bar
+  name: test_dynamic_find_var_f5073a31ecb5c8fcb01017aea12900f5
+- template: "{%for i in array limit: limit offset: offset %}{{ i }}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 0
+    limit: 2
+    offset: 2
+  expected: '34'
+  name: test_dynamic_variable_limiting_6f18d258b9134e8b877a60b2529bdb8d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% include template %}"
+  environment:
+    template: Test123
+  expected: Test123
+  name: test_dynamically_choosen_template_4badeb09928e661b6b2c92da15330c20
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include template for product %}"
+  environment:
+    template: product
+    product:
+      title: Draft 151cm
+  expected: 'Product: Draft 151cm '
+  name: test_dynamically_choosen_template_5ae1f0fe1082d54cd497252f20d99f2c
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include template %}"
+  environment:
+    template: Test321
+  expected: Test321
+  name: test_dynamically_choosen_template_c278d780ab5f1725fee06e1f7da542d9
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{%- echo variable-name | upcase -%}\n"
+  environment:
+    variable-name: bar
+  expected: BAR
+  name: test_echo_outputs_its_input_f3653b46f4003ea56596b8d3de17e91d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if false %}if{% elsif true %}elsif{% endif %}"
+  environment: {}
+  expected: elsif
+  name: test_else_if_2ea26c2d6647b41bd69593a50890da25
+- template: "{% if 0 != 0 %}0{% elsif 1 != 1%}1{% else %}2{% endif %}"
+  environment: {}
+  expected: '2'
+  name: test_else_if_49db1ae3616c448ff63f8218c5cdc91f
+- template: "{% if 0 == 0 %}0{% elsif 1 == 1%}1{% else %}2{% endif %}"
+  environment: {}
+  expected: '0'
+  name: test_else_if_93effbc7ab2abf2ca6679ae435999926
+- template: "{% if 0 != 0 %}0{% elsif 1 == 1%}1{% else %}2{% endif %}"
+  environment: {}
+  expected: '1'
+  name: test_else_if_c7f175c4aac6a426a42b89257df590ea
+- template: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+  environment:
+    numbers: !ruby/object:TableRowTest::ArrayDrop
+      array:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+    <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+  name: test_enumerable_drop_9cda7b8c088491d19ff9d2fdafcc5bfc
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ a[ 'b' ] }}"
+  environment:
+    a:
+      b: result
+  expected: result
+  name: test_expression_with_whitespace_in_square_brackets_2c487969e9c65230f32652372833d6d7
+- template: "{% assign r = a[ 'b' ] %}{{ r }}"
+  environment:
+    a:
+      b: result
+  expected: result
+  name: test_expression_with_whitespace_in_square_brackets_44a65745726a35350e3ce705606480a7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ a[ [ 'b' ] ] }}"
+  environment:
+    b: c
+    a:
+      c: result
+  expected: result
+  name: test_expression_with_whitespace_in_square_brackets_dc5168429e22194273e6a24b419273e3
+- template: "{{ foo | last }}"
+  environment:
+    foo:
+    - !ruby/object:ThingWithToLiquid {}
+  expected: foobar
+  name: test_first_and_last_call_to_liquid_7c911f0fcc0f9ae420d764a0cbe0ee38
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ foo | first }}"
+  environment:
+    foo:
+    - !ruby/object:ThingWithToLiquid {}
+  expected: foobar
+  name: test_first_and_last_call_to_liquid_df357c4bda8b397be88fccbfe9a79771
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | floor }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 5.4
+  expected: '5'
+  name: test_floor_09f084cf87ef6ee4f6587121a830ec69
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '4.3' | floor }}"
+  environment: {}
+  expected: '4'
+  name: test_floor_98b821e093638946943d326c954b692b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ input | floor }}"
+  environment:
+    input: 4.6
+  expected: '4'
+  name: test_floor_bb1243f3a7409c7765fdb3dde8b403fc
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} yo {%endfor%}"
+  environment:
+    array:
+    - 1
+  expected: " yo "
+  name: test_for_474e03a43cc2072179555a8c0c477fba
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} yo {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: " yo  yo  yo  yo "
+  name: test_for_763a07f4d81895304c10ebde8da871bf
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+  expected: ''
+  name: test_for_7a4294f633d7a766a0b06e6935b8480b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{% if forloop.first %}+{% else %}-{% endif %}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: "+--"
+  name: test_for_and_if_6c5a830e68f06d3b0372feff620380f4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}+{%else%}-{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: "+++"
+  name: test_for_else_bb638ab84a2c62ba4b561cdf99cb5b67
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}+{%else%}-{%endfor%}"
+  environment:
+    array:
+  expected: "-"
+  name: test_for_else_cbc2524f7f388a63087a98e3ed25785e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}+{%else%}-{%endfor%}"
+  environment:
+    array: []
+  expected: "-"
+  name: test_for_else_e859e7bcf3a23ecec887f9c70bc92c33
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |
+    {%for item in array%}
+      yo
+    {%endfor%}
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: |2+
+
+      yo
+
+      yo
+
+      yo
+
+  name: test_for_f2a54f6ff4af1dedc25200c63f060cd9
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}yo{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+  expected: yoyo
+  name: test_for_fb252f3e05fc106fc68d4e6f7a3835ca
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.index}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " 1  2  3 "
+  name: test_for_helpers_2425335af0df79517d1f7f3385fc57bc
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.rindex0}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " 2  1  0 "
+  name: test_for_helpers_34be2a6b3a53a7e857a2d97b4d771412
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.rindex}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " 3  2  1 "
+  name: test_for_helpers_7bff2817b97f20ee6d6a5550cc260202
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.first}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " true  false  false "
+  name: test_for_helpers_8a29e0251db2b1c915529d9e88bc708f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.index0}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " 0  1  2 "
+  name: test_for_helpers_c77c2777b2eced16747424691a1946e2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.index}}/{{forloop.length}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " 1/3  2/3  3/3 "
+  name: test_for_helpers_e5c75deb105deb70b7c2bdf53689d678
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{forloop.last}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " false  false  true "
+  name: test_for_helpers_fcce2de6a36207794186ce5dfad397a8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for inner in outer %}{{ forloop.parentloop.index }}.{{ forloop.index
+    }} {% endfor %}"
+  environment:
+    outer:
+    - - 1
+      - 1
+      - 1
+    - - 1
+      - 1
+      - 1
+  expected: ".1 .2 "
+  name: test_for_parentloop_nil_when_not_present_314e3cb7327fd4c745d20bc49b62ebeb
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for inner in outer %}{% for k in inner %}{{ forloop.parentloop.index
+    }}.{{ forloop.index }} {% endfor %}{% endfor %}"
+  environment:
+    outer:
+    - - 1
+      - 1
+      - 1
+    - - 1
+      - 1
+      - 1
+  expected: '1.1 1.2 1.3 2.1 2.2 2.3 '
+  name: test_for_parentloop_references_parent_loop_6b9a0d5f5e35f4330bc3259e878c2073
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array reversed %}{{item}}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: '321'
+  name: test_for_reversed_d56260bb4733b543793fd6de04f0ec09
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for val in string%}{{val}}{%endfor%}"
+  environment:
+    string: test string
+  expected: test string
+  name: test_for_tag_string_4b8ed78a9b56354667e07df5ce9e3a88
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for val in string limit:1%}{{val}}{%endfor%}"
+  environment:
+    string: test string
+  expected: test string
+  name: test_for_tag_string_50dc84376952b07f200bec24682ddaed
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for val in string%}{{forloop.name}}-{{forloop.index}}-{{forloop.length}}-{{forloop.index0}}-{{forloop.rindex}}-{{forloop.rindex0}}-{{forloop.first}}-{{forloop.last}}-{{val}}{%endfor%}"
+  environment:
+    string: test string
+  expected: val-string-1-1-0-1-0-true-true-test string
+  name: test_for_tag_string_b6d4b0de6c263c6a99250a004da7296d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% break %}{{ i }}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+  expected: ''
+  name: test_for_with_break_17f3b11a192c04a4275904f54a2f369f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in array %}{% for i in item %}{% if i == 1 %}{% break %}{%
+    endif %}{{ i }}{% endfor %}{% endfor %}"
+  environment:
+    array:
+    - - 1
+      - 2
+    - - 3
+      - 4
+    - - 5
+      - 6
+  expected: '3456'
+  name: test_for_with_break_4475c33d7bc3720a9ba26d12e000b6a7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% if i == 9999 %}{% break %}{% endif %}{{
+    i }}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '12345'
+  name: test_for_with_break_8e2e6628644a3a42a805c8eef15f2b9f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{{ i }}{% break %}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+  expected: '1'
+  name: test_for_with_break_9462d4f33f84bb995d09196a0ac6dd39
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% break %}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+  expected: ''
+  name: test_for_with_break_a4c2344cdebec9934cd8e8671e322aea
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{{ i }}{% if i > 3 %}{% break %}{% endif %}{%
+    endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+  expected: '1234'
+  name: test_for_with_break_dcc0f183f288b103f5b9cd946561b5f0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% if i == 9999 %}{% continue %}{% endif %}{{
+    i }}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '12345'
+  name: test_for_with_continue_35b101ef59fb7bbeca5d47e7db8411c2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% if i == 3 %}{% continue %}{% else %}{{ i
+    }}{% endif %}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '1245'
+  name: test_for_with_continue_6eec9f9bf9416815eae8f6a6a569f9c0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{{ i }}{% continue %}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '12345'
+  name: test_for_with_continue_7458b9355ab90a3ba2563613603a580f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in array %}{% for i in item %}{% if i == 1 %}{% continue
+    %}{% endif %}{{ i }}{% endfor %}{% endfor %}"
+  environment:
+    array:
+    - - 1
+      - 2
+    - - 3
+      - 4
+    - - 5
+      - 6
+  expected: '23456'
+  name: test_for_with_continue_9e686136658c543fcad2f8f5460b3628
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% if i > 3 %}{% continue %}{% endif %}{{ i
+    }}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '123'
+  name: test_for_with_continue_beedf9aa5c93da45cb2ee042a85e5793
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% continue %}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: ''
+  name: test_for_with_continue_c381c32f429df6918661f71b6f439477
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in array.items %}{% continue %}{{ i }}{% endfor %}"
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: ''
+  name: test_for_with_continue_f17f6eae6c98889f69e385a35dfa1535
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in (1..foobar.value) %} {{item}} {%endfor%}"
+  environment:
+    foobar: !ruby/object:ThingWithValue {}
+  expected: " 1  2  3 "
+  name: test_for_with_drop_value_range_db921ca47267b6a8d221d57e57569106
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in (1..foobar.value) %} {{item}} {%endfor%}"
+  environment:
+    foobar:
+      value: 3
+  expected: " 1  2  3 "
+  name: test_for_with_hash_value_range_9b73a022d932d3d1b181b09f722d5ab5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in (a..3) %} {{item}} {% endfor %}"
+  environment:
+    a: invalid integer
+  expected: " 0  1  2  3 "
+  name: test_for_with_range_0553a46ee60497f5d19d6e3468e351f0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in (1..3) %} {{item}} {%endfor%}"
+  environment: {}
+  expected: " 1  2  3 "
+  name: test_for_with_range_8387c9cc1edd6eee6588173b3db08dd5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in array %}{{item}}{% endfor %}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: '123'
+  name: test_for_with_variable_1f31256a71ae04582295ace426e082cf
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{{item}}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: '123'
+  name: test_for_with_variable_3df09586302e46738c2fc54ed219b72b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{{item}}{%endfor%}"
+  environment:
+    array:
+    - a
+    - ''
+    - b
+    - ''
+    - c
+  expected: abc
+  name: test_for_with_variable_41fb0db5d02d4796c08c842687b464bd
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{{item}}{%endfor%}"
+  environment:
+    array:
+    - a
+    - b
+    - c
+    - d
+  expected: abcd
+  name: test_for_with_variable_693ceb58d7127c426469834f49a9f9fd
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%} {{item}} {%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: " 1  2  3 "
+  name: test_for_with_variable_928fe510cc155da832785e6f0d246112
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{{item}}{%endfor%}"
+  environment:
+    array:
+    - a
+    - " "
+    - b
+    - " "
+    - c
+  expected: a b c
+  name: test_for_with_variable_c79ef0d6e999ddfabecdf0da17b6f39a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in (1..foobar) %} {{item}} {%endfor%}"
+  environment:
+    foobar: 3
+  expected: " 1  2  3 "
+  name: test_for_with_variable_range_9b333e32dc4afa44e8a9a8141bca97ba
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %}{%endcomment%}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_0015df5fcefe36629a8403fe105e66f6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo {%comment%}comment{%endcomment%} bar
+  environment: {}
+  expected: foo  bar
+  name: test_has_a_block_which_does_nothing_22283322b6528c10eca3d23f88ac4d41
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo{% comment %} comment {% endcomment %}bar
+  environment: {}
+  expected: foobar
+  name: test_has_a_block_which_does_nothing_23c70077b729417de8a0ea4907990e94
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%comment%}{%endcomment%}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_2a7af09ad1eb873e96e38f217bffe7b1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%comment%}{%blabla%}{%endcomment%}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_32beea430498809a3d47e63e7254e111
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %} 1 {% comment %} 2 {% endcomment %} 3 {% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_3bb2863e5e56d5691b075501ba2b6c9f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo {%comment%} comment {%endcomment%} bar
+  environment: {}
+  expected: foo  bar
+  name: test_has_a_block_which_does_nothing_52929527d07848a7a9a8541c0dc9eafe
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%comment%}{% endif %}{%endcomment%}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_5c74eba3c6d47c64e9b75f9440e88891
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %}{% blabla %}{% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_629946b2aea60bf0565d86f641e2fb53
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %}{% raw %} {{%%%%}}  }} { {% endcomment %} {% comment {%
+    endraw %} {% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_7288b4fa286883b5bb6e0581ab95a2f6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%comment%}{% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_74180dedbbdbbf8bde42973c9e93c1af
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo{% comment %}comment{% endcomment %}bar
+  environment: {}
+  expected: foobar
+  name: test_has_a_block_which_does_nothing_7618286f968ce5d74f898f99dcb2c07a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %}{% endwhatever %}{% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_79f234a4c0517f4e2b7d887fb40d3717
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |-
+    foo{%comment%}
+                                         {%endcomment%}bar
+  environment: {}
+  expected: foobar
+  name: test_has_a_block_which_does_nothing_b0b2f7e83a83adadeb18b2483cf07751
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo{%comment%} comment {%endcomment%}bar
+  environment: {}
+  expected: foobar
+  name: test_has_a_block_which_does_nothing_b921c503b54cdff9a50db9dcf8717101
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo{%comment%}comment{%endcomment%}bar
+  environment: {}
+  expected: foobar
+  name: test_has_a_block_which_does_nothing_ba340b225751caa016f712011c3f95f8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%comment%}comment{%endcomment%}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_bd7c2311665fc315a7548028dbef3a75
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %}{% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_d36991ca149cb80d32d3620dec9fc2ff
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: the comment block should be removed {%comment%} be gone.. {%endcomment%}
+    .. right?
+  environment: {}
+  expected: the comment block should be removed  .. right?
+  name: test_has_a_block_which_does_nothing_e049e759bd7b1197da41d8ee5ee80885
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo {%comment%} {%endcomment%} bar
+  environment: {}
+  expected: foo  bar
+  name: test_has_a_block_which_does_nothing_fd5f4dd28d52cea7bc06bc03d6e7d096
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% comment %}comment{% endcomment %}"
+  environment: {}
+  expected: ''
+  name: test_has_a_block_which_does_nothing_ffed43c27cdb48905128c10c739ed023
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if foo.bar %} NO {% endif %}"
+  environment:
+    foo: {}
+  expected: ''
+  name: test_hash_miss_generates_false_996f776dc88eff560fbcc94de35dca62
+- template: "{{ test . test }}"
+  environment:
+    test:
+      test: worked
+  expected: worked
+  name: test_hash_scoping_61360e74c2b839b641ae9bc188774fba
+- template: "{{ test.test }}"
+  environment:
+    test:
+      test: worked
+  expected: worked
+  name: test_hash_scoping_b362ed9894315f6f6dabe2225816ac97
+- template: a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}
+  environment:
+    a-b: '1'
+  expected: a-b:1 a-b:2
+  name: test_hyphenated_assign_7bbe3729cfde7f1bf6a728d57bcbb1e1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if true %} this text should go into the output {% endif %} "
+  environment: {}
+  expected: "  this text should go into the output  "
+  name: test_if_4045f8f673854036872342d3e2d59d45
+- template: " {% if false %} this text should not go into the output {% endif %} "
+  environment: {}
+  expected: "  "
+  name: test_if_7ee93bc767c49e597fb8a8b29d7ab6e6
+- template: "{% if false and true %} YES {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_if_and_4891febba9cafc493107f4816967f354
+- template: "{% if true and true %} YES {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_if_and_e35cc0d9afbbbc5a5b5fcfb20ccb53ba
+- template: "{% if false %} you suck {% endif %} {% if true %} you rock {% endif %}?"
+  environment: {}
+  expected: "  you rock ?"
+  name: test_if_b8234c238d7bb919a59a3574a4dc0085
+- template: "{% if var %} YES {% endif %}"
+  environment:
+    var: true
+  expected: " YES "
+  name: test_if_boolean_87b20b0b506e739b0606a9c217170fdf
+- template: "{% if true %} YES {% else %} NO {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_if_else_657fa8e05f8986b1eb9051e9bdaacbb3
+- template: '{% if "foo" %} YES {% else %} NO {% endif %}'
+  environment: {}
+  expected: " YES "
+  name: test_if_else_8f03debeeaaa7182fd52dd8450c25858
+- template: "{% if false %} NO {% else %} YES {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_if_else_a9741c43299e0e59022e143676c18495
+- template: "{% if true %} {% elsif false %} {% else %} {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_if_else_are_blank_8e9fe7e4215269a54510042628f4df91
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{% if foo.bar %} NO {% else %} YES {% endif %}"
+  environment:
+    notfoo:
+      bar: true
+  expected: " YES "
+  name: test_if_from_variable_0131e78ce2dcde2693c8cd0df113193f
+- template: "{% if var %} NO {% else %} YES {% endif %}"
+  environment:
+    var: false
+  expected: " YES "
+  name: test_if_from_variable_0231b54400425fecec1d8444cbfc33a6
+- template: "{% if foo.bar %} NO {% endif %}"
+  environment:
+    foo: {}
+  expected: ''
+  name: test_if_from_variable_0e5c75820b74b14d7dc6ee446b991687
+- template: "{% if foo.bar %} YES {% endif %}"
+  environment:
+    foo:
+      bar: 1
+  expected: " YES "
+  name: test_if_from_variable_182a5f8bc6e89339095a72c1a002d8b7
+- template: "{% if var %} YES {% endif %}"
+  environment:
+    var: {}
+  expected: " YES "
+  name: test_if_from_variable_3814cb0b6f84be08619c1247fd577f56
+- template: "{% if var %} YES {% else %} NO {% endif %}"
+  environment:
+    var: true
+  expected: " YES "
+  name: test_if_from_variable_3f50c3d76b57025133f311ce01d7be4d
+- template: "{% if foo.bar %} NO {% endif %}"
+  environment:
+    foo: true
+  expected: ''
+  name: test_if_from_variable_468fd9029bea47874a42381c32deca7e
+- template: "{% if foo.bar %} NO {% endif %}"
+  environment:
+    foo:
+      bar: false
+  expected: ''
+  name: test_if_from_variable_486d7319181138970ba0c2ff021b0f8b
+- template: "{% if foo.bar %} NO {% else %} YES {% endif %}"
+  environment:
+    foo:
+      bar: false
+  expected: " YES "
+  name: test_if_from_variable_4c62ca6c56ab00ba3de8949938a9b45e
+- template: "{% if foo.bar %} YES {% endif %}"
+  environment:
+    foo:
+      bar: {}
+  expected: " YES "
+  name: test_if_from_variable_62b026c47564a7a07b1f338e7373f147
+- template: '{% if "foo" %} YES {% else %} NO {% endif %}'
+  environment:
+    var: text
+  expected: " YES "
+  name: test_if_from_variable_793aa893de50cd4cd9f7ab4dd64cbaf5
+- template: "{% if var %} NO {% else %} YES {% endif %}"
+  environment:
+    var:
+  expected: " YES "
+  name: test_if_from_variable_7f94246f96c96fa7f36ae881a763b59e
+- template: "{% if var %} NO {% endif %}"
+  environment:
+    var: false
+  expected: ''
+  name: test_if_from_variable_89b8ae38e0e42fe7075ecf7ba916d385
+- template: "{% if foo.bar %} NO {% else %} YES {% endif %}"
+  environment:
+    foo: {}
+  expected: " YES "
+  name: test_if_from_variable_8feb4a8816f2bffbc3f465c71ee8c04f
+- template: "{% if var %} YES {% endif %}"
+  environment:
+    var: text
+  expected: " YES "
+  name: test_if_from_variable_9a6a77a01f080404b65e23aed49dd8aa
+- template: "{% if foo.bar %} NO {% else %} YES {% endif %}"
+  environment:
+    foo:
+      notbar: true
+  expected: " YES "
+  name: test_if_from_variable_bbc63d089b669bddf738874988fb90e0
+- template: '{% if "foo" %} YES {% endif %}'
+  environment: {}
+  expected: " YES "
+  name: test_if_from_variable_c36bde7f169c4366824bce1ed0a59306
+- template: "{% if foo.bar %} YES {% endif %}"
+  environment:
+    foo:
+      bar: true
+  expected: " YES "
+  name: test_if_from_variable_cdfbea7f5b413b04d803b328c540369b
+- template: "{% if var %} YES {% endif %}"
+  environment:
+    var: []
+  expected: " YES "
+  name: test_if_from_variable_ced43d87dbc9f12c87fa6bd5294b1cd5
+- template: "{% if foo.bar %} YES {% else %} NO {% endif %}"
+  environment:
+    foo:
+      bar: text
+  expected: " YES "
+  name: test_if_from_variable_d37e92775776ae3a33cf0f3b0c533088
+- template: "{% if foo.bar %} YES {% else %} NO {% endif %}"
+  environment:
+    foo:
+      bar: true
+  expected: " YES "
+  name: test_if_from_variable_d672511128e9d0bbdc6ca2a9ad6e869f
+- template: "{% if foo.bar %} NO {% endif %}"
+  environment:
+    foo:
+  expected: ''
+  name: test_if_from_variable_dbc71e164fd2b9cdf77d133de9253b12
+- template: "{% if foo.bar %} YES {% endif %}"
+  environment:
+    foo:
+      bar: []
+  expected: " YES "
+  name: test_if_from_variable_dd95858e499bf8ad64807e02f80182a7
+- template: "{% if var %} NO {% endif %}"
+  environment:
+    var:
+  expected: ''
+  name: test_if_from_variable_e4ee6d4f57ba051ace6c027613128346
+- template: "{% if var %} YES {% endif %}"
+  environment:
+    var: true
+  expected: " YES "
+  name: test_if_from_variable_e9426a6d326324a630a57d22a9c26fdd
+- template: "{% if var %} YES {% endif %}"
+  environment:
+    var: 1
+  expected: " YES "
+  name: test_if_from_variable_eb6ab568e004c7731eddb825740eb715
+- template: "{% if foo.bar %} YES {% endif %}"
+  environment:
+    foo:
+      bar: text
+  expected: " YES "
+  name: test_if_from_variable_ebfa8d69e2dcc0e2cdee96bb61daff9b
+- template: "{% if a or b or c %} YES {% endif %}"
+  environment:
+    a: false
+    b: false
+    c: false
+  expected: ''
+  name: test_if_or_4a54440697608e63645e5c475c66f556
+- template: "{% if a or b %} YES {% endif %}"
+  environment:
+    a: false
+    b: true
+  expected: " YES "
+  name: test_if_or_55f75b6be6badd1ed8200f3a148a9400
+- template: "{% if a or b %} YES {% endif %}"
+  environment:
+    a: true
+    b: true
+  expected: " YES "
+  name: test_if_or_628e83823b69507ee6e4e3291034ad72
+- template: "{% if a or b %} YES {% endif %}"
+  environment:
+    a: false
+    b: false
+  expected: ''
+  name: test_if_or_6a474d5e90b1c6eeb3ed650bc58995eb
+- template: "{% if a or b %} YES {% endif %}"
+  environment:
+    a: true
+    b: false
+  expected: " YES "
+  name: test_if_or_c8ad3f0286eaa08045dc0d2b2d9e8c19
+- template: "{% if a or b or c %} YES {% endif %}"
+  environment:
+    a: false
+    b: false
+    c: true
+  expected: " YES "
+  name: test_if_or_def4e8bb61a7575ffa0d3e5376167d40
+- template: "{% if a == true or b == true %} YES {% endif %}"
+  environment:
+    a: true
+    b: true
+  expected: " YES "
+  name: test_if_or_with_operators_5cfcb956d2432e6e385d76f04a0d2d13
+- template: "{% if a == true or b == false %} YES {% endif %}"
+  environment:
+    a: true
+    b: true
+  expected: " YES "
+  name: test_if_or_with_operators_9893b5784a563854bae5cea0fdd7ac85
+- template: "{% if a == false or b == false %} YES {% endif %}"
+  environment:
+    a: true
+    b: true
+  expected: ''
+  name: test_if_or_with_operators_abab6ff35b48f611e3e2e60681923487
+- template: "{% if foo %}true{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: 'true'
+  name: test_if_tag_calls_to_liquid_value_16c1042651e9ad867c32907e86998811
+- template: "{% if foo == true %}True{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: false
+  expected: ''
+  name: test_if_tag_calls_to_liquid_value_2167bc2226decfa0b0687e5fce4b3679
+- template: "{% if foo == 1 %}one{% endif %}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+  expected: one
+  name: test_if_tag_calls_to_liquid_value_34cb610047dcefcb8e15eee7f67c8855
+- template: "{% if foo > 0 %}one{% endif %}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+  expected: one
+  name: test_if_tag_calls_to_liquid_value_5c2656f20cb1f79b2c90fdbdb5256b3d
+- template: "{% if 0 < foo %}one{% endif %}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+  expected: one
+  name: test_if_tag_calls_to_liquid_value_7baa3cc526421c3533e89bdbd99d77cb
+- template: "{% if foo == true %}true{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: 'true'
+  name: test_if_tag_calls_to_liquid_value_a8a1aca810a158b3f9a19945d57ba373
+- template: "{% if foo %}true{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: false
+  expected: ''
+  name: test_if_tag_calls_to_liquid_value_bd581fa1d5f9cb00bc2002cee2df81ae
+- template: "{% if 'bob' contains 'o' %}yes{% endif %}"
+  environment: {}
+  expected: 'yes'
+  name: test_if_with_custom_condition_2d38e4c81857a11302fa5721b3864023
+- template: "{% if 'bob' contains 'f' %}yes{% else %}no{% endif %}"
+  environment: {}
+  expected: 'no'
+  name: test_if_with_custom_condition_fc2b319372536ce3fe65194f180d2d84
+- template: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 1
+    - 1
+    - 1
+  expected: '1'
+  name: test_ifchanged_ae9e8f3940e3e50e52a9e927fa4f3268
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 1
+    - 2
+    - 2
+    - 3
+    - 3
+  expected: '123'
+  name: test_ifchanged_be202cebfa8b02155c388149b7e4c8e5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if null == true %}?{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_illegal_symbols_50fa98153385bb8a29873a31f09684e9
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if true == empty %}?{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_illegal_symbols_62512fe356a7f87b66b532a8e6223a88
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if empty == true %}?{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_illegal_symbols_8903cd99f21e40abf0871821611d6fe1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if true == null %}?{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_illegal_symbols_c1b1e363cfb215109c188524f100f6fa
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%increment port %}"
+  environment: {}
+  expected: '0'
+  name: test_inc_3351ef11fe9bd65f38729df39d79e160
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%increment port %} {%increment starboard%} {%increment port %} {%increment
+    port%} {%increment starboard %}"
+  environment: {}
+  expected: 0 0 1 2 1
+  name: test_inc_b866aa97d3945e01568f858f8d3d7f70
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%increment port %} {%increment port%}"
+  environment: {}
+  expected: 0 1
+  name: test_inc_ba58e7fdd8a6db26a1652843b819e2f4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %}{% include ' foobar ' %}{% endfor %}{% if true
+    %}{% include ' foobar ' %}{% endif %}"
+  environment: {}
+  expected: " foobar  foobar  foobar  foobar  foobar  foobar  foobar  foobar  foobar
+    \ foobar  foobar "
+  name: test_include_is_blank_52915d74200cc0b169225fd2e9ff9ee5
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{% for i in (1..10) %} {% include ' ' %} {% endfor %}{% if true %} {%
+    include ' ' %} {% endif %}"
+  environment: {}
+  expected: "                                 "
+  name: test_include_is_blank_dc5ece4c085b617d1215cad0ce1e9452
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{% for i in (1..10) %}{% include 'foobar' %}{% endfor %}{% if true %}{%
+    include 'foobar' %}{% endif %}"
+  environment: {}
+  expected: foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar
+  name: test_include_is_blank_f33cadbe8fcdc1dffb4efec9acfed039
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{% include 'product' for products %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm Product: Element 155cm '
+  name: test_include_tag_for_7a50997bda50cb172d36a8e8c83b4a0e
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'product_alias' for products as product %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm Product: Element 155cm '
+  name: test_include_tag_for_alias_61f595ede8620a6ad66008642ae43f34
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'product' with products[0] %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm '
+  name: test_include_tag_with_197b89fbe2b2c0820c2bdc711c450253
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'product_alias' with products[0] as product %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm '
+  name: test_include_tag_with_alias_c29537555aac6e25f5f281672727e46a
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'product' %}"
+  environment:
+    product:
+      title: Draft 151cm
+  expected: 'Product: Draft 151cm '
+  name: test_include_tag_with_default_name_320e29178731bd7b2c46be5ef031d38e
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'locale_variables' echo1: 'test123' %}"
+  environment: {}
+  expected: 'Locale: test123 '
+  name: test_include_tag_with_local_variables_1d4c291037015942385d71472838e772
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'locale_variables' echo1: 'test123', echo2: 'test321' %}"
+  environment: {}
+  expected: 'Locale: test123 test321'
+  name: test_include_tag_with_multiple_local_variables_176ae332cfa6bdfd8e463277db975825
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'locale_variables' echo1: echo1, echo2: more_echos.echo2 %}"
+  environment:
+    echo1: test123
+    more_echos:
+      echo2: test321
+  expected: 'Locale: test123 test321'
+  name: test_include_tag_with_multiple_local_variables_from_context_c394ff9f39bec8dd2d708667b8b54b92
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% if true %}{% include 'foo_if_true' %}{% endif %}"
+  environment: {}
+  expected: foo_if_true
+  name: test_include_tag_within_if_statement_4aef5a3db73e1f142338ecb5b51acc41
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'assignments' %}{{ foo }}"
+  environment: {}
+  expected: bar
+  name: test_included_templates_assigns_variables_5ecfc2a32c644f45f7dc6d0767ac94d3
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign page = 'product' %}{% include page %}"
+  environment:
+    product:
+      title: Draft 151cm
+  expected: 'Product: Draft 151cm '
+  name: test_including_via_variable_value_537bdee4e831937ad233332e93f34afd
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign page = 'pick_a_source' %}{% include page %}"
+  environment: {}
+  expected: from TestFileSystem
+  name: test_including_via_variable_value_58230de8d7203224b6d475a30f18e141
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign page = 'product' %}{% include page for foo %}"
+  environment:
+    foo:
+      title: Draft 151cm
+  expected: 'Product: Draft 151cm '
+  name: test_including_via_variable_value_ee2481f68530e316adbb38b3b5984605
+  filesystem: !ruby/object:TestFileSystem {}
+- template: '{% increment %}{% increment %}{% render "incr" %}'
+  environment: {}
+  expected: '010'
+  name: test_increment_is_isolated_between_renders_6ab5bc9dd8aafe8cd9e52bd8d273ecfe
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      incr: "{% increment %}"
+- template: "{% for i in (1..10) %}{% assign foo = 0 %} {% increment foo %} {% decrement
+    foo %}{% endfor %}{% if true %}{% assign foo = 0 %} {% increment foo %} {% decrement
+    foo %}{% endif %}"
+  environment: {}
+  expected: " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+  name: test_increment_is_not_blank_870eb0f6cc1ab6fd6835aa42978697b6
+  filesystem: !ruby/object:TestFileSystem {}
+- template: |
+    {%-
+      # That kind of block comment is also allowed.
+      # It would only be a stylistic difference.
+
+      # Much like JavaScript's /* */ comments and their
+      # leading * on new lines.
+    -%}
+  environment: {}
+  expected: ''
+  name: test_inline_comment_can_be_written_on_multiple_lines_8ace29869f6ad726b5ad498425d6d841
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%#this is an inline comment%}"
+  environment: {}
+  expected: ''
+  name: test_inline_comment_does_not_require_a_space_after_the_pound_sign_05d31660124fc1bd3b75b48bd2d505fb
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%- # {% echo 'hello world' %} -%}"
+  environment: {}
+  expected: " -%}"
+  name: test_inline_comment_does_not_support_nested_tags_cae672e6a9ddd3d03080468aa58196c1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |
+    {%- liquid
+      ######################################
+      # We support comments like this too. #
+      ######################################
+    -%}
+  environment: {}
+  expected: ''
+  name: test_inline_comment_multiple_pound_signs_c92a12431520c9c860a63ac6344a3e9a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%- # this is an inline comment -%}"
+  environment: {}
+  expected: ''
+  name: test_inline_comment_returns_nothing_2d899a7abc2f0b12938df26e0da77cb5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%-# this is an inline comment -%}"
+  environment: {}
+  expected: ''
+  name: test_inline_comment_returns_nothing_3b70042a987144e728208b7c4dd197be
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% # this is an inline comment %}"
+  environment: {}
+  expected: ''
+  name: test_inline_comment_returns_nothing_bfeb56e315b9e9d2d243d6ce21b25e9d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%# this is an inline comment %}"
+  environment: {}
+  expected: ''
+  name: test_inline_comment_returns_nothing_cf040d04300427cb4ca448b6b0482c69
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for a in (1..2) %}o{% for b in empty %}{% endfor %}{% endfor %}"
+  environment: {}
+  expected: oo
+  name: test_inner_for_over_empty_input_d98eadfa9714ab43cd3f9ccf2033367d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if array == empty %} true {% else %} false {% endif %} "
+  environment:
+    array: []
+  expected: "  true  "
+  name: test_is_collection_empty_0ac6ca40cfe209a37b37e01400d13af7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if array == empty %} true {% else %} false {% endif %} "
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: "  false  "
+  name: test_is_not_collection_empty_688177693bc0bca1004a7bf507c52c4e
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for item in items %}{{item}}{% endfor %}"
+  environment:
+    items: !ruby/object:ForTagTest::LoaderDrop
+      data:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '12345'
+  name: test_iterate_with_each_when_no_limit_applied_24682101b4b2719aa6badcbdd71d58c6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
+  environment:
+    items: !ruby/object:ForTagTest::LoaderDrop
+      data:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '34'
+  name: test_iterate_with_load_slice_returns_same_results_as_without_2dd55cd7aa9ce7a372c1a25a05097f4f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  expected: '34'
+  name: test_iterate_with_load_slice_returns_same_results_as_without_7bfc6db845dca60afe2fea0ac5833e3b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
+  environment:
+    items: !ruby/object:ForTagTest::LoaderDrop
+      data:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '34'
+  name: test_iterate_with_load_slice_when_limit_and_offset_applied_00ce94f97f94e334a577b638fec2c157
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for item in items limit:1 %}{{item}}{% endfor %}"
+  environment:
+    items: !ruby/object:ForTagTest::LoaderDrop
+      data:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  expected: '1'
+  name: test_iterate_with_load_slice_when_limit_applied_f4e227f57fd65ba8794749c596fc4caf
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% assign key = 'foo' %}{{ thing | map: key | map: 'bar' }}"
+  environment:
+    thing:
+      foo:
+        bar: 42
+  expected: '42'
+  name: test_legacy_map_on_hashes_with_dynamic_key_ef8e41a4d2371ca7257a57c19e78cd43
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for i in array limit:2 %}{{ i }}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 0
+  expected: '12'
+  name: test_limiting_7d47db2c6677a09a9173be38e957d8d7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for i in array limit: 4 offset: 2 %}{{ i }}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 0
+  expected: '3456'
+  name: test_limiting_abb9e7dcaaedbb79ebfadb1e87a3bf34
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for i in array limit:4 offset:2 %}{{ i }}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 0
+  expected: '3456'
+  name: test_limiting_c3f38a3b22bdc935db307839f5d5ddfe
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%for i in array limit:4 %}{{ i }}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 0
+  expected: '1234'
+  name: test_limiting_ca591ec1d715064024a66a282bdab8c9
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |
+    {%- liquid
+      # This is how you'd write a block comment in a liquid tag.
+      # It looks a lot like what you'd have in ruby.
+
+      # You can use it as inline documentation in your
+      # liquid blocks to explain why you're doing something.
+      echo "Hey there, "
+
+      # It won't affect the output.
+      echo "how are you doing today?"
+    -%}
+  environment: {}
+  expected: Hey there, how are you doing today?
+  name: test_liquid_inline_comment_returns_nothing_dfd660254be094e4f41b0fdca849a8ef
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |
+    {%- liquid
+      for value in array
+        echo value
+        unless forloop.last
+          echo " "
+        endunless
+      endfor
+    -%}
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: 1 2 3
+  name: test_liquid_tag_3e88e073b614f39ea3c73ff49773dab9
+  filesystem: !ruby/object:TestFileSystem {}
+- template: |
+    {%- liquid
+      for value in array
+        assign double_value = value | times: 2
+        echo double_value | times: 2
+        unless forloop.last
+          echo " "
+        endunless
+      endfor
+
+      echo " "
+      echo double_value
+    -%}
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: 4 8 12 6
+  name: test_liquid_tag_a48d679525d5e0082b1f46ec265bc2a3
+  filesystem: !ruby/object:TestFileSystem {}
+- template: |
+    {%- liquid echo "a" -%}
+    b
+    {%- liquid echo "c" -%}
+  environment: {}
+  expected: abc
+  name: test_liquid_tag_c62104f0f1f23709a8aae3f7ae27621c
+  filesystem: !ruby/object:TestFileSystem {}
+- template: |
+    {%- liquid
+      echo array | join: " "
+    -%}
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+  expected: 1 2 3
+  name: test_liquid_tag_c6bee3d8b1a3e15ab966c31fa8a80f4b
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% raw %}{% liquid echo 'test' %}{% endraw %}\n"
+  environment: {}
+  expected: "{% liquid echo 'test' %}\n"
+  name: test_liquid_tag_in_raw_8aa83d8d070851c630db7de92117bccc
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% assign v = false %}{% if v %} YES {% else %} NO {% endif %}"
+  environment: {}
+  expected: " NO "
+  name: test_literal_comparisons_1b9922130e6a5f019a578625001df962
+- template: "{% assign v = nil %}{% if v == nil %} YES {% else %} NO {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_literal_comparisons_c4af12524c06d219fee5f5fa91323cba
+- template: "{{ blank['x'] }}"
+  environment:
+    blank:
+      x: result
+  expected: result
+  name: test_lookup_on_var_with_literal_name_4bd4cf8cf344fb73981bdae145fff191
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ blank.x }}"
+  environment:
+    blank:
+      x: result
+  expected: result
+  name: test_lookup_on_var_with_literal_name_bc5cead8e1463d785f6f980ad62904c9
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..10) %} {% endfor %}"
+  environment: {}
+  expected: ''
+  name: test_loops_are_blank_70ca151f91742a94ec1b56c636f44f94
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{{ source | lstrip }}"
+  environment:
+    source: " \tab c  \n \t"
+  expected: "ab c  \n \t"
+  name: test_lstrip_23dbce4d1afe35e0598236252eaa50fa
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | lstrip }}"
+  environment:
+    source: " ab c  "
+  expected: 'ab c  '
+  name: test_lstrip_5e285098adfdcefa3a2949789f32f18d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ ary | map:'foo' | map:'bar' }}"
+  environment:
+    ary:
+    - foo:
+        bar: a
+    - foo:
+        bar: b
+    - foo:
+        bar: c
+  expected: abc
+  name: test_map_92c1d5687948ab121fb7c607d82637f6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{:test=>1234}"
+  environment: {}
+  expected: "{:test=>1234}"
+  name: test_map_calls_context_a906e3a75ce0c397d5f9022660345022
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ foo | map: "whatever" }}'
+  environment:
+    foo:
+    - !ruby/object:TestThing
+      foo: 0
+  expected: 'woot: 1'
+  name: test_map_calls_to_liquid_b4fa7f14dbb5f98bc187b2fc2d438716
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ "foo" | map: "__id__" }}'
+  environment: {}
+  expected: ''
+  name: test_map_doesnt_call_arbitrary_stuff_4940dade08480e6c778d2e2a805164ec
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ "foo" | map: "inspect" }}'
+  environment: {}
+  expected: ''
+  name: test_map_doesnt_call_arbitrary_stuff_ea2036a2802ea569b87b813ea3a00f64
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ thing | map: "foo" | map: "bar" }}'
+  environment:
+    thing:
+      foo:
+      - bar: 42
+      - bar: 17
+  expected: '4217'
+  name: test_map_on_hashes_5a5300f67389a4a1b0d8ac20a5889c37
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ foo | map: "foo" }}'
+  environment:
+    foo: !ruby/object:TestEnumerable {}
+  expected: '123'
+  name: test_map_works_on_enumerables_2324575d787bda91ddc4932cce85f290
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for i in (1..10) %} {% if false %} this never happens, but still,
+    this block is not blank {% endif %}{% endfor %}{% if true %} {% if false %} this
+    never happens, but still, this block is not blank {% endif %}{% endif %}"
+  environment: {}
+  expected: "           "
+  name: test_mark_as_blank_only_during_parsing_e530b8226245a464d6fb0b1cfe933fd0
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ price | minus:'2' }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 7
+  expected: '5'
+  name: test_minus_8b208c43acec82e7ac10e24e7f3e1c5c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ input | minus:operand }}"
+  environment:
+    input: 5
+    operand: 1
+  expected: '4'
+  name: test_minus_c31a4d51e6d1d6ca9d302d2a19637ee6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '4.3' | minus:'2' }}"
+  environment: {}
+  expected: '2.3'
+  name: test_minus_d8dbd1b493438be3b876ebeb7bc878f5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 3 | modulo:2 }}"
+  environment: {}
+  expected: '1'
+  name: test_modulo_7c744c2625146a8918289c4f0889a4c1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | modulo:2 }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 3
+  expected: '1'
+  name: test_modulo_e060b475da1e89e6d0a1f56fd6886175
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |-
+    0{%
+    for i in (1..3)
+    %} {{
+    i
+    }}{%
+    endfor
+    %}
+  environment: {}
+  expected: 0 1 2 3
+  name: test_multiline_tag_fefb8d528f63de10fee87aa26504b710
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2,3%} {%cycle 1,2,3%}
+    {%cycle 1,2,3%} {%cycle 1,2,3%}"
+  environment: {}
+  expected: 1 2 1 1 2 3 1
+  name: test_multiple_cycles_e497443526ce3acb2cd159a761071ad0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %} {%cycle 1: "one",
+    "two" %} {%cycle 2: "one", "two" %} {%cycle 1: "one", "two" %} {%cycle 2: "one",
+    "two" %}'
+  environment: {}
+  expected: one one two two one one
+  name: test_multiple_named_cycles_89b65445b86ff20edbe6af902d9e6b7e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1:
+    "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle
+    var2: "one", "two" %}'
+  environment:
+    var1: 1
+    var2: 2
+  expected: one one two two one one
+  name: test_multiple_named_cycles_with_names_from_context_10da9bcabc4071fcf4db199148aaa2d8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |-
+    {% for i in (1..10) %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}
+          {% if true %} but this is not {% endif %}{% endfor %}{% if true %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}
+          {% if true %} but this is not {% endif %}{% endif %}
+  environment: {}
+  expected: "\n       but this is not \n       but this is not \n       but this is
+    not \n       but this is not \n       but this is not \n       but this is not
+    \n       but this is not \n       but this is not \n       but this is not \n
+    \      but this is not \n       but this is not "
+  name: test_nested_blocks_are_blank_but_only_if_all_children_are_33beb1dd6f69c5f9126e59c5223dd203
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{% for i in (1..10) %}{% for i in (1..10) %} {% endfor %}{% if true %}
+    {% endif %}{% endfor %}{% if true %}{% for i in (1..10) %} {% endfor %}{% if true
+    %} {% endif %}{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_nested_blocks_are_blank_but_only_if_all_children_are_bb72d50522f432f4138a9c1d013cc922
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{%for item in array%}{%for i in item%}{{ i }}{%endfor%}{%endfor%}"
+  environment:
+    array:
+    - - 1
+      - 2
+    - - 3
+      - 4
+    - - 5
+      - 6
+  expected: '123456'
+  name: test_nested_for_f389cc2a0cfda5bd836a34a69fa4e5d7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if false %}{% if true %} NO {% else %} NONO {% endif %}{% else %}
+    YES {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_nested_if_000d21d69c75fc0099d2eae6e24d3518
+- template: "{% if true %}{% if true %} YES {% else %} NO {% endif %}{% else %} NO
+    {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_nested_if_1a706db6b7d0588b69aec978828cc9ec
+- template: "{% if true %}{% if true %} YES {% endif %}{% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_nested_if_24e8fc5de4dd8b377574c048bc0752d6
+- template: "{% if false %}{% if false %} NO {% endif %}{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_nested_if_32f6e151d3e3b895ce1ca6c4e1242618
+- template: "{% if true %}{% if false %} NO {% else %} YES {% endif %}{% else %} NO
+    {% endif %}"
+  environment: {}
+  expected: " YES "
+  name: test_nested_if_a71f76bce73e0eb0522346c6092ec92d
+- template: "{% if true %}{% if false %} NO {% endif %}{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_nested_if_b58f6a2bdecd888f7ad44890a204a26b
+- template: "{% if false %}{% if true %} NO {% endif %}{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_nested_if_ecba0727595642012d4b3a0e38a90f20
+- template: "{% include 'body' %}"
+  environment: {}
+  expected: body body_detail
+  name: test_nested_include_tag_3eeb0198843f04a08f6e7959d8f381d2
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'nested_template' %}"
+  environment: {}
+  expected: header body body_detail footer
+  name: test_nested_include_tag_c7cc84cc4b4c60883a1139aa1ce449f7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'nested_product_template' for products %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm details Product: Element 155cm details '
+  name: test_nested_include_with_variable_2eac22f147cb244a8d7ccbbc3a2b7790
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% include 'nested_product_template' with product %}"
+  environment:
+    product:
+      title: Draft 151cm
+  expected: 'Product: Draft 151cm details '
+  name: test_nested_include_with_variable_d60ebb24fb29c573aa55811423ac02ab
+  filesystem: !ruby/object:TestFileSystem {}
+- template: |
+    {%- if true %}
+      {%- liquid
+        echo "good"
+      %}
+    {%- endif -%}
+  environment: {}
+  expected: good
+  name: test_nested_liquid_tag_a7523c3c4833fdc51c0aa2f9a4ce21d2
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% render 'one' %}"
+  environment: {}
+  expected: one two
+  name: test_nested_render_tag_0b49d70c89a93c0574fbd9eb2550f2c7
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      one: one {% render 'two' %}
+      two: two
+- template: "{{ source | newline_to_br }}"
+  environment:
+    source: |-
+      a
+      b
+      c
+  expected: |-
+    a<br />
+    b<br />
+    c
+  name: test_newlines_to_br_55001f42f04501dc31db612c89c01e88
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | newline_to_br }}"
+  environment:
+    source: "a\r\nb\nc"
+  expected: |-
+    a<br />
+    b<br />
+    c
+  name: test_newlines_to_br_8508ba111b70b186a80439e030e4232c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if var == null %} true {% else %} false {% endif %} "
+  environment:
+    var:
+  expected: "  true  "
+  name: test_nil_5cac28fa4e4bbe17a6f8688cf6d0e57c
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if var == nil %} true {% else %} false {% endif %} "
+  environment:
+    var:
+  expected: "  true  "
+  name: test_nil_86b3a11f4c744b6162e1c17cf9ba8ad7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "<blah>"
+  environment: {}
+  expected: "<blah>"
+  name: test_no_transform_0e8e36e5243937fa7f2e53761213a07c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: this text should come out of the template without change...
+  environment: {}
+  expected: this text should come out of the template without change...
+  name: test_no_transform_1a41c291e720f2e51b26dd59bb75e75c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |-
+    this shouldnt see any transformation either but has multiple lines
+                  as you can clearly see here ...
+  environment: {}
+  expected: |-
+    this shouldnt see any transformation either but has multiple lines
+                  as you can clearly see here ...
+  name: test_no_transform_3a6221f3afdbae829b82e975f6bcaee8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: blah
+  environment: {}
+  expected: blah
+  name: test_no_transform_444c041dd11a84ba0a688b8616ebd916
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: ''
+  environment: {}
+  expected: ''
+  name: test_no_transform_d437c0221175a76056d4e6e579ea6a65
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "|,.:"
+  environment: {}
+  expected: "|,.:"
+  name: test_no_transform_de8c73e8ce6f65e99a559de22cc82cbe
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p>{{- 'John' -}}</p>"
+  environment: {}
+  expected: "<p>John</p>"
+  name: test_no_trim_output_776de632071e996d8907f87cc8b7cbb6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p>{%- if false -%}no{%- endif -%}</p>"
+  environment: {}
+  expected: "<p></p>"
+  name: test_no_trim_tags_e84b60e750cfc1ab9d8fc9ea105fbd81
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p>{%- if true -%}yes{%- endif -%}</p>"
+  environment: {}
+  expected: "<p>yes</p>"
+  name: test_no_trim_tags_efdfbb351b2f98252b382d39c0b9dd81
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if var != null %} true {% else %} false {% endif %} "
+  environment:
+    var: 1
+  expected: "  true  "
+  name: test_not_nil_2513b8a3a65ef6969ebe764084f6e1f7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if var != nil %} true {% else %} false {% endif %} "
+  environment:
+    var: 1
+  expected: "  true  "
+  name: test_not_nil_4018379c3de35f603ca30669334ac027
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% tablerow n in numbers cols:3 offset:1 limit:6%} {{n}} {% endtablerow
+    %}"
+  environment:
+    numbers:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+    <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+  name: test_offset_and_limit_80231a1fcbf3a21898ba2ad23eae8a4b
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{%for i in array offset:7 %}{{ i }}{%endfor%}"
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 0
+  expected: '890'
+  name: test_offset_only_0afda52929f2dbefb0a926db65d0b1cc
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if 1 > 0 %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  true  "
+  name: test_one_lq_zero_34cdf7e729f483b4fa943e5b9c11c31c
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% raw %} Foobar invalid %} {% endraw %}"
+  environment: {}
+  expected: " Foobar invalid %} "
+  name: test_open_tag_in_raw_23bdbbb2f407e01e6424f998f19f52b5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar invalid }} {% endraw %}"
+  environment: {}
+  expected: " Foobar invalid }} "
+  name: test_open_tag_in_raw_26e98fc3d33c515d73d444d7151059bd
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} test {% raw %} {% {% endraw %}endraw %}"
+  environment: {}
+  expected: " test {% raw %} {% endraw %}"
+  name: test_open_tag_in_raw_5f9f6b5d37bed11950a0648e82bbe13c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar {% {% {% {% endraw %}"
+  environment: {}
+  expected: " Foobar {% {% {% "
+  name: test_open_tag_in_raw_7502446059db9048cdc03f7facff5b95
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar {% foo {% bar %}{% endraw %}"
+  environment: {}
+  expected: " Foobar {% foo {% bar %}"
+  name: test_open_tag_in_raw_759566be596cec593966232155b42b6e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar {% invalid {% endraw %}"
+  environment: {}
+  expected: " Foobar {% invalid "
+  name: test_open_tag_in_raw_94d11ce94a80f8f9c416eca49f68caf1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar {% invalid {% {% endraw {% endraw %}"
+  environment: {}
+  expected: " Foobar {% invalid {% {% endraw "
+  name: test_open_tag_in_raw_abb4ce69ff04567e68cfffc781bac488
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar {{ invalid {% endraw %}"
+  environment: {}
+  expected: " Foobar {{ invalid "
+  name: test_open_tag_in_raw_cb2db950b47d1ce5540f8de5b813220f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}"
+  environment: {}
+  expected: " Foobar {{ invalid 1"
+  name: test_open_tag_in_raw_e118c0b9acf69d65df2a73bbecdf33d0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% if 'gnomeslab-and-or-liquid' contains 'gnomeslab-and-or-liquid' %}yes{%
+    endif %}"
+  environment: {}
+  expected: 'yes'
+  name: test_operators_are_ignored_unless_isolated_ca549ee0fc4ecb8d509d8e35a7e191b5
+- template: "{% raw %}{{ test }}{% endraw %}"
+  environment: {}
+  expected: "{{ test }}"
+  name: test_output_in_raw_bd1196b86127fb17ee063c61e0853bdb
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          {%for i in array.items limit:3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit:1000 %}{{i}}{%endfor%}
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 0
+  expected: |2
+          123
+          next
+          456
+          next
+          7890
+  name: test_pause_resume_big_limit_864c1d8e20d724f90aa61544a670ab0b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |-
+    {%for i in array.items limit:3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit:3 offset:1000 %}{{i}}{%endfor%}
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 0
+  expected: "123\n      next\n      456\n      next\n      "
+  name: test_pause_resume_big_offset_164e0840fc3505d076e5e5e702fc6311
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          {%for i in array.items limit: 3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit: 3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit: 3 %}{{i}}{%endfor%}
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 0
+  expected: |2
+          123
+          next
+          456
+          next
+          789
+  name: test_pause_resume_c76856e279c89ccb0443f8da747c8fb8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          {%for i in array.items limit:3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit:3 %}{{i}}{%endfor%}
+          next
+          {%for i in array.items offset:continue limit:1 %}{{i}}{%endfor%}
+  environment:
+    array:
+      items:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 0
+  expected: |2
+          123
+          next
+          456
+          next
+          7
+  name: test_pause_resume_limit_dbcbf9b0e2c2381bbc472f22a31db36c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 'foo|bar' | remove: '|' }}"
+  environment: {}
+  expected: foobar
+  name: test_pipes_in_string_arguments_9801f7df910d342142865a0a4aaf4c99
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 1 | plus:1 }}"
+  environment: {}
+  expected: '2'
+  name: test_plus_0192488bf0874369f28c6d52b002404a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | plus:'2' }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 3
+  expected: '5'
+  name: test_plus_3f10a1379787bb451829721601534cea
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '1' | plus:'1.0' }}"
+  environment: {}
+  expected: '2.0'
+  name: test_plus_9538d9aa465241f3df9ffd9ccc75b802
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {% if false -%}
+              no
+              {%- endif %}
+            </p>
+          </div>
+  environment: {}
+  expected: "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+  name: test_post_and_pre_trim_tags_cb0a68479a16c8e00be7006aa6b3cea3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {% if true -%}
+              yes
+              {%- endif %}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              yes
+            </p>
+          </div>
+  name: test_post_and_pre_trim_tags_d9e457cdd4b5a77d4b7ad5c63e63c09c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {{ 'John' -}}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              John</p>
+          </div>
+  name: test_post_trim_output_d44f8d4e2f5e5be2b8cf36b0e8d073d1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {% if true -%}
+              yes
+              {% endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              yes
+              </p>
+          </div>
+  name: test_post_trim_tags_0b73b3170b66c0c80f7208a78052b54f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {% if false -%}
+              no
+              {% endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              </p>
+          </div>
+  name: test_post_trim_tags_0cd7225da869d1a36c26287d030ba720
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if true %}
+              yes
+              {% endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              yes
+              </p>
+          </div>
+  name: test_pre_and_post_trim_tags_151770daa37d18f75fa6aa0dcabe68c7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if false %}
+              no
+              {% endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p></p>
+          </div>
+  name: test_pre_and_post_trim_tags_c15277ef0740d0e4261e6df229e83fd3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {{- 'John' }}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>John
+            </p>
+          </div>
+  name: test_pre_trim_output_8fa853c4cc3113c92efbfe3889b6208c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if false %}
+              no
+              {%- endif %}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+            </p>
+          </div>
+  name: test_pre_trim_tags_3a84f131f0668e4723c85c0d66abfda1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if true %}
+              yes
+              {%- endif %}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              yes
+            </p>
+          </div>
+  name: test_pre_trim_tags_a009157e668f7cb3d2d81a1bafe835ff
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ a | prepend: b}}"
+  environment:
+    a: bc
+    b: a
+  expected: abc
+  name: test_prepend_1c62f2ec94956a6cca0ac020d3bfa6ca
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ a | prepend: 'a'}}"
+  environment:
+    a: bc
+    b: a
+  expected: abc
+  name: test_prepend_b22c03b8a80f092a6c13b52e496a8058
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% tablerow n in collections.frontpage cols:3%} {{n}} {% endtablerow
+    %}"
+  environment:
+    collections:
+      frontpage:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+    <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+  name: test_quoted_fragment_2aef2708caba2b2fb4cea60c076edde7
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% tablerow n in collections['frontpage'] cols:3%} {{n}} {% endtablerow
+    %}"
+  environment:
+    collections:
+      frontpage:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+    <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+  name: test_quoted_fragment_56dfe454e53ead79ecd139d8b4bb2bd3
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..10) %} {% raw %} {% endraw %}{% endfor %}{% if true %}
+    {% raw %} {% endraw %}{% endif %}"
+  environment: {}
+  expected: "                      "
+  name: test_raw_is_not_blank_331107ea58e0d91176ce855030134544
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: |2
+          <div>
+            {% raw %}
+              {%- if true -%}
+                <p>
+                  {{- 'John' -}}
+                </p>
+              {%- endif -%}
+            {% endraw %}
+          </div>
+  environment: {}
+  expected: "      <div>\n        \n          {%- if true -%}\n            <p>\n              {{-
+    'John' -}}\n            </p>\n          {%- endif -%}\n        \n      </div>\n"
+  name: test_raw_output_44502954cdfb0f0dce64d9930eee3a94
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ [key] }}"
+  environment:
+    key: foo
+    foo: bar
+  expected: bar
+  name: test_raw_value_variable_0eceba3c327a8810774ecf348f51d473
+- template: "{{ '1 1 1 1' | remove_first: 1 }}"
+  environment: {}
+  expected: " 1 1 1"
+  name: test_remove_4347123f4706b9c80033f371e7262de8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '1 1 1 1' | remove_last: 1 }}"
+  environment: {}
+  expected: '1 1 1 '
+  name: test_remove_5023e9950687c9228947adc910ee9ad6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '1 1 1 1' | remove: 1 }}"
+  environment: {}
+  expected: "   "
+  name: test_remove_e66fe90dd59408b27ea8732f8edb9c00
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{% render "snippet", price: 123 %}'
+  environment: {}
+  expected: '123'
+  name: test_render_accepts_literals_as_arguments_11b6cdd040bb9e216cae901b37dc4bca
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      snippet: "{{ price }}"
+- template: '{% render "snippet", one: 1, two: 2 %}'
+  environment: {}
+  expected: 1 2
+  name: test_render_accepts_multiple_named_arguments_b9d60bd24e5bff83e74b4f02fb2f2594
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      snippet: "{{ one }} {{ two }}"
+- template: '{% assign outer_variable = "should not be visible" %}{% render "snippet"
+    %}'
+  environment: {}
+  expected: ''
+  name: test_render_does_not_inherit_parent_scope_variables_77ded88d1b8ca7fe1aa2a5ae65013913
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      snippet: "{{ outer_variable }}"
+- template: "{% assign snippet = 'should not be visible' %}{% render 'snippet' %}"
+  environment: {}
+  expected: ''
+  name: test_render_does_not_inherit_variable_with_same_name_as_snippet_481d179162f0f8d91a32a079ab1e5ced
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      snippet: "{{ snippet }}"
+- template: "{% render 'snippet' %}{{ inner }}"
+  environment: {}
+  expected: ''
+  name: test_render_does_not_mutate_parent_scope_78a7c5fddd9dffe09a55778204f5b3c7
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      snippet: "{% assign inner = 1 %}"
+- template: '{% render "product", inner_product: outer_product %}'
+  environment:
+    outer_product:
+      title: My Product
+  expected: My Product
+  name: test_render_passes_named_arguments_into_inner_scope_f50a1253ebc3c544f6d5855d3a063821
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      product: "{{ inner_product.title }}"
+- template: "{{ foo }}"
+  environment:
+    foo: :bar
+  expected: bar
+  name: test_render_symbol_6c8b41079c09a4249b35402f68b92d88
+- template: "{% render 'product' for products %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm Product: Element 155cm '
+  name: test_render_tag_for_7bd996b9f5b116abf6fa9593216997a4
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+- template: "{% render 'product_alias' for products as product %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm Product: Element 155cm '
+  name: test_render_tag_for_alias_a1f25959eec4d55d1daf051b4555ab3e
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+- template: "{% render 'loop' for loop as value %}"
+  environment:
+    loop: !ruby/object:TestEnumerable {}
+  expected: '123'
+  name: test_render_tag_for_drop_4a2c388aa75f3287968d59fc3b0f0d3a
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      loop: "{{ value.foo }}"
+- template: "{% render 'product' for products %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm first  index:1 Product: Element 155cm  last index:2 '
+  name: test_render_tag_forloop_92c49cb0af75b9a8b6e113ea68a20d14
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      product: 'Product: {{ product.title }} {% if forloop.first %}first{% endif %}
+        {% if forloop.last %}last{% endif %} index:{{ forloop.index }} '
+- template: "{% render 'product_alias' with products[0] as product %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm '
+  name: test_render_tag_with_alias_44c9ae2c5fd574b00434fb0ffb26cfb1
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+- template: "{% render 'loop' with loop as value %}"
+  environment:
+    loop: !ruby/object:TestEnumerable {}
+  expected: TestEnumerable
+  name: test_render_tag_with_drop_0501a6fb455468d8a33d4dff1ef59fe9
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      loop: "{{ value }}"
+- template: "{% render 'product' with products[0] %}"
+  environment:
+    products:
+    - title: Draft 151cm
+    - title: Element 155cm
+  expected: 'Product: Draft 151cm '
+  name: test_render_tag_with_e86ec5cd3d18b2c228b50e83d93fef35
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+- template: '{% if true %}{% render "snippet" %}{% endif %}'
+  environment: {}
+  expected: my message
+  name: test_render_tag_within_if_statement_0ec8073ab1de10ea8404e8db831c7afc
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      snippet: my message
+- template: '{% render "source" %}'
+  environment: {}
+  expected: rendered content
+  name: test_render_with_no_arguments_bedcd4c1c04a8c92834132566cb72ed5
+  filesystem: !ruby/object:StubFileSystem
+    file_read_count: 0
+    values:
+      source: rendered content
+- template: "{{ '1 1 1 1' | replace_last: '1', 2 }}"
+  environment: {}
+  expected: 1 1 1 2
+  name: test_replace_06503441cb714470a1180400e436e395
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '1 1 1 1' | replace: '1', 2 }}"
+  environment: {}
+  expected: 2 2 2 2
+  name: test_replace_972c26885da6b1375e568eeb8b710575
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '1 1 1 1' | replace_first: '1', 2 }}"
+  environment: {}
+  expected: 2 1 1 1
+  name: test_replace_f4977549165511690f84280d772e679b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ "a" -}}{{ "b" }} c'
+  environment: {}
+  expected: ab c
+  name: test_right_trim_followed_by_tag_6e17d4266d323252bbc5378d47ad9041
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | round }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 4.6
+  expected: '5'
+  name: test_round_248377870cb184af77bc6ff629ce026c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | round }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 4.3
+  expected: '4'
+  name: test_round_5db7d2918a0110d24ec30eb0429ab255
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ input | round: 2 }}"
+  environment:
+    input: 4.5612
+  expected: '4.56'
+  name: test_round_81878478ccaf4233afff81447a848620
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '4.3' | round }}"
+  environment: {}
+  expected: '4'
+  name: test_round_a95e35e0aa2178fa934403a368a183ad
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ input | round }}"
+  environment:
+    input: 4.6
+  expected: '5'
+  name: test_round_b4823fd61c52e256e675a12838cf21d1
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | rstrip }}"
+  environment:
+    source: " \tab c  \n \t"
+  expected: " \tab c"
+  name: test_rstrip_218ed11c7e0c1042b5b08d08ed809ef7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | rstrip }}"
+  environment:
+    source: " ab c  "
+  expected: " ab c"
+  name: test_rstrip_c63cb88ffa12fb72ad963cf432aac715
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {% if false -%} no {%- endif %} </p>"
+  environment: {}
+  expected: "<p>  </p>"
+  name: test_single_line_inner_tag_7f6e820d8cd38ecae367779b5af3b2aa
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {% if true -%} yes {%- endif %} </p>"
+  environment: {}
+  expected: "<p> yes </p>"
+  name: test_single_line_inner_tag_8113c8390eea7c13fdb29d6ec6a550d4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {%- if false %} no {% endif -%} </p>"
+  environment: {}
+  expected: "<p></p>"
+  name: test_single_line_outer_tag_6507077c90b2dc0d31ac052897c423f8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {%- if true %} yes {% endif -%} </p>"
+  environment: {}
+  expected: "<p> yes </p>"
+  name: test_single_line_outer_tag_bd31bcb0bf7365d9edd8ad9581a1d0e7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {% if false -%} no {% endif -%} </p>"
+  environment: {}
+  expected: "<p> </p>"
+  name: test_single_line_post_tag_4309871ede05c31ed6e7c6ab34ce6ff3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {% if true -%} yes {% endif -%} </p>"
+  environment: {}
+  expected: "<p> yes </p>"
+  name: test_single_line_post_tag_b005feecd059c39d57d48c38d47c3c73
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {%- if true %} yes {%- endif %} </p>"
+  environment: {}
+  expected: "<p> yes </p>"
+  name: test_single_line_pre_tag_a87b1d689c7f2b3d4d7e95fa548b694e
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "<p> {%- if false %} no {%- endif %} </p>"
+  environment: {}
+  expected: "<p> </p>"
+  name: test_single_line_pre_tag_d674d47a962dd29b9e11bf672c20a30a
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: array has {{ array.size }} elements
+  environment:
+    array:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: array has 4 elements
+  name: test_size_of_array_69a114d447c2950cc089144f1a8f1c05
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: hash has {{ hash.size }} elements
+  environment:
+    hash:
+      :a: 1
+      :b: 2
+      :c: 3
+      :d: 4
+  expected: hash has 4 elements
+  name: test_size_of_hash_3ac5643eea9b743adf9dc6b03f02d1f7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ foo | sort: "bar" | map: "foo" }}'
+  environment:
+    foo: !ruby/object:TestEnumerable {}
+  expected: '213'
+  name: test_sort_works_on_enumerables_396754b35d17844ff14ecb4cef5794e6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% for       item   in   items %}{{item}}{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  expected: '12345'
+  name: test_spacing_with_variable_naming_in_for_loop_438491f4d37a465955f924a56f6b057f
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {{ 'John' }}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>
+              John
+            </p>
+          </div>
+  name: test_standard_output_7a3a6018358938d0dd62a162f3a6d720
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {% if false %}
+              no
+              {% endif %}
+            </p>
+          </div>
+  environment: {}
+  expected: "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+  name: test_standard_tags_41f518ca5a81836468e21c7d603ca741
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {% if true %}
+              yes
+              {% endif %}
+            </p>
+          </div>
+  environment: {}
+  expected: "      <div>\n        <p>\n          \n          yes\n          \n        </p>\n
+    \     </div>\n"
+  name: test_standard_tags_4661230bbdeaa7993138e9c4d28f24ff
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if 'test' == 'test' %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  true  "
+  name: test_strings_3ec33a57b84500d7ba6987de29e2bae4
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if 'test' != 'test' %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  false  "
+  name: test_strings_not_equal_0cb924fd16d7f3284e0bba75c5c195c1
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ source | strip }}"
+  environment:
+    source: " ab c  "
+  expected: ab c
+  name: test_strip_554a6aa8e3bd4c9169fd9f553e9f2f4c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | strip }}"
+  environment:
+    source: " \tab c  \n \t"
+  expected: ab c
+  name: test_strip_bd4c551c037b15a637b3fc174ce150d3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | strip_newlines }}"
+  environment:
+    source: |-
+      a
+      b
+      c
+  expected: abc
+  name: test_strip_newlines_1e12d2c9edb7e8e609ab4076e674aef2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ source | strip_newlines }}"
+  environment:
+    source: "a\r\nb\nc"
+  expected: abc
+  name: test_strip_newlines_de4fe7e7e8cb36ca6a5177d966c7c11d
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{% tablerow n in numbers cols:2%}{{tablerowloop.col}}{% endtablerow %}"
+  environment:
+    numbers:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+    <tr class="row2"><td class="col1">1</td><td class="col2">2</td></tr>
+    <tr class="row3"><td class="col1">1</td><td class="col2">2</td></tr>
+  name: test_table_col_counter_0127833f96d663130cb0557a0a92a396
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+  environment:
+    numbers:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+    <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+  name: test_table_row_4ed0d4191c6086ceb303d077486349f0
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+  environment:
+    numbers: []
+  expected: |
+    <tr class="row1">
+    </tr>
+  name: test_table_row_fb6f6c0b9c70daa69373057a54687f27
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% tablerow n in numbers cols:5%} {{n}} {% endtablerow %}"
+  environment:
+    numbers:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td><td class="col4"> 4 </td><td class="col5"> 5 </td></tr>
+    <tr class="row2"><td class="col1"> 6 </td></tr>
+  name: test_table_row_with_different_cols_67909b19a4e376154488d4807cb5caa5
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% raw %}{% comment %} test {% endcomment %}{% endraw %}"
+  environment: {}
+  expected: "{% comment %} test {% endcomment %}"
+  name: test_tag_in_raw_bbd468f2769b4712dad13aa21cd8462b
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+
+
+              {%- if true -%}
+              yes
+              {%- endif -%}
+
+
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>yes</p>
+          </div>
+  name: test_tag_output_with_multiple_blank_lines_d13cc1eb889ab5c7f59a05a06e4a46f0
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ "-0.0725" | times: -100 }}'
+  environment: {}
+  expected: '7.25'
+  name: test_times_2f0a2cdd50ef34cca77f3cec08857130
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ '2.1' | times:3 | replace: '.','-' | plus:0}}"
+  environment: {}
+  expected: '6'
+  name: test_times_31282c159ebe70960275378a5b8f5bb7
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ price | times:2 }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 2
+  expected: '4'
+  name: test_times_652fb257d8738385dceaa74a0e953217
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 0.0725 | times:100 }}"
+  environment: {}
+  expected: '7.25'
+  name: test_times_89f3361643da61cdf08d796d93fb7ab8
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 3 | times:4 }}"
+  environment: {}
+  expected: '12'
+  name: test_times_cdcfe68a2412927b6260e49aa7259ad5
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ 'foo' | times:4 }}"
+  environment: {}
+  expected: '0'
+  name: test_times_e3303c6487ba55358caebc0ce6ecc481
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: '{{ "-0.0725" | times:100 }}'
+  environment: {}
+  expected: "-7.25"
+  name: test_times_ee4b46b8cff3c5476948a798d172e9f4
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: foo {{-}} bar
+  environment: {}
+  expected: foobar
+  name: test_trim_blank_9a1c17929ee2ad453fc7ec39cbe78f91
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {{- 'John' -}}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>John</p>
+          </div>
+  name: test_trim_output_754f3015985263750a2b1867d8a3d5eb
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if false -%}
+              no
+              {%- endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p></p>
+          </div>
+  name: test_trim_tags_1ad20a0486da57d25253dc40e01fe6c2
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if true -%}
+              yes
+              {%- endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>yes</p>
+          </div>
+  name: test_trim_tags_9c96de1279e530dafb6232b50a063237
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if true == true %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  true  "
+  name: test_true_eql_true_44a5291d42d3d7253f07bf2b07843c08
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if 0 > 0 %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  false  "
+  name: test_true_lq_true_c0460c36dc0610aee6d90b0d833f377d
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if true != true %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  false  "
+  name: test_true_not_eql_true_93a51883fdd1a6815b1b0ff88d083e87
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ foo | truncate: 5 }}"
+  environment:
+    foo: !ruby/object:TestThing
+      foo: 0
+  expected: wo...
+  name: test_truncate_calls_to_liquid_f9593cbb6204a0a86c9197909b7b2af6
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% unless true %} this text should not go into the output {% endunless
+    %} "
+  environment: {}
+  expected: "  "
+  name: test_unless_1da94837653804c7fae26271265a5d04
+- template: "{% unless true %} you suck {% endunless %} {% unless false %} you rock
+    {% endunless %}?"
+  environment: {}
+  expected: "  you rock ?"
+  name: test_unless_2592a9ab4c9bfa2707079c01fd615bc7
+- template: " {% unless false %} this text should go into the output {% endunless
+    %} "
+  environment: {}
+  expected: "  this text should go into the output  "
+  name: test_unless_aba481c48800a006f0b535cd0ca671b8
+- template: "{% unless false %} YES {% else %} NO {% endunless %}"
+  environment: {}
+  expected: " YES "
+  name: test_unless_else_815e5e76f4a639073f7bb5bbea65806a
+- template: "{% unless true %} NO {% else %} YES {% endunless %}"
+  environment: {}
+  expected: " YES "
+  name: test_unless_else_fdb092f58211f4ac27aeade728a4cc0d
+- template: '{% unless "foo" %} NO {% else %} YES {% endunless %}'
+  environment: {}
+  expected: " YES "
+  name: test_unless_else_ff8f80ce7afa1a635e1fc96b5db5d878
+- template: "{% for i in choices %}{% unless i %} {{ forloop.index }} {% else %} TRUE
+    {% endunless %}{% endfor %}"
+  environment:
+    choices:
+    - 1
+    -
+    - false
+  expected: " TRUE  2  3 "
+  name: test_unless_else_in_loop_38a03a97ce6e02bb66ecf0a70775c0cf
+- template: "{% for i in choices %}{% unless i %}{{ forloop.index }}{% endunless %}{%
+    endfor %}"
+  environment:
+    choices:
+    - 1
+    -
+    - false
+  expected: '23'
+  name: test_unless_in_loop_60858e35f65e32949fadefb662ea59b6
+- template: "{% for i in (1..10) %}{% unless true %} {% endunless %}{% endfor %}{%
+    if true %}{% unless true %} {% endunless %}{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_unless_is_blank_1c0869c7443993212e70f780d08f814a
+  filesystem: !ruby/object:BlankTestFileSystem {}
+- template: "{% unless foo %}true{% endunless %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: ''
+  name: test_unless_tag_calls_to_liquid_value_694377fdfc4c030603d54307272a1633
+- template: " {% if var == 'hello there!' %} true {% else %} false {% endif %} "
+  environment:
+    var: hello there!
+  expected: "  true  "
+  name: test_var_and_long_string_are_equal_1fdf80b31e292b06b5c166c6b9edef1c
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if 'hello there!' == var %} true {% else %} false {% endif %} "
+  environment:
+    var: hello there!
+  expected: "  true  "
+  name: test_var_and_long_string_are_equal_backwards_f314e43418a7cf0f156a8cbcd2061ec9
+  filesystem: !ruby/object:TestFileSystem {}
+- template: ' {% if "hello there!" == var %} true {% else %} false {% endif %} '
+  environment:
+    var: hello there!
+  expected: "  true  "
+  name: test_var_strings_are_not_equal_e23070765a7eb2c03a2c27faa7bd0f02
+  filesystem: !ruby/object:TestFileSystem {}
+- template: ' {% if var == "hello there!" %} true {% else %} false {% endif %} '
+  environment:
+    var: hello there!
+  expected: "  true  "
+  name: test_var_strings_equal_89d91656255739bfac869d08e9510b94
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{{ list[foo] }}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+    list:
+    - 1
+    - 2
+    - 3
+  expected: '2'
+  name: test_variable_lookup_calls_to_liquid_value_b954f0815fa9fd1ac8867c9f6bae5096
+- template: "{{ list[foo] }}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+    list:
+      1: one
+  expected: one
+  name: test_variable_lookup_calls_to_liquid_value_d93f8de756aec82e37a52ed4ada532cf
+- template: "{{ foo }}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+  expected: '1'
+  name: test_variable_lookup_calls_to_liquid_value_dc520d1e97b5e0599e3de3c779f68530
+- template: "{{ foo }}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: Yay
+  name: test_variable_lookup_calls_to_liquid_value_ec0226eeefe1fe70465f14fcb6489f0e
+- template: "{{ foo | upcase }}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: YAY
+  name: test_variable_lookup_calls_to_liquid_value_ff2d73f80029f4b0eb7af5ff005f190e
+- template: |2
+          <div>
+            <p>
+
+
+              {{- 'John' -}}
+
+
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>John</p>
+          </div>
+  name: test_variable_output_with_multiple_blank_lines_208789b9bf72100144df81a5748b30b3
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: "{{ foo }}"
+  environment:
+    foo: !ruby/object:ThingWithToLiquid {}
+  expected: foobar
+  name: test_variable_render_calls_to_liquid_7efcf51262e07b37e9fb518be549880d
+- template: "{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}"
+  environment: {}
+  expected: ''
+  name: test_whitespace_is_blank_89bbb6f743991d329b7f90a1d8b7bf65
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..10) %}\t{% endfor %}{% if true %}\t{% endif %}"
+  environment: {}
+  expected: ''
+  name: test_whitespace_is_blank_f7cd37a2d059d4f83d30bdc4494bae3a
+  filesystem: !ruby/object:TestFileSystem {}
+- template: "{% for i in (1..10) %}     x {% endfor %}{% if true %}     x {% endif
+    %}"
+  environment: {}
+  expected: "     x      x      x      x      x      x      x      x      x      x
+    \     x "
+  name: test_whitespace_is_not_blank_if_other_stuff_is_present_dd758e8bdf0c3c6667d085228406c1ca
+  filesystem: !ruby/object:TestFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {{- 'John' -}},
+              {{- '30' -}}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>John,30</p>
+          </div>
+  name: test_whitespace_trim_output_e8e12112245e90e9579951c1364c5655
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if false -%}
+              no
+              {%- endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p></p>
+          </div>
+  name: test_whitespace_trim_tags_2288c1eb8d32fe44a2d9401c87802f1c
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: |2
+          <div>
+            <p>
+              {%- if true -%}
+              yes
+              {%- endif -%}
+            </p>
+          </div>
+  environment: {}
+  expected: |2
+          <div>
+            <p>yes</p>
+          </div>
+  name: test_whitespace_trim_tags_50bfc5da587510df16e373885ed6e8ee
+  filesystem: !ruby/object:ProfilerTest::ProfilingFileSystem {}
+- template: " {% if 0 < 1 %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  true  "
+  name: test_zero_lq_one_153a5768404adcc2b4f11dbe758d6c12
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if 0 <= 0 %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  true  "
+  name: test_zero_lq_or_equal_one_a85324311c57fee3d6168c30a511c630
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if null <= 0 %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  false  "
+  name: test_zero_lq_or_equal_one_involving_nil_057906343e9748f55860ec67e6191271
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if 0 <= null %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  false  "
+  name: test_zero_lq_or_equal_one_involving_nil_e6daffac3d2959bcaa6a37dcaba90454
+  filesystem: !ruby/object:TestFileSystem {}
+- template: " {% if 0 >= 0 %} true {% else %} false {% endif %} "
+  environment: {}
+  expected: "  true  "
+  name: test_zero_lqq_or_equal_one_e9732f3fc9967deac9002624fc6981d1
+  filesystem: !ruby/object:TestFileSystem {}
