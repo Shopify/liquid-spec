@@ -5,4 +5,4 @@ require 'liquid'
 require 'json'
 require 'pry-byebug'
 
-require_relative "../lib/liquid/spec"
+require "liquid/spec"

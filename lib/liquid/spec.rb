@@ -1,7 +1,7 @@
-require_relative "spec/source"
-require_relative "spec/yaml_source"
-require_relative "spec/test_generator"
-require_relative "spec/adapter/liquid_ruby"
+require "liquid/spec/source"
+require "liquid/spec/yaml_source"
+require "liquid/spec/test_generator"
+require "liquid/spec/adapter/liquid_ruby"
 
 module Liquid
   module Spec

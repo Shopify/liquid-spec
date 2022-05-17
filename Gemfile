@@ -1,8 +1,9 @@
 source "https://rubygems.org"
 
-gem 'liquid', git: "https://github.com/Shopify/liquid"
-gem 'json'
-gem 'rake'
+group :development, :test do
+  gem 'liquid', git: "https://github.com/Shopify/liquid"
+  gem 'rake'
+end
 
 group :test do
   gem 'minitest'
