@@ -8,6 +8,16 @@ containers:
 steps:
   - label: Publish to Cloudsmith
     timeout: 10m
+    git:
+      history: shallow
     run:
-      - publish:
-          type: gem
+      - bundle: ~
+      - bundle exec rake build
+      - ls -R pkg/
+    publish:
+      package:
+        repository_name: gems
+        package_type: ruby
+        artifacts:
+          - path: pkg
+            patterns: ["*.gem"]
