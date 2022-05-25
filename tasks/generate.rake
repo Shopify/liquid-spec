@@ -3,6 +3,7 @@
 require 'yaml'
 require 'liquid'
 require 'minitest'
+require 'pry-byebug'
 require_relative(
   File.join(
     __dir__, # liquid-spec/tasks
