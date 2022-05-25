@@ -141,10 +141,9 @@
 - template: "{% for i in (1..10) %}{% assign foo = 0 %} {% increment foo %} {% decrement
     foo %}{% endfor %}{% if true %}{% assign foo = 0 %} {% increment foo %} {% decrement
     foo %}{% endif %}"
-  environment:
-    foo: 0
+  environment: {}
   expected: " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-  name: BlankTest#test_increment_is_not_blank_249140202c9fb11deb141ef826cb2e1c
+  name: BlankTest#test_increment_is_not_blank_7d1a01905daf13f853e337388d8db905
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/blank_test.rb#L86
@@ -743,10 +742,9 @@
     /test/integration/tags/for_tag_test.rb#L275
 - template: "{%for item in (1..foobar.value) %} {{item}} {%endfor%}"
   environment:
-    foobar: !ruby/object:ThingWithValue
-      context:
+    foobar: !ruby/object:ThingWithValue {}
   expected: " 1  2  3 "
-  name: ForTagTest#test_for_with_drop_value_range_0162c44d41703fb624280a294a8d85ba
+  name: ForTagTest#test_for_with_drop_value_range_78d9f57aa4e48eb15d60d2617411c1ed
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/for_tag_test.rb#L62
@@ -869,10 +867,8 @@
       - 3
       - 4
       - 5
-      context:
-      each_called: true
   expected: '12345'
-  name: ForTagTest#test_iterate_with_each_when_no_limit_applied_152ce045ec973e34faa6bcea9e2d2899
+  name: ForTagTest#test_iterate_with_each_when_no_limit_applied_002f198eecb768a0bdcb4666105b0b97
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/for_tag_test.rb#L396
@@ -898,10 +894,8 @@
       - 3
       - 4
       - 5
-      context:
-      load_slice_called: true
   expected: '34'
-  name: ForTagTest#test_iterate_with_load_slice_returns_same_results_as_without_af24248e6b017be18d4c3766495fcc72
+  name: ForTagTest#test_iterate_with_load_slice_returns_same_results_as_without_8e98646da00448ffe0b9c05a03d28498
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/for_tag_test.rb#L427
@@ -914,10 +908,8 @@
       - 3
       - 4
       - 5
-      context:
-      load_slice_called: true
   expected: '34'
-  name: ForTagTest#test_iterate_with_load_slice_when_limit_and_offset_applied_b5f7a7fd6f85ecb37254e039447c3c2a
+  name: ForTagTest#test_iterate_with_load_slice_when_limit_and_offset_applied_03f78dc1dc5d24a15d6b89e2e39329c4
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/for_tag_test.rb#L416
@@ -930,10 +922,8 @@
       - 3
       - 4
       - 5
-      context:
-      load_slice_called: true
   expected: '1'
-  name: ForTagTest#test_iterate_with_load_slice_when_limit_applied_47e9ee616f27aa0623872d2ab3506d20
+  name: ForTagTest#test_iterate_with_load_slice_when_limit_applied_709d9e7e1652c2753d9919d865e9118e
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/for_tag_test.rb#L406
@@ -1762,27 +1752,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/if_else_tag_test.rb#L158
-- template: "{% if 1 or throw or or 1 %}yes{% endif %}"
-  environment: {}
-  expected: ''
-  name: IfElseTagTest#test_operators_are_whitelisted_0c59a2f74398634f581fa5dd7125b16d
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/if_else_tag_test.rb#L166
-- template: "{% if %}"
-  environment: {}
-  expected: ''
-  name: IfElseTagTest#test_syntax_error_no_expression_988b13b3699af943c53ba6a01407b751
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/if_else_tag_test.rb#L141
-- template: "{% if jerry == 1 %}"
-  environment: {}
-  expected: ''
-  name: IfElseTagTest#test_syntax_error_no_variable_4c02035f58e52ab2b183979274cb85b1
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/if_else_tag_test.rb#L137
 - template: "{% for i in (1..3) %}{{ i }}{% include 'break' %}{{ i }}{% endfor %}"
   environment: {}
   expected: '1'
@@ -2020,55 +1989,50 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/include_tag_test.rb#L143
-- template: "{%increment port %} {%increment starboard%} {%increment port %} {%decrement
-    port%} {%decrement starboard %}"
-  environment:
-    port: 2
-    starboard: 5
-  expected: 1 5 2 2 5
-  name: IncrementTagTest#test_dec_5223f94abd39b597eb7dbdb314ac2714
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/increment_tag_test.rb#L20
 - template: "{%decrement port %} {%decrement port%}"
-  environment:
-    port: -2
+  environment: {}
   expected: "-1 -2"
-  name: IncrementTagTest#test_dec_9117d5dc111c9fe34e3fe0b03f9a3ba9
+  name: IncrementTagTest#test_dec_847e105a5dc4c8b52c56f64e670d9e7b
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/increment_tag_test.rb#L19
+- template: "{%increment port %} {%increment starboard%} {%increment port %} {%decrement
+    port%} {%decrement starboard %}"
+  environment:
+    port: 1
+    starboard: 5
+  expected: 1 5 2 2 5
+  name: IncrementTagTest#test_dec_e12801b091872a070b32ab92f4b763f8
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/tags/increment_tag_test.rb#L20
 - template: "{%decrement port %}"
   environment:
-    port: 9
+    port: 10
   expected: '9'
-  name: IncrementTagTest#test_dec_b0ab31463775362b90809c4a26febac2
+  name: IncrementTagTest#test_dec_e2ebcd04660bf5c02b1b3e008af6f7ec
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/increment_tag_test.rb#L18
 - template: "{%increment port %}"
-  environment:
-    port: 1
+  environment: {}
   expected: '0'
-  name: IncrementTagTest#test_inc_13774555c9fa35d00ffaae85a4398929
+  name: IncrementTagTest#test_inc_2712d55187e628fd87fe66242bbe7a0f
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/increment_tag_test.rb#L9
 - template: "{%increment port %} {%increment port%}"
-  environment:
-    port: 2
+  environment: {}
   expected: 0 1
-  name: IncrementTagTest#test_inc_14b419531191ad7e25a4afa31115336c
+  name: IncrementTagTest#test_inc_6e6e6471dc367f6a458f546f23155a6f
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/increment_tag_test.rb#L10
 - template: "{%increment port %} {%increment starboard%} {%increment port %} {%increment
     port%} {%increment starboard %}"
-  environment:
-    port: 3
-    starboard: 2
+  environment: {}
   expected: 0 0 1 2 1
-  name: IncrementTagTest#test_inc_3bde37bad527515ecffaf4b6eaf7c27a
+  name: IncrementTagTest#test_inc_d16ac15f81a80e8f3847ff9a7cba37c5
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/increment_tag_test.rb#L11
@@ -2443,20 +2407,18 @@
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/render_tag_test.rb#L110
 - template: '{% decrement %}{% decrement %}{% render "decr" %}'
-  environment:
-    '': -2
+  environment: {}
   expected: "-1-2-1"
-  name: RenderTagTest#test_decrement_is_isolated_between_renders_5eb8383ead804ed44132efdb2e7dca91
+  name: RenderTagTest#test_decrement_is_isolated_between_renders_76126f3fb42262f4f8065fc868585567
   filesystem:
     decr: "{% decrement %}"
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/render_tag_test.rb#L121
 - template: '{% increment %}{% increment %}{% render "incr" %}'
-  environment:
-    '': 2
+  environment: {}
   expected: '010'
-  name: RenderTagTest#test_increment_is_isolated_between_renders_37f0676175b089249fd0cfce2a5bc751
+  name: RenderTagTest#test_increment_is_isolated_between_renders_d6867d9679227de8527fe16a2efaade0
   filesystem:
     incr: "{% increment %}"
   url: |-
@@ -2555,10 +2517,9 @@
     /test/integration/tags/render_tag_test.rb#L173
 - template: "{% render 'loop' for loop as value %}"
   environment:
-    loop: !ruby/object:TestEnumerable
-      context:
+    loop: !ruby/object:TestEnumerable {}
   expected: '123'
-  name: RenderTagTest#test_render_tag_for_drop_587f4879c9123537ddb1ca10ff269454
+  name: RenderTagTest#test_render_tag_for_drop_88f92ad9322662c59e72432e521b2e13
   filesystem:
     loop: "{{ value.foo }}"
   url: |-
@@ -2603,10 +2564,9 @@
     /test/integration/tags/render_tag_test.rb#L163
 - template: "{% render 'loop' with loop as value %}"
   environment:
-    loop: !ruby/object:TestEnumerable
-      context:
+    loop: !ruby/object:TestEnumerable {}
   expected: TestEnumerable
-  name: RenderTagTest#test_render_tag_with_drop_16e751507470a3feec825e62d35c36e7
+  name: RenderTagTest#test_render_tag_with_drop_cca9f1b3603d95e6ac5a80cf4e1b9d1f
   filesystem:
     loop: "{{ value }}"
   url: |-
@@ -2718,6 +2678,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L741
+- template: "{{ width | at_least:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 6
+  expected: '6'
+  name: StandardFiltersTest#test_at_least_0fda1f4c4439307312a8fd327e58b685
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L734
 - template: "{{ 5 | at_least:6 }}"
   environment: {}
   expected: '6'
@@ -2728,13 +2697,12 @@
 - template: "{{ width | at_least:5 }}"
   environment:
     width: !ruby/object:NumberLikeThing
-      amount: 6
-      context:
-  expected: '6'
-  name: StandardFiltersTest#test_at_least_54d6b11415a966661a5df592c463c135
+      amount: 4
+  expected: '5'
+  name: StandardFiltersTest#test_at_least_35ba83c7106df9d8804fba05fea300f2
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L734
+    /test/integration/standard_filter_test.rb#L735
 - template: "{{ 4.5 | at_least:5 }}"
   environment: {}
   expected: '5'
@@ -2742,16 +2710,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L733
-- template: "{{ 5 | at_least: width }}"
-  environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 6
-      context:
-  expected: '6'
-  name: StandardFiltersTest#test_at_least_80e16beea4d4dbc90267c07e50d4a652
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L736
 - template: "{{ 5 | at_least:5 }}"
   environment: {}
   expected: '5'
@@ -2759,16 +2717,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L730
-- template: "{{ width | at_least:5 }}"
+- template: "{{ 5 | at_least: width }}"
   environment:
     width: !ruby/object:NumberLikeThing
-      amount: 4
-      context:
-  expected: '5'
-  name: StandardFiltersTest#test_at_least_be2c5e1f5943bfa02d75f4297024b08a
+      amount: 6
+  expected: '6'
+  name: StandardFiltersTest#test_at_least_c5d1a69d1ba36b4d6819804b7aefd7b5
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L735
+    /test/integration/standard_filter_test.rb#L736
 - template: "{{ 5 | at_least:4 }}"
   environment: {}
   expected: '5'
@@ -2776,6 +2733,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L729
+- template: "{{ width | at_most:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 6
+  expected: '5'
+  name: StandardFiltersTest#test_at_most_2120c5ce35e3bcc52622a0b1d5eaa40e
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L723
 - template: "{{ 5 | at_most:4 }}"
   environment: {}
   expected: '4'
@@ -2783,26 +2749,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L718
-- template: "{{ width | at_most:5 }}"
-  environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 4
-      context:
-  expected: '4'
-  name: StandardFiltersTest#test_at_most_339b89d6f3e9486e7fce2780251b06ff
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L724
-- template: "{{ 5 | at_most: width }}"
-  environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 4
-      context:
-  expected: '4'
-  name: StandardFiltersTest#test_at_most_3bbf67eeb606296e79e06c601dc5f684
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L725
 - template: "{{ 5 | at_most:6 }}"
   environment: {}
   expected: '5'
@@ -2810,16 +2756,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L720
-- template: "{{ width | at_most:5 }}"
-  environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 6
-      context:
-  expected: '5'
-  name: StandardFiltersTest#test_at_most_619a852b672e1ac210232a84d6638cdf
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L723
 - template: "{{ 5 | at_most:5 }}"
   environment: {}
   expected: '5'
@@ -2827,6 +2763,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L719
+- template: "{{ 5 | at_most: width }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 4
+  expected: '4'
+  name: StandardFiltersTest#test_at_most_8e9c315df355db1b246d12cae37c6a6a
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L725
 - template: "{{ 4.5 | at_most:5 }}"
   environment: {}
   expected: '4.5'
@@ -2834,6 +2779,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L722
+- template: "{{ width | at_most:5 }}"
+  environment:
+    width: !ruby/object:NumberLikeThing
+      amount: 4
+  expected: '4'
+  name: StandardFiltersTest#test_at_most_c923d973ed6fdadf0204f51d746437ba
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L724
 - template: "{{ 'a' | to_number }}"
   environment: {}
   expected: a
@@ -2853,9 +2807,8 @@
   environment:
     price: !ruby/object:NumberLikeThing
       amount: 4.6
-      context:
   expected: '5'
-  name: StandardFiltersTest#test_ceil_8cc9db8cfb3cd461185ce9ec52626e84
+  name: StandardFiltersTest#test_ceil_4b157a7fd75b4286548fdd4e5be9f947
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L704
@@ -2866,13 +2819,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L699
-- template: "{{ 1.0 | divided_by: 0.0 | ceil }}"
-  environment: {}
-  expected: '4'
-  name: StandardFiltersTest#test_ceil_e98bbaa96b5f19200f73f7b0fe462d30
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L701
 - template: "{{ 'abc' | date: '%D' }}"
   environment: {}
   expected: abc
@@ -2898,9 +2844,8 @@
   environment:
     drop: !ruby/object:BooleanDrop
       value: true
-      context:
   expected: Yay
-  name: StandardFiltersTest#test_default_88bf4529320d24fc5b37be1fc26860b2
+  name: StandardFiltersTest#test_default_c3d084cc6333dcc1be81dabc3831ff1f
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L770
@@ -2908,26 +2853,17 @@
   environment:
     drop: !ruby/object:BooleanDrop
       value: false
-      context:
   expected: bar
-  name: StandardFiltersTest#test_default_d05d92894fcd397e6eb126f632d446d0
+  name: StandardFiltersTest#test_default_ed9bbd975780512e8620ffd2c1296026
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L769
-- template: "{{ false | default: 'bar', allow_false: true }}"
-  environment: {}
-  expected: 'false'
-  name: StandardFiltersTest#test_default_handle_false_99a3cd2c224c4491976adf8f0db0bb64
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L780
 - template: "{{ drop | default: 'bar', allow_false: true }}"
   environment:
     drop: !ruby/object:BooleanDrop
       value: true
-      context:
   expected: Yay
-  name: StandardFiltersTest#test_default_handle_false_9c281f024f3725022cce6fcda1c8b0cc
+  name: StandardFiltersTest#test_default_handle_false_5d69cfd34b05748c3bae2ad95e4eec34
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L782
@@ -2935,12 +2871,18 @@
   environment:
     drop: !ruby/object:BooleanDrop
       value: false
-      context:
   expected: Nay
-  name: StandardFiltersTest#test_default_handle_false_daa5562224db408a6dc91e3abcb5b2c4
+  name: StandardFiltersTest#test_default_handle_false_5e712bb4eabe9456086e98908b7d7870
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L781
+- template: "{{ false | default: 'bar', allow_false: true }}"
+  environment: {}
+  expected: 'false'
+  name: StandardFiltersTest#test_default_handle_false_99a3cd2c224c4491976adf8f0db0bb64
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L780
 - template: "{{ 15 | divided_by:3 }}"
   environment: {}
   expected: '5'
@@ -2962,16 +2904,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L663
-- template: "{{ price | divided_by:2 }}"
-  environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 10
-      context:
-  expected: '5'
-  name: StandardFiltersTest#test_divided_by_5ff2bfa569a21affbf5b3507e41daf0b
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L673
 - template: "{{ 12 | divided_by:3 }}"
   environment: {}
   expected: '4'
@@ -2979,13 +2911,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L662
-- template: "{{ 1 | modulo: 0 }}"
-  environment: {}
-  expected: '4'
-  name: StandardFiltersTest#test_divided_by_8ccea9ee8f93e656213b2c771416ceed
+- template: "{{ price | divided_by:2 }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 10
+  expected: '5'
+  name: StandardFiltersTest#test_divided_by_f079e85e4ed2102d251fba7847d033d8
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L670
+    /test/integration/standard_filter_test.rb#L673
 - template: "{{ foo | last }}"
   environment:
     foo:
@@ -3019,20 +2953,12 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L709
-- template: "{{ 1.0 | divided_by: 0.0 | floor }}"
-  environment: {}
-  expected: '4'
-  name: StandardFiltersTest#test_floor_8e711753b1ca108cbbbd566167803de1
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L711
 - template: "{{ price | floor }}"
   environment:
     price: !ruby/object:NumberLikeThing
       amount: 5.4
-      context:
   expected: '5'
-  name: StandardFiltersTest#test_floor_c845c6dcd7320068e90b45cc063f76dd
+  name: StandardFiltersTest#test_floor_a05307853b1f0a98e609bec6f7dcff82
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L714
@@ -3087,9 +3013,9 @@
   environment:
     foo:
     - !ruby/object:TestThing
-      foo: 1
+      foo: 0
   expected: 'woot: 1'
-  name: StandardFiltersTest#test_map_calls_to_liquid_8c5d78ae298ddd3a876e41102211599e
+  name: StandardFiltersTest#test_map_calls_to_liquid_67b664577bd3d9245a45ec7aa4247215
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L439
@@ -3120,13 +3046,21 @@
     /test/integration/standard_filter_test.rb#L453
 - template: '{{ foo | map: "foo" }}'
   environment:
-    foo: !ruby/object:TestEnumerable
-      context:
+    foo: !ruby/object:TestEnumerable {}
   expected: '123'
-  name: StandardFiltersTest#test_map_works_on_enumerables_feb8ac5452934557ea2da4cff6252a7c
+  name: StandardFiltersTest#test_map_works_on_enumerables_8c512ae95abd9955d2c51b1c0264c7a6
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L490
+- template: "{{ price | minus:'2' }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 7
+  expected: '5'
+  name: StandardFiltersTest#test_minus_7e54f7f401b56b43457ba10223af8177
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L635
 - template: "{{ '4.3' | minus:'2' }}"
   environment: {}
   expected: '2.3'
@@ -3134,16 +3068,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L633
-- template: "{{ price | minus:'2' }}"
-  environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 7
-      context:
-  expected: '5'
-  name: StandardFiltersTest#test_minus_9c084a67d1ec07a5d6d62d8948169cef
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L635
 - template: "{{ input | minus:operand }}"
   environment:
     input: 5
@@ -3164,19 +3088,11 @@
   environment:
     price: !ruby/object:NumberLikeThing
       amount: 3
-      context:
   expected: '1'
-  name: StandardFiltersTest#test_modulo_98a67bb3c20a5f912d0540676eedeb9b
+  name: StandardFiltersTest#test_modulo_9d72c8bd4c80ce492667400c42f88c9c
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L682
-- template: "{{ 1 | modulo: 0 }}"
-  environment: {}
-  expected: '4'
-  name: StandardFiltersTest#test_modulo_eebd5ae4449286fb6d456503b24a246d
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L679
 - template: "{{ source | newline_to_br }}"
   environment:
     source: |-
@@ -3216,6 +3132,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L625
+- template: "{{ price | plus:'2' }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 3
+  expected: '5'
+  name: StandardFiltersTest#test_plus_9099671b1c00b0207c245e19c3028ed7
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L628
 - template: "{{ '1' | plus:'1.0' }}"
   environment: {}
   expected: '2.0'
@@ -3223,16 +3148,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L626
-- template: "{{ price | plus:'2' }}"
-  environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 3
-      context:
-  expected: '5'
-  name: StandardFiltersTest#test_plus_97fd00835417c076984e8407200a4e40
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L628
 - template: "{{ a | prepend: 'a'}}"
   environment:
     a: bc
@@ -3300,16 +3215,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L687
-- template: "{{ price | round }}"
-  environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 4.6
-      context:
-  expected: '5'
-  name: StandardFiltersTest#test_round_693b823e4bc45d97e119d89466c22165
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L693
 - template: "{{ input | round: 2 }}"
   environment:
     input: 4.5612
@@ -3321,10 +3226,18 @@
 - template: "{{ price | round }}"
   environment:
     price: !ruby/object:NumberLikeThing
+      amount: 4.6
+  expected: '5'
+  name: StandardFiltersTest#test_round_b6db09c92c54e6b884bf702be653b37a
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L693
+- template: "{{ price | round }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
       amount: 4.3
-      context:
   expected: '4'
-  name: StandardFiltersTest#test_round_bebc505fad3d39af3ab19f9fd3fc154b
+  name: StandardFiltersTest#test_round_bfb9d5ec0da02e6dd0ea9504a9da6362
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L694
@@ -3336,13 +3249,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L686
-- template: "{{ 1.0 | divided_by: 0.0 | round }}"
-  environment: {}
-  expected: '4'
-  name: StandardFiltersTest#test_round_f1039ed0aa04327c0a20fcd435b241bf
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L690
 - template: "{{ source | rstrip }}"
   environment:
     source: " \tab c  \n \t"
@@ -3361,10 +3267,9 @@
     /test/integration/standard_filter_test.rb#L610
 - template: '{{ foo | sort: "bar" | map: "foo" }}'
   environment:
-    foo: !ruby/object:TestEnumerable
-      context:
+    foo: !ruby/object:TestEnumerable {}
   expected: '213'
-  name: StandardFiltersTest#test_sort_works_on_enumerables_9867a0e170a5a39212a15bd573c75733
+  name: StandardFiltersTest#test_sort_works_on_enumerables_69f0f892d30245e90f83e73034cd8ac9
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L517
@@ -3403,6 +3308,15 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L616
+- template: "{{ price | times:2 }}"
+  environment:
+    price: !ruby/object:NumberLikeThing
+      amount: 2
+  expected: '4'
+  name: StandardFiltersTest#test_times_1038ca2b971a55313b1c8f3a250f0829
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/standard_filter_test.rb#L658
 - template: "{{ 'foo' | times:4 }}"
   environment: {}
   expected: '0'
@@ -3438,16 +3352,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L657
-- template: "{{ price | times:2 }}"
-  environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 2
-      context:
-  expected: '4'
-  name: StandardFiltersTest#test_times_addf14e262a1a12f881d430bc0aa1a5d
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/standard_filter_test.rb#L658
 - template: "{{ '2.1' | times:3 | replace: '.','-' | plus:0}}"
   environment: {}
   expected: '6'
@@ -3458,9 +3362,9 @@
 - template: "{{ foo | truncate: 5 }}"
   environment:
     foo: !ruby/object:TestThing
-      foo: 1
+      foo: 0
   expected: wo...
-  name: StandardFiltersTest#test_truncate_calls_to_liquid_f65683c128d079125ca526bb02519137
+  name: StandardFiltersTest#test_truncate_calls_to_liquid_134362341bb7641d5702e5d16208bd86
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/standard_filter_test.rb#L526
@@ -3512,15 +3416,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/standard_tag_test.rb#L65
-- template: "{{ var2 }}{% capture %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2
-    }}"
-  environment:
-    var: content
-  expected: 'content foo content foo '
-  name: StandardTagTest#test_capture_detects_bad_syntax_f560d641ff7a0eb9f4e9a5f2935345da
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/standard_tag_test.rb#L72
 - template: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase
     %}"
   environment:
@@ -3564,20 +3459,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/standard_tag_test.rb#L80
-- template: "{% case false %}{% huh %}true{% endcase %}"
-  environment: {}
-  expected: ''
-  name: StandardTagTest#test_case_detects_bad_syntax_47dd4a661f3b71ac589bec837ed57888
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/standard_tag_test.rb#L244
-- template: "{% case false %}{% when %}true{% endcase %}"
-  environment: {}
-  expected: ''
-  name: StandardTagTest#test_case_detects_bad_syntax_606269255539c751f1b85f1d6e554e40
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/standard_tag_test.rb#L240
 - template: "{% case false %}{% when true %}true{% when false %}false{% else %}else{%
     endcase %}"
   environment: {}
@@ -4473,12 +4354,11 @@
       - 4
       - 5
       - 6
-      context:
   expected: |
     <tr class="row1">
     <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
     <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
-  name: TableRowTest#test_enumerable_drop_3f0c223c631f4deeb5ece1c865103726
+  name: TableRowTest#test_enumerable_drop_9adc8c47cbc396ffcc4fcf7d3fa19f60
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/table_row_test.rb#L52
@@ -5188,9 +5068,8 @@
   environment:
     foo: !ruby/object:IntegerDrop
       value: 1
-      context:
   expected: One
-  name: VariableTest#test_case_tag_calls_to_liquid_value_2d807f467512b6e4bc3592845687d876
+  name: VariableTest#test_case_tag_calls_to_liquid_value_be63eb946318785f639ea7aa5eb38882
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L42
@@ -5240,63 +5119,39 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L72
-- template: "{% if foo > 0 %}one{% endif %}"
-  environment:
-    foo: !ruby/object:IntegerDrop
-      value: 1
-      context:
-  expected: one
-  name: VariableTest#test_if_tag_calls_to_liquid_value_21356eb5e06ff4c8adec6f2dd992dca7
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/variable_test.rb#L29
-- template: "{% if foo %}true{% endif %}"
-  environment:
-    foo: !ruby/object:BooleanDrop
-      value: false
-      context:
-  expected: ''
-  name: VariableTest#test_if_tag_calls_to_liquid_value_6104d6945ce620e7c629d5cd552ff52c
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/variable_test.rb#L33
-- template: "{% if foo %}true{% endif %}"
-  environment:
-    foo: !ruby/object:BooleanDrop
-      value: true
-      context:
-  expected: 'true'
-  name: VariableTest#test_if_tag_calls_to_liquid_value_7de203dddab28a0fedb19b385040fcde
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/variable_test.rb#L31
-- template: "{% if foo == true %}true{% endif %}"
-  environment:
-    foo: !ruby/object:BooleanDrop
-      value: true
-      context:
-  expected: 'true'
-  name: VariableTest#test_if_tag_calls_to_liquid_value_9f13f0f82676569f2d19e188a2a78735
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/variable_test.rb#L30
 - template: "{% if 0 < foo %}one{% endif %}"
   environment:
     foo: !ruby/object:IntegerDrop
       value: 1
-      context:
   expected: one
-  name: VariableTest#test_if_tag_calls_to_liquid_value_9fc44f5fabeca2454373c1518247b6cb
+  name: VariableTest#test_if_tag_calls_to_liquid_value_080253e8ada73e94603b2423db76a53a
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L28
+- template: "{% if foo == true %}true{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: 'true'
+  name: VariableTest#test_if_tag_calls_to_liquid_value_18c901df3e7bdae995c2d9641e4599f0
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/variable_test.rb#L30
+- template: "{% if foo > 0 %}one{% endif %}"
+  environment:
+    foo: !ruby/object:IntegerDrop
+      value: 1
+  expected: one
+  name: VariableTest#test_if_tag_calls_to_liquid_value_4d7497237e96cc216ae1c717c9b505a0
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/variable_test.rb#L29
 - template: "{% if foo == true %}True{% endif %}"
   environment:
     foo: !ruby/object:BooleanDrop
       value: false
-      context:
   expected: ''
-  name: VariableTest#test_if_tag_calls_to_liquid_value_c1b7e056bc43695862bab4bfb3f3ede7
+  name: VariableTest#test_if_tag_calls_to_liquid_value_6c0cd1e642671ea7b6e283f811084132
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L34
@@ -5304,12 +5159,29 @@
   environment:
     foo: !ruby/object:IntegerDrop
       value: 1
-      context:
   expected: one
-  name: VariableTest#test_if_tag_calls_to_liquid_value_d6c212ca67d645e310c31165be9daea3
+  name: VariableTest#test_if_tag_calls_to_liquid_value_91f99b1f712ed3004ec98b8a74a0713d
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L27
+- template: "{% if foo %}true{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: 'true'
+  name: VariableTest#test_if_tag_calls_to_liquid_value_98a64f1924fcb653baa7db90dddea813
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/variable_test.rb#L31
+- template: "{% if foo %}true{% endif %}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: false
+  expected: ''
+  name: VariableTest#test_if_tag_calls_to_liquid_value_bcb0e32adf5fe25a30f410769a02becd
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/variable_test.rb#L33
 - template: "{{ [key] }}"
   environment:
     key: foo
@@ -5331,43 +5203,39 @@
   environment:
     foo: !ruby/object:BooleanDrop
       value: true
-      context:
   expected: ''
-  name: VariableTest#test_unless_tag_calls_to_liquid_value_fcb0308fc3f777f645184370eb676efa
+  name: VariableTest#test_unless_tag_calls_to_liquid_value_61de3f334f50223bc935d394ad607060
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L38
-- template: "{{ foo | upcase }}"
-  environment:
-    foo: !ruby/object:BooleanDrop
-      value: true
-      context:
-  expected: YAY
-  name: VariableTest#test_variable_lookup_calls_to_liquid_value_2662c5f93591f255697828aa7a3ea4ae
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/variable_test.rb#L23
 - template: "{{ foo }}"
   environment:
     foo: !ruby/object:IntegerDrop
       value: 1
-      context:
   expected: '1'
-  name: VariableTest#test_variable_lookup_calls_to_liquid_value_529e936c033aaf48a19bd26af37c17c4
+  name: VariableTest#test_variable_lookup_calls_to_liquid_value_8161b4b1655885acf0c1808f34e66f01
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L19
+- template: "{{ foo | upcase }}"
+  environment:
+    foo: !ruby/object:BooleanDrop
+      value: true
+  expected: YAY
+  name: VariableTest#test_variable_lookup_calls_to_liquid_value_84310e3e9e13c4afecc0dfabf31152e3
+  url: |-
+    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
+    /test/integration/variable_test.rb#L23
 - template: "{{ list[foo] }}"
   environment:
     foo: !ruby/object:IntegerDrop
       value: 1
-      context:
     list:
     - 1
     - 2
     - 3
   expected: '2'
-  name: VariableTest#test_variable_lookup_calls_to_liquid_value_844102d41f1f243cef84a862ad258d66
+  name: VariableTest#test_variable_lookup_calls_to_liquid_value_a241a0645195403891ab6ee598da1729
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L20
@@ -5375,11 +5243,10 @@
   environment:
     foo: !ruby/object:IntegerDrop
       value: 1
-      context:
     list:
       1: one
   expected: one
-  name: VariableTest#test_variable_lookup_calls_to_liquid_value_9ff250d538bb7a8d15b1ec668d7816db
+  name: VariableTest#test_variable_lookup_calls_to_liquid_value_abd135d79c72750fdfcac65966b07684
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L21
@@ -5387,9 +5254,8 @@
   environment:
     foo: !ruby/object:BooleanDrop
       value: true
-      context:
   expected: Yay
-  name: VariableTest#test_variable_lookup_calls_to_liquid_value_e0e45df2718c354bdf37a5680716f6e1
+  name: VariableTest#test_variable_lookup_calls_to_liquid_value_e2600a781fc12ce4be745ae0b110d6d2
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/variable_test.rb#L22

@@ -16,7 +16,7 @@ module Liquid
         @sources.each do |source|
           source.each do |spec|
             @klass.class_exec(@adapter) do |adapter|
-              define_method(spec["name"]) do
+              define_method("test_#{spec["name"]}") do
                 actual = adapter.render(spec)
                 assert_equal(spec["expected"], actual)
               end

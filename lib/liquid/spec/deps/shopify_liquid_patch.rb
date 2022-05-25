@@ -20,7 +20,7 @@ module ShopifyLiquidPatch
     if message.nil?
       data = {
         "template" => template,
-        "environment" => assigns,
+        "environment" => _deep_dup(assigns),
         "expected" => expected,
         "name" => "#{class_name}##{name}",
       }
@@ -35,16 +35,14 @@ module ShopifyLiquidPatch
       puts "=======================================\n"
     end
 
-    super
+    result = super
   ensure
-    if message.nil?
+    if message.nil? && result
       fs = Liquid::Template.file_system
       unless fs.is_a?(Liquid::BlankFileSystem)
         data["filesystem"] = fs.map unless fs.map.empty?
         Liquid::Template.file_system = fs.inner
       end
-
-      _remove_ctx(data["environment"])
 
       digest = Digest::MD5.hexdigest(YAML.dump(data))
       data["name"] = "#{data["name"]}_#{digest}"
@@ -70,11 +68,21 @@ module ShopifyLiquidPatch
     end
   end
 
-  def _remove_ctx(env)
-    env.each do |k, v|
-      if v.respond_to?(:context=)
-        v.context = nil
+  def _deep_dup(env)
+    if env.is_a?(Hash)
+      new_env = {}
+      env.each do |k, v|
+        new_env[k] = _deep_dup(v)
       end
+      new_env
+    elsif env.is_a?(Array)
+      new_env = []
+      env.each do |v|
+        new_env << _deep_dup(v)
+      end
+      new_env
+    else
+      env.dup
     end
   end
 end
