@@ -4,11 +4,14 @@ module Liquid
       include Enumerable
 
       YAML_EXT = ".yml"
+      TEXT_EXT = ".txt"
 
       class << self
         def for(path)
           if File.extname(path) == YAML_EXT
             Liquid::Spec::YamlSource.new(path)
+          elsif File.extname(path) == TEXT_EXT
+            Liquid::Spec::TextSource.new(path)
           else
             raise NotImplementedError, "Runner not implmented for filetype: #{File.extname(path)}"
           end

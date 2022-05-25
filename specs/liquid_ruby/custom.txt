@@ -1,0 +1,25 @@
+==================================================
+NAME 1
+==================================================
+
+values: foo,bar,baz
+
+---------------------------------------------------
+
+{% assign foo = values | split: "," %}.{{ foo[1] }}.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+.bar.
+
+===
+NAME 2
+===
+template: product
+product:
+  title: Draft 151cm
+___
+product: 'Product: {{ product.title }} '
+---
+{% include template for product %}
++++
+Product: Draft 151cm 
