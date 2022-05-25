@@ -4,7 +4,15 @@ module Liquid
       private
 
       def specs
-        @specs ||= YAML.unsafe_load(spec_data)
+        @specs ||= YAML.unsafe_load(spec_data).map do |data|
+          Unit.new(
+            name: data["name"],
+            expected: data["expected"],
+            template: data["template"],
+            environment: data["environment"],
+            filesystem: data["filesystem"],
+          )
+        end
       end
     end
   end

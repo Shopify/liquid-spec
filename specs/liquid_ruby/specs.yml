@@ -1304,13 +1304,6 @@
   name: IfElseTagTest#test_if_and_33e1ffeabf6087e4ded07a92b3920d26
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/tags/if_else_tag_test.rb#L65
-- template: "{% if false and true %} YES {% endif %}"
-  environment: {}
-  expected: ''
-  name: IfElseTagTest#test_if_and_33e1ffeabf6087e4ded07a92b3920d26
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/tags/if_else_tag_test.rb#L64
 - template: "{% if true and true %} YES {% endif %}"
   environment: {}

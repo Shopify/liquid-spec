@@ -3,11 +3,11 @@ module Liquid
     module Adapter
       class LiquidRuby
         def render(spec)
-          if filesystem = spec["filesystem"]
+          if filesystem = spec.filesystem
             Liquid::Template.file_system = MockFileSystem.new(filesystem)
           end
-          template = Liquid::Template.parse(spec["template"])
-          template.render(spec["environment"])
+          template = Liquid::Template.parse(spec.template)
+          template.render(spec.environment)
         end
       end
 
