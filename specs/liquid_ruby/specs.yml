@@ -185,13 +185,6 @@
   url: |-
     https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
     /test/integration/blank_test.rb#L65
-- template: "{% for i in (1..10) %}{% foobar %}{% endfor %}"
-  environment: {}
-  expected: "          "
-  name: BlankTest#test_new_tags_are_not_blank_by_default_8b9b4e6522b522106d921f4fe8d2675f
-  url: |-
-    https://github.com/Shopify/liquid/blob/05d768c6ab67d0ac355d7c8f5d69d235562ba445
-    /test/integration/blank_test.rb#L36
 - template: "{% for i in (1..10) %} {% raw %} {% endraw %}{% endfor %}{% if true %}
     {% raw %} {% endraw %}{% endif %}"
   environment: {}
