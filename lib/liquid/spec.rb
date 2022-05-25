@@ -1,5 +1,6 @@
 require "liquid/spec/source"
 require "liquid/spec/yaml_source"
+require "liquid/spec/text_source"
 require "liquid/spec/test_generator"
 
 module Liquid
@@ -15,9 +16,19 @@ module Liquid
       "specs.yml",
     )
 
+    CUSTOM_LIQUID_RUBY_SPECS = File.join(
+      __dir__,
+      "..",
+      "..",
+      "specs",
+      "liquid_ruby",
+      "custom.txt",
+    )
+
     def self.all_sources
       [
         Liquid::Spec::Source.for(Liquid::Spec::LIQUID_RUBY_SPECS),
+        Liquid::Spec::Source.for(Liquid::Spec::CUSTOM_LIQUID_RUBY_SPECS),
       ]
     end
   end
