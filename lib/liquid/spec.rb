@@ -8,29 +8,19 @@ module Liquid
   module Spec
     NotImplementedError = Class.new(StandardError)
 
-    LIQUID_RUBY_SPECS = File.join(
+    SPEC_FILES = File.join(
       __dir__,
       "..",
       "..",
       "specs",
-      "liquid_ruby",
-      "specs.yml",
-    )
-
-    CUSTOM_LIQUID_RUBY_SPECS = File.join(
-      __dir__,
-      "..",
-      "..",
-      "specs",
-      "liquid_ruby",
-      "custom.txt",
+      "**",
+      "*{.yml,.txt,template.liquid}"
     )
 
     def self.all_sources
-      [
-        Liquid::Spec::Source.for(Liquid::Spec::LIQUID_RUBY_SPECS),
-        Liquid::Spec::Source.for(Liquid::Spec::CUSTOM_LIQUID_RUBY_SPECS),
-      ]
+      Dir[SPEC_FILES].map do |path|
+        Liquid::Spec::Source.for(path)
+      end
     end
   end
 end
