@@ -51,8 +51,9 @@ require_relative(
 StandardFiltersTest::Filters.class_exec do
   @filter_methods.each do |method_name|
     define_method(method_name) do |*args|
+      copy_of_args = StandardFilterPatch._deep_dup(args)
       result = super(*args)
-      StandardFilterPatch.generate_spec(method_name, result, *args)
+      StandardFilterPatch.generate_spec(method_name, result, *copy_of_args)
       result
     rescue => e
       raise e if e.is_a?(Liquid::Error)

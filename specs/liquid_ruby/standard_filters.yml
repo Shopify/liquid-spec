@@ -1,4 +1,3436 @@
 ---
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>["foo", "bar"]}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_001ec736101a784dbee2eb298315b5b9
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_001fb13ca8aece87494ac3b8ede1a2b5
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_003e03a6a52165f9b158704f6a7fbc9e
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_007b80b6aff7f510d3665a3907c5a835
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_00dc884d42081b5bcfe1f3bc465be93a
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -3
+  expected: 'woot: -1'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_018ec1cbca82a7ca4d90ce12d245977d
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_01ce419f772f3f9758f5ee0225560c69
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: testenumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_024b72bf930bf9c64fc09fead7ef9956
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_03029435134f1e4a8bdf729e51f8e241
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_036e9cc4c0a1f8c0b6560aeec0fece67
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_03b54d561323eca687b093729fb5ea7f
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_055186ab21845533e200c991e58f3bbc
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_055da70cae346c7111365dd968d097bd
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_05889c2b59a871069915de6de4e3a25d
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_06a7088978358afc8a7518ba4666abaf
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_08d2f999f4a3e31951753c4aee727329
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_093c2dc475e46bb2f39b479f7dde82a5
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: 0.0
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_094de41f92f062a47e80aef78b3ab389
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0ab52f8b4dee8dbdc59ec1b41764b4ab
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0b629c503bcfa27bb8077c91d53b655c
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -41
+  expected: 'woot: -39'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0b9bb69a7d58930adc1b2c445ba73f1e
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0bb13d015675b3009a0573de402ae688
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: ezpmb289PiJiYXIifQ==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0bd75cf1320dbea65c7b610dfd5049f8
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0db977706472183a29cda7f95bf5943b
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0e6add47b67c90860202c98c9999afeb
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0ed3178e36877bcd39003b78ee1d2708
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_0fcc3fee014fcdb0c5b0953efbd7a8bb
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_10030ddb79567472f23e481e66c677ed
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_10c7b1dad725dffa7d409810d522bb20
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_114f6ada75de92ccd0cdf7e3cbabb117
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -39
+  expected: 'woot: -38'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_11c2d079edfae71c3ac5e428c0c640d1
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: foobar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_11c2f58ed74040c2f1fd906fa3e73f3f
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_11ec17d43b11a193e85573c710fa6ef9
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_12c120c683bd38d5bfa33b892f23af06
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: 0.0
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_12d10ddffaea5dcf44a5bbd165d0b715
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: 0
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_13ee1baa9f1e2bb314e5a8b18915d624
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1403348ec2566eb1489a557ec1179793
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_143177a7a05e5e37d04974c5c361fca3
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_14f337e57d9692b6884362196f245275
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_14f4937bf1920a7656fb750e7502bdec
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_159d75e52bb86ab11a9143edb29c86b1
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: "[&quot;foo&quot;, &quot;bar&quot;]"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1615d68850a911176a993ae8e47a6a76
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '{"foo"=>1, "bar"=>2}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_162dc94f8c97b7107b45a9b59f69c1f3
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_16f5aa7a6ac1703ecc093c47251ab078
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_17b456e27eb072a8c5e55ea628b62962
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1892467ed62260ab648321bb7925fb69
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_18f65541f30bb3117cbff827eea64e28
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_198ae296a801d9265c53518204a2db66
+- template: "{{ foo0 | base64_decode }}"
+  environment:
+    foo0: true
+  expected: !binary |-
+    true
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1a20a62081f846f4b28fd36aba6b3958
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil},
+    {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1ade94079da5a7d4111d08c6d1c2573b
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1ae25ad338697406f284cabcb1bf0f48
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1afea5909f00b856f3879687b66077e6
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1c3b639c6b3525023d3a529aa9fb78db
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1cc904818d757636a5498682d482d717
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -38
+  expected: 'woot: -37'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1cd324aa6a4d26ef1f215926954378a4
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1d1a06912987f373af447cfc629d4ca5
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1dd1d897a6c6e29ea8fed90084f9ed61
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: true
+  expected: 'TRUE'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1e65875bf0ef60893253dfb871b7db14
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: -99999999
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1f28c660adcfcc4b17fa2a882e7db138
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1f2cc74754c429321f999cc87464f63c
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1fb9ef9f4f863e523086c7fcfa7a4ea9
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1fbcf51c71c045fca4d404af30f03f99
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2052a9e4b307407691c2ac0ce35d79cb
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_207932228ab38342efff901ccb6d3671
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_20f35227bc9578d972d2cee622ab3d27
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_212b00ad2d90995a69e21bfae056977d
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_21fa643f6881cd64abed60ea3ad0c4b1
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_222d355b541e168fd6c3cab30141ceec
+- template: "{{ foo0 | base64_url_safe_decode }}"
+  environment:
+    foo0: foo
+  expected: !binary |-
+    foo=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2288457d4a8f17a0f26239610e17d584
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_22b8993b060183d0f27cb6a1eae06885
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_22f465270e49c1087d2f95e8f79e4348
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2330deaa65edf3bf4a822af5b9693629
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -27
+  expected: 'woot: -25'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_23314bc272eb999f61f0b6c01a71a125
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_24b3aebee4afb255e886ea7e7411ec23
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: -99999999
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_251c9dfc4b9bcb6413797dba7fbb2028
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_252ac45d084e5c0543c78b39fc1dd42e
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_257eb36dc8dc4e2b90d9e297235b4629
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_262a71daa16d46ebce959b9dd05d6745
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2687f10e23cfe60675efdd375d4e46e1
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_26b1d5d784ef7de0444726cb31da0d19
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_275cd3eb934740b7dd541526fa724f14
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_27d9ded685f236c6b10abb1378d7d1e4
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_283de305b3d6a15e932ec46a08650eee
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2867122e1f067a61afec72133c01b484
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_28ce223545b40c1f01e1702793767831
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_293e90b8f6d7233b91361008c490d9f0
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_297092358b0ec5b261c58bf906031626
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2984e52766dcd1e0059473582a36caea
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_299034bcd962424af79708c0d1d95489
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: false
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2a63d1d51fb3c94ec90c32c00134750c
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2bc4d32b93a60d001f8dc1bc2a3ca88d
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2c7eec9865e5eec555466f21a67aa6a5
+- template: "{{ foo0 | base64_url_safe_decode }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: !binary |-
+    TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2ca61b71320de2207bc353c58ed80c6c
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2e755e005dc15041c4b8b3225da5cf37
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2e7ffdc508ce44a91ba57c29ed139162
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -36
+  expected: 'woot: -35'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2f06e2f863e1693eaa35d6d0b9177461
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2f8836d0c6fa9c76c630c76fc1c20752
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2fffe78bd1bbf09a3f19598cc1094626
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -4
+  expected: 'woot: -3'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_315ab61edbc81e9e7a25ae0057f4a244
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_31c31a99eb9508e075fc41fd27ed43e6
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_31f174497ff10ad9660f63d1988ab30e
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_32336bf5b68c8502d1c95a72618c3ad5
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_323c5f00d45e72ae1b3720317093a44c
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_323cb9f9653858e00e22b1dcfaf75c47
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_32c5233004b8b894873dd3517e49b793
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_32e39aab24bbdc56fbe3d01615a93a9d
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: "%7B%22foo%22%3D%3E%22bar%22%7D"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_332ffd74a0ee9e67accc38039906f5fe
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_334af6d1e1504128e1b2f3d36502ff0b
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_335a53f50852e9d98f0d173d8edc7dc7
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_33a8b02a654ab005cd8399905add92a4
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_33cf7fd209378278fbb7ab7e1d55e452
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_34017629d015343ff204e6d444587316
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_341b6f831dbf900d15d7c8d56e7d3b00
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_36852129939ecb5921d45601bd595676
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_36dd34a76726b5d708075f413d2de473
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: false
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_370a7689af4358638ffe115356df40ed
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_378a9d49ceeed309d1d1847844d32053
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3838031dc1d72082c725cca656d65d43
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: MTIzNC4zODM4MzAwMDM4Mzgz
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_38eb74655eb4a87f77bcf3fea1a43249
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3924d6abfc5cf79dc2ea10da15f8c337
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_39ce0294917ed24721fc7356485640da
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: foo
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_39e9248fcf6eae1081e7e3efafc149e2
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: -99999999
+  expected: '8'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3a17ed911c2f2a667f9f0607d9755b25
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3a182480f1f20ca8d215de8ad57d14f7
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3b297039ea03bc1b5af84840c5896c63
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3b305a7f2332fff8d05972223a0d9454
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3bbe557c254fe17a64df2a8ac8cf6bf0
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3c0ae981c28f6455aaa45eb69b962e1a
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3cc25729261b5b5ef05a88c3c2d89192
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: true
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3cce12b24c8f9c048d290529c2569a68
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3d37ca1a933f1dfedcb3d4f4bd465303
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3e1fd09892d24301f21231c1dfe8aa64
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3e7c090cbc68ed90a80343a0830369d9
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3ef95d8690e6c4586a2765d1ccf55a3b
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+      1: bar
+  expected: "{1=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3f18486bb5a3b7b2f6cd03d4761cfc07
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -21
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4015c279b134090103ad900c471645b7
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_41470158401d9989177c76cb2512f76c
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: foobar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_41721230b3b1b3c7e1aaf875d7e6d5d4
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_41a4e6f2651e5308f298e4d628df2c65
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_41d36e6be11b3286be3c1c28720ccd9f
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: 0
+  expected: MA==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4215114c27ce17ebc4bca888bb6c2098
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_427cd945009ce01dc8cef2636d01e09a
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_42b8f2f0a17d9009b2cb182083b36641
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: 0.0
+  expected: MC4w
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_42e1f12da39b4896ab9ba4ba304199ac
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: false
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_43e0f410dfe44dac53762fbf9491ab23
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_44bf14f2e9f4c1b27391081abe2da7a9
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_44d94416dc5af2459ed09de565579fc2
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: "[&quot;foo&quot;, &quot;bar&quot;]"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4514c942c727aab464668a7d5cb679b8
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_45548623543576da9573ad3104f52f7f
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_45d6f40e27ec74d6c1fc7ecf64f112f7
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+      1: bar
+  expected: "{1=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_465007a09fc4a134e4bda8316941c158
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4751fff5b305441d82437b6cbffcfdaa
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_477c5aa49e69826d739f8fbf75e78e25
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_477ce51dea50288497db83d2ab1bae97
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_47c676d755a0cf5a8e5a7224f8be67fc
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:FOO=>"BAR"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4872338b5476f6a1a93c812ceeacdf15
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '{"foo"=>1, "bar"=>2} {"foo"=>2, "bar"=>1} {"foo"=>3, "bar"=>3}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_48ea80d179908a6d1bd3957bc3cc0bc7
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_490e5b20c620518cee63650fa231ac1e
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4943452364d2e0f0189f70e70afabbb6
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_498a9131e857b1aab5e7e3913ee15be1
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: foo
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4a26ee965bb287019188fc285850af67
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>["foo", "bar"]}{"foo"=>true}{"foo"=>nil}{"foo"=>123}{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4b4e0324125229df067175e3801282d3
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4bdf8b7767d496a8dab3b199bfb7b9c3
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4cbd2c7ae97375d8aac4b43c4dae3986
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4cdf709bba5c837c4ae5c16c433e6b2a
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4cf03d313becd5506a176c9d3afc8bb4
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4d0c2e35a04511284210decfbb17df41
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4d5d35042cbe5db1c45e3ab5fbb02ca9
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4dd77c26d1e5bd475c9d0156c436c25e
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: W3siZm9vIj0-ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0-bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4de669bc6ca403847fcd3a7da7f2d173
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: 0.0
+  expected: MC4w
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4e2de4af3e31edc5c9319b576237ec7c
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '2'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4efb952f906afb3515dcecc2ad5cd2ec
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_501b380fbf73718e99ebdcdd755da85c
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_504b727f539306141bb92f94818ca723
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -31
+  expected: 'woot: -30'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5087656b9990b22bb43c07773ea5d243
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_50a8e05ff6fedca3583c359d6e26d6cf
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_51ca186b468649896eef5b09daf43086
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: true
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_528affca0d5e236f963aedb99982ac44
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_52cfdca34c8b7f24f8d301da037ef573
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5336e91851205080ffd801b89f09181e
+- template: "{{ foo0 | base64_decode }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: !binary |-
+    TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5372d8eb2c830613c8ad17f556357760
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5423062970a58d994d1c77051c55b1c4
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: foo
+  expected: Zm9v
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5466afea5d82bf239d733150d3a9d781
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: Testdrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_547e97469fc4d37b6d1c60ab8e4ec5cd
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_54bd6dfef66da813355617205be5e9bf
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5747dedbb9438144af35376b54a617d0
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_576c2634a4afa1103518baa9789db4e9
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_59107eb94b3ae16022431267632fe440
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_595d530079511c6d86d71878ab1817ff
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_59fbf3053d43a91165b16aeb15af7dde
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5a8a2560408039e2a3e4ef0e4b95206f
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5aca7e61c6cb325f6d8df7c88ddf2488
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -48
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5ad2652d3bbff5b237e15f3dcfcc8f46
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5bf6e1b922c17a2c3b101b801446ac59
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5c27b4381466c7608b99e92920df89d4
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5c8d519778a8c15296065ec30e8a9412
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5ca65808967ae754e3ca71941e83f8fc
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5d20eef6cc96fb8a348b1a1178ac6a58
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5dd6c9ac782cc63b3858c561af6b4dfb
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: true
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5df8cd5621da09b07074c1f91ce3a4e8
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5ebaf1792dbc6e805fbce237de27e4c0
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5f5522195123eeb4aa4db1cb6be4b3b9
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -25
+  expected: 'woot: -23'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5f64cb21853975c5ea6bdd18fd7622e6
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5f7616007434f1132ae92453bb13b114
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_5f84c7a32540f0ef2ddd9393e22e3c44
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_608e91afdcce1ff6b83c853585bc2fc4
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_609baf0c04d4f091520816c283e3e38e
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: foo
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_60e60abfcf220816be59d7b979be4457
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_616641c28bad3be0c476a7f59530cd3e
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_61d7a89b6a330a57741810a0958eb440
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_61d8b370292d0930851a1804c5c97684
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_61e6ccaa6a51d484b2376c1107a9d194
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: VGVzdEVudW1lcmFibGU=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_627dbe5f66b8672985939b44b3b90415
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0:
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_628b3841577047d1dc242d87eb6fe6a2
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_62c9b9b1e4fe959a3bcfd0758dad6ee9
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_62e9e547682ce93f90191b060b45a795
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_62eafa9d934e621b472198aebc60c735
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+      1: bar
+  expected: ezE9PiJiYXIifQ==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6360635b14489058803a26837a11446f
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_63fb54eae2cb18d4fd87f3ab0b06e6af
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6444bbe96f70ab0a9283c9875d4ea46e
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TESTDROP
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_644ce0ad7f04fc9e725d1ab3e27a358e
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -35
+  expected: 'woot: -33'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6498f62d01cd72c5c10bbd6b32d7fe1d
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_657bdb4cea10b93a9f8ee495ea97c8ab
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_661201f3247a62228acb2fccb1d4f382
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -16
+  expected: 'WOOT: -15'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_67c86b29a2aa802639f709847decd889
+- template: "{{ foo0 | base64_decode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_67d6bf3d3a60025a12cc3b28cc6129a0
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_695d972cf453a40ba2220a6e016e1787
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+      1: bar
+  expected: ezE9PiJiYXIifQ==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_699f7fbbb9ec7ab6acd305bbf6337b7f
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_69eb69e5234764785c59f5d5c8355759
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6a391827a646fb45791320c6bda3407c
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6a6d1a169ddea0c8e25a1df0ae567c04
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"FOO"=>"BAR"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6aaa208fc2deaa2d8e7a8907ae9a7ee8
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6ac01c294a67ef4286326463ef9f7eb0
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6b2a3cfde3b5394fc401319c7cb4dd77
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6b76ec0d688a4c83700ce1fb33101cc8
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: false
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6b784cf7ded217165c5a24d0cb54b6c1
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6cb156318d314143e4651b97840e74b5
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6d885e69a5aa78f92750c8fedaf125dd
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: "%7B%3Afoo%3D%3E%22bar%22%7D"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6d94fec356f731f90f6d1d6cb86cd899
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: 123
+  expected: '8'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6ddc9126eed86115249ad481c76e9e72
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6e912539648371a1184a8dc38c782373
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6ec9f73f9968e4ad3373b2f29cf14718
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6f5e9275573db1e8ac835254cd9f158c
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6f65bc615db9ecf8a8ef216611913bbb
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_6ff69b112c0ee16e243063803ec71231
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_70132dc270dcb92b6be00051ec643483
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: -1234.003030303
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_701c1506967c5281f9f12c9727ab3476
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_70e4eef0a55c4503db4235063b738775
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_722f4b0cfb1228d4f7c0503808c84bb4
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: "{:foo=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_724981142ecd2f33fa4748b0fb92fe60
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: -1234.003030303
+  expected: LTEyMzQuMDAzMDMwMzAz
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_726db190885f8be6cf2dea311cdaafde
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_730d9846951eff54e1048dc362027f6a
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_75dd0461ca1cd285e621ed4dab0b2cc9
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7632d20afdff31191a360e57cb1683ea
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7758e5e2aa1bb075e53deab0c9b7aa8b
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_78702ab27f1de336dd832feb815b9315
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: barfoo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_78a2f1d9c372ca840c11237739a22bd2
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_78d2d378769e8590ff8416c9b027c454
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_78f76baefbc69c90927d1b40a5c07a64
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_79753e2e2ad8df7cd64a0b19edc5c7c6
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: WyJmb28iLCAiYmFyIl0=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7ab098e741ca416e3d132e67adc2be25
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7b36e1d275896638d0e922e65c28d0d5
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: true
+  expected: 'True'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7c3019e9298fbe11ac868e008d7d027d
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7c344c2833226ad57f4d81ae896f1b6c
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: true
+  expected: dHJ1ZQ==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7d0e837090381532411a0798004a6b38
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7d43df575aecd6f48d0864ee19738116
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: -99999999
+  expected: LTk5OTk5OTk5
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7d963270ff2ab67896c9388a4d18f31a
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7de5213ccde376348301c6d21344dc3f
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7e703d88797262804d33e62d43906029
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: false
+  expected: ZmFsc2U=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7e716e9e962ff356e739c92cd03976ca
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7ef609303326dbce32c983a2cc7f6c8b
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7f8d8a8d5deb941650650adf6b7a0d92
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_7fb2a1f18d3a1a8545041cb2fcd153bc
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_803c25da94f7df03bec90dc0cedb6392
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8208bb2f14dd1d131d08a3122ebf777f
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: Testenumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8210c3eb3c28481a350c54774735c33f
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_829bbf0ef664caa6830a5af9287cf5c7
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_82cab7f29e6b5de64794c1931ef12bf4
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: eyJmb28iPT4iYmFyIn0=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_82d823a0696f2a6bf9eb9cbe9a599aa0
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_862b9f6032861c90e3b3dbe9eaef3aa0
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_86567340b5dae799d2ab8e0fe559ad84
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_86f4f3e2c73d6ac2d104c426b79120e6
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_871e8b1e7e30278a0cd921355cf04cf1
+- template: "{{ foo0 | base64_url_safe_decode }}"
+  environment:
+    foo0: true
+  expected: !binary |-
+    true
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8773c8a959d27e763e21172523ee6693
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8792ce9b4810d71a5bf60ad26b4e17c9
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_87ea638d721c73a1d6c672e5878faa50
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_88866c62791f3078062a5d76d0a47573
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_88a213ccabc373a0a46af7c5d6cceac8
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_88de7f110179e34de38edf2333a0a94a
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_89f4c61bf64f969db54727ded8cd6462
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8a1cbde182a7b7cf44ee68e2314a79e7
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: 123
+  expected: MTIz
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8a6b41c0882077d74fc9fd3aaabdecc6
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: "%5B%7B%22foo%22%3D%3E%22bar%22%7D%2C+%7B%22foo%22%3D%3E123%7D%2C+%7B%22foo%22%3D%3Enil%7D%2C+%7B%22foo%22%3D%3Etrue%7D%2C+%7B%22foo%22%3D%3E%5B%22foo%22%2C+%22bar%22%5D%7D%5D"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8a74e16996a6d6fcc0a7151b0b54a92b
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: 0.0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8b81f9d5d85a2dce2701b5d350ce2ca2
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8b8511ae854d4ea44d898e61d78b364f
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: 0
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8bde8750000c1ea2218e6f0abae3308e
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8bfaf05bcb9a152f27f4ab8a04ad8b34
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8c58aecf65d59dcf7a46545cb50a08ce
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: false
+  expected: 'False'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8ca78c0be737ced0fbf65d1b7865d89e
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8cee381f5077014e3a0c152b53d8ef0a
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -3
+  expected: 'woot: -1'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8d157a325e628b8c09b7f3998930c916
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: 0
+  expected: '8'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8d1783f5d8ea57d9642a8fc333226541
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8d80b45d2f27fc32ac341e1a8fec5760
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: foobar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8eb7f745ea29bd0dd2ecb1b99088afe2
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: MTIzNC4zODM4MzAwMDM4Mzgz
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8f16d4d99888fe59e6266ac2e5b46fe3
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8f67e8e68c5dbb272e6361e3caf091c0
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: foo
+  expected: '3'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_8fee617f1aa8c0a8d5b75149b0a5069c
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_900503c6d592d197d476081a95964509
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_919dd5a82850a737c1ad3b4a0d7e26ad
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_920e42939f736cbe7224a44ac07da9d2
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_92962027131d9bf100afb98fc593569e
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: foobar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_92c99589f4aeec311ae0f64ec556f957
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_92e8b84a6385179231f47af3d9daef20
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9339721d9a8cadad3681f3b7674f5016
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_937e4ec33259ad7a13b5efb076640a25
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_93c2c1dc7ca50aac2569c96f6b67dac5
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_93d2afcadad158dc8fe855cb9e9fae8d
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9465a8cdd17c899cdaa0490e3cff0cd0
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_947f34446982932ecd6a54c298c95461
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_94950f4fbd814e776372826851766c1f
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_94fa3cece1a7ab1809130c388a741dd7
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: -1234.003030303
+  expected: '1234.003030303'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_94fff7a4b213b61140b7a965c591bd24
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9535310ff05fe952888db4d04b13871d
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_954e6ea80ab2ccf3eb64e330c44d595c
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_95adfed8f8727157e819b9f4b5cbcc12
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_95e3688578207c35886a3b17e498cb7d
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_95f4e37347221caef502926b72db6e57
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_96381e151a81f7c95fcc29d7528c8315
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9701fc0c81fad1af5fec7b0f7a298768
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil},
+    {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_978658a325031275b61dd658c4ea7a4c
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_98c8124cb7c47c0194980da2209039ee
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_98e2b265a98e52a0b0b4b06b1e5eccc2
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_99438b94fd41fa9d73c534daf343cdf4
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9ab4ac3bd568759fad0b23344a511dbe
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '5'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9ac64607b8480ae17218ddeee354c779
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9acc23a406a0adcd73620bad8f44060c
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0:
+      1: bar
+  expected: "{1=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9ae738002fa0eec7d685a533ad96420b
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9c8251e1591d4ca50359af752fae7311
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9d10be686f02c8e28bfb5ff57087613a
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9d29c5665ea31b6910d3f127dd58c9b5
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+      1: bar
+  expected: 1bar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9d88030eaaa66d48084ff699c0b263b0
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9d8bffecf8b0ef4017e772d885fdc803
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9d9f99ef6b8b7affaa191020153f13d0
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '1'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9e069ff4b1837a1a1ba4c6e35030d1a5
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9e229ebd51d4e378f7eccd38af9969b4
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9f5fee094c8f1c9dea7cbac8d643ad9c
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9f981606d3b06db6bf7e33d71db8b658
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -32
+  expected: 'woot: -31'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_9fa7763688092feb456bf644bb8864e4
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a0bf30a625b098e0284c0cf6c1c363e1
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>"bar"} {"foo"=>123} {"foo"=>nil} {"foo"=>true} {"foo"=>["foo",
+    "bar"]}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a15d7d5f6678a3df5ec27460abdc0e6b
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a1aa44fd9e5fa52eece1c7ba73d1b963
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a4675917e58634dbbc2f73952031c005
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: false
+  expected: 'FALSE'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a4737db47d6fd8a7a422642b12b8162f
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: -99999999
+  expected: '99999999'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a4991e35bbf349fc6a67f92400d37ea5
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: W3siZm9vIj0+ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0+bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a49f2dfe23c072c4d7183861bd4361e9
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -30
+  expected: 'woot: -29'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a54356528f1b26de02f8a28f4ea3b2db
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a58531ecf2c11026b850614459328e69
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a5b19a652837f4887cb555630e7c3da3
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '{"foo"=>3, "bar"=>3}{"foo"=>2, "bar"=>1}{"foo"=>1, "bar"=>2}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a645f2b516c400ede442aa97632f5c86
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a6bff0656bb74dac630ff52f443008d9
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a71b93e9cc0b73c693f8d7c4f558c14b
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -17
+  expected: 'woot: -16'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a788abe63dcf585e0cac307c075027d1
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a819205a3ed96223e1ea8936cfe464f9
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: foo
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a829a62c083408051eae7f2023402da9
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a9a5c430da7be891174b2b2c905e5a65
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a9d029e0a048840cda8f62da640fd9b5
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_aabe57c6c0ef61401072b520b6f0b75c
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: -99999999
+  expected: LTk5OTk5OTk5
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_aadb4198555a13214f20485ebbf81e52
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ab09c4ee12346ae97e8df94c4a902ec2
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ab0fba31295aa71913538313cbeff2f3
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: barfoo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ab2c285dfa7af3c892723a8f231fbbf4
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -28
+  expected: 'woot: -27'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ab6e050207d7bc2771eb88c91e1d7af2
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ab9ab274fea1bbf9b37e35e2bc3f35db
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"FOO"=>"BAR"}, {"FOO"=>123}, {"FOO"=>NIL}, {"FOO"=>TRUE}, {"FOO"=>["FOO",
+    "BAR"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_abaac36556c02c6f39b4b8c632ff9d23
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: WyJmb28iLCAiYmFyIl0=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ad011005ecc00740edb0e334b36d7eac
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ad2a996551774bc5f74b3ee8f1bbc490
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: "{:foo=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ad395d6b2fd65e28b8348256efd3cd90
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"BAR"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ad684d84ab3c23a7506c7301b2b04b9b
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_adc459d46f37c0e0ddb7cb028727fb43
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_adfc6efe2651874bf5c12818eba60b52
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: 123
+  expected: MTIz
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ae0fece523ab9aa84eb3d477ddcd53ba
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: true
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b1b411325189d6e09fb8431e6afed92a
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b1d370c13f457fd9f6f89a7ccc40101f
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -29
+  expected: d29vdDogLTI4
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b1d8c676b147ba7ce8f3ee1f4823e58a
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b2680fbdae1dd86fe4b180a8815d1e3f
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b2b2b469cb24a4a86b4b8d49d7d88bfc
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b3476f8e2ae899830e060e9b976f0bcb
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b350a8239282cc8804cc8be94ed86b31
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b3c45a88bd712374240b469ca4dd2adc
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b3c49b1003868b227b02f312077c9993
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b3fd94da9365f4348b875f866e5c978c
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: bar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b418b7a5438924f86b37664cd03e6c6e
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: -1234.003030303
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b428a3233d29000586b08fdabb11fa60
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b5901f485afd17231a0ca8e3d9e32ac1
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -49
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b5f080d6d8ca0ca20410f043d3fbdef7
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+      1: bar
+  expected: "%7B1%3D%3E%22bar%22%7D"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b5f24c2b751a96e32b7cfb1bcd67a356
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b64cd3803524818e0884e521f70c7263
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: -1234.003030303
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b748952f1e7e75c643d8d26159a7bfc0
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b76266247466e980793011617b010180
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b7b20936629db317d3d08f41165253a9
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b7d64cb11e8eaa1ca83c6fbafc3ff75a
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: "%5B%22foo%22%2C+%22bar%22%5D"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b7fe23a5cf81986efb6470a67918f94c
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b8227b3af2ecd2cd1c82525aaa79e103
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b83c1cf1786eb73a1efaf2ffa6e79f26
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b877e80d93e6f825d53a17c140b967f4
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: VGVzdERyb3A=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b9973a626f1cfde113a05b3c4da668e1
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_b9cc46f0501ed075c43b5213312393a5
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_baf84b014e7621156cbf5c415c9243d2
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bb7de9d9b7990f79c114ac8ac9d9496b
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bc11362ee5fe8ae60608a4f0cf944052
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -18
+  expected: 'Woot: -17'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bc188739d87c351d1ca02fc1076e528b
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -43
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bc38a19d83c6b78ca3b2cd573030a6a4
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bca32f400eee670e21edd5ae98bac85c
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: false
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bcefbe88334f3a12e533891d6424e848
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -9
+  expected: 'woot: -8'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bd468b1d8873bb3498032d10b8c284c9
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: ezpmb289PiJiYXIifQ==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bdb6380e0a1ae9ed14635bf81294a1fb
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_be5a33ca6fdf09d6843dd58acd347bfa
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1235'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_be75d740d6c340493d1cd5acf0c4f238
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bf9a9be143c43a8b4603767de51fcc04
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bfc497040fd516df97861b2a06938004
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bfea94ef26b61355f0ecd1b2469619c1
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bff04bc2420eff2582799b84c50daecc
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c06337a012f89e8ec6ba595add3e6da8
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c0b2ca767f2fbd4bf0a259edb6130b18
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c15a6464c32c71ca09a05a981bf5e0db
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: false
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c17a29016360d4d76c162c7d89e1a6bc
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: foo
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c1b9d6ad46a786fb86f95a072fc075db
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c1dc03b4864114956517d6ec22c91211
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c1f1b33077e057674e25a7d422099c6d
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0:
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c2789bfabcecd7d4c509cda6284c48de
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c2e036d8a3f20f1d257f2b40c7b3facc
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: false
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c34f4d99c8c2434a613c6bf16a315684
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c42e0efebcfd961ea14994a63920e99b
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c4b5da8f61a055993d133c621e392da3
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c5926e69181d256cb1f26e97e313d31d
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c5f97ff83097616350008ebab5b88102
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c5f9e98ce5cc791588206c9b1859bb1d
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil},
+    {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c61f1cfcf8cd4083fa4857fb6969a2c2
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c633cb152e9309ac3c865e4fdda05ca0
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c63bbe72dd30e367ef4710aaf2e1bd69
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c64d868fc3ea26909037f229335689bd
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -46
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c6d3d8bd3c093c3862786af6e59adb5a
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c6ff3a26f2911b5c5c3ac803dee9da9a
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c7d4df9b659b746db3e7f3f9073f5890
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c7eb8e47c722d9fb9c07be455e47aa28
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: foo
+  expected: Zm9v
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c8e1c0cc635c0cd350bf8e5d0c96846f
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9151e5a1a1466111e5363121552b415
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c91a4a5b4fd65698faae5f263b81bb92
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0:
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c954229c7eb5d887ce6aabd3fffec298
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c997622ec124fc1e3ec374fd1cdd8452
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9a38151734ebc79d1f596a32122e189
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9acd62bac5362be451183a997d12a7c
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -19
+  expected: 'woot: -18'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9bb78e5f0da539520396f5559f42d19
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9de83956967e1489ee05ff41498e674
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ca42ea781c6c51b9eac4e38086f2d85d
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ca6d98e0c521f170b8e9e970087f71b6
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ca72c6447a4be9b7c099614fa3419704
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ca8c15ff9c4ebab33022b6ace1d2c220
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_cb76c4f97b1ca34a75f168a750f2f13d
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '1'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_cb82469c22b7d1c6759b558088b69bed
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_cc40aeba6d4ec59d6007d622af7b30e1
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0:
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ccf1029ecbeb639ce933bf9d8e3ed642
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: 0.0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_cde8adb262f93ff838c25ac37cf895a6
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ceb4484a19e90ac0f72df2b4c3f398ae
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_cfb23e7020193d0790f63a49af4e6a8e
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d07af68a7e501ada49791996ac5f5f37
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d08362ea240b275349aa0d7391a41c54
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d092aaa86e3abff8cf5440918ddd0671
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d0cf4dc5f259c2fa488d5e3f118f1294
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d0e88329ef771f2e3296e3692a927ae7
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["FOO", "BAR"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d1003573a1bfbc0df3e1a4ffeb75eac6
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d27f8df67c8c4846b0dff8afe5429cb6
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: 0
+  expected: MA==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d2b6de2b8ac0f4e031da783021158a2c
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d2cd4282bf2f71affb5ccd4d66e373d7
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: 0.0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d2f22205c50f33a240c2f74aae345c71
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d3495fd058675b1fa3277923f985caad
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: true
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d43d8b809b6e3b3a7ee102580b4f3217
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: foo
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d4a13b996244c55e16f63ed9f200f826
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: 123
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d510797a543b45b87a7fc972a3111f91
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -50
+  expected: 'woot: -49'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d58a32a064572518bcb85c11e835cdab
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d60b1736697eabf5c43486c37297c405
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d62c7f9000077418118847a445355b45
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d63ad89b991ad3a142161fb6c3729a55
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d6613f47fcb7d59592d3bea631ab6ad6
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -47
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d67fc1595c2a39223a5038d8b14e678c
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d6817f80d9180e711a247790ce7e0896
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d7cc284d9476c66055e87b4052409f45
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d87df59f8cb9a7965786e5604932fb11
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TESTENUMERABLE
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d88e7e179f410fab2ddb29ba890ed7fb
+- template: "{{ foo0 | base64_url_safe_decode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d8a87bfbfc0ddcafd577d53842a2eb46
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d8f636b1878b480b919e87ae18b566b1
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: VGVzdEVudW1lcmFibGU=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d912a2671d76cd2c25aadc0b53ddae29
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: eyJmb28iPT4iYmFyIn0=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d95070438ca092fa142ec3cfcf75e8cf
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0: true
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d95cf17dfdbbe13242da582e2ac6581e
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_d998c395d934b6e11a3f09d47ff02fab
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -33
+  expected: d29vdDogLTMy
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_da5805c4103810f2bf1b00eadcb5f18f
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -35
+  expected: woot%3A+-34
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_da70804c58cbdb6c5dada2b38357e1ff
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0: true
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_daee3a50cd06a901f6ae190cf1d9e004
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_dbf74be7f2d214b808b138b760eb825c
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_dc16611e4280f0e5a23888f1e7ed2fcf
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_dc44bc0919a166aca111a12416dc68c2
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: foo bar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_dc6d9d60d7098cf6ce5f523e2c302f13
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_dc977d7b7e941eb2eae0537ac2e6577e
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_dff2b8b487799fb54734c577f8e72932
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e0cd12b88b285e3020a4ac5cfab290e9
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e13d35d2db1c301099f60f9132b933e3
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e17320351f54ffb624d541e9c148b57e
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: "[&quot;foo&quot;, &quot;bar&quot;]"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e1e0bfa332f72988e1d69558d6007b48
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e2a0d2a2dc1dc743468a72c4406979c3
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: true
+  expected: dHJ1ZQ==
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e3864f0226e4b982ce26db297fddb1b8
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e39bdfa17ffe7f3ee78ff4fc451eb531
+- template: "{{ foo0 | ceil }}"
+  environment:
+    foo0: 0.0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e3aa50b945d53475a3d9464d539e0e85
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: barfoo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e3eee9f5c06a910749489d647ab78e78
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e4e4fc1efa9b4dbb3f04a1542531c21b
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e50900ea2e22550db747ac0e9606d4fc
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e53550e06b0e17b89fc415bb58e3e2d9
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e5a0a8dbb7b9b8f0446a6e832d721e9d
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e5b3c82ba25d6458089a9409dfc1e520
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e61130b61d2cd1daf7889f79c1dd7ea8
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e72437d85db55c103d2422714cbe9235
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0: false
+  expected: 'false'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e7ffa1aa7c70dda0eec8933a55e6ddb0
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e8159deebb0fc84f931435755c6e5cbd
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: false
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e89832e80d136f3d47f7e8bd457f6b4d
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e92f907d0888c54de7dfeb21aa0f36e8
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: testdrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_e9704d631e5e1afbac08ae3f874cebf1
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_eafeebd98ae45cba4cd990029ba9084f
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ec0ed6388859aa1edc9e0cb81367f5f3
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ec7b74743ede3319fc163587c5bdd85d
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ec81790e80bf897464b8205e38341695
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ed3088fd0fe1c1330afd63e2be4e13df
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: 0.0
+  expected: '0.0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ed709d250ff231f6c2e486786a5ae36c
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_edd684d22fc5e1956df30198934b5602
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ee0c605948f73084018f2a84e50cf59a
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: foo
+  expected: Foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ee2278c96aa0229688522e7622aa24c1
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ee34007e6fbd719acc64df317ba100fe
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ee3e34a2f2db4e6861752ead3ffee784
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ef1e3cfbccfa54090860f3aa2969513b
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: TestDrop
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_efc9ac9769f8065591c58055b89490ce
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f08dc7e8433f3d3c70c8770790df25d6
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: false
+  expected: ZmFsc2U=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f09373ffcc01f68ffb4597c7ec084a5a
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f0e9e4d39a898038dd1fdd0ac1466cb7
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f0f211e8658a9f614d18d9538c03ee9f
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: 123
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f108189a473091635f48a58f9971ebe1
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '["foo", "bar"]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f18220ae3320442254b86f436118e0e5
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: !ruby/object:TestDrop
+      value: test
+      context: {}
+  expected: VGVzdERyb3A=
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f251ca399518be9ef6aad841bd2f7e8c
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0: true
+  expected: 'true'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f416a9c686c780b0c2a8c67e2121fcce
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f4bc3bc661d4d6d532d7a9647d12f2eb
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: -99999999
+  expected: "-99999999"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f567ef20ca032f96ebbdd3b8308cae67
+- template: "{{ foo0 | compact }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f590ae0686290968826b0b574f5b6868
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f652fc37a4dd3891e51a4a27fb41ce55
+- template: "{{ foo0 | round }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f653ef9d2755d207c68619cc92fc1313
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '1'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f6759edfc3a95acb6ffeb0003227be8e
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f67cdb391a9ae7c8633da9a050836a79
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f6abd7a48e3b9b66b4e52910e7b3f929
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f78e5e59efbd980354123c9fef33e32c
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -3
+  expected: 'woot: -2'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f7bfc6bff07d59f9d44e2008db86bb38
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '{1=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f7eaf4c37014d27d96b04c2fb1f1d9ba
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1235"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f89d80611208b3624e65c22647993cb9
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f9093a5e46a03e53a13ad68fd0a6c1ff
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f92e51a4b25362fde8a0640b68cbf663
+- template: "{{ foo0 | lstrip }}"
+  environment:
+    foo0: !ruby/object:TestEnumerable
+      context: {}
+  expected: TestEnumerable
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fa483c7d9e80b97da0e1084309323bf7
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+    - foo
+    - bar
+  expected: foobar
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fad7504a9f0856420440a59cce32c5c7
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: -1234.003030303
+  expected: LTEyMzQuMDAzMDMwMzAz
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fb856de372eb9aa5346954e824200ef7
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+      1: bar
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fbb3781e0efef701ba12de94affeb882
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: "{:foo=&gt;&quot;bar&quot;}"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fbddfc49e6540f48c0ce818134949a44
+- template: "{{ foo0 | abs }}"
+  environment:
+    foo0:
+      1: bar
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fc0fbba8d792e013ad7d53cd222e56a4
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: -1234.003030303
+  expected: "-1234.003030303"
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fc1646a59960e14b1e6b06c3d66ccfce
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: 123
+  expected: '123'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fc4bf268742c10e98b3fc54e97837e78
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fc53adadf2f04a021c01e21e882ad439
+- template: "{{ foo0 | default }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fc96932f075db993c23ea87859b90eb8
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fcce49609d61721a3051e82ee62b2731
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+      :foo: bar
+  expected: '{:foo=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fd78f74fe571448092e2353014f1450d
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234.3838300038383'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fdeb96b67761b89edf30858ef07ad688
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fe14b5f39789e918f1001c93ba07687c
+- template: "{{ foo0 | rstrip }}"
+  environment:
+    foo0:
+    - foo: bar
+    - foo: 123
+    - foo:
+    - foo: true
+    - foo:
+      - foo
+      - bar
+  expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
+    "bar"]}]'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fe98af3afe8a7941eab20b813254e038
+- template: "{{ foo0 | strip }}"
+  environment:
+    foo0: 0
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fea33ebe54ca94504f312a3aa0cd1eeb
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0:
+      foo: bar
+  expected: '{"foo"=>"bar"}'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_febb22577f74b8835ea6f7f932293f28
+- template: "{{ foo0 | floor }}"
+  environment:
+    foo0: 1234.3838300038383
+  expected: '1234'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ff16019bc95f0ca9c464a2d86c6f5062
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -22
+  expected: ''
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_ff6762cf9323d223ad503ff256e4e88e
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: foo
+  expected: FOO
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_fff9e464fcf019c69df88b38657ef2d4
+- template: "{{ foo0 | base64_decode }}"
+  environment:
+    foo0: b25lIHR3byB0aHJlZQ==
+  expected: one two three
+  name: StandardFilterTest#test_base64_decode:169_dfd76010af48ae868cddd6aa1b4e944e
 - template: "{{ foo0 | base64_encode }}"
   environment:
     foo0: one two three
@@ -9,6 +3441,283 @@
     foo0:
   expected: ''
   name: StandardFilterTest#test_base64_encode:165_6e19e359bc0f7e9cbb5e8decd2e58e5b
+- template: "{{ foo0 | base64_url_safe_decode }}"
+  environment:
+    foo0: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8
+  expected: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
+  name: StandardFilterTest#test_base64_url_safe_decode:189_2d405c59f71de0f59a3f197676388009
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
+  expected: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8
+  name: StandardFilterTest#test_base64_url_safe_encode:181_efe06bfce6c0112f5a7a4de807234adf
+- template: "{{ foo0 | base64_url_safe_encode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_base64_url_safe_encode:183_033db718723c7753be6dcf196835a534
+- template: '{{ foo0 | compact: "a" }}'
+  environment:
+    foo0: []
+    foo1: a
+  expected: ''
+  name: StandardFilterTest#test_compact_empty_array:403_813d158b4cff3428bfcada9c5572415b
+- template: "{{ foo0 | concat: foo1 }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    foo1:
+    - 3
+    - 4
+  expected: '1234'
+  name: StandardFilterTest#test_concat:746_291742435c10d1a422c24c35f1d64748
+- template: "{{ foo0 | concat: foo1 }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    foo1:
+    - a
+  expected: 12a
+  name: StandardFilterTest#test_concat:747_0a1e8f97aa915ef04e78f5672ef7d9b5
+- template: "{{ foo0 | concat: foo1 }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    foo1:
+    - 10
+  expected: '1210'
+  name: StandardFilterTest#test_concat:748_405d1a9412231e946a38ea60362dc02f
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: 2006-05-05 10:00:00.000000000 -04:00
+    foo1: "%B"
+  expected: May
+  name: StandardFilterTest#test_date:530_91dccad3204a316acac80a9a0056c0c9
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: 2006-06-05 10:00:00.000000000 -04:00
+    foo1: "%B"
+  expected: June
+  name: StandardFilterTest#test_date:531_5a97b13b214fc2bd3d85b3ecad21c1e7
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: 2006-07-05 10:00:00.000000000 -04:00
+    foo1: "%B"
+  expected: July
+  name: StandardFilterTest#test_date:532_9dff96949496f337b7fe1215417e20c5
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: '2006-05-05 10:00:00'
+    foo1: "%B"
+  expected: May
+  name: StandardFilterTest#test_date:534_370d2a1ac4dda6994ee3544f16ab057b
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: '2006-06-05 10:00:00'
+    foo1: "%B"
+  expected: June
+  name: StandardFilterTest#test_date:535_ca1382c1c6ec61a404ce96d92db0f76b
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: '2006-07-05 10:00:00'
+    foo1: "%B"
+  expected: July
+  name: StandardFilterTest#test_date:536_b79d395c20b4a1e998386c6e35eaa300
+- template: '{{ foo0 | date: "" }}'
+  environment:
+    foo0: '2006-07-05 10:00:00'
+    foo1: ''
+  expected: '2006-07-05 10:00:00'
+  name: StandardFilterTest#test_date:538_a9f652fdada3e76d93dc10adab6a3a09
+- template: '{{ foo0 | date: "" }}'
+  environment:
+    foo0: '2006-07-05 10:00:00'
+    foo1: ''
+  expected: '2006-07-05 10:00:00'
+  name: StandardFilterTest#test_date:539_3dfac823a7fd21c54e6ba84edb288952
+- template: '{{ foo0 | date: "" }}'
+  environment:
+    foo0: '2006-07-05 10:00:00'
+    foo1: ''
+  expected: '2006-07-05 10:00:00'
+  name: StandardFilterTest#test_date:540_f58311fc4e8d8846e1ce00422b47b773
+- template: "{{ foo0 | date: foo1 }}"
+  environment:
+    foo0: '2006-07-05 10:00:00'
+    foo1:
+  expected: '2006-07-05 10:00:00'
+  name: StandardFilterTest#test_date:541_ed0a0164773c222a7eb8a27e8ccf0d52
+- template: '{{ foo0 | date: "%m/%d/%Y" }}'
+  environment:
+    foo0: '2006-07-05 10:00:00'
+    foo1: "%m/%d/%Y"
+  expected: 07/05/2006
+  name: StandardFilterTest#test_date:543_f748a4db1898865e13b46f7ed8a5ec8b
+- template: '{{ foo0 | date: "%m/%d/%Y" }}'
+  environment:
+    foo0: Fri Jul 16 01:00:00 2004
+    foo1: "%m/%d/%Y"
+  expected: 07/16/2004
+  name: StandardFilterTest#test_date:545_67760c44068007def933b4d4b4326d3d
+- template: '{{ foo0 | date: "%Y" }}'
+  environment:
+    foo0: now
+    foo1: "%Y"
+  expected: '2022'
+  name: StandardFilterTest#test_date:546_5b0e75454d88fde496f563231714513c
+- template: '{{ foo0 | date: "%Y" }}'
+  environment:
+    foo0: today
+    foo1: "%Y"
+  expected: '2022'
+  name: StandardFilterTest#test_date:547_d69e8f40411b93aefa4554da434ba877
+- template: '{{ foo0 | date: "%Y" }}'
+  environment:
+    foo0: Today
+    foo1: "%Y"
+  expected: '2022'
+  name: StandardFilterTest#test_date:548_ca42c215470e21481b05149130fb201f
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0:
+    foo1: "%B"
+  expected: ''
+  name: StandardFilterTest#test_date:550_5a6532047422101000e09b4693026b82
+- template: '{{ foo0 | date: "%B" }}'
+  environment:
+    foo0: ''
+    foo1: "%B"
+  expected: ''
+  name: StandardFilterTest#test_date:552_11684c37b93e1a41f7e76da903fcef32
+- template: '{{ foo0 | date: "%m/%d/%Y" }}'
+  environment:
+    foo0: '1152098955'
+    foo1: "%m/%d/%Y"
+  expected: 07/05/2006
+  name: StandardFilterTest#test_date:554_650f58bf79c97c54a6a4f48e9ae5a6c0
+- template: '{{ foo0 | date: "%m/%d/%Y" }}'
+  environment:
+    foo0: 1152098955
+    foo1: "%m/%d/%Y"
+  expected: 07/05/2006
+  name: StandardFilterTest#test_date:554_a45d1ff8650e15436be4d3ced44b73e9
+- template: '{{ foo0 | default: "bar" }}'
+  environment:
+    foo0: foo
+    foo1: bar
+  expected: foo
+  name: StandardFilterTest#test_default:762_97845894f8889a4b40b71842b18a148a
+- template: '{{ foo0 | default: "bar" }}'
+  environment:
+    foo0:
+    foo1: bar
+  expected: bar
+  name: StandardFilterTest#test_default:763_a5f3ef54caca17a7edb42ae8bc36c4ff
+- template: '{{ foo0 | default: "bar" }}'
+  environment:
+    foo0: ''
+    foo1: bar
+  expected: bar
+  name: StandardFilterTest#test_default:764_b2646f706bcdff363c84c3b63a65c89b
+- template: '{{ foo0 | default: "bar" }}'
+  environment:
+    foo0: false
+    foo1: bar
+  expected: bar
+  name: StandardFilterTest#test_default:765_6212e9ee651002063c37d009dedb30a6
+- template: '{{ foo0 | default: "bar" }}'
+  environment:
+    foo0: []
+    foo1: bar
+  expected: bar
+  name: StandardFilterTest#test_default:766_428cde3aaba1f21af51dc28f310865d5
+- template: '{{ foo0 | default: "bar" }}'
+  environment:
+    foo0: {}
+    foo1: bar
+  expected: bar
+  name: StandardFilterTest#test_default:767_58a7bcfc46a542b11c324012e91fa852
+- template: '{{ foo0 | default: "bar", allow_false: true }}'
+  environment:
+    foo0: foo
+    foo1: bar
+    foo2:
+      allow_false: true
+  expected: foo
+  name: StandardFilterTest#test_default_handle_false:774_2c86f5c0f70126606bae08ce7558fd2d
+- template: '{{ foo0 | default: "bar", allow_false: true }}'
+  environment:
+    foo0:
+    foo1: bar
+    foo2:
+      allow_false: true
+  expected: bar
+  name: StandardFilterTest#test_default_handle_false:775_4ddf445d1e7c83373bf2985f37785435
+- template: '{{ foo0 | default: "bar", allow_false: true }}'
+  environment:
+    foo0: ''
+    foo1: bar
+    foo2:
+      allow_false: true
+  expected: bar
+  name: StandardFilterTest#test_default_handle_false:776_af2a9753848031692b07ee5bac5ee272
+- template: '{{ foo0 | default: "bar", allow_false: true }}'
+  environment:
+    foo0: false
+    foo1: bar
+    foo2:
+      allow_false: true
+  expected: 'false'
+  name: StandardFilterTest#test_default_handle_false:777_56c72ebd1012c2beae7d04d00c44395a
+- template: '{{ foo0 | default: "bar", allow_false: true }}'
+  environment:
+    foo0: []
+    foo1: bar
+    foo2:
+      allow_false: true
+  expected: bar
+  name: StandardFilterTest#test_default_handle_false:778_b24eca8a16fbb27dcddcbee067b605ce
+- template: '{{ foo0 | default: "bar", allow_false: true }}'
+  environment:
+    foo0: {}
+    foo1: bar
+    foo2:
+      allow_false: true
+  expected: bar
+  name: StandardFilterTest#test_default_handle_false:779_688f9a66b57928cb8bcafd49fc2f3fd9
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: Testing
+  expected: testing
+  name: StandardFilterTest#test_downcase:84_3449636647d933e80d60f16483e02401
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_downcase:85_dd92fcce3c78d9024abe6d546398a04a
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: "<strong>"
+  expected: "&lt;strong&gt;"
+  name: StandardFilterTest#test_escape:146_40769a0a3c00653f7cb129c4dcdc82a2
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: 1
+  expected: '1'
+  name: StandardFilterTest#test_escape:147_039e885f6ac039a6c378fbdb671becd9
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: 2001-02-03
+  expected: '2001-02-03'
+  name: StandardFilterTest#test_escape:148_e8ca59e95492127862cdcc0b37aff37b
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_escape:149_b414bb7bd9a85501f12931dc0684baeb
 - template: "{{ foo0 | escape_once }}"
   environment:
     foo0: "&lt;strong&gt;Hulk</strong>"
@@ -40,69 +3749,220 @@
     foo0: []
   expected: ''
   name: StandardFilterTest#test_first_last:564_51964db4ffff7517b1dc587e4f61b546
-- template: "{{ foo0 | replace: b }}"
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: "<strong>"
+  expected: "&lt;strong&gt;"
+  name: StandardFilterTest#test_h:153_b80e53e1557918bf631d3bea880959f0
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: 1
+  expected: '1'
+  name: StandardFilterTest#test_h:154_369616f4efa562331c5d7c66ccb1663d
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: 2001-02-03
+  expected: '2001-02-03'
+  name: StandardFilterTest#test_h:155_8a021c6f493aa3b6c86a87d87139a4e6
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_h:156_455d86537f85da4116c586563af257ad
+- template: "{{ foo0 | join }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: 1 2 3 4
+  name: StandardFilterTest#test_join:250_adbf2bcf393e65bf44ad8e8489a74fda
+- template: '{{ foo0 | join: " - " }}'
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+    - 4
+    foo1: " - "
+  expected: 1 - 2 - 3 - 4
+  name: StandardFilterTest#test_join:251_9390ec483effbde85c4fd83e1c8dbdae
+- template: "{{ foo0 | join: 1 }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+    - 4
+    foo1: 1
+  expected: '1121314'
+  name: StandardFilterTest#test_join:252_d4f9c07964ee4e65d3b9ca9d261519c4
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+      :a: 1
+      :b: 2
+  expected: "{:a=>1, :b=>2}"
+  name: StandardFilterTest#test_legacy_reverse_hash:423_d6783c7443448e0415c65b98725ec805
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+      :a: 1
+      :b: 2
+  expected: "{:a=>1, :b=>2}"
+  name: StandardFilterTest#test_legacy_sort_hash:367_186c455817b0e15d5110d636471b3122
+- template: '{{ foo0 | map: "a" }}'
+  environment:
+    foo0:
+    - a: 1
+    - a: 2
+    - a: 3
+    - a: 4
+    foo1: a
+  expected: '1234'
+  name: StandardFilterTest#test_map:427_7f59c397b16ef27b0c4fa4538ae21fcb
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+    - 10
+    - 2
+  expected: '210'
+  name: StandardFilterTest#test_numerical_vs_lexicographical_sort:371_b6bcc747ba208f2cf20b8b7b02ecff12
+- template: '{{ foo0 | sort: "a" }}'
+  environment:
+    foo0:
+    - a: 10
+    - a: 2
+    foo1: a
+  expected: '{"a"=>2}{"a"=>10}'
+  name: StandardFilterTest#test_numerical_vs_lexicographical_sort:372_310a4339eb1277095bd91295f2abd61a
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+    - '10'
+    - '2'
+  expected: '102'
+  name: StandardFilterTest#test_numerical_vs_lexicographical_sort:373_ad650b13f03e44cfb7f59dc83a1d17d9
+- template: '{{ foo0 | sort: "a" }}'
+  environment:
+    foo0:
+    - a: '10'
+    - a: '2'
+    foo1: a
+  expected: '{"a"=>"10"}{"a"=>"2"}'
+  name: StandardFilterTest#test_numerical_vs_lexicographical_sort:374_b85e99772f238d9cbb0170570d9f2577
+- template: '{{ foo0 | replace: "a", "" }}'
+  environment:
+    foo0: a a a a
+    foo1: a
+    foo2: ''
+  expected: "   "
+  name: StandardFilterTest#test_remove:585_1cac40e0682d0d4e9abd7207bd9b781f
+- template: '{{ foo0 | remove: "a" }}'
+  environment:
+    foo0: a a a a
+    foo1: a
+  expected: "   "
+  name: StandardFilterTest#test_remove:585_9bac3f8928a0f27d4c1ae422e200dfe7
+- template: '{{ foo0 | replace_first: "a ", "" }}'
+  environment:
+    foo0: a b a a
+    foo1: 'a '
+    foo2: ''
+  expected: b a a
+  name: StandardFilterTest#test_remove:588_01b2d96b118f7e543183484fdc5bcb22
+- template: '{{ foo0 | remove_first: "a " }}'
+  environment:
+    foo0: a b a a
+    foo1: 'a '
+  expected: b a a
+  name: StandardFilterTest#test_remove:588_b75fe4e8b7effa6f1db9462557c572c2
+- template: '{{ foo0 | replace_last: " a", "" }}'
+  environment:
+    foo0: a a b a
+    foo1: " a"
+    foo2: ''
+  expected: a a b
+  name: StandardFilterTest#test_remove:591_45ae62a7badd582bb06961ebf09a7dde
+- template: '{{ foo0 | remove_last: " a" }}'
+  environment:
+    foo0: a a b a
+    foo1: " a"
+  expected: a a b
+  name: StandardFilterTest#test_remove:591_b42427467031276a60b0e44b7c05307f
+- template: '{{ foo0 | replace: "a", "b" }}'
   environment:
     foo0: a a a a
     foo1: a
     foo2: b
   expected: b b b b
-  name: StandardFilterTest#test_replace:568_95bb6e9f7949c9a7c8cd538a672dab43
-- template: "{{ foo0 | replace: 2 }}"
+  name: StandardFilterTest#test_replace:568_fa4d9ac9b4b3db2737821719d8b48596
+- template: "{{ foo0 | replace: 1, 2 }}"
   environment:
     foo0: 1 1 1 1
     foo1: 1
     foo2: 2
   expected: 2 2 2 2
-  name: StandardFilterTest#test_replace:569_1c51096d391ff2b2a3e4ef210e5bb4d3
-- template: "{{ foo0 | replace: 3 }}"
+  name: StandardFilterTest#test_replace:569_0da7b082e22960b1a8b4cb40547f15b8
+- template: "{{ foo0 | replace: 2, 3 }}"
   environment:
     foo0: 1 1 1 1
     foo1: 2
     foo2: 3
   expected: 1 1 1 1
-  name: StandardFilterTest#test_replace:570_8b26a8e4cd815548fe303096b35de830
-- template: "{{ foo0 | replace_first: b }}"
+  name: StandardFilterTest#test_replace:570_3a15bcfa30c2010d86295807c097e74c
+- template: '{{ foo0 | replace_first: "a", "b" }}'
   environment:
     foo0: a a a a
     foo1: a
     foo2: b
   expected: b a a a
-  name: StandardFilterTest#test_replace:573_90a9699058e8cf885aae3ceaa1ba90ec
-- template: "{{ foo0 | replace_first: 2 }}"
+  name: StandardFilterTest#test_replace:573_24e77339f78d8883cb6ac9bded96e958
+- template: "{{ foo0 | replace_first: 1, 2 }}"
   environment:
     foo0: 1 1 1 1
     foo1: 1
     foo2: 2
   expected: 2 1 1 1
-  name: StandardFilterTest#test_replace:574_670e06958ce0ab2edaf43def91e3751d
-- template: "{{ foo0 | replace_first: 3 }}"
+  name: StandardFilterTest#test_replace:574_9ac0e6fa58f6f4103101ef1018d78e0f
+- template: "{{ foo0 | replace_first: 2, 3 }}"
   environment:
     foo0: 1 1 1 1
     foo1: 2
     foo2: 3
   expected: 1 1 1 1
-  name: StandardFilterTest#test_replace:575_e12565fd518e9f488f3c9ee1bb015274
-- template: "{{ foo0 | replace_last: b }}"
+  name: StandardFilterTest#test_replace:575_f27451e7a109d099de77737ae8f18750
+- template: '{{ foo0 | replace_last: "a", "b" }}'
   environment:
     foo0: a a a a
     foo1: a
     foo2: b
   expected: a a a b
-  name: StandardFilterTest#test_replace:578_8ca2c4dae75f93c522f77c82a8a19c52
-- template: "{{ foo0 | replace_last: 2 }}"
+  name: StandardFilterTest#test_replace:578_073b8fea13e9b05852c5274b65e33d9c
+- template: "{{ foo0 | replace_last: 1, 2 }}"
   environment:
     foo0: 1 1 1 1
     foo1: 1
     foo2: 2
   expected: 1 1 1 2
-  name: StandardFilterTest#test_replace:579_30e4d85a3d22c67759e0b27e9dc51ee7
-- template: "{{ foo0 | replace_last: 3 }}"
+  name: StandardFilterTest#test_replace:579_fbc0e71341984414ddeca77cad8cac13
+- template: "{{ foo0 | replace_last: 2, 3 }}"
   environment:
     foo0: 1 1 1 1
     foo1: 2
     foo2: 3
   expected: 1 1 1 1
-  name: StandardFilterTest#test_replace:580_b1e6139cc3d7bdee95ddf987dc0e85da
+  name: StandardFilterTest#test_replace:580_b26f15ce01b095a5109692e22d703727
+- template: "{{ foo0 | reverse }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: '4321'
+  name: StandardFilterTest#test_reverse:419_c29b238b6232ea8a3cc23baf326c74b3
 - template: "{{ foo0 | size }}"
   environment:
     foo0:
@@ -121,6 +3981,261 @@
     foo0:
   expected: '0'
   name: StandardFilterTest#test_size:80_919e7a9ef7edf6c7a04da6cf32f294d7
+- template: "{{ foo0 | slice: -2, 1000 }}"
+  environment:
+    foo0: foobar
+    foo1: -2
+    foo2: 1000
+  expected: ar
+  name: StandardFilterTest#test_slice:100_d5f480807808fcde48a183ded6dc4bed
+- template: "{{ foo0 | slice: -1 }}"
+  environment:
+    foo0: foobar
+    foo1: -1
+  expected: r
+  name: StandardFilterTest#test_slice:101_da0ce54c84cd6861e0824717eacbcc28
+- template: "{{ foo0 | slice: 0 }}"
+  environment:
+    foo0:
+    foo1: 0
+  expected: ''
+  name: StandardFilterTest#test_slice:102_5bfdc9c9582973dccc20c6e0f103f273
+- template: "{{ foo0 | slice: 100, 10 }}"
+  environment:
+    foo0: foobar
+    foo1: 100
+    foo2: 10
+  expected: ''
+  name: StandardFilterTest#test_slice:103_8ac707277c9bfdb3b2e1f2874e451608
+- template: "{{ foo0 | slice: -100, 10 }}"
+  environment:
+    foo0: foobar
+    foo1: -100
+    foo2: 10
+  expected: ''
+  name: StandardFilterTest#test_slice:104_1ba87445122237a6579dc916084d18bb
+- template: '{{ foo0 | slice: "1", "3" }}'
+  environment:
+    foo0: foobar
+    foo1: '1'
+    foo2: '3'
+  expected: oob
+  name: StandardFilterTest#test_slice:105_51e43da0c2232198a129d53d8afd0282
+- template: "{{ foo0 | slice: 1, 3 }}"
+  environment:
+    foo0: foobar
+    foo1: 1
+    foo2: 3
+  expected: oob
+  name: StandardFilterTest#test_slice:94_9a81cb472176b42d86b81f249b2e49d3
+- template: "{{ foo0 | slice: 1, 1000 }}"
+  environment:
+    foo0: foobar
+    foo1: 1
+    foo2: 1000
+  expected: oobar
+  name: StandardFilterTest#test_slice:95_e22869ef1fd7290ca1e28fa9ec865b0e
+- template: "{{ foo0 | slice: 1, 0 }}"
+  environment:
+    foo0: foobar
+    foo1: 1
+    foo2: 0
+  expected: ''
+  name: StandardFilterTest#test_slice:96_05a8240de8184fe14495f55793ba5738
+- template: "{{ foo0 | slice: 1, 1 }}"
+  environment:
+    foo0: foobar
+    foo1: 1
+    foo2: 1
+  expected: o
+  name: StandardFilterTest#test_slice:97_d481657a450c25930fc1509f515eeee4
+- template: "{{ foo0 | slice: 3, 3 }}"
+  environment:
+    foo0: foobar
+    foo1: 3
+    foo2: 3
+  expected: bar
+  name: StandardFilterTest#test_slice:98_f473e4f78093e326b44a9b802b8eaa40
+- template: "{{ foo0 | slice: -2, 2 }}"
+  environment:
+    foo0: foobar
+    foo1: -2
+    foo2: 2
+  expected: ar
+  name: StandardFilterTest#test_slice:99_34ef2b9341dd61c1cefa521cb7477222
+- template: "{{ foo0 | slice: 1, 3 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: 1
+    foo2: 3
+  expected: oob
+  name: StandardFilterTest#test_slice_on_arrays:116_03d9bcebc8026038af6c3bdffb6df170
+- template: "{{ foo0 | slice: 1, 1000 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: 1
+    foo2: 1000
+  expected: oobar
+  name: StandardFilterTest#test_slice_on_arrays:117_41b42e734ecc91d9c4aafb7dbed36498
+- template: "{{ foo0 | slice: 1, 0 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: 1
+    foo2: 0
+  expected: ''
+  name: StandardFilterTest#test_slice_on_arrays:118_13a5dd1f080f5528d756d1f9feb2bb94
+- template: "{{ foo0 | slice: 1, 1 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: 1
+    foo2: 1
+  expected: o
+  name: StandardFilterTest#test_slice_on_arrays:119_36c6e4856d8618499d35a5a4bcfeb400
+- template: "{{ foo0 | slice: 3, 3 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: 3
+    foo2: 3
+  expected: bar
+  name: StandardFilterTest#test_slice_on_arrays:120_9a0ee10d01a82259900d0baad702b74e
+- template: "{{ foo0 | slice: -2, 2 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: -2
+    foo2: 2
+  expected: ar
+  name: StandardFilterTest#test_slice_on_arrays:121_45144cf1bda2c54e7c7c87161b0384b3
+- template: "{{ foo0 | slice: -2, 1000 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: -2
+    foo2: 1000
+  expected: ar
+  name: StandardFilterTest#test_slice_on_arrays:122_900172c78d298ed8919c3489cdb2bb6c
+- template: "{{ foo0 | slice: -1 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: -1
+  expected: r
+  name: StandardFilterTest#test_slice_on_arrays:123_209127c2950464c34d376153ddf7fce0
+- template: "{{ foo0 | slice: 100, 10 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: 100
+    foo2: 10
+  expected: ''
+  name: StandardFilterTest#test_slice_on_arrays:124_39f693a906f5b28a15325fbed8a52afa
+- template: "{{ foo0 | slice: -100, 10 }}"
+  environment:
+    foo0:
+    - f
+    - o
+    - o
+    - b
+    - a
+    - r
+    foo1: -100
+    foo2: 10
+  expected: ''
+  name: StandardFilterTest#test_slice_on_arrays:125_58c0d02247e10db561558a84aaf00d38
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+    - 4
+    - 3
+    - 2
+    - 1
+  expected: '1234'
+  name: StandardFilterTest#test_sort:256_ed9c07afaf1e7888a2f15884b8d7b3f8
+- template: '{{ foo0 | sort: "a" }}'
+  environment:
+    foo0:
+    - a: 4
+    - a: 3
+    - a: 1
+    - a: 2
+    foo1: a
+  expected: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}'
+  name: StandardFilterTest#test_sort:257_3d75b2708aac60216bebcd7f207f2a29
+- template: '{{ foo0 | sort: "a" }}'
+  environment:
+    foo0: []
+    foo1: a
+  expected: ''
+  name: StandardFilterTest#test_sort_empty_array:335_2757a001d272c08406c6d84ed6ebf149
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+    - c
+    - D
+    - a
+    - B
+  expected: aBcD
+  name: StandardFilterTest#test_sort_natural:284_10450440656038aab944e811e97840ee
+- template: '{{ foo0 | sort_natural: "a" }}'
+  environment:
+    foo0:
+    - a: D
+    - a: c
+    - a: a
+    - a: B
+    foo1: a
+  expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
+  name: StandardFilterTest#test_sort_natural:285_d9a07145bd6419260dcfef1b14aee3ab
 - template: '{{ foo0 | sort_natural: "key" }}'
   environment:
     foo0:
@@ -145,6 +4260,156 @@
     - c
   expected: abcXYZ
   name: StandardFilterTest#test_sort_natural_case_check:331_f5b4ff6fa4bf35151201c07cb061133f
+- template: '{{ foo0 | sort_natural: "a" }}'
+  environment:
+    foo0: []
+    foo1: a
+  expected: ''
+  name: StandardFilterTest#test_sort_natural_empty_array:351_26b62bf44cf9cf7041cc79147fae84df
+- template: '{{ foo0 | sort_natural: "price" }}'
+  environment:
+    foo0:
+    - price: '4'
+      handle: alpha
+    - handle: beta
+    - price: '1'
+      handle: gamma
+    - handle: delta
+    - price: 2
+      handle: epsilon
+    foo1: price
+  expected: '{"price"=>"1", "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>"4",
+    "handle"=>"alpha"}{"handle"=>"delta"}{"handle"=>"beta"}'
+  name: StandardFilterTest#test_sort_natural_when_property_is_sometimes_missing_puts_nils_last:308_c62444eccd230bd79c18ea5ee9b34191
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+    -
+    - c
+    - D
+    - a
+    - B
+  expected: aBcD
+  name: StandardFilterTest#test_sort_natural_with_nils:289_f7611c0992fb4af5e2068b388c4a1315
+- template: '{{ foo0 | sort_natural: "a" }}'
+  environment:
+    foo0:
+    - a: D
+    - a: c
+    - {}
+    - a: a
+    - a: B
+    foo1: a
+  expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}{}'
+  name: StandardFilterTest#test_sort_natural_with_nils:290_ce47037d122cb9e67187475b766c7630
+- template: '{{ foo0 | sort: "price" }}'
+  environment:
+    foo0:
+    - price: 4
+      handle: alpha
+    - handle: beta
+    - price: 1
+      handle: gamma
+    - handle: delta
+    - price: 2
+      handle: epsilon
+    foo1: price
+  expected: '{"price"=>1, "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>4,
+    "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
+  name: StandardFilterTest#test_sort_when_property_is_sometimes_missing_puts_nils_last:280_9443edce24b3877dea7c0fb9a7f71403
+- template: "{{ foo0 | sort }}"
+  environment:
+    foo0:
+    -
+    - 4
+    - 3
+    - 2
+    - 1
+  expected: '1234'
+  name: StandardFilterTest#test_sort_with_nils:261_fff3563a286ce33562f45647236ef5f3
+- template: '{{ foo0 | sort: "a" }}'
+  environment:
+    foo0:
+    - a: 4
+    - a: 3
+    - {}
+    - a: 1
+    - a: 2
+    foo1: a
+  expected: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}{}'
+  name: StandardFilterTest#test_sort_with_nils:262_5dc5b2072f5e8699478eb70e7d1e4ad2
+- template: '{{ foo0 | split: "~" }}'
+  environment:
+    foo0: 12~34
+    foo1: "~"
+  expected: '1234'
+  name: StandardFilterTest#test_split:138_6a71aa73577bfeac65e4c9e848f49c6a
+- template: '{{ foo0 | split: "~ ~ ~" }}'
+  environment:
+    foo0: A? ~ ~ ~ ,Z
+    foo1: "~ ~ ~"
+  expected: A?  ,Z
+  name: StandardFilterTest#test_split:139_71726ad16f5d5875273f7a7d435b6257
+- template: '{{ foo0 | split: "~" }}'
+  environment:
+    foo0: A?Z
+    foo1: "~"
+  expected: A?Z
+  name: StandardFilterTest#test_split:140_88aa6aed52523ec89d34af5b1c74e5c4
+- template: '{{ foo0 | split: " " }}'
+  environment:
+    foo0:
+    foo1: " "
+  expected: ''
+  name: StandardFilterTest#test_split:141_8fb08ec592c1b2c24b5f6bb408258e9b
+- template: "{{ foo0 | split: 1 }}"
+  environment:
+    foo0: A1Z
+    foo1: 1
+  expected: AZ
+  name: StandardFilterTest#test_split:142_53cc4a2e7c7b337720809aadcd16410a
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: "<div>test</div>"
+  expected: test
+  name: StandardFilterTest#test_strip_html:237_2fc61ad6f8e7c4ccfe04a83a391a1001
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: "<div id='test'>test</div>"
+  expected: test
+  name: StandardFilterTest#test_strip_html:238_ce2a2da0bfbd1ef6ed3f11b92cd4cf77
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: "<script type='text/javascript'>document.write('some stuff');</script>"
+  expected: ''
+  name: StandardFilterTest#test_strip_html:239_7e8708c7f5f19700038e885ffa55cfa0
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: "<style type='text/css'>foo bar</style>"
+  expected: ''
+  name: StandardFilterTest#test_strip_html:240_babb37074aaa3e567f6fa0f2dff779ff
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: |-
+      <div
+      class='multiline'>test</div>
+  expected: test
+  name: StandardFilterTest#test_strip_html:241_5a74a0c13afd2b78c52acf9fa8ff13c2
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: "<!-- foo bar \n test -->test"
+  expected: test
+  name: StandardFilterTest#test_strip_html:242_c1e002ec79846a941cfb537d6ab74f33
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_strip_html:243_a626bd9683120e31156922b0bc816087
+- template: "{{ foo0 | strip_html }}"
+  environment:
+    foo0: "<<<script </script>script>foo;</script>"
+  expected: foo;
+  name: StandardFilterTest#test_strip_html:246_ed519777aed6cf57033153accddbcf71
 - template: "{{ foo0 | truncate: 7 }}"
   environment:
     foo0: '1234567890'
@@ -174,13 +4439,157 @@
     foo1: 5
   expected: 测试...
   name: StandardFilterTest#test_truncate:133_50050df47d872bf1cae0df057d4468b8
-- template: "{{ foo0 | truncate: 1 }}"
+- template: "{{ foo0 | truncate: 5, 1 }}"
   environment:
     foo0: '1234567890'
     foo1: 5
     foo2: 1
   expected: '12341'
-  name: StandardFilterTest#test_truncate:134_7f489b98d073bd1224735c5a4e943ec5
+  name: StandardFilterTest#test_truncate:134_75d1169ac524a69d04567cf2374eed0f
+- template: "{{ foo0 | truncatewords: 4 }}"
+  environment:
+    foo0: one two three
+    foo1: 4
+  expected: one two three
+  name: StandardFilterTest#test_truncatewords:218_bca7b031c63a60ac4d7e14feb129d082
+- template: "{{ foo0 | truncatewords: 2 }}"
+  environment:
+    foo0: one two three
+    foo1: 2
+  expected: one two...
+  name: StandardFilterTest#test_truncatewords:219_4d35109550a75c0b330e62a923b890c5
+- template: "{{ foo0 | truncatewords }}"
+  environment:
+    foo0: one two three
+  expected: one two three
+  name: StandardFilterTest#test_truncatewords:220_1fcdf50b11c4e713a01e965d3bb07c01
+- template: "{{ foo0 | truncatewords: 15 }}"
+  environment:
+    foo0: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one
+      large basket (13&#8221; x 16&#8221; x 10.5&#8221; high) with cover.
+    foo1: 15
+  expected: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside
+    one large basket (13&#8221;...
+  name: StandardFilterTest#test_truncatewords:223_d879ffa21fefc5c1c2159f83a267b44a
+- template: "{{ foo0 | truncatewords: 5 }}"
+  environment:
+    foo0: 测试测试测试测试
+    foo1: 5
+  expected: 测试测试测试测试
+  name: StandardFilterTest#test_truncatewords:225_f72a32a0ad0c94a2d8c0e7f7396f70b6
+- template: "{{ foo0 | truncatewords: 2, 1 }}"
+  environment:
+    foo0: one two three
+    foo1: 2
+    foo2: 1
+  expected: one two1
+  name: StandardFilterTest#test_truncatewords:226_a6c7232b4c093c268d6fe59af7153b37
+- template: "{{ foo0 | truncatewords: 3 }}"
+  environment:
+    foo0: "one  two\tthree\nfour"
+    foo1: 3
+  expected: one two three...
+  name: StandardFilterTest#test_truncatewords:227_af6b722494be1f2ef1383b30380a9b6f
+- template: "{{ foo0 | truncatewords: 2 }}"
+  environment:
+    foo0: one two three four
+    foo1: 2
+  expected: one two...
+  name: StandardFilterTest#test_truncatewords:228_181cc34046643d0729cfa5ee7ab6f213
+- template: "{{ foo0 | truncatewords: 0 }}"
+  environment:
+    foo0: one two three four
+    foo1: 0
+  expected: one...
+  name: StandardFilterTest#test_truncatewords:229_ee25a27f52b6e2bced4d238a138bb257
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0: foo
+  expected: foo
+  name: StandardFilterTest#test_uniq:378_ec7136d5ebca5265f740eb6c5f4cc77e
+- template: "{{ foo0 | uniq }}"
+  environment:
+    foo0:
+    - 1
+    - 1
+    - 3
+    - 2
+    - 3
+    - 1
+    - 4
+    - 3
+    - 2
+    - 1
+  expected: '1324'
+  name: StandardFilterTest#test_uniq:379_37fa8b77b621e4e895e3652dfd0f3790
+- template: '{{ foo0 | uniq: "a" }}'
+  environment:
+    foo0:
+    - a: 1
+    - a: 3
+    - a: 1
+    - a: 2
+    foo1: a
+  expected: '{"a"=>1}{"a"=>3}{"a"=>2}'
+  name: StandardFilterTest#test_uniq:380_ba5f039527914969ee767d63e29f370d
+- template: '{{ foo0 | uniq: "value" }}'
+  environment:
+    foo0:
+    - !ruby/object:TestDrop
+      value: test
+      context: {}
+    - !ruby/object:TestDrop
+      value: test
+      context: {}
+    foo1: value
+  expected: TestDrop
+  name: StandardFilterTest#test_uniq:383_47ae798049b2e5a3b5708719116097da
+- template: '{{ foo0 | uniq: "a" }}'
+  environment:
+    foo0: []
+    foo1: a
+  expected: ''
+  name: StandardFilterTest#test_uniq_empty_array:387_59c861adac2e50a342587ec1e51165dc
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: Testing
+  expected: TESTING
+  name: StandardFilterTest#test_upcase:89_e118db2ee718e52878e12cbd914306bf
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_upcase:90_86dd697dec72bd3f965d122153ab3f4e
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: foo+bar
+  expected: foo bar
+  name: StandardFilterTest#test_url_decode:205_aa410087ce7271b773847baf3625f695
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: foo%20bar
+  expected: foo bar
+  name: StandardFilterTest#test_url_decode:206_aef90b04e09ca0abb7b202eff8d86c15
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: foo%2B1%40example.com
+  expected: foo+1@example.com
+  name: StandardFilterTest#test_url_decode:207_594128f13aa7b7c8d542e4975ab83ec1
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: 1
+  expected: '1'
+  name: StandardFilterTest#test_url_decode:208_e3007b91c69453e5cd7c6883898761a6
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0: 2001-02-03
+  expected: '2001-02-03'
+  name: StandardFilterTest#test_url_decode:209_5fb3f14197d28a444e908db8c60c15e5
+- template: "{{ foo0 | url_decode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_url_decode:210_67fce37c45a3524f80e66df37193c800
 - template: "{{ foo0 | url_encode }}"
   environment:
     foo0: foo+1@example.com
@@ -201,3 +4610,147 @@
     foo0:
   expected: ''
   name: StandardFilterTest#test_url_encode:201_9e46c32bd792501d1ae77e1f27ad18a1
+- template: '{{ foo0 | where: "ok", true }}'
+  environment:
+    foo0:
+    - handle: alpha
+      ok: true
+    - handle: beta
+      ok: false
+    - handle: gamma
+      ok: false
+    - handle: delta
+      ok: true
+    foo1: ok
+    foo2: true
+  expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+  name: StandardFilterTest#test_where:807_9c275486fdf469ac72a80211223f3d4b
+- template: '{{ foo0 | where: "ok" }}'
+  environment:
+    foo0:
+    - handle: alpha
+      ok: true
+    - handle: beta
+      ok: false
+    - handle: gamma
+      ok: false
+    - handle: delta
+      ok: true
+    foo1: ok
+  expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+  name: StandardFilterTest#test_where:808_b97d4589cbf36ecc55b55306ea20aabc
+- template: '{{ foo0 | where: "ok", true }}'
+  environment:
+    foo0:
+    -
+    foo1: ok
+    foo2: true
+  expected: ''
+  name: StandardFilterTest#test_where_array_of_only_unindexable_values:863_e3613c59c964b48c689ad47ea0fe565a
+- template: '{{ foo0 | where: "ok" }}'
+  environment:
+    foo0:
+    -
+    foo1: ok
+  expected: ''
+  name: StandardFilterTest#test_where_array_of_only_unindexable_values:864_e4a842f808bc49b791a4d543d185accf
+- template: '{{ foo0 | where: "ok", true }}'
+  environment:
+    foo0:
+    - handle: alpha
+      ok: true
+    - handle: beta
+    - handle: gamma
+    - handle: delta
+      ok: true
+    foo1: ok
+    foo2: true
+  expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+  name: StandardFilterTest#test_where_no_key_set:836_6b3077ee61bfa3932416af2b8666aee1
+- template: '{{ foo0 | where: "ok" }}'
+  environment:
+    foo0:
+    - handle: alpha
+      ok: true
+    - handle: beta
+    - handle: gamma
+    - handle: delta
+      ok: true
+    foo1: ok
+  expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+  name: StandardFilterTest#test_where_no_key_set:837_78186a6aa3ad00e1d43a3e9dc4f55bb8
+- template: '{{ foo0 | where: "foo" }}'
+  environment:
+    foo0:
+    - foo: false
+    - foo: true
+    - foo: for sure
+    - bar: true
+    foo1: foo
+  expected: '{"foo"=>true}{"foo"=>"for sure"}'
+  name: StandardFilterTest#test_where_no_target_value:913_7a952e5cdefa3ad86c43d2cc568e4995
+- template: '{{ foo0 | where: "a", "ok" }}'
+  environment:
+    foo0:
+      a: ok
+    foo1: a
+    foo2: ok
+  expected: '{"a"=>"ok"}'
+  name: StandardFilterTest#test_where_non_array_map_input:841_324e04ddde6ea3851a0c3c6399f126b3
+- template: '{{ foo0 | where: "a", "ok" }}'
+  environment:
+    foo0:
+      a: not ok
+    foo1: a
+    foo2: ok
+  expected: ''
+  name: StandardFilterTest#test_where_non_array_map_input:842_6a3fe7560c5cb9d71a6be239d3bb36e6
+- template: '{{ foo0 | where: "language", "French" }}'
+  environment:
+    foo0:
+    - message: Bonjour!
+      language: French
+    - message: Hello!
+      language: English
+    - message: Hallo!
+      language: German
+    foo1: language
+    foo2: French
+  expected: '{"message"=>"Bonjour!", "language"=>"French"}'
+  name: StandardFilterTest#test_where_non_boolean_value:857_fd940236ee2637480e27b82311d2d8cc
+- template: '{{ foo0 | where: "language", "German" }}'
+  environment:
+    foo0:
+    - message: Bonjour!
+      language: French
+    - message: Hello!
+      language: English
+    - message: Hallo!
+      language: German
+    foo1: language
+    foo2: German
+  expected: '{"message"=>"Hallo!", "language"=>"German"}'
+  name: StandardFilterTest#test_where_non_boolean_value:858_6cb45b6052cd4951a30847250f1ff66e
+- template: '{{ foo0 | where: "language", "English" }}'
+  environment:
+    foo0:
+    - message: Bonjour!
+      language: French
+    - message: Hello!
+      language: English
+    - message: Hallo!
+      language: German
+    foo1: language
+    foo2: English
+  expected: '{"message"=>"Hello!", "language"=>"English"}'
+  name: StandardFilterTest#test_where_non_boolean_value:859_c2c240064a3182b0229dcaf5d8d3fe30
+- template: '{{ foo0 | where: "be" }}'
+  environment:
+    foo0:
+    - alpha
+    - beta
+    - gamma
+    - delta
+    foo1: be
+  expected: beta
+  name: StandardFilterTest#test_where_string_keys:820_3e215368b32dd18ea50dc8eda74fcd4d

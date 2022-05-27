@@ -9,18 +9,44 @@ module StandardFilterPatch
   def generate_spec(filter_name, result, *args)
     data = {
       "template" => build_liquid(args, filter_name),
-      "environment" => _deep_dup(build_environtment(args)),
+      "environment" => build_environtment(args),
       "expected" => build_expected(result),
       "name" => "StandardFilterTest##{test_name}",
     }
     digest = Digest::MD5.hexdigest(YAML.dump(data))
     data["name"] = "#{data["name"]}_#{digest}"
     yaml = YAML.dump(data)
+    return if digest =~ /7e18eb50bc2c00e0934edd8a3ec8deb3/
+    binding.pry if yaml.include?("Proc")
     File.write(
       CAPTURE_PATH,
       "- #{yaml[4..].gsub("\n", "\n  ").rstrip.chomp("...").rstrip}\n",
       mode: "a+"
     )
+  end
+
+  def _deep_dup(env)
+    if env.is_a?(Hash)
+      new_env = {}
+      env.each do |k, v|
+        new_env[k] = _deep_dup(v)
+      end
+      new_env
+    elsif env.is_a?(Array)
+      new_env = []
+      env.each do |v|
+        new_env << _deep_dup(v)
+      end
+      new_env
+    elsif env.is_a?(Liquid::Drop)
+      env.context = {}
+      env.dup
+    elsif env.is_a?(TestThing)
+      env.instance_eval { @foo -= 1 }
+      env.dup
+    else
+      env.dup
+    end
   end
 
   private
@@ -32,19 +58,35 @@ module StandardFilterPatch
       LIQUID
     elsif input.size == 2
       <<~LIQUID.strip
-        {{ foo0 | #{filter_name}: #{input.last.inspect} }}
+        {{ foo0 | #{filter_name}: #{format_args(input.last(1))} }}
       LIQUID
     else
       <<~LIQUID.strip
-        {{ foo0 | #{filter_name}: #{input[2..].join(", ")} }}
+        {{ foo0 | #{filter_name}: #{format_args(input[1..])} }}
       LIQUID
     end
   end
 
+  def format_args(args)
+    args.map.with_index do |arg, i|
+      if arg.is_a?(String)
+        arg.inspect 
+      elsif arg.is_a?(Hash)
+        raise if arg.size != 1
+        "#{arg.keys.first}: #{format_args(arg.values)}"
+      elsif arg.is_a?(Array)
+        "foo#{i + 1}"
+      elsif arg.nil?
+        "foo#{i + 1}"
+      else
+        arg.to_s
+      end
+    end.join(", ")
+  end
+
   def build_environtment(args)
     args.each_with_object({}).with_index do |(arg, env), i|
-      arg.context = {} if arg.is_a?(Liquid::Drop)
-      env["foo#{i}"] = arg
+      env["foo#{i}"] = _deep_dup(arg)
     end
   end
 
@@ -74,23 +116,5 @@ module StandardFilterPatch
       .last
       .match(/\.rb:(?<lineno>\d+):in `(?<test_name>test_\w+).$/)
     "#{match[:test_name]}:#{match[:lineno]}"
-  end
-
-  def _deep_dup(env)
-    if env.is_a?(Hash)
-      new_env = {}
-      env.each do |k, v|
-        new_env[k] = _deep_dup(v)
-      end
-      new_env
-    elsif env.is_a?(Array)
-      new_env = []
-      env.each do |v|
-        new_env << _deep_dup(v)
-      end
-      new_env
-    else
-      env.dup
-    end
   end
 end
