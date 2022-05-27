@@ -19,6 +19,18 @@ class TestThing
   end
 end
 
+class TestDrop < Liquid::Drop
+  def initialize(value:)
+    @value = value
+  end
+
+  attr_reader :value
+
+  def registers
+    { @value => @context.registers[@value] }
+  end
+end
+
 class TestEnumerable < Liquid::Drop
   include Enumerable
 

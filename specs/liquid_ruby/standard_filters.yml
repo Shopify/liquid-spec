@@ -1,0 +1,203 @@
+---
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0: one two three
+  expected: b25lIHR3byB0aHJlZQ==
+  name: StandardFilterTest#test_base64_encode:164_4f1bdf8ccc2f9bd5c3b3217bc21807ef
+- template: "{{ foo0 | base64_encode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_base64_encode:165_6e19e359bc0f7e9cbb5e8decd2e58e5b
+- template: "{{ foo0 | escape_once }}"
+  environment:
+    foo0: "&lt;strong&gt;Hulk</strong>"
+  expected: "&lt;strong&gt;Hulk&lt;/strong&gt;"
+  name: StandardFilterTest#test_escape_once:160_af5be1f17aa2cee3e319bfaa21766273
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+  expected: '1'
+  name: StandardFilterTest#test_first_last:561_1fbe85ebcc1d277b8b5f56776552859b
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+  expected: '3'
+  name: StandardFilterTest#test_first_last:562_dc114996e34ca2fa00ce74c194ab29c3
+- template: "{{ foo0 | first }}"
+  environment:
+    foo0: []
+  expected: ''
+  name: StandardFilterTest#test_first_last:563_8babdad015e5608d76491d96e3ae0927
+- template: "{{ foo0 | last }}"
+  environment:
+    foo0: []
+  expected: ''
+  name: StandardFilterTest#test_first_last:564_51964db4ffff7517b1dc587e4f61b546
+- template: "{{ foo0 | replace: b }}"
+  environment:
+    foo0: a a a a
+    foo1: a
+    foo2: b
+  expected: b b b b
+  name: StandardFilterTest#test_replace:568_95bb6e9f7949c9a7c8cd538a672dab43
+- template: "{{ foo0 | replace: 2 }}"
+  environment:
+    foo0: 1 1 1 1
+    foo1: 1
+    foo2: 2
+  expected: 2 2 2 2
+  name: StandardFilterTest#test_replace:569_1c51096d391ff2b2a3e4ef210e5bb4d3
+- template: "{{ foo0 | replace: 3 }}"
+  environment:
+    foo0: 1 1 1 1
+    foo1: 2
+    foo2: 3
+  expected: 1 1 1 1
+  name: StandardFilterTest#test_replace:570_8b26a8e4cd815548fe303096b35de830
+- template: "{{ foo0 | replace_first: b }}"
+  environment:
+    foo0: a a a a
+    foo1: a
+    foo2: b
+  expected: b a a a
+  name: StandardFilterTest#test_replace:573_90a9699058e8cf885aae3ceaa1ba90ec
+- template: "{{ foo0 | replace_first: 2 }}"
+  environment:
+    foo0: 1 1 1 1
+    foo1: 1
+    foo2: 2
+  expected: 2 1 1 1
+  name: StandardFilterTest#test_replace:574_670e06958ce0ab2edaf43def91e3751d
+- template: "{{ foo0 | replace_first: 3 }}"
+  environment:
+    foo0: 1 1 1 1
+    foo1: 2
+    foo2: 3
+  expected: 1 1 1 1
+  name: StandardFilterTest#test_replace:575_e12565fd518e9f488f3c9ee1bb015274
+- template: "{{ foo0 | replace_last: b }}"
+  environment:
+    foo0: a a a a
+    foo1: a
+    foo2: b
+  expected: a a a b
+  name: StandardFilterTest#test_replace:578_8ca2c4dae75f93c522f77c82a8a19c52
+- template: "{{ foo0 | replace_last: 2 }}"
+  environment:
+    foo0: 1 1 1 1
+    foo1: 1
+    foo2: 2
+  expected: 1 1 1 2
+  name: StandardFilterTest#test_replace:579_30e4d85a3d22c67759e0b27e9dc51ee7
+- template: "{{ foo0 | replace_last: 3 }}"
+  environment:
+    foo0: 1 1 1 1
+    foo1: 2
+    foo2: 3
+  expected: 1 1 1 1
+  name: StandardFilterTest#test_replace:580_b1e6139cc3d7bdee95ddf987dc0e85da
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+    - 1
+    - 2
+    - 3
+  expected: '3'
+  name: StandardFilterTest#test_size:78_f7376f2b681e893f4c4c5dc85bcf1557
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: []
+  expected: '0'
+  name: StandardFilterTest#test_size:79_47ae062647a0ef9b1e4d126eeb229c50
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0:
+  expected: '0'
+  name: StandardFilterTest#test_size:80_919e7a9ef7edf6c7a04da6cf32f294d7
+- template: '{{ foo0 | sort_natural: "key" }}'
+  environment:
+    foo0:
+    - key: X
+    - key: Y
+    - key: Z
+    - fake: t
+    - key: a
+    - key: b
+    - key: c
+    foo1: key
+  expected: '{"key"=>"a"}{"key"=>"b"}{"key"=>"c"}{"key"=>"X"}{"key"=>"Y"}{"key"=>"Z"}{"fake"=>"t"}'
+  name: StandardFilterTest#test_sort_natural_case_check:330_0b2701aeeb89b77979fddbfb03d613ba
+- template: "{{ foo0 | sort_natural }}"
+  environment:
+    foo0:
+    - X
+    - Y
+    - Z
+    - a
+    - b
+    - c
+  expected: abcXYZ
+  name: StandardFilterTest#test_sort_natural_case_check:331_f5b4ff6fa4bf35151201c07cb061133f
+- template: "{{ foo0 | truncate: 7 }}"
+  environment:
+    foo0: '1234567890'
+    foo1: 7
+  expected: 1234...
+  name: StandardFilterTest#test_truncate:129_4db6dcc45987f0c1bbc7e2cdcbd171cc
+- template: "{{ foo0 | truncate: 20 }}"
+  environment:
+    foo0: '1234567890'
+    foo1: 20
+  expected: '1234567890'
+  name: StandardFilterTest#test_truncate:130_240dbaaf6dcb2d24690f9549e38ac536
+- template: "{{ foo0 | truncate: 0 }}"
+  environment:
+    foo0: '1234567890'
+    foo1: 0
+  expected: "..."
+  name: StandardFilterTest#test_truncate:131_1154c4fca58bfdfe5ce82f1e75511cc1
+- template: "{{ foo0 | truncate }}"
+  environment:
+    foo0: '1234567890'
+  expected: '1234567890'
+  name: StandardFilterTest#test_truncate:132_6818d273257b22b843327be484153d91
+- template: "{{ foo0 | truncate: 5 }}"
+  environment:
+    foo0: 测试测试测试测试
+    foo1: 5
+  expected: 测试...
+  name: StandardFilterTest#test_truncate:133_50050df47d872bf1cae0df057d4468b8
+- template: "{{ foo0 | truncate: 1 }}"
+  environment:
+    foo0: '1234567890'
+    foo1: 5
+    foo2: 1
+  expected: '12341'
+  name: StandardFilterTest#test_truncate:134_7f489b98d073bd1224735c5a4e943ec5
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: foo+1@example.com
+  expected: foo%2B1%40example.com
+  name: StandardFilterTest#test_url_encode:198_60297fced35190f446c21bc13a746854
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: 1
+  expected: '1'
+  name: StandardFilterTest#test_url_encode:199_13d1fdda64fbba2334e561202464522f
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0: 2001-02-03
+  expected: '2001-02-03'
+  name: StandardFilterTest#test_url_encode:200_b8b8f55a24f9aeb24bcd3abe30963d79
+- template: "{{ foo0 | url_encode }}"
+  environment:
+    foo0:
+  expected: ''
+  name: StandardFilterTest#test_url_encode:201_9e46c32bd792501d1ae77e1f27ad18a1

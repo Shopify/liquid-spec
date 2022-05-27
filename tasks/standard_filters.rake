@@ -21,20 +21,22 @@ require_relative(
  
 namespace :generate do
   desc 'Generate spec tests from Shopify/liquid'
-  task :liquid_ruby do
+  task :standard_filters do
     Helpers.load_shopify_liquid
-    Helpers.insert_patch(PATCH_PATH, PATCH)
-    Helpers.reset_captures(CAPTURE_PATH)
+    Helpers.insert_patch(FILTER_PATCH_PATH, FILTER_PATCH)
+    Helpers.reset_captures(FILTER_CAPTURE_PATH)
     run_liquid_tests
-    Helpers.format_and_write_specs(CAPTURE_PATH, SPEC_FILE)
+    Helpers.format_and_write_specs(FILTER_CAPTURE_PATH, FILTER_SPEC_FILE)
   end
 end
 
 
-PATCH = <<~RUBY
+FILTER_PATCH_PATH = "./tmp/liquid/test/integration/standard_filter_test.rb"
+FILTER_PATCH = <<~RUBY
 require_relative(
   File.join(
-    __dir__, # liquid-spec/tmp/liquid/test
+    __dir__, # liquid-spec/tmp/liquid/test/integration
+    "..",    # liquid-spec/tmp/liquid/test
     "..",    # liquid-spec/tmp/liquid
     "..",    # liquid-spec/tmp/
     "..",    # liquid-spec/
@@ -42,24 +44,41 @@ require_relative(
     "liquid",
     "spec",
     "deps",
-    "shopify_liquid_patch",
+    "standard_filter_patch",
   )
 )
-RUBY
-PATCH_PATH = "./tmp/liquid/test/test_helper.rb"
 
-CAPTURE_PATH = "./tmp/liquid-ruby-capture.yml"
+StandardFiltersTest::Filters.class_exec do
+  @filter_methods.each do |method_name|
+    define_method(method_name) do |*args|
+      result = super(*args)
+      StandardFilterPatch.generate_spec(method_name, result, *args)
+      result
+    rescue => e
+      raise e if e.is_a?(Liquid::Error)
+      raise Liquid::ArgumentError, e.message, e.backtrace
+    end
+  end
+end
+RUBY
+
+FILTER_CAPTURE_PATH = "./tmp/standard-filters-capture.yml"
 
 def run_liquid_tests
   Bundler.with_unbundled_env do
-    system("cd tmp/liquid && bundle install && bundle exec rake base_test && cd ../..")
+    system(
+      "cd tmp/liquid &&" \
+      "bundle install && " \
+      "bundle exec rake base_test TEST=\"test/integration/standard_filter_test.rb\""\
+      "&& cd ../.."
+    )
   end
 end
 
-SPEC_FILE = File.join(
+FILTER_SPEC_FILE = File.join(
   __dir__, # liquid-spec/tasks
   "..",    # liquid-spec/
   "specs",
   "liquid_ruby",
-  "specs.yml",
+  "standard_filters.yml",
 )

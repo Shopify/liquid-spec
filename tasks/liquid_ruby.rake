@@ -4,6 +4,9 @@ require 'yaml'
 require 'liquid'
 require 'minitest'
 require 'pry-byebug'
+
+require_relative(File.join(__dir__, "helpers"))
+
 require_relative(
   File.join(
     __dir__, # liquid-spec/tasks
@@ -15,25 +18,18 @@ require_relative(
     "liquid_ruby",
   )
 )
-
+ 
 namespace :generate do
   desc 'Generate spec tests from Shopify/liquid'
   task :liquid_ruby do
-    load_shopify_liquid
-    insert_patch
-    reset_captures
+    Helpers.load_shopify_liquid
+    Helpers.insert_patch(PATCH_PATH, PATCH)
+    Helpers.reset_captures(CAPTURE_PATH)
     run_liquid_tests
-    format_and_write_specs
+    Helpers.format_and_write_specs(CAPTURE_PATH, SPEC_FILE)
   end
 end
 
-def load_shopify_liquid
-  if File.exist?("./tmp/liquid")
-    `git -C tmp/liquid pull --depth 1 https://github.com/Shopify/liquid.git`
-  else
-    `git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid`
-  end
-end
 
 PATCH = <<~RUBY
 require_relative(
@@ -50,23 +46,9 @@ require_relative(
   )
 )
 RUBY
-FILE_PATH = "./tmp/liquid/test/test_helper.rb"
-def insert_patch
-  return if File.read(FILE_PATH).match("liquid_spec/tmp/liquid/test")
-  File.write(
-    FILE_PATH,
-    PATCH,
-    mode: "a+"
-  )
-end
+PATCH_PATH = "./tmp/liquid/test/test_helper.rb"
 
 CAPTURE_PATH = "./tmp/liquid-ruby-capture.yml"
-def reset_captures
-  if File.exist?(CAPTURE_PATH)
-    File.delete(CAPTURE_PATH)
-    File.write(CAPTURE_PATH, "---\n", mode: "a+")
-  end
-end
 
 def run_liquid_tests
   Bundler.with_unbundled_env do
@@ -81,10 +63,3 @@ SPEC_FILE = File.join(
   "liquid_ruby",
   "specs.yml",
 )
-def format_and_write_specs
-  yaml = File.read(CAPTURE_PATH)
-  data = YAML.unsafe_load(yaml)
-  data.sort_by! { |h| h["name"] }
-  data.uniq!
-  File.write(SPEC_FILE, YAML.dump(data))
-end
