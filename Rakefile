@@ -2,7 +2,8 @@ require 'rake'
 require 'rake/testtask'
 require "bundler/gem_tasks"
 
-import("tasks/generate.rake")
+import("tasks/liquid_ruby.rake")
+import("tasks/standard_filters.rake")
 
 task :default => :test
 
