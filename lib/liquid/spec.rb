@@ -28,12 +28,10 @@ module Liquid
     )
 
     def self.all_sources
-      (dir_sources + Dir[SPEC_FILES])
+      Dir[SPEC_FILES]
         .reject { |path| File.basename(path) == "environment.yml" }
         .map { |path| Liquid::Spec::Source.for(path) }
     end
-
-    private
 
     def self.dir_sources
       Dir[DIR_SPECS]
