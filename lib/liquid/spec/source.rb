@@ -12,6 +12,8 @@ module Liquid
             Liquid::Spec::YamlSource.new(path)
           elsif File.extname(path) == TEXT_EXT
             Liquid::Spec::TextSource.new(path)
+          elsif File.directory?(path)
+            Liquid::Spec::LiquidSource.new(path)
           else
             raise NotImplementedError, "Runner not implmented for filetype: #{File.extname(path)}"
           end
