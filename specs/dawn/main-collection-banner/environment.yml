@@ -1,0 +1,172 @@
+---
+cart:
+  note:
+  attributes: {}
+  original_total_price: 0
+  total_price: 0
+  total_discount: 0
+  total_weight: 0.0
+  item_count: 0
+  items: []
+  requires_shipping: false
+  currency: CAD
+  items_subtotal_price: 0
+  cart_level_discount_applications: []
+canonical_url: https://shop1.shopify.storefront-renderer-6tjv.derek-stride.us.spin.dev/collections/frontpage
+current_page: 1
+handle: frontpage
+powered_by_link: <a target="_blank" rel="nofollow" href="https://www.shopify.com?utm_campaign=poweredby&amp;utm_medium=shopify&amp;utm_source=onlinestore">Powered
+  by Shopify</a>
+template: collection
+collection:
+  id: 1
+  handle: frontpage
+  updated_at: '2022-05-30T08:18:05-04:00'
+  published_at: '2022-05-30T08:16:16-04:00'
+  sort_order: best-selling
+  template_suffix:
+  published_scope: web
+  products:
+  - id: 1
+    title: Lightweight Rubber Bottle
+    handle: lightweight-rubber-bottle
+    description:
+    published_at: '2022-05-30T08:18:03-04:00'
+    created_at: '2022-05-30T08:18:03-04:00'
+    vendor: Brown and Sons
+    type: Beauty
+    tags: []
+    price: 8799
+    price_min: 8799
+    price_max: 15399
+    available: true
+    price_varies: true
+    compare_at_price:
+    compare_at_price_min: 0
+    compare_at_price_max: 0
+    compare_at_price_varies: false
+    variants:
+    - id: 1
+      title: Aerodynamic Rubber Car
+      option1: Aerodynamic Rubber Car
+      option2:
+      option3:
+      sku: ''
+      requires_shipping: true
+      taxable: true
+      featured_image:
+      available: true
+      name: Lightweight Rubber Bottle - Aerodynamic Rubber Car
+      public_title: Aerodynamic Rubber Car
+      options:
+      - Aerodynamic Rubber Car
+      price: 8799
+      weight: 8900
+      compare_at_price:
+      inventory_management: shopify
+      barcode:
+    - id: 2
+      title: Fantastic Leather Pants
+      option1: Fantastic Leather Pants
+      option2:
+      option3:
+      sku: ''
+      requires_shipping: true
+      taxable: true
+      featured_image:
+      available: true
+      name: Lightweight Rubber Bottle - Fantastic Leather Pants
+      public_title: Fantastic Leather Pants
+      options:
+      - Fantastic Leather Pants
+      price: 15399
+      weight: 8000
+      compare_at_price:
+      inventory_management: shopify
+      barcode:
+    images: []
+    featured_image:
+    options:
+    - Color or something
+    content:
+  title: Home page
+  body_html:
+page_title: Home page
+results:
+  id: 1
+  handle: frontpage
+  updated_at: '2022-05-30T08:18:05-04:00'
+  published_at: '2022-05-30T08:16:16-04:00'
+  sort_order: best-selling
+  template_suffix:
+  published_scope: web
+  products:
+  - id: 1
+    title: Lightweight Rubber Bottle
+    handle: lightweight-rubber-bottle
+    description:
+    published_at: '2022-05-30T08:18:03-04:00'
+    created_at: '2022-05-30T08:18:03-04:00'
+    vendor: Brown and Sons
+    type: Beauty
+    tags: []
+    price: 8799
+    price_min: 8799
+    price_max: 15399
+    available: true
+    price_varies: true
+    compare_at_price:
+    compare_at_price_min: 0
+    compare_at_price_max: 0
+    compare_at_price_varies: false
+    variants:
+    - id: 1
+      title: Aerodynamic Rubber Car
+      option1: Aerodynamic Rubber Car
+      option2:
+      option3:
+      sku: ''
+      requires_shipping: true
+      taxable: true
+      featured_image:
+      available: true
+      name: Lightweight Rubber Bottle - Aerodynamic Rubber Car
+      public_title: Aerodynamic Rubber Car
+      options:
+      - Aerodynamic Rubber Car
+      price: 8799
+      weight: 8900
+      compare_at_price:
+      inventory_management: shopify
+      barcode:
+    - id: 2
+      title: Fantastic Leather Pants
+      option1: Fantastic Leather Pants
+      option2:
+      option3:
+      sku: ''
+      requires_shipping: true
+      taxable: true
+      featured_image:
+      available: true
+      name: Lightweight Rubber Bottle - Fantastic Leather Pants
+      public_title: Fantastic Leather Pants
+      options:
+      - Fantastic Leather Pants
+      price: 15399
+      weight: 8000
+      compare_at_price:
+      inventory_management: shopify
+      barcode:
+    images: []
+    featured_image:
+    options:
+    - Color or something
+    content:
+  title: Home page
+  body_html:
+filter_type: horizontal
+sort_by: best-selling
+total_active_values: 0
+results_url: "/collections/frontpage"
+max_price_amount: "$153.99"
