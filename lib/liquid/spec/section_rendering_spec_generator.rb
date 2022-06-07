@@ -1,6 +1,8 @@
 module Liquid
   module Spec
     # Generate specs based on calls to SFR's `SectionRendering.render_template`.
+    # For sample usage, see:
+    # https://github.com/Shopify/storefront-renderer/commit/6607ca14f755f3694f9aca9adb80fddd8d3742ca#diff-1e239d8f850c59af64e019e500a95deb5a461f31b0139259ac9a66cc5d250337
     class SectionRenderingSpecGenerator
       def initialize(context, write_to:)
         @context = context
