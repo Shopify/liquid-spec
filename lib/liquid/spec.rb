@@ -4,6 +4,8 @@ require "liquid/spec/yaml_source"
 require "liquid/spec/text_source"
 require "liquid/spec/liquid_source"
 require "liquid/spec/test_generator"
+require "liquid/spec/environment_dumper"
+require "liquid/spec/section_rendering_spec_generator"
 
 module Liquid
   module Spec
