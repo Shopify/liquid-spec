@@ -14,7 +14,7 @@ module Liquid
         section_name = File.basename(section_file_path, ".liquid")
 
         # TODO: maybe add the section_unique_id if present?
-        dir = File.join(@write_to, page_name, section_name)
+        dir = File.join(@write_to, "#{page_name}-#{section_name}")
         FileUtils.mkdir_p(dir)
 
         source = @context.registers[:theme_render_context].theme.section_templates[section_name].body

@@ -53,7 +53,7 @@ module Liquid
           if method != "to_liquid" && drop.method(method).arity == 0
             dump[method] = begin
               dump_liquid_value(drop.invoke_drop(method), nested_level: nested_level + 1)
-            rescue => e
+            rescue
               nil
             end
           end
