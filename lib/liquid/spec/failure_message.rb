@@ -3,13 +3,14 @@ require "tty-box"
 module Liquid
   module Spec
     class FailureMessage
-      attr_reader :spec, :actual
+      attr_reader :spec, :actual, :width
 
-      Differ = Class.new(Minitest::Assertions)
+      Differ = Object.new.extend(Minitest::Assertions)
 
-      def initialize(spec, actual)
+      def initialize(spec, actual, width: 80)
         @spec = spec
         @actual = actual
+        @width = width
       end
 
       def to_s
@@ -34,7 +35,7 @@ module Liquid
       private
 
       def render_box(name:, content:)
-        TTY::Box.frame(content, width: 80, title: {top_left: name}).strip
+        TTY::Box.frame(content, width: width, title: {top_left: name}).strip
       end
     end
   end

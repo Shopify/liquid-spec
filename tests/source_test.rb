@@ -29,6 +29,22 @@ class SourceTest < Minitest::Test
     assert_equal(expected, runner.to_a)
   end
 
+  def test_failure_message
+    spec = Liquid::Spec::Unit.new(
+        template: "{{ foo | capitalize }}",
+        environment: { "foo" => "bar baz" },
+        expected: "BAR BAZ",
+        name: "test_name",
+        filesystem: { "foo" => "bar" },
+      )
+
+    failure_message = Liquid::Spec::FailureMessage.new(spec, "BAR baz", width: 30)
+
+    assert_includes failure_message.to_s, "{{ foo | capitalize }}"
+    assert_includes failure_message.to_s, '{"foo"=>"bar baz"}'
+  end
+
+
   MOCK_TXT = <<~TXT
     ===
     NAME 2
@@ -41,7 +57,7 @@ class SourceTest < Minitest::Test
     ---
     {% include template for product %}
     +++
-    Product: Draft 151cm 
+    Product: Draft 151cm\s
   TXT
 
   def test_text_source_works
