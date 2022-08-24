@@ -28,7 +28,7 @@ module Liquid
           ===========================
 
           To rerun this spec, run the following command:
-            $ rake liquid_spec TESTOPTS="--name=/#{spec.name}"
+            $ rake liquid_spec TESTOPTS="--name=/#{spec.name}/"
         MSG
       end
 
