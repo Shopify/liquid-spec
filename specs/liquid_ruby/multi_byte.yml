@@ -1,0 +1,4 @@
+- template: '{% assign str = "foo © bar" %}{% assign bar = "pass" %}{{ str }} {{ bar }}'
+  environment:
+  expected: "foo © bar pass"
+  name: Handles multi-byte characters
