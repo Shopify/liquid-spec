@@ -8,8 +8,8 @@ module StandardFilterPatch
   def generate_spec(filter_name, result, *args)
     data = {
       "template" => build_liquid(args, filter_name),
-      "environment" => build_environtment(args),
-      "expected" => build_expected(result),
+      "environment" => build_environment(args, result),
+      "expected" => "",
       "name" => "StandardFilterTest##{test_name}",
     }
     digest = Digest::MD5.hexdigest(YAML.dump(data))
@@ -50,63 +50,37 @@ module StandardFilterPatch
 
   private
 
-  def build_liquid(input, filter_name)
-    if input.size == 1
-      <<~LIQUID.strip
-        {{ foo0 | #{filter_name} }}
-      LIQUID
-    elsif input.size == 2
-      <<~LIQUID.strip
-        {{ foo0 | #{filter_name}: #{format_args(input.last(1))} }}
-      LIQUID
-    else
-      <<~LIQUID.strip
-        {{ foo0 | #{filter_name}: #{format_args(input[1..])} }}
-      LIQUID
-    end
+  def build_liquid(inputs, filter_name)
+    liquid_args = ": #{format_args(inputs[1..])}" if inputs.length > 1
+    assertion = "{% if expect != result %}expect != result\nexpect: {{expect}}\nresult: {{result}}{% endif %}"
+    "{% assign result = input | #{filter_name}#{liquid_args} %}#{assertion}"
   end
 
   def format_args(args)
     args.map.with_index do |arg, i|
       if arg.is_a?(String)
-        arg.inspect 
+        arg.inspect
       elsif arg.is_a?(Hash)
         raise if arg.size != 1
         "#{arg.keys.first}: #{format_args(arg.values)}"
       elsif arg.is_a?(Array)
-        "foo#{i + 1}"
+        "arg#{i + 1}"
       elsif arg.nil?
-        "foo#{i + 1}"
+        "arg#{i + 1}"
       else
         arg.to_s
       end
     end.join(", ")
   end
 
-  def build_environtment(args)
-    args.each_with_object({}).with_index do |(arg, env), i|
-      env["foo#{i}"] = _deep_dup(arg)
+  def build_environment(args, result)
+    env = {}
+    args.each_with_index do |arg, i|
+      name = i == 0 ? "input" : "arg#{i}"
+      env[name] = _deep_dup(arg)
     end
-  end
-
-  def build_expected(result)
-    if result.is_a?(Array)
-      result.join
-    elsif result.is_a?(Numeric)
-      result.to_s
-    elsif result.nil?
-      ""
-    elsif result.is_a?(String)
-      result
-    elsif result.is_a?(TrueClass) || result.is_a?(FalseClass)
-      result.to_s
-    elsif result.is_a?(Hash)
-      result.to_s
-    elsif result.is_a?(Liquid::Drop)
-      result.to_s
-    else
-      result.to_s
-    end
+    env["expect"] = _deep_dup(result)
+    env
   end
 
   def test_name
