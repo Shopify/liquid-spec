@@ -7,7 +7,7 @@ module Liquid
 
       Differ = Object.new.extend(Minitest::Assertions)
 
-      def initialize(spec, actual, width: 80)
+      def initialize(spec, actual, width: nil)
         @spec = spec
         @actual = actual
         @width = width
