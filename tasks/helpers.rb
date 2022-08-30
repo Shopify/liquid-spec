@@ -1,3 +1,5 @@
+require 'pathname'
+
 module Helpers
   extend self
 
@@ -11,7 +13,12 @@ module Helpers
 
 
   def insert_patch(file_path, patch)
-    return if File.read(file_path).include?(patch)
+    repo_path = Pathname.new(file_path).relative_path_from("tmp/liquid").to_s
+    unless system("git -C tmp/liquid diff --exit-code --quiet #{repo_path.inspect}")
+      unless system("git -C tmp/liquid checkout -q HEAD #{repo_path.inspect}")
+        raise "Failed to reset #{file_path.inspect} for patching"
+      end
+    end
     File.write(file_path, patch, mode: "a+")
   end
 
