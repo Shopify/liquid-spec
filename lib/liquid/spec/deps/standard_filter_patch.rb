@@ -6,6 +6,7 @@ module StandardFilterPatch
   CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "standard-filters-capture.yml")
 
   def generate_spec(filter_name, result, *args)
+    return unless value_type?(result)
     data = {
       "template" => build_liquid(args, filter_name),
       "environment" => build_environment(args, result),
@@ -49,6 +50,21 @@ module StandardFilterPatch
   end
 
   private
+
+  def value_type?(value)
+    case value
+    when Hash
+      value.all? { |key, child| value_type?(child) }
+    when Array
+      value.all? { |item| value_type?(item) }
+    when Integer, Float, String, BigDecimal, true, false, nil
+      true
+    when Liquid::Drop, TestThing, Enumerable
+      false
+    else
+      raise "unexpected value type #{value.class}"
+    end
+  end
 
   def build_liquid(inputs, filter_name)
     liquid_args = ": #{format_args(inputs[1..])}" if inputs.length > 1
