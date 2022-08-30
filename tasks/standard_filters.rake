@@ -25,7 +25,7 @@ namespace :generate do
     Helpers.load_shopify_liquid
     Helpers.insert_patch(FILTER_PATCH_PATH, FILTER_PATCH)
     Helpers.reset_captures(FILTER_CAPTURE_PATH)
-    run_liquid_tests
+    run_standard_filters_tests
     Helpers.format_and_write_specs(FILTER_CAPTURE_PATH, FILTER_SPEC_FILE)
   end
 end
@@ -65,7 +65,7 @@ RUBY
 
 FILTER_CAPTURE_PATH = "./tmp/standard-filters-capture.yml"
 
-def run_liquid_tests
+def run_standard_filters_tests
   Bundler.with_unbundled_env do
     system(
       "cd tmp/liquid &&" \
