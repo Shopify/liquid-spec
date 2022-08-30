@@ -1,5 +1,4 @@
 require 'digest'
-require 'pry-byebug'
 
 module StandardFilterPatch
   extend self
@@ -17,7 +16,7 @@ module StandardFilterPatch
     data["name"] = "#{data["name"]}_#{digest}"
     yaml = YAML.dump(data)
     return if digest =~ /7e18eb50bc2c00e0934edd8a3ec8deb3/
-    binding.pry if yaml.include?("Proc")
+    binding.irb if yaml.include?("Proc")
     File.write(
       CAPTURE_PATH,
       "- #{yaml[4..].gsub("\n", "\n  ").rstrip.chomp("...").rstrip}\n",

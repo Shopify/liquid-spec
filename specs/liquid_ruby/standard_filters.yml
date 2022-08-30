@@ -106,6 +106,12 @@
       1: bar
   expected: '{1=>"bar"}'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_06a7088978358afc8a7518ba4666abaf
+- template: "{{ foo0 | escape }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -3
+  expected: 'woot: -2'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_08d1d6544c075fc6192ea5adcb995be4
 - template: "{{ foo0 | join }}"
   environment:
     foo0: -99999999
@@ -389,6 +395,12 @@
     foo0: 0
   expected: '0'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1f2cc74754c429321f999cc87464f63c
+- template: "{{ foo0 | capitalize }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -16
+  expected: 'Woot: -15'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_1f78fab0a7f6a7170314ca09b04091d2
 - template: "{{ foo0 | escape }}"
   environment:
     foo0:
@@ -602,12 +614,6 @@
     foo0: true
   expected: 'true'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_2fffe78bd1bbf09a3f19598cc1094626
-- template: "{{ foo0 | escape }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -4
-  expected: 'woot: -3'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_315ab61edbc81e9e7a25ae0057f4a244
 - template: "{{ foo0 | strip_newlines }}"
   environment:
     foo0: 0.0
@@ -811,12 +817,6 @@
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_3f18486bb5a3b7b2f6cd03d4761cfc07
-- template: "{{ foo0 | size }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -21
-  expected: '0'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_4015c279b134090103ad900c471645b7
 - template: "{{ foo0 | last }}"
   environment:
     foo0: !ruby/object:TestEnumerable
@@ -1296,6 +1296,12 @@
     foo0:
   expected: '0'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_628b3841577047d1dc242d87eb6fe6a2
+- template: "{{ foo0 | upcase }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -14
+  expected: 'WOOT: -13'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_62b097f64325a4def72b23bccf6c0a2a
 - template: "{{ foo0 | abs }}"
   environment:
     foo0: 0
@@ -1361,12 +1367,6 @@
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_661201f3247a62228acb2fccb1d4f382
-- template: "{{ foo0 | upcase }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -16
-  expected: 'WOOT: -15'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_67c86b29a2aa802639f709847decd889
 - template: "{{ foo0 | base64_decode }}"
   environment:
     foo0:
@@ -1843,6 +1843,12 @@
       foo: bar
   expected: '{"foo"=>"bar"}'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_919dd5a82850a737c1ad3b4a0d7e26ad
+- template: "{{ foo0 | strip_newlines }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -9
+  expected: 'woot: -8'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_920c11ded46a2d9a684af3894c055756
 - template: "{{ foo0 | sort }}"
   environment:
     foo0: 1234.3838300038383
@@ -1884,6 +1890,12 @@
     foo0: false
   expected: 'false'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_93d2afcadad158dc8fe855cb9e9fae8d
+- template: "{{ foo0 | size }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -20
+  expected: '0'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_93e4b408df7a9380bdfb23530e64fac7
 - template: "{{ foo0 | strip_html }}"
   environment:
     foo0: 1234.3838300038383
@@ -2167,12 +2179,6 @@
     foo0: -99999999
   expected: "-99999999"
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a71b93e9cc0b73c693f8d7c4f558c14b
-- template: "{{ foo0 | downcase }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -17
-  expected: 'woot: -16'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_a788abe63dcf585e0cac307c075027d1
 - template: "{{ foo0 | lstrip }}"
   environment:
     foo0:
@@ -2455,12 +2461,6 @@
     foo0: true
   expected: 'true'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bc11362ee5fe8ae60608a4f0cf944052
-- template: "{{ foo0 | capitalize }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -18
-  expected: 'Woot: -17'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bc188739d87c351d1ca02fc1076e528b
 - template: "{{ foo0 | first }}"
   environment:
     foo0: !ruby/object:TestThing
@@ -2478,12 +2478,6 @@
     foo0: false
   expected: '0'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bcefbe88334f3a12e533891d6424e848
-- template: "{{ foo0 | newline_to_br }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -9
-  expected: 'woot: -8'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_bd468b1d8873bb3498032d10b8c284c9
 - template: "{{ foo0 | base64_encode }}"
   environment:
     foo0:
@@ -2531,6 +2525,12 @@
       context: {}
   expected: TestEnumerable
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c06337a012f89e8ec6ba595add3e6da8
+- template: "{{ foo0 | h }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -17
+  expected: 'woot: -16'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c0995426cb40c4c7ca9d21ce30b4aead
 - template: "{{ foo0 | strip }}"
   environment:
     foo0:
@@ -2642,6 +2642,12 @@
       foo: -46
   expected: '0'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c6d3d8bd3c093c3862786af6e59adb5a
+- template: "{{ foo0 | downcase }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -15
+  expected: 'woot: -14'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c6f6502a99e8dd480d417e55cfce51cc
 - template: "{{ foo0 | round }}"
   environment:
     foo0:
@@ -2698,12 +2704,6 @@
     foo0: 1234.3838300038383
   expected: '1234.3838300038383'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9acd62bac5362be451183a997d12a7c
-- template: "{{ foo0 | h }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -19
-  expected: 'woot: -18'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_c9bb78e5f0da539520396f5559f42d19
 - template: "{{ foo0 | h }}"
   environment:
     foo0: 123
@@ -3176,6 +3176,12 @@
       context: {}
   expected: TestDrop
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_efc9ac9769f8065591c58055b89490ce
+- template: "{{ foo0 | newline_to_br }}"
+  environment:
+    foo0: !ruby/object:TestThing
+      foo: -11
+  expected: 'woot: -10'
+  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f023b1fdd6e8243f8eabce3f89258c86
 - template: "{{ foo0 | downcase }}"
   environment:
     foo0:
@@ -3281,12 +3287,6 @@
     foo0: foo
   expected: foo
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f78e5e59efbd980354123c9fef33e32c
-- template: "{{ foo0 | strip_newlines }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -3
-  expected: 'woot: -2'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:893_f7bfc6bff07d59f9d44e2008db86bb38
 - template: "{{ foo0 | lstrip }}"
   environment:
     foo0:
