@@ -50,7 +50,7 @@ module ShopifyLiquidPatch
         .select { |line| line.match(%r{liquid-spec/tmp/liquid/test/.*_test\.rb}) }
         .first
         .match(%r{liquid-spec/tmp/liquid/(?<filename>test/.+\.rb):(?<lineno>\d+)})
-      git_revision = `git rev-parse HEAD`
+      git_revision = `git rev-parse HEAD`.chomp
       data["url"] = "https://github.com/Shopify/liquid/blob/#{git_revision}/#{test_data[:filename]}#L#{test_data[:lineno]}"
 
       yaml = YAML.dump(data)
