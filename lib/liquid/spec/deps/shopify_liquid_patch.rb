@@ -16,13 +16,16 @@ end
 
 CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-capture.yml")
 module ShopifyLiquidPatch
-  def assert_template_result(expected, template, assigns = {}, message = nil)
+  def assert_template_result(expected, template, assigns = {},
+    message: nil, partials: nil, error_mode: nil, render_errors: false
+  )
     data = {
       "template" => template,
       "environment" => _deep_dup(assigns),
       "expected" => expected,
       "name" => "#{class_name}##{name}",
     }
+    data["filesystem"] = partials if partials
 
     unless Liquid::Template.file_system.is_a?(Liquid::BlankFileSystem)
       Liquid::Template.file_system = DecoratingFileSystem.new(Liquid::Template.file_system)

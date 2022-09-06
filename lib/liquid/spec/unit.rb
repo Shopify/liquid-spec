@@ -6,6 +6,7 @@ module Liquid
       :template,
       :environment,
       :filesystem,
+      :error_mode,
       keyword_init: true
     )
   end

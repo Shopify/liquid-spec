@@ -11,6 +11,7 @@ module Liquid
             template: data["template"],
             environment: data["environment"],
             filesystem: data["filesystem"],
+            error_mode: data["error_mode"],
           )
         end
       end

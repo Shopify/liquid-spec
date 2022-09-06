@@ -3,11 +3,16 @@ module Liquid
     module Adapter
       class LiquidRuby
         def render(spec)
+          static_registers = {}
           if filesystem = spec.filesystem
-            Liquid::Template.file_system = MockFileSystem.new(filesystem)
+            static_registers[:file_system] = MockFileSystem.new(filesystem)
           end
-          template = Liquid::Template.parse(spec.template)
-          template.render(spec.environment)
+          context = Liquid::Context.build(
+            environments: spec.environment,
+            registers: Liquid::Registers.new(static_registers)
+          )
+          template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
+          template.render(context)
         end
       end
 
