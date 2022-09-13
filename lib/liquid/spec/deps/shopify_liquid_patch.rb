@@ -17,27 +17,20 @@ end
 CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-capture.yml")
 module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {}, message = nil)
-    if message.nil?
-      data = {
-        "template" => template,
-        "environment" => _deep_dup(assigns),
-        "expected" => expected,
-        "name" => "#{class_name}##{name}",
-      }
+    data = {
+      "template" => template,
+      "environment" => _deep_dup(assigns),
+      "expected" => expected,
+      "name" => "#{class_name}##{name}",
+    }
 
-      unless Liquid::Template.file_system.is_a?(Liquid::BlankFileSystem)
-        Liquid::Template.file_system = DecoratingFileSystem.new(Liquid::Template.file_system)
-      end
-    else
-      puts "\n=============== Skipped ==============="
-      puts "Name: #{name}"
-      puts "Message: #{message}"
-      puts "=======================================\n"
+    unless Liquid::Template.file_system.is_a?(Liquid::BlankFileSystem)
+      Liquid::Template.file_system = DecoratingFileSystem.new(Liquid::Template.file_system)
     end
 
     result = super
   ensure
-    if message.nil? && result
+    if result
       fs = Liquid::Template.file_system
       unless fs.is_a?(Liquid::BlankFileSystem)
         data["filesystem"] = fs.map unless fs.map.empty?
