@@ -1,19 +1,6 @@
 require 'json'
 require 'digest'
 
-class DecoratingFileSystem
-  attr_reader :map, :inner
-
-  def initialize(fs)
-    @inner = fs
-    @map = {}
-  end
-
-  def read_template_file(template_path)
-    @map[template_path] = @inner.read_template_file(template_path)
-  end
-end
-
 CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-capture.yml")
 module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {},
@@ -27,19 +14,9 @@ module ShopifyLiquidPatch
     }
     data["filesystem"] = partials if partials
 
-    unless Liquid::Template.file_system.is_a?(Liquid::BlankFileSystem)
-      Liquid::Template.file_system = DecoratingFileSystem.new(Liquid::Template.file_system)
-    end
-
     result = super
   ensure
     if result
-      fs = Liquid::Template.file_system
-      unless fs.is_a?(Liquid::BlankFileSystem)
-        data["filesystem"] = fs.map unless fs.map.empty?
-        Liquid::Template.file_system = fs.inner
-      end
-
       digest = Digest::MD5.hexdigest(YAML.dump(data))
       data["name"] = "#{data["name"]}_#{digest}"
       test_data = caller
