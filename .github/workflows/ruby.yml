@@ -19,7 +19,7 @@ permissions:
 jobs:
   test:
 
-    runs-on: self-hosted
+    runs-on: shopify-ubuntu-latest
     strategy:
       matrix:
         ruby-version: ['3.1']
