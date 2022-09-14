@@ -15,7 +15,7 @@ module StandardFilterPatch
     digest = Digest::MD5.hexdigest(YAML.dump(data))
     data["name"] = "#{data["name"]}_#{digest}"
     yaml = YAML.dump(data)
-    return if digest =~ /7e18eb50bc2c00e0934edd8a3ec8deb3/
+    return if digest =~ /7e27e98b06fa65ed7362f3c738f123ce/
     binding.irb if yaml.include?("Proc")
     File.write(
       CAPTURE_PATH,

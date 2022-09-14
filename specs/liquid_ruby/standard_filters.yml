@@ -1718,12 +1718,6 @@
     foo0: -1234.003030303
   expected: ''
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:894_7e133b34254905bb1060e0696f79e9b9
-- template: "{{ foo0 | default }}"
-  environment:
-    foo0: !ruby/object:TestThing
-      foo: -42
-  expected: 'woot: -41'
-  name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:894_7e27e98b06fa65ed7362f3c738f123ce
 - template: "{{ foo0 | ceil }}"
   environment:
     foo0:
