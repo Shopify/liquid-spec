@@ -5,7 +5,7 @@ module Liquid
         def render(spec)
           static_registers = {}
           if filesystem = spec.filesystem
-            static_registers[:file_system] = MockFileSystem.new(filesystem)
+            static_registers[:file_system] = MemoryFileSystem.new(filesystem)
           end
           context = Liquid::Context.build(
             environments: spec.environment,
@@ -16,9 +16,15 @@ module Liquid
         end
       end
 
-      MockFileSystem = Struct.new(:data) do
+      MemoryFileSystem = Struct.new(:data) do
         def read_template_file(template_path)
-          data.fetch(template_path)
+          name = template_path.to_s
+          data.fetch(name) do
+            # Report the same error as in storefront-renderer
+            # (https://github.com/Shopify/storefront-renderer/blob/9014ee25828c6c5f5e8fec278dd0cd6fd04d803b/app/models/theme.rb#L416)
+            full_name = "snippets/#{name.end_with?('.liquid') ? name : "#{name}.liquid"}"
+            raise Liquid::FileSystemError, "Could not find asset #{full_name}"
+          end
         end
       end
     end
