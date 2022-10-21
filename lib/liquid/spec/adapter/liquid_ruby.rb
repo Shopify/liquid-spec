@@ -8,7 +8,7 @@ module Liquid
             static_registers[:file_system] = MemoryFileSystem.new(filesystem)
           end
           context = Liquid::Context.build(
-            environments: spec.environment,
+            static_environments: spec.environment,
             registers: Liquid::Registers.new(static_registers)
           )
           template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
