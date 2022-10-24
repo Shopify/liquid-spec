@@ -12,6 +12,7 @@ module ShopifyLiquidPatch
       "expected" => expected,
       "name" => "#{class_name}##{name}",
     }
+    data.delete("environment") if assigns.empty?
     data["filesystem"] = partials if partials
 
     result = super
