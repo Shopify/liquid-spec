@@ -8,7 +8,7 @@ module StandardFilterPatch
   def generate_spec(filter_name, result, *args)
     data = {
       "template" => build_liquid(args, filter_name),
-      "environment" => build_environtment(args),
+      "environment" => build_environment(args),
       "expected" => build_expected(result),
       "name" => "StandardFilterTest##{test_name}",
     }
@@ -83,7 +83,7 @@ module StandardFilterPatch
     end.join(", ")
   end
 
-  def build_environtment(args)
+  def build_environment(args)
     args.each_with_object({}).with_index do |(arg, env), i|
       env["foo#{i}"] = _deep_dup(arg)
     end
