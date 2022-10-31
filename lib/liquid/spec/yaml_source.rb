@@ -9,7 +9,7 @@ module Liquid
             name: data["name"],
             expected: data["expected"],
             template: data["template"],
-            environment: data["environment"],
+            environment: data["environment"] || {},
             filesystem: data["filesystem"],
             error_mode: data["error_mode"],
           )
