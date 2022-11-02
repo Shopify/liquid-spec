@@ -8,6 +8,12 @@ module Liquid
       :filesystem,
       :error_mode,
       keyword_init: true
-    )
+    ) do
+      def initialize(**)
+        super
+        self.environment ||= {}
+        self.filesystem ||= {}
+      end
+    end
   end
 end

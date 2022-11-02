@@ -3,10 +3,9 @@ module Liquid
     module Adapter
       class LiquidRuby
         def render(spec)
-          static_registers = {}
-          if filesystem = spec.filesystem
-            static_registers[:file_system] = MemoryFileSystem.new(filesystem)
-          end
+          static_registers = {
+            file_system: MemoryFileSystem.new(spec.filesystem),
+          }
           context = Liquid::Context.build(
             static_environments: spec.environment,
             registers: Liquid::Registers.new(static_registers)
