@@ -91,19 +91,13 @@ class TableRowTest
 end
 
 class IntegerDrop < Liquid::Drop
-  include Comparable
-
   def initialize(value)
     super()
     @value = value.to_i
   end
 
-  def <=>(other)
-    @value <=> other.to_i
-  end
-
-  def to_i
-    @value
+  def ==(other)
+    @value == other
   end
 
   def to_s
