@@ -3,7 +3,8 @@ source "https://rubygems.org"
 gemspec
 
 group :development, :test do
-  gem 'liquid', git: "https://github.com/Shopify/liquid"
+  # DO NOT MERGE THIS
+  gem 'liquid', git: "https://github.com/Shopify/liquid", branch: "error-message-with-filepath"
   gem 'rake'
 end
 

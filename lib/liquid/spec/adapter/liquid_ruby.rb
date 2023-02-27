@@ -10,6 +10,7 @@ module Liquid
             static_environments: spec.environment,
             registers: Liquid::Registers.new(static_registers)
           )
+          context.template_name = "templates/index"
           template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
           template.render(context)
         end
@@ -24,6 +25,10 @@ module Liquid
             full_name = "snippets/#{name.end_with?('.liquid') ? name : "#{name}.liquid"}"
             raise Liquid::FileSystemError, "Could not find asset #{full_name}"
           end
+        end
+
+        def actual_template_name(snippet_name)
+          "snippets/" + snippet_name
         end
       end
     end
