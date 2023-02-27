@@ -10,6 +10,7 @@ module Liquid
             static_environments: spec.environment,
             registers: Liquid::Registers.new(static_registers)
           )
+          context.template_name = "templates/index"
           template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
           template.render(context)
         end
