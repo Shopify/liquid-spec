@@ -25,6 +25,10 @@ module Liquid
             raise Liquid::FileSystemError, "Could not find asset #{full_name}"
           end
         end
+
+        def actual_template_name(snippet_name)
+          "snippets/" + snippet_name
+        end
       end
     end
   end
