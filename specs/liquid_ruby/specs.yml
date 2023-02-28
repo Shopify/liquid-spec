@@ -2288,17 +2288,17 @@
     details: details
   url: https://github.com/Shopify/liquid/blob/e804f36681015c2fc9605e1b3049a832310be62f/test/integration/tags/include_tag_test.rb#L140
 - template: "{% include 123 %}"
-  expected: 'Liquid error (line 1): Argument error in tag ''include'' - Illegal template
+  expected: 'Liquid error (templates/index line 1): Argument error in tag ''include'' - Illegal template
     name'
   name: IncludeTagTest#test_render_raise_argument_error_when_template_is_not_a_string_403d47cecd937950631d8e1d59cc7382
   url: https://github.com/Shopify/liquid/blob/e804f36681015c2fc9605e1b3049a832310be62f/test/integration/tags/include_tag_test.rb#L253
 - template: "{% include undefined_variable %}"
-  expected: 'Liquid error (line 1): Argument error in tag ''include'' - Illegal template
+  expected: 'Liquid error (templates/index line 1): Argument error in tag ''include'' - Illegal template
     name'
   name: IncludeTagTest#test_render_raise_argument_error_when_template_is_undefined_4d409c2d09f126f67a94ab048a80ae31
   url: https://github.com/Shopify/liquid/blob/e804f36681015c2fc9605e1b3049a832310be62f/test/integration/tags/include_tag_test.rb#L245
 - template: "{% include nil %}"
-  expected: 'Liquid error (line 1): Argument error in tag ''include'' - Illegal template
+  expected: 'Liquid error (templates/index line 1): Argument error in tag ''include'' - Illegal template
     name'
   name: IncludeTagTest#test_render_raise_argument_error_when_template_is_undefined_fd16a0e80355cc8e550ad10d246f6339
   url: https://github.com/Shopify/liquid/blob/e804f36681015c2fc9605e1b3049a832310be62f/test/integration/tags/include_tag_test.rb#L248
@@ -2618,8 +2618,8 @@
     decr: "{% decrement %}"
   url: https://github.com/Shopify/liquid/blob/e804f36681015c2fc9605e1b3049a832310be62f/test/integration/tags/render_tag_test.rb#L115
 - template: '{% render "nested_render_with_sibling_include" %}'
-  expected: 'Liquid error (test_include line 1): include usage is not allowed in this
-    contextLiquid error (nested_render_with_sibling_include line 1): include usage
+  expected: 'Liquid error (snippets/test_include line 1): include usage is not allowed in this
+    contextLiquid error (snippets/nested_render_with_sibling_include line 1): include usage
     is not allowed in this context'
   name: RenderTagTest#test_includes_will_not_render_inside_nested_sibling_tags_7252ebefc8aeddf28f05d56a12bfbb15
   filesystem:
@@ -2629,7 +2629,7 @@
     test_include: '{% include "foo" %}'
   url: https://github.com/Shopify/liquid/blob/e804f36681015c2fc9605e1b3049a832310be62f/test/integration/tags/render_tag_test.rb#L132
 - template: '{% render "test_include" %}'
-  expected: 'Liquid error (test_include line 1): include usage is not allowed in this
+  expected: 'Liquid error (snippets/test_include line 1): include usage is not allowed in this
     context'
   name: RenderTagTest#test_includes_will_not_render_inside_render_tag_6adab3b1d0532bc84aa45d1fbeb048f4
   filesystem:
