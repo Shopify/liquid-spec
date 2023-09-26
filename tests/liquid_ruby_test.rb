@@ -2,7 +2,7 @@ require "test_helper"
 require "liquid/spec/deps/liquid_ruby"
 require "liquid/spec/adapter/liquid_ruby"
 
-class LiquidRubyTest < MiniTest::Test
+class LiquidRubyTest < Minitest::Test
 end
 
 Liquid::Spec::TestGenerator.generate(
