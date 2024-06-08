@@ -25,21 +25,19 @@ module Liquid
         end
       end
 
-      MemoryFileSystem = Struct.new(:data) do
+      class MemoryFileSystem
+        attr_reader :data
+
+        def initialize(data)
+          @data = data
+        end
+
         def read_template_file(template_path)
           name = template_path.to_s
-
-          body = data[name]
-          return body if body
-
-          data.each do |key, body|
-            return body if key.casecmp?(name)
+          data.find { |name, _| name.casecmp?(template_path) }&.last || begin
+            full_name = "snippets/#{name.end_with?(".liquid") ? name : "#{name}.liquid"}"
+            raise Liquid::FileSystemError, "Could not find asset #{full_name}"
           end
-
-          # Report the same error as in storefront-renderer
-          # (https://github.com/Shopify/storefront-renderer/blob/9014ee25828c6c5f5e8fec278dd0cd6fd04d803b/app/models/theme.rb#L416)
-          full_name = "snippets/#{name.downcase.end_with?('.liquid') ? name : "#{name}.liquid"}"
-          raise Liquid::FileSystemError, "Could not find asset #{full_name}"
         end
       end
     end
