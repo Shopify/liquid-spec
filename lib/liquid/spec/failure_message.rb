@@ -13,10 +13,11 @@ module Liquid
 
       class << self
         def rerun_command_for(spec)
+          slugified_name = spec.name.gsub(/\s+/, "_")
           if defined?(TLDR)
-            "bundle exec tldr test/integration/liquid_spec.rb --name=/#{spec.name}/"
+            "bundle exec tldr test/integration/liquid_spec.rb --name=/#{slugified_name}/"
           else
-            "rake liquid_spec TESTOPTS=\"--name=/#{spec.name}/\""
+            "rake liquid_spec TESTOPTS=\"--name=/#{slugified_name}/\""
           end
         end
       end

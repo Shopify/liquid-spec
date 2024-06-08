@@ -4,14 +4,19 @@ require 'digest'
 CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-capture.yml")
 module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {},
-    message: nil, partials: nil, error_mode: nil, render_errors: false
+    message: nil, partials: nil, error_mode: nil, render_errors: false, template_factory: nil
   )
     data = {
+      "name" => "#{class_name}##{name}",
       "template" => template,
       "environment" => _deep_dup(assigns),
       "expected" => expected,
-      "name" => "#{class_name}##{name}",
     }
+
+    if template_factory
+      data["template_factory"] = template_factory
+    end
+
     data.delete("environment") if assigns.empty?
     data["filesystem"] = partials if partials
 
@@ -43,21 +48,7 @@ module ShopifyLiquidPatch
   end
 
   def _deep_dup(env)
-    if env.is_a?(Hash)
-      new_env = {}
-      env.each do |k, v|
-        new_env[k] = _deep_dup(v)
-      end
-      new_env
-    elsif env.is_a?(Array)
-      new_env = []
-      env.each do |v|
-        new_env << _deep_dup(v)
-      end
-      new_env
-    else
-      env.dup
-    end
+    Marshal.load(Marshal.dump(env))
   end
 end
 

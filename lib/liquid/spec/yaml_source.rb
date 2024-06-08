@@ -13,6 +13,8 @@ module Liquid
             filesystem: data["filesystem"],
             error_mode: data["error_mode"],
             context_klass: data["context_klass"].nil? ? Liquid::Context : Object.const_get(data["context_klass"])
+            template_factory: data["template_factory"],
+            template_name: data["template_name"],
           )
         end
       end

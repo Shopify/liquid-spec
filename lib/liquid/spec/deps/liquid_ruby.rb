@@ -1,12 +1,15 @@
 class TestThing
-  attr_reader :foo
-
   def initialize
     @foo = 0
   end
 
   def to_s
     "woot: #{@foo}"
+  end
+
+  def foo
+    # offset the to_liquid call since these tests are not usually called from a liquid template
+    @foo - 1
   end
 
   def [](_whatever)
@@ -131,5 +134,53 @@ class BooleanDrop < Liquid::Drop
 
   def to_s
     @value ? "Yay" : "Nay"
+  end
+end
+
+class ErrorDrop < Liquid::Drop
+  def standard_error
+    raise Liquid::StandardError, 'standard error'
+  end
+
+  def argument_error
+    raise Liquid::ArgumentError, 'argument error'
+  end
+
+  def syntax_error
+    raise Liquid::SyntaxError, 'syntax error'
+  end
+
+  def runtime_error
+    raise 'runtime error'
+  end
+
+  def exception
+    raise Exception, 'exception'
+  end
+end
+
+class SettingsDrop < Liquid::Drop
+  def initialize(settings)
+    super()
+    @settings = settings
+  end
+
+  def liquid_method_missing(key)
+    @settings[key]
+  end
+end
+
+class StubTemplateFactory
+  attr_reader :count
+
+  def initialize
+    @count = 0
+  end
+
+  def for(template_name)
+    @count += 1
+    template = Liquid::Template.new
+    template.name = "some/path/" + template_name
+    template
   end
 end

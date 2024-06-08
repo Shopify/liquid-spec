@@ -2,11 +2,15 @@ module Helpers
   extend self
 
   def load_shopify_liquid
-    if File.exist?("./tmp/liquid")
-      `git -C tmp/liquid pull --depth 1 https://github.com/Shopify/liquid.git`
-    else
-      `git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid`
-    end
+    git_tag = "v5.4.0"
+
+    FileUtils.mkdir_p("tmp")
+    FileUtils.rm_rf("tmp/liquid")
+
+    puts "Loading Shopify/liquid@#{git_tag}..."
+
+    `git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid`
+    `git -C tmp/liquid checkout #{git_tag}`
   end
 
 

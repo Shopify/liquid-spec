@@ -4,7 +4,7 @@ require_relative "failure_message"
 module Liquid
   module Spec
     class TestGenerator
-      TEST_TIME = Time.utc(2022, 01, 01, 0, 1, 58).freeze
+      TEST_TIME = Time.utc(2024, 01, 01, 0, 1, 58).freeze
 
       class << self
         def generate(klass, sources, adapter)

@@ -4,10 +4,12 @@ module Liquid
       :name,
       :expected,
       :template,
+      :template_name,
       :environment,
       :filesystem,
       :error_mode,
       :context_klass,
+      :template_factory,
       keyword_init: true
     ) do
       def initialize(**)

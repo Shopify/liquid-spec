@@ -16,13 +16,13 @@
 
 - template: "{% include 'locale_variables' echo1: 'test123' %}"
   environment: {}
-  expected: "Liquid error (templates/index line 1): Could not find asset snippets/locale_variables.liquid"
+  expected: "Liquid error (line 1): Could not find asset snippets/locale_variables.liquid"
   name: Rendering include tag with variables and file does not exist
   filesystem: {}
 
 - template: "{% include 'foo.liquid' %}"
   environment: {}
-  expected: "Liquid error (templates/index line 1): Could not find asset snippets/foo.liquid"
+  expected: "Liquid error (line 1): Could not find asset snippets/foo.liquid"
   name: Rendering include tag with file does not exist does not repeat .liquid extension
   filesystem: {}
 
@@ -31,7 +31,7 @@
   environment: {}
   filesystem:
     foo: "{% include 'bar' %}"
-  expected: "Liquid error (snippets/foo line 1): Could not find asset snippets/bar.liquid"
+  expected: "Liquid error (foo line 1): Could not find asset snippets/bar.liquid"
 
 - template: "{% for i in (1..1) %}{{ x }} {% assign x = 2 %}{{ x }}{% endfor %}"
   environment:
@@ -63,7 +63,7 @@
       after
   expected: |-
     start,before
-    Liquid error (snippets/part line 2): invalid integer
+    Liquid error (part line 2): invalid integer
     after,end
 
 - name: Comparing float greater or equal than integer
@@ -134,7 +134,7 @@
   template: "{{ (1..end) }}"
   environment:
     end: 2.5
-  expected: "Liquid error (templates/index line 1): invalid integer"
+  expected: "Liquid error (line 1): invalid integer"
 
 - name: Tablerow renders empty string when lookup returns nil
   template: "{% tablerow a in b %}{% endtablerow %}"
@@ -154,7 +154,7 @@
 
 - name: Tablerow throws invalid integer error when limit isn't a number
   template: "{% tablerow a in '' limit: true %}{{ a }}{% endtablerow %}"
-  expected: "Liquid error (templates/index line 1): invalid integer"
+  expected: "Liquid error (line 1): invalid integer"
 
 - name: Tablerow doesn't throw error when limit isn't a number and lookup is undefined
   template: "{% tablerow a in b limit: true %}{{ a }}{% endtablerow %}"
@@ -186,7 +186,7 @@
 
 - name: Does not ignore unknown operators when the tags body is empty but there is an else
   template: "{% if true true %}{% else %}1{% endif %}"
-  expected: "Liquid error (templates/index line 1): Unknown operator true"
+  expected: "Liquid error (line 1): Unknown operator true"
 
 - name: Does not output error when unknown operators are used in elsif but if is true
   template: "{% if true %}a{% elsif true true %}b{% endif %}"
@@ -199,11 +199,11 @@
     {% elsif true true %}
       b
     {% endif %}
-  expected: "Liquid error (templates/index line 1): Unknown operator true"
+  expected: "Liquid error (line 1): Unknown operator true"
 
 - name: Unsupported operators render an error
   template: "{% if 0 = 0 %}NOPE{% endif %}"
-  expected: "Liquid error (templates/index line 1): Unknown operator ="
+  expected: "Liquid error (line 1): Unknown operator ="
 
 - name: Reading a variable before assigning it in a local scope
   environment:
