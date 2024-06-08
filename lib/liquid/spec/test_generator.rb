@@ -20,8 +20,12 @@ module Liquid
       def generate
         @sources.each do |source|
           source.each do |spec|
+            test_name =  "test_#{spec.name.gsub(/\s+/, "_")}".to_sym
+
+            next if @klass.method_defined?(test_name)
+
             @klass.class_exec(@adapter) do |adapter|
-              define_method("test_#{spec.name}") do
+              define_method(test_name) do
                 Timecop.freeze(TEST_TIME) do
                   actual = adapter.render(spec)
                   assert spec.expected == actual, FailureMessage.new(spec, actual)
