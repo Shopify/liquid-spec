@@ -4279,7 +4279,7 @@
       handle: epsilon
     foo1: price
   expected: '{"price"=>"1", "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>"4",
-    "handle"=>"alpha"}{"handle"=>"delta"}{"handle"=>"beta"}'
+    "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
   name: StandardFilterTest#test_sort_natural_when_property_is_sometimes_missing_puts_nils_last:308_c62444eccd230bd79c18ea5ee9b34191
 - template: "{{ foo0 | sort_natural }}"
   environment:
