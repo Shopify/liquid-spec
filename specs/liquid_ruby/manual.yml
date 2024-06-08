@@ -1,0 +1,418 @@
+---
+- template: "{%- assign min_aspect_ratio = 2.0 -%}{{ min_aspect_ratio }}"
+  environment: {}
+  expected: "2.0"
+  name: Float serialization with zero in decimal place
+
+- template: "{%- assign min_aspect_ratio = 0.000000000000000000000000001 -%}{{ min_aspect_ratio }}"
+  environment: {}
+  expected: "1.0e-27"
+  name: Float serialization with very long float
+
+- template: "{%- assign min_aspect_ratio = 2.1 -%}{{ min_aspect_ratio }}"
+  environment: {}
+  expected: "2.1"
+  name: Float serialization with non-zero in decimal place
+
+- template: "{% include 'locale_variables' echo1: 'test123' %}"
+  environment: {}
+  expected: "Liquid error (templates/index line 1): Could not find asset snippets/locale_variables.liquid"
+  name: Rendering include tag with variables and file does not exist
+  filesystem: {}
+
+- template: "{% include 'foo.liquid' %}"
+  environment: {}
+  expected: "Liquid error (templates/index line 1): Could not find asset snippets/foo.liquid"
+  name: Rendering include tag with file does not exist does not repeat .liquid extension
+  filesystem: {}
+
+- name: Rendering include asset not found error from snippet
+  template: "{% include 'foo' %}"
+  environment: {}
+  filesystem:
+    foo: "{% include 'bar' %}"
+  expected: "Liquid error (snippets/foo line 1): Could not find asset snippets/bar.liquid"
+
+- template: "{% for i in (1..1) %}{{ x }} {% assign x = 2 %}{{ x }}{% endfor %}"
+  environment:
+    x: 1
+  expected: "1 2"
+  name: Find variable before assign in subscope
+  issue: https://github.com/Shopify/liquid-wasm/issues/477
+
+- template: "{{ foo }}{% increment foo %} {{ foo }}"
+  environment: {}
+  expected: "0 1"
+  name: Find variable before initialization through increment
+  issue: https://github.com/Shopify/liquid-wasm/issues/477
+
+- template: "{{ foo }}{% decrement foo %} {{ foo }}"
+  environment: {}
+  expected: "-1 -1"
+  name: Find variable before initialization through decrement
+  issue: https://github.com/Shopify/liquid-wasm/issues/477
+
+- name: Liquid error in snippet
+  environment: {}
+  template: |-
+    start,{% render 'part' %},end
+  filesystem:
+    part: |-
+      before
+      {{ "input" | truncate: 1.5 | default: "unused" }}
+      after
+  expected: |-
+    start,before
+    Liquid error (snippets/part line 2): invalid integer
+    after,end
+
+- name: Comparing float greater or equal than integer
+  template: "{% if 1.5 >= 1 %}YES{% endif %}"
+  environment: {}
+  expected: "YES"
+  filesystem: {}
+
+- name: For loop with limit that is an undefined variable
+  template: "{% for item in array limit:a %}NO{% endfor %}"
+  environment: {}
+  expected: ""
+  filesystem: {}
+
+- name: For loop with offset that is an undefined variable
+  template: "{% for item in array offset:a %}NO{% endfor %}"
+  environment: {}
+  expected: ""
+  filesystem: {}
+
+- name: Comparing undefined variables in if statement
+  template: "{% if a <= b %}NO{% endif %}"
+  environment: {}
+  expected: ""
+  filesystem: {}
+
+- name: Lookup first on hash
+  template: "{{ my_hash.first }}"
+  environment:
+    my_hash:
+      hello: world
+      foo: bar
+  expected: "helloworld"
+
+- name: Lookup first on hash gives priority to existing key
+  template: "{{ my_hash.first }}"
+  environment:
+    my_hash:
+      hello: world
+      foo: bar
+      first: priority
+  expected: "priority"
+
+- name: Lookup last on hash returns none
+  template: "{{ my_hash.last }}"
+  environment:
+    my_hash:
+      hello: world
+      foo: bar
+  expected: ""
+
+- name: Lookup first on range
+  template: "{% assign my_range = (3..5) %}{{ my_range.first }}"
+  expected: "3"
+
+- name: Lookup last on range
+  template: "{% assign my_range = (3..5) %}{{ my_range.last }}"
+  environment: {}
+  expected: "5"
+
+- name: Range bound lax int string parsing
+  template: "{{ (2..end) }}"
+  environment:
+    end: "6b"
+  expected: "2..6"
+
+- name: Range bound dynamic type check rejects float
+  template: "{{ (1..end) }}"
+  environment:
+    end: 2.5
+  expected: "Liquid error (templates/index line 1): invalid integer"
+
+- name: Tablerow renders empty string when lookup returns nil
+  template: "{% tablerow a in b %}{% endtablerow %}"
+  expected: ""
+
+- name: Tablerow renders single column when lookup is a string and limit is less than 1
+  template: "{% tablerow a in 'abc' limit: 0 %}{{ a }}{% endtablerow %}"
+  expected: |
+    <tr class="row1">
+    <td class="col1">abc</td></tr>
+
+- name: Tablerow renders single column when lookup is a string and offset is greater than 1
+  template: "{% tablerow a in 'abc' offset: 9999 %}{{ a }}{% endtablerow %}"
+  expected: |
+    <tr class="row1">
+    <td class="col1">abc</td></tr>
+
+- name: Tablerow throws invalid integer error when limit isn't a number
+  template: "{% tablerow a in '' limit: true %}{{ a }}{% endtablerow %}"
+  expected: "Liquid error (templates/index line 1): invalid integer"
+
+- name: Tablerow doesn't throw error when limit isn't a number and lookup is undefined
+  template: "{% tablerow a in b limit: true %}{{ a }}{% endtablerow %}"
+  expected: ""
+
+- name: Tablerow with nil collection doesn't pop parent iterator
+  template: "{% for i in (0..1) %}{% tablerow a in b %}{{ a }}{% endtablerow %}{{ i }}{% endfor %}"
+  expected: "01"
+
+- name: Conditional tag returns false when the operator is unknown
+  template: "{% if a true %}{% endif %}"
+  expected: ""
+
+- name: Comparing empty and blank resolves to false
+  template: "{% if blank == empty %}NOPE{% endif %}"
+  expected: ""
+
+- name: Comparing empty and empty resolves to false
+  template: "{% if empty == empty %}NOPE{% endif %}"
+  expected: ""
+
+- name: Comparing blank and blank resolves to false
+  template: "{% if blank == blank %}NOPE{% endif %}"
+  expected: ""
+
+- name: Ignore unknown operators when the tags body is empty
+  template: "{% if true true %}{% endif %}"
+  expected: ""
+
+- name: Does not ignore unknown operators when the tags body is empty but there is an else
+  template: "{% if true true %}{% else %}1{% endif %}"
+  expected: "Liquid error (templates/index line 1): Unknown operator true"
+
+- name: Does not output error when unknown operators are used in elsif but if is true
+  template: "{% if true %}a{% elsif true true %}b{% endif %}"
+  expected: "a"
+
+- name: Correct error when unknown operators are used in elsif and if is false
+  template: |-
+    {% if false %}
+      a
+    {% elsif true true %}
+      b
+    {% endif %}
+  expected: "Liquid error (templates/index line 1): Unknown operator true"
+
+- name: Unsupported operators render an error
+  template: "{% if 0 = 0 %}NOPE{% endif %}"
+  expected: "Liquid error (templates/index line 1): Unknown operator ="
+
+- name: Reading a variable before assigning it in a local scope
+  environment:
+    x: 1
+  template: "{% for i in (1..1) %}{{ x }}{% assign x = 2 %}{{ x }}{% endfor %}"
+  expected: "12"
+
+- name: Truncatewords only splits by UTF-8 ASCII whitespaces
+  environment:
+    x: "There is non\u202fbreaking whitespace here"
+  template: "{{ x | truncatewords: 3}}"
+  expected: "There is non\u202fbreaking..."
+
+- name: Truncatewords replaces UTF-8 ASCII whitespaces to a space character
+  environment:
+    x: "\vGround\tcontrol\nto\rMajor\nTom."
+  template: "{{ x | truncatewords: 3}}"
+  expected: "Ground control to..."
+
+- name: Does not output error when short circuit evaluation avoids using the unknown operator
+  template: "{% if dynamic and true true %}a{% else %}b{% endif %}"
+  environment:
+    dynamic: false
+  expected: "b"
+
+- name: Tablerow renders empty string when collection is false
+  template: "{% tablerow a in collection %}{{ a }}{% endtablerow %}"
+  environment:
+    collection: false
+  expected: ""
+
+- name: Case statement flows through multiple truthy cases
+  template: |-
+    {% case 'value' %}
+      {%- when 'value' -%}
+        hello
+      {%- when 'value' -%}
+        world
+      {%- else -%}
+        else
+    {%- endcase -%}
+  expected: "helloworld"
+
+- name: Case statement flows through multiple Else cases
+  template: |-
+    {% case 'value' %}
+      {%- else -%}
+        {%- case 'value' -%}
+          {%- when 'value' -%}
+            hello
+          {%- else -%}
+            not here
+        {%- endcase -%}
+      {%- else  -%}
+        world
+      {%- when 'value' -%}
+        !
+      {%- else -%}
+        another else
+    {%- endcase -%}
+  expected: "helloworld!"
+
+- name: Case tag with Else case in between when
+  template: |-
+    {% case 'value' %}
+      {%- when 'not_value' -%}
+        not_value
+      {%- else -%}
+        hello
+      {%- when 'value' -%}
+        world
+      {%- when 'value' -%}
+        !
+      {%- else -%}
+        another else
+    {%- endcase -%}
+  expected: "helloworld!"
+
+- name: Case tag inside a Case tag
+  template: |-
+    {%- case 'value' -%}
+      {%- when 'value' -%}
+        hello
+        {%- case 'value' -%}
+          {%- else -%}
+            world
+        {%- endcase -%}
+      {%- else -%}
+      else
+    {%- endcase -%}
+  expected: "helloworld"
+
+- name: Short circuit operator precedence
+  template:
+    "{% if true and true and true %}a{% else %}b{% endif %}{% if true and true
+    or true %}a{% else %}b{% endif %}{% if true or true and true %}a{% else %}b{% endif
+    %}{% if true or true or true %}a{% else %}b{% endif %}{% if true and true and false
+    %}a{% else %}b{% endif %}{% if true and true or false %}a{% else %}b{% endif %}{%
+    if true or true and false %}a{% else %}b{% endif %}{% if true or true or false %}a{%
+    else %}b{% endif %}{% if true and false and true %}a{% else %}b{% endif %}{% if
+    true and false or true %}a{% else %}b{% endif %}{% if true or false and true %}a{%
+    else %}b{% endif %}{% if true or false or true %}a{% else %}b{% endif %}{% if true
+    and false and false %}a{% else %}b{% endif %}{% if true and false or false %}a{%
+    else %}b{% endif %}{% if true or false and false %}a{% else %}b{% endif %}{% if
+    true or false or false %}a{% else %}b{% endif %}{% if false and true and true %}a{%
+    else %}b{% endif %}{% if false and true or true %}a{% else %}b{% endif %}{% if false
+    or true and true %}a{% else %}b{% endif %}{% if false or true or true %}a{% else
+    %}b{% endif %}{% if false and true and false %}a{% else %}b{% endif %}{% if false
+    and true or false %}a{% else %}b{% endif %}{% if false or true and false %}a{% else
+    %}b{% endif %}{% if false or true or false %}a{% else %}b{% endif %}{% if false
+    and false and true %}a{% else %}b{% endif %}{% if false and false or true %}a{%
+    else %}b{% endif %}{% if false or false and true %}a{% else %}b{% endif %}{% if
+    false or false or true %}a{% else %}b{% endif %}{% if false and false and false
+    %}a{% else %}b{% endif %}{% if false and false or false %}a{% else %}b{% endif %}{%
+    if false or false and false %}a{% else %}b{% endif %}{% if false or false or false
+    %}a{% else %}b{% endif %}{% unless true and true and true %}a{% else %}b{% endunless
+    %}{% unless true and true or true %}a{% else %}b{% endunless %}{% unless true or
+    true and true %}a{% else %}b{% endunless %}{% unless true or true or true %}a{%
+    else %}b{% endunless %}{% unless true and true and false %}a{% else %}b{% endunless
+    %}{% unless true and true or false %}a{% else %}b{% endunless %}{% unless true or
+    true and false %}a{% else %}b{% endunless %}{% unless true or true or false %}a{%
+    else %}b{% endunless %}{% unless true and false and true %}a{% else %}b{% endunless
+    %}{% unless true and false or true %}a{% else %}b{% endunless %}{% unless true or
+    false and true %}a{% else %}b{% endunless %}{% unless true or false or true %}a{%
+    else %}b{% endunless %}{% unless true and false and false %}a{% else %}b{% endunless
+    %}{% unless true and false or false %}a{% else %}b{% endunless %}{% unless true
+    or false and false %}a{% else %}b{% endunless %}{% unless true or false or false
+    %}a{% else %}b{% endunless %}{% unless false and true and true %}a{% else %}b{%
+    endunless %}{% unless false and true or true %}a{% else %}b{% endunless %}{% unless
+    false or true and true %}a{% else %}b{% endunless %}{% unless false or true or true
+    %}a{% else %}b{% endunless %}{% unless false and true and false %}a{% else %}b{%
+    endunless %}{% unless false and true or false %}a{% else %}b{% endunless %}{% unless
+    false or true and false %}a{% else %}b{% endunless %}{% unless false or true or
+    false %}a{% else %}b{% endunless %}{% unless false and false and true %}a{% else
+    %}b{% endunless %}{% unless false and false or true %}a{% else %}b{% endunless %}{%
+    unless false or false and true %}a{% else %}b{% endunless %}{% unless false or false
+    or true %}a{% else %}b{% endunless %}{% unless false and false and false %}a{% else
+    %}b{% endunless %}{% unless false and false or false %}a{% else %}b{% endunless
+    %}{% unless false or false and false %}a{% else %}b{% endunless %}{% unless false
+    or false or false %}a{% else %}b{% endunless %}"
+  expected: aaaabaaabaaabbaabbaabbbabbbabbbbbbbbabbbabbbaabbaabbaaabaaabaaaa
+  environment: {}
+
+- name: Render for with alias and args that match alias
+  template: "{% render 'child' for items as item item:item %}"
+  filesystem:
+    child: "{{ item }}"
+  environment:
+    items: 1,2,3
+  expected: "123"
+
+- name: Render for with alias and args where arg value equals alias value
+  template: "{% render 'child' for items as item x:item %}"
+  filesystem:
+    child: "{{ x }}"
+  environment:
+    items: [1, 2, 3]
+  expected: ""
+
+- name: Render for with alias and args where arg value equals alias and arg is defined
+  template: "{% render 'child' for items as item x:item %}"
+  filesystem:
+    child: "{{ x }}"
+  environment:
+    items: [1, 2, 3]
+    x: "a"
+  expected: ""
+
+- name: Render for with no args
+  template: "{% render 'child' for items as item %}"
+  filesystem:
+    child: "{{ item }}"
+  environment:
+    items: [1, 2, 3]
+  expected: "123"
+
+- name: Render for and arg name value equal to forloop drop name and value
+  template: "{% render 'item' for items x:item %}"
+  filesystem:
+    item: "{{ item }}"
+  environment:
+    items: [1, 2, 3]
+  expected: "123"
+
+- name: Render for with args where arg is assigned
+  template: "{% assign item = 0 %}{% render 'child' for items as item item:item %}"
+  filesystem:
+    child: "{{ item }}"
+  expected: "0"
+
+- name: Render for with args where arg is assigned and items has values
+  template: "{% assign item = 0 %}{% render 'child' for items as item item:item %}"
+  filesystem:
+    child: "{{ item }}"
+  environment:
+    items: [1, 2, 3]
+  expected: "123"
+
+- name: Render for with string as collection
+  template: "{% render 'child' for 'abd' as item item:item %}"
+  filesystem:
+    child: "{{ item }}"
+  environment:
+    items: [1, 2, 3]
+  expected: "abd"
+
+- name: Parameter cannot access previous parameter
+  template: "{% render 'child' a: 1, b: 2, c: a %}"
+  filesystem:
+    child: "c:{{ c }}"
+  environment: {}
+  expected: "c:"
