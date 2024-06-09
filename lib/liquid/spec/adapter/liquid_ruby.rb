@@ -12,7 +12,10 @@ module Liquid
             registers: Liquid::Registers.new(static_registers),
           )
           template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
-          # context.template_name = "templates/index"
+          render_liquid_template(template, context)
+        end
+
+        def render_liquid_template(template, context)
           template.render(context)
         end
       end
