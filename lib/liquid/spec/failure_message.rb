@@ -46,10 +46,10 @@ module Liquid
         @rendered_message = <<~MSG
           #{sections.join("\n\n")}
 
-          ===========================
+          ━━━━━━━ ▷ Rerun command ━━━━━━━
+          $ #{self.class.rerun_command_for(spec)}
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-          To rerun this spec, run the following command:
-            $ #{self.class.rerun_command_for(spec)}
         MSG
       end
 
