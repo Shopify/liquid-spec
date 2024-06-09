@@ -60,7 +60,14 @@ module Liquid
       end
 
       def render_box(name:, content:, padding: 0)
-        TTY::Box.frame(content, width: width, padding:, title: {top_left: name}).strip
+        header = "━━━━━━━ #{name} ━━━━━━━"
+        trailer = "━" * header.length
+
+        <<~BOX
+          #{header}
+          #{content}
+          #{trailer}
+        BOX
       end
 
       def filtered_backtrace

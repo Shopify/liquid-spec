@@ -25,7 +25,6 @@ Gem::Specification.new do |spec|
     end
   end
 
-  spec.add_dependency "tty-box"
   spec.add_dependency "timecop"
   spec.require_paths = ["lib"]
 end
