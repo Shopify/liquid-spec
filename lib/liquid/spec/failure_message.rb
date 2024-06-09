@@ -5,10 +5,11 @@ module Liquid
     class FailureMessage
       attr_reader :spec, :actual, :width
 
-      def initialize(spec, actual, width: nil)
+      def initialize(spec, actual, width: nil, exception: nil)
         @spec = spec
         @actual = actual
         @width = width
+        @exception = exception
       end
 
       class << self
@@ -25,16 +26,25 @@ module Liquid
       def to_s
         return @rendered_message if defined?(@rendered_message)
 
-        template = render_box(content: spec.template, name: "Template")
-        environment = render_box(content: spec.environment.inspect, name: "Environment")
-        rendered_diff = render_box(content: render_diff(spec.expected, actual), name: "Diff")
+        sections = []
+
+        sections << render_box(content: spec.template, name: "Template")
+        sections << render_box(content: spec.environment.inspect, name: "Environment")
+
+        if @exception
+          exception_info_with_backtrace = <<~INFO
+            #{@exception.message}
+
+            #{filtered_backtrace.join("\n")}
+          INFO
+
+          sections << render_box(content: exception_info_with_backtrace, name: "🚨 Got error: #{@exception.class}", padding: 1)
+        else
+          sections << render_box(content: render_diff(spec.expected, actual), name: "Diff")
+        end
 
         @rendered_message = <<~MSG
-          #{template}
-
-          #{environment}
-
-          #{rendered_diff}
+          #{sections.join("\n\n")}
 
           ===========================
 
@@ -49,8 +59,18 @@ module Liquid
         SuperDiff::EqualityMatchers::Main.call(expected:, actual:)
       end
 
-      def render_box(name:, content:)
-        TTY::Box.frame(content, width: width, title: {top_left: name}).strip
+      def render_box(name:, content:, padding: 0)
+        TTY::Box.frame(content, width: width, padding:, title: {top_left: name}).strip
+      end
+
+      def filtered_backtrace
+        @filtered_backtrace ||= begin
+          if defined?(TLDR)
+            TLDR.filter_backtrace(@exception.backtrace)
+          else
+            backtrace
+          end
+        end
       end
     end
   end

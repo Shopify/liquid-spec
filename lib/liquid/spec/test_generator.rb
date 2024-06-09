@@ -27,8 +27,15 @@ module Liquid
             @klass.class_exec(@adapter) do |adapter|
               define_method(test_name) do
                 Timecop.freeze(TEST_TIME) do
-                  actual = adapter.render(spec)
-                  assert spec.expected == actual, FailureMessage.new(spec, actual)
+                  exception = nil
+
+                  actual = begin
+                    adapter.render(spec)
+                  rescue => e
+                    exception = e
+                  end
+
+                  assert spec.expected == actual, FailureMessage.new(spec, actual, exception:)
                 end
               end
             end
