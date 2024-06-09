@@ -56,7 +56,7 @@ module Liquid
       private
 
       def render_diff(expected, actual)
-        SuperDiff::EqualityMatchers::Main.call(expected:, actual:)
+        SuperDiff::Basic::Differs::MultilineString.call(expected, actual, indent_level: 0)
       end
 
       def render_box(name:, content:, padding: 0)
