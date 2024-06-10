@@ -26,5 +26,6 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "timecop"
+  spec.add_dependency "super_diff", "~> 0.12.1"
   spec.require_paths = ["lib"]
 end
