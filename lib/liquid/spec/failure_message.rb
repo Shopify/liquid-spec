@@ -1,3 +1,5 @@
+require "super_diff"
+
 module Liquid
   module Spec
     class FailureMessage
