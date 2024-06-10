@@ -1,5 +1,3 @@
-require "tty-box"
-
 module Liquid
   module Spec
     class FailureMessage
