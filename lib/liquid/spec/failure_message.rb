@@ -74,8 +74,10 @@ module Liquid
         @filtered_backtrace ||= begin
           if defined?(TLDR)
             TLDR.filter_backtrace(@exception.backtrace)
+          elsif defined?(Minitest)
+            Minitest.filter_backtrace(@exception.backtrace)
           else
-            backtrace
+            @exception.backtrace
           end
         end
       end
