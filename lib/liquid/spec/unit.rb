@@ -7,6 +7,7 @@ module Liquid
       :environment,
       :filesystem,
       :error_mode,
+      :context_klass,
       keyword_init: true
     ) do
       def initialize(**)
