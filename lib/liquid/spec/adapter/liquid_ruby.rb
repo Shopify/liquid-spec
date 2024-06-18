@@ -8,7 +8,7 @@ module Liquid
             template_factory: spec.template_factory,
           }
           context = spec.context_klass.build(
-            static_environments: Marshal.load(Marshal.dump(spec.environment),
+            static_environments: Marshal.load(Marshal.dump(spec.environment)),
             registers: Liquid::Registers.new(static_registers),
           )
           template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
