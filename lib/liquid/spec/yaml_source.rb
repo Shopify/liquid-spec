@@ -12,6 +12,7 @@ module Liquid
             environment: data["environment"] || {},
             filesystem: data["filesystem"],
             error_mode: data["error_mode"],
+            context_klass: data["context_klass"].nil? ? Liquid::Context : Object.const_get(data["context_klass"])
           )
         end
       end

@@ -7,7 +7,7 @@ module Liquid
             file_system: MemoryFileSystem.new(spec.filesystem),
             template_factory: StubTemplateFactory.new,
           }
-          context = Liquid::Context.build(
+          context = spec.context_klass.build(
             static_environments: spec.environment,
             registers: Liquid::Registers.new(static_registers),
           )
@@ -38,7 +38,7 @@ module Liquid
 
           # Report the same error as in storefront-renderer
           # (https://github.com/Shopify/storefront-renderer/blob/9014ee25828c6c5f5e8fec278dd0cd6fd04d803b/app/models/theme.rb#L416)
-          full_name = "snippets/#{name.end_with?('.liquid') ? name : "#{name}.liquid"}"
+          full_name = "snippets/#{name.downcase.end_with?('.liquid') ? name : "#{name}.liquid"}"
           raise Liquid::FileSystemError, "Could not find asset #{full_name}"
         end
       end
