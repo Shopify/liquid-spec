@@ -1,0 +1,21 @@
+default filter:
+
+  returns the default if the input is null or false:
+  - TPL: "{{ drop | default: 'bar' }}"
+    EXP: Yay
+    CTX: { drop: !ruby/object:BooleanDrop { value: true } }
+  - "{{ false | default: 'bar' }}": bar
+  - TPL: "{{ drop | default: 'bar' }}"
+    EXP: bar
+    CTX: { drop: !ruby/object:BooleanDrop { value: false } }
+
+  with allow_false:
+    only returns the default when input is null:
+    - "{{ false | default: 'bar', allow_false: true }}": 'false'
+    - TPL: "{{ drop | default: 'bar', allow_false: true }}"
+      EXP: Nay
+      CTX: { drop: !ruby/object:BooleanDrop { value: false } }
+    - TPL: "{{ drop | default: 'bar', allow_false: true }}"
+      EXP: Yay
+      CTX: { drop: !ruby/object:BooleanDrop { value: true } }
+

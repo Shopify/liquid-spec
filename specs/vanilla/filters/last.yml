@@ -1,0 +1,7 @@
+last filter:
+
+  calls to_liquid:
+  - TPL: "{{ foo | last }}"
+    EXP: foobar
+    CTX: { foo: [!ruby/object:ThingWithToLiquid {}] }
+

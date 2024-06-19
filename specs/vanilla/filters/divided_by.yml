@@ -1,0 +1,8 @@
+divided_by filter:
+- "{{ 2.0 | divided_by:4 }}": '0.5'
+- "{{ 14 | divided_by:3 }}": '4'
+- "{{ 15 | divided_by:3 }}": '5'
+- TPL: "{{ price | divided_by:2 }}"
+  EXP: '5'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 10 } }
+- "{{ 12 | divided_by:3 }}": '4'

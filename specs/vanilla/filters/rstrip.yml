@@ -1,0 +1,7 @@
+rstrip filter:
+- TPL: "{{ source | rstrip }}"
+  EXP: " \tab c"
+  CTX: { source: " \tab c  \n \t" }
+- TPL: "{{ source | rstrip }}"
+  EXP: " ab c"
+  CTX: { source: " ab c  " }

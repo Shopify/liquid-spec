@@ -1,0 +1,8 @@
+append filter:
+- TPL: "{{ a | append: b}}"
+  EXP: bcd
+  CTX: { a: bc, b: d }
+- TPL: "{{ a | append: 'd'}}"
+  EXP: bcd
+  CTX: { a: bc, b: d }
+

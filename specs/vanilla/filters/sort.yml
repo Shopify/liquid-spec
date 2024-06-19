@@ -1,16 +1,24 @@
 sort filter:
-- TPL: "{{case_sensitive | sort | join}}"
-  EXP: Expected case sensitive
-  CTX: {case_sensitive: [sensitive, Expected, case]}
-- TPL: "{{value | sort}}"
-  EXP: '3'
-  CTX: {value: 3}
-- TPL: "{{arrays | sort | join}}"
-  EXP: are flower
-  CTX: {arrays: [flower, are]}
-- TPL: "{{words | sort | join}}"
-  EXP: alphabetic as expected
-  CTX: {words: [expected, as, alphabetic]}
-- TPL: "{{numbers | sort | join}}"
-  EXP: 1 2 3 4
-  CTX: {numbers: [2, 1, 4, 3]}
+
+  sorts an input sequence:
+  - TPL: "{{case_sensitive | sort | join}}"
+    EXP: Expected case sensitive
+    CTX: {case_sensitive: [sensitive, Expected, case]}
+  - TPL: "{{value | sort}}"
+    EXP: '3'
+    CTX: {value: 3}
+  - TPL: "{{arrays | sort | join}}"
+    EXP: are flower
+    CTX: {arrays: [flower, are]}
+  - TPL: "{{words | sort | join}}"
+    EXP: alphabetic as expected
+    CTX: {words: [expected, as, alphabetic]}
+  - TPL: "{{numbers | sort | join}}"
+    EXP: 1 2 3 4
+    CTX: {numbers: [2, 1, 4, 3]}
+
+  works on enumerables:
+  - TPL: '{{ foo | sort: "bar" | map: "foo" }}'
+    EXP: '213'
+    CTX: { foo: !ruby/object:TestEnumerable { context: } }
+

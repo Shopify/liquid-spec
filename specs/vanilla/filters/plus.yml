@@ -1,0 +1,6 @@
+plus filter:
+- "{{ '1' | plus:'1.0' }}": '2.0'
+- "{{ 1 | plus:1 }}": '2'
+- TPL: "{{ price | plus:'2' }}"
+  EXP: '5'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 3 } }

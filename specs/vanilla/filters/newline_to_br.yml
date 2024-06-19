@@ -1,0 +1,13 @@
+newline_to_br filter:
+- TPL: "{{ source | newline_to_br }}"
+  EXP: |-
+    a<br />
+    b<br />
+    c
+  CTX: { source: "a\nb\nc" }
+- TPL: "{{ source | newline_to_br }}"
+  EXP: |-
+    a<br />
+    b<br />
+    c
+  CTX: { source: "a\r\nb\nc" }

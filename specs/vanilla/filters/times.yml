@@ -1,0 +1,10 @@
+times filter:
+- TPL: "{{ price | times:2 }}"
+  EXP: '4'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 2 } }
+- "{{ 3 | times:4 }}": '12'
+- "{{ 0.0725 | times:100 }}": '7.25'
+- "{{ 'foo' | times:4 }}": '0'
+- "{{ '2.1' | times:3 | replace: '.','-' | plus:0}}": '6'
+- '{{ "-0.0725" | times: -100 }}': '7.25'
+- '{{ "-0.0725" | times:100 }}': "-7.25"

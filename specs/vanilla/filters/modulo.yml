@@ -1,0 +1,6 @@
+modulo filter:
+- "{{ 3 | modulo:2 }}": '1'
+- TPL: "{{ price | modulo:2 }}"
+  EXP: '1'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 3 } }
+

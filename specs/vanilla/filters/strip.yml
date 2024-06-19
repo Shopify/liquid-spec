@@ -1,0 +1,8 @@
+strip filter:
+- TPL: "{{ source | strip }}"
+  EXP: ab c
+  CTX: { source: " ab c  " }
+- TPL: "{{ source | strip }}"
+  EXP: ab c
+  CTX: { source: " \tab c  \n \t" }
+

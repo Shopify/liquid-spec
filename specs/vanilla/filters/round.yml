@@ -1,0 +1,14 @@
+round filter:
+- "{{ '4.3' | round }}": '4'
+- TPL: "{{ input | round: 2 }}"
+  EXP: '4.56'
+  CTX: { input: 4.5612 }
+- TPL: "{{ price | round }}"
+  EXP: '5'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 4.6 } }
+- TPL: "{{ price | round }}"
+  EXP: '4'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 4.3 } }
+- TPL: "{{ input | round }}"
+  EXP: '5'
+  CTX: { input: 4.6 }

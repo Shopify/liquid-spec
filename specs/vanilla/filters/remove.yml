@@ -1,0 +1,5 @@
+remove filter:
+- "{{ '1 1 1 1' | remove: 1 }}": "   "
+- "{{ '1 1 1 1' | remove_first: 1 }}": " 1 1 1"
+- "{{ '1 1 1 1' | remove_last: 1 }}": '1 1 1 '
+

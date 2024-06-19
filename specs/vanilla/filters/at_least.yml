@@ -1,0 +1,14 @@
+at_least filter:
+- TPL: "{{ width | at_least:5 }}"
+  EXP: '6'
+  CTX: { width: !ruby/object:NumberLikeThing { amount: 6 } }
+- TPL: "{{ width | at_least:5 }}"
+  EXP: '5'
+  CTX: { width: !ruby/object:NumberLikeThing { amount: 4 } }
+- "{{ 4.5 | at_least:5 }}": '5'
+- "{{ 5 | at_least:6 }}": '6'
+- TPL: "{{ 5 | at_least: width }}"
+  EXP: '6'
+  CTX: { width: !ruby/object:NumberLikeThing { amount: 6 } }
+- "{{ 5 | at_least:4 }}": '5'
+- "{{ 5 | at_least:5 }}": '5'

@@ -1,0 +1,7 @@
+strip_newlines filter:
+- TPL: "{{ source | strip_newlines }}"
+  EXP: abc
+  CTX: { source: "a\nb\nc" }
+- TPL: "{{ source | strip_newlines }}"
+  EXP: abc
+  CTX: { source: "a\r\nb\nc" }

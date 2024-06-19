@@ -1,0 +1,4 @@
+replace filter:
+- "{{ '1 1 1 1' | replace: '1', 2 }}": 2 2 2 2
+- "{{ '1 1 1 1' | replace_last: '1', 2 }}": 1 1 1 2
+- "{{ '1 1 1 1' | replace_first: '1', 2 }}": 2 1 1 1

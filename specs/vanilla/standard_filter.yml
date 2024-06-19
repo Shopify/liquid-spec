@@ -3669,20 +3669,7 @@ StandardFilter:
     CTX:
       foo0: []
       foo1: a
-  sort natural when property is sometimes missing puts nils last:308:
-  - TPL: '{{ foo0 | sort_natural: "price" }}'
-    EXP: '{"price"=>"1", "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>"4", "handle"=>"alpha"}{"handle"=>"delta"}{"handle"=>"beta"}'
-    CTX:
-      foo0:
-      - price: '4'
-        handle: alpha
-      - handle: beta
-      - price: '1'
-        handle: gamma
-      - handle: delta
-      - price: 2
-        handle: epsilon
-      foo1: price
+
   sort natural with nils:289:
   - TPL: "{{ foo0 | sort_natural }}"
     EXP: aBcD

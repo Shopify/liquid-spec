@@ -1,0 +1,7 @@
+truncate filter:
+
+  calls to_liquid:
+  - TPL: "{{ foo | truncate: 5 }}"
+    EXP: wo...
+    CTX: { foo: !ruby/object:TestThing { foo: 0 } }
+

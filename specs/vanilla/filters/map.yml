@@ -1,0 +1,26 @@
+map filter:
+
+  looks up a key in an array of hashes:
+  - TPL: "{{ ary | map:'foo' | map:'bar' }}"
+    EXP: abc
+    CTX: { ary: [ { foo: { bar: a } }, { foo: { bar: b } }, { foo: { bar: c } } ] }
+
+  calls to_liquid:
+  - TPL: '{{ foo | map: "whatever" }}'
+    EXP: 'woot: 1'
+    CTX: { foo: [!ruby/object:TestThing { foo: 0 }] }
+
+  doesnt call arbitrary stuff:
+  - '{{ "foo" | map: "__id__" }}': ''
+  - '{{ "foo" | map: "inspect" }}': ''
+
+  looks up a key if called on a hash:
+  - TPL: '{{ thing | map: "foo" | map: "bar" }}'
+    EXP: '4217'
+    CTX: { thing: { foo: [ { bar: 42 }, { bar: 17 } ] } }
+
+  can take a dynamic filter:
+  - TPL: "{% assign key = 'foo' %}{{ thing | map: key | map: 'bar' }}"
+    EXP: '42'
+    CTX: { thing: { foo: { bar: 42 } } }
+

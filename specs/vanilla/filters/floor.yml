@@ -1,0 +1,8 @@
+floor filter:
+- TPL: "{{ input | floor }}"
+  EXP: '4'
+  CTX: { input: 4.6 }
+- "{{ '4.3' | floor }}": '4'
+- TPL: "{{ price | floor }}"
+  EXP: '5'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 5.4 } }

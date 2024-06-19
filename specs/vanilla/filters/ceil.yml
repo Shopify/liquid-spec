@@ -1,0 +1,8 @@
+ceil filter:
+- "{{ '4.3' | ceil }}": '5'
+- TPL: "{{ input | ceil }}"
+  EXP: '5'
+  CTX: { input: 4.6 }
+- TPL: "{{ price | ceil }}"
+  EXP: '5'
+  CTX: { price: !ruby/object:NumberLikeThing { amount: 4.6 } }

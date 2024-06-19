@@ -1,0 +1,6 @@
+date filter:
+
+  "doesn't blow up if the input isn't interpretable as a date":
+  - "{{ '' | date: '%D' }}": ''
+  - "{{ 'abc' | date: '%D' }}": abc
+

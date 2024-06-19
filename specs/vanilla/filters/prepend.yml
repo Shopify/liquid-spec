@@ -1,0 +1,8 @@
+prepend filter:
+- TPL: "{{ a | prepend: 'a'}}"
+  EXP: abc
+  CTX: { a: bc, b: a }
+- TPL: "{{ a | prepend: b}}"
+  EXP: abc
+  CTX: { a: bc, b: a }
+
