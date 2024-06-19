@@ -12,7 +12,7 @@ class SourceTest < Minitest::Test
   YAML
 
   def test_yaml_source_works
-    path = File.expand_path("fake.yml", __dir__)
+    path = File.expand_path("fake.yml")
 
     File.expects(:read).with(path).returns(MOCK_YAML).once
     runner = Liquid::Spec::Source.for(path)
