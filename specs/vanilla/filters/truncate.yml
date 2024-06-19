@@ -1,7 +1,94 @@
 truncate filter:
 
+  truncates to the given number of characters:
+  - TPL: "{{ foo0 | truncate: 7 }}"
+    EXP: 1234...
+    CTX: { foo0: '1234567890' }
+
+  does not truncate if under threshold:
+  - TPL: "{{ foo0 | truncate: 20 }}"
+    EXP: '1234567890'
+    CTX: { foo0: '1234567890' }
+
+  can truncate to actually zero:
+  - TPL: "{{ foo0 | truncate: 0 }}"
+    EXP: "..."
+    CTX: { foo0: '1234567890' }
+
+  does not truncate when passed no argument I guess:
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '1234567890'
+    CTX: { foo0: '1234567890' }
+
+  has unexpected behaviour for multibyte characters:
+  - TPL: "{{ foo0 | truncate: 5 }}"
+    EXP: 测试...
+    CTX: { foo0: 测试测试测试测试 }
+
+  accepts a custom truncation marker:
+  - TPL: "{{ foo0 | truncate: 5, 1 }}"
+    EXP: '12341'
+    CTX: { foo0: '1234567890' }
+
   calls to_liquid:
   - TPL: "{{ foo | truncate: 5 }}"
     EXP: wo...
     CTX: { foo: !ruby/object:TestThing { foo: 0 } }
 
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: 'woot: -49'
+    CTX: { foo0: !ruby/object:TestThing { foo: -50 } }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }

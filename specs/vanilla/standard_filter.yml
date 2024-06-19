@@ -35,9 +35,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: 'woot: -38'
-  CTX: { foo0: !ruby/object:TestThing { foo: -39 } }
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: }
@@ -74,11 +71,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | size }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | base64_decode }}"
   EXP: !binary |-
     TestDrop
@@ -114,9 +106,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: TestEnumerable
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | sort }}"
   EXP: 'true'
   CTX: { foo0: true }
@@ -125,9 +114,6 @@ all filters never raise non liquid exception:894:
   CTX:
     foo0:
       :foo: bar
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: foo
   CTX: { foo0: foo }
@@ -232,9 +218,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: eyJmb28iPT4iYmFyIn0=
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | strip }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -261,9 +244,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -296,11 +276,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | join }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '{1=>"bar"}'
-  CTX:
-    foo0:
-      1: bar
 - TPL: "{{ foo0 | floor }}"
   EXP: "-1235"
   CTX: { foo0: -1234.003030303 }
@@ -406,9 +381,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '["foo", "bar"]'
-  CTX: { foo0: [foo, bar] }
 - TPL: "{{ foo0 | sort }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
@@ -424,9 +396,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: 'false'
   CTX: { foo0: false }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: LTEyMzQuMDAzMDMwMzAz
   CTX: { foo0: -1234.003030303 }
@@ -456,9 +425,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | default }}"
   EXP: 'true'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | base64_url_safe_decode }}"
   EXP: !binary |-
     foo=
@@ -466,9 +432,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: TestEnumerable
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: Zm9v
   CTX: { foo0: foo }
@@ -496,9 +459,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | capitalize }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '{1=>"bar"}'
-  CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | base64_url_safe_decode }}"
   EXP: !binary |-
     TestDrop
@@ -524,9 +484,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | default }}"
   EXP: ''
   CTX: { foo0: false }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -642,9 +599,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: MC4w
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -666,9 +620,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | floor }}"
   EXP: '123'
   CTX: { foo0: 123 }
@@ -678,9 +629,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | reverse }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | escape }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -693,9 +641,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '["foo", "bar"]'
-  CTX: { foo0: [foo, bar] }
 - TPL: "{{ foo0 | size }}"
   EXP: '8'
   CTX: { foo0: -99999999 }
@@ -731,17 +676,11 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | capitalize }}"
   EXP: Testdrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | strip }}"
   EXP: '{:foo=>"bar"}'
   CTX: 
     foo0: 
       :foo: bar
-- TPL: "{{ foo0 | truncate }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | strip }}"
   EXP: '123'
   CTX: { foo0: 123 }
@@ -776,9 +715,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | downcase }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | floor }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
@@ -794,9 +730,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | h }}"
   EXP: "{:foo=&gt;&quot;bar&quot;}"
   CTX: 
@@ -858,9 +791,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: ''
   CTX: { foo0: }
@@ -915,9 +845,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: !ruby/object:TestThing { foo: -20 } }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | capitalize }}"
   EXP: ''
   CTX: { foo0: }
@@ -1025,9 +952,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | default }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | reverse }}"
   EXP: '123'
   CTX: { foo0: 123 }
@@ -1073,18 +997,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | escape }}"
   EXP: 'woot: -2'
   CTX: { foo0: !ruby/object:TestThing { foo: -3 } }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: false }
@@ -1121,9 +1039,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | compact }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | h }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
@@ -1282,12 +1197,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: MTIz
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: 'woot: -49'
-  CTX: { foo0: !ruby/object:TestThing { foo: -50 } }
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: 1234.3838300038383 }
@@ -1312,11 +1221,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | join }}"
   EXP: '{"foo"=>"bar"}'
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | h }}"
   EXP: 'woot: -15'
   CTX: { foo0: !ruby/object:TestThing { foo: -16 } }
@@ -1325,9 +1229,6 @@ all filters never raise non liquid exception:894:
   CTX: 
     foo0: 
       :foo: bar
-- TPL: "{{ foo0 | truncate }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
   CTX: { foo0: { foo: bar } }
@@ -1352,9 +1253,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '{1=>"bar"}'
   CTX: { foo0: { 1: bar } }
@@ -1435,18 +1333,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | lstrip }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: dHJ1ZQ==
   CTX: { foo0: true }
 - TPL: "{{ foo0 | abs }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: 'true'
   CTX: { foo0: true }
@@ -1462,9 +1354,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: "-1234"
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | truncate }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: foo }
@@ -1482,9 +1371,6 @@ all filters never raise non liquid exception:894:
   CTX: 
     foo0: 
       :foo: bar
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | strip }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
@@ -1931,62 +1817,4 @@ split:
 - TPL: "{{ foo0 | split: 1 }}"
   EXP: AZ
   CTX: { foo0: A1Z }
-
-strip html:
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: test
-  CTX: { foo0: "<div>test</div>" }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: test
-  CTX: { foo0: "<div id='test'>test</div>" }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: ''
-  CTX: { foo0: "<script type='text/javascript'>document.write('some stuff');</script>" }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: ''
-  CTX: { foo0: "<style type='text/css'>foo bar</style>" }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: test
-  CTX: { foo0: "<div class='multiline'>test</div>" }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: test
-  CTX: { foo0: "<!-- foo bar \n test -->test" }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: ''
-  CTX: { foo0: }
-
-- TPL: "{{ foo0 | strip_html }}"
-  EXP: foo;
-  CTX: { foo0: "<<<script </script>script>foo;</script>" }
-
-truncate:
-- TPL: "{{ foo0 | truncate: 7 }}"
-  EXP: 1234...
-  CTX: { foo0: '1234567890' }
-
-- TPL: "{{ foo0 | truncate: 20 }}"
-  EXP: '1234567890'
-  CTX: { foo0: '1234567890' }
-
-- TPL: "{{ foo0 | truncate: 0 }}"
-  EXP: "..."
-  CTX: { foo0: '1234567890' }
-
-- TPL: "{{ foo0 | truncate }}"
-  EXP: '1234567890'
-  CTX: { foo0: '1234567890' }
-
-- TPL: "{{ foo0 | truncate: 5 }}"
-  EXP: 测试...
-  CTX: { foo0: 测试测试测试测试 }
-
-- TPL: "{{ foo0 | truncate: 5, 1 }}"
-  EXP: '12341'
-  CTX: { foo0: '1234567890' }
 

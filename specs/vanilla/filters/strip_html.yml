@@ -1,9 +1,90 @@
 strip_html filter:
-  strips tags:
-  - TPL: "{{ var | strip_html }}"
-    EXP: bla blub
-    CTX: {var: "<b>bla blub</a>"}
-  strips html comments:
-  - TPL: "{{ var | strip_html }}"
-    EXP: bla blub
-    CTX: {var: "<!-- split and some <ul> tag --><b>bla blub</a>"}
+  unwraps tags:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX: { foo0: "<div>test</div>" }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX: { foo0: "<div id='test'>test</div>" }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: "\ntest\n"
+    CTX: { foo0: "<div class='multiline'>\ntest\n</div>" }
+
+
+  drops script tags and their contents:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX: { foo0: "<script type='text/javascript'>document.write('some stuff');</script>" }
+
+  drops style tags and their contents:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX: { foo0: "<style type='text/css'>foo bar</style>" }
+
+  drops html comments:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX: { foo0: "<!-- foo bar \n test -->test" }
+
+  handles this attempt to deceive it:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: foo;
+    CTX: { foo0: "<<<script </script>script>foo;</script>" }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: 'woot: -38'
+    CTX: { foo0: !ruby/object:TestThing { foo: -39 } }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
