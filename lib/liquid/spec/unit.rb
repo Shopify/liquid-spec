@@ -10,6 +10,7 @@ module Liquid
       :error_mode,
       :context_klass,
       :template_factory,
+      :request,
       keyword_init: true
     ) do
       def initialize(**)

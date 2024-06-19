@@ -15,6 +15,7 @@ module Liquid
             context_klass: data["context_klass"].nil? ? Liquid::Context : Object.const_get(data["context_klass"]),
             template_factory: data["template_factory"],
             template_name: data["template_name"],
+            request: data["request"],
           )
         end
       end

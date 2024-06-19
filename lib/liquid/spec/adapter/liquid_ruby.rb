@@ -6,6 +6,7 @@ module Liquid
           static_registers = {
             file_system: MemoryFileSystem.new(spec.filesystem),
             template_factory: spec.template_factory,
+            request: spec.request,
           }
           context = spec.context_klass.build(
             static_environments: Marshal.load(Marshal.dump(spec.environment)),
