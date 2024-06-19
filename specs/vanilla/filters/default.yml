@@ -1,6 +1,16 @@
 default filter:
 
-  returns the default if the input is null or false:
+  uses default for null, false, and empty strings or nonscalars:
+  - '{{ "foo" | default: "bar" }}': foo
+  - '{{ null | default: "bar" }}': bar
+  - '{{ "" | default: "bar" }}':  bar
+  - '{{ false | default: "bar" }}': bar
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX: { foo0: [] }
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX: { foo0: {} }
   - TPL: "{{ drop | default: 'bar' }}"
     EXP: Yay
     CTX: { drop: !ruby/object:BooleanDrop { value: true } }
@@ -9,8 +19,19 @@ default filter:
     EXP: bar
     CTX: { drop: !ruby/object:BooleanDrop { value: false } }
 
+
   with allow_false:
-    only returns the default when input is null:
+    flips the behaviour for false only:
+    - '{{ "foo" | default: "bar", allow_false: true }}': foo
+    - '{{ null | default: "bar", allow_false: true }}': bar
+    - '{{ "" | default: "bar", allow_false: true }}': bar
+    - '{{ false | default: "bar", allow_false: true }}': 'false'
+    - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+      EXP: bar
+      CTX: { foo0: [] }
+    - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+      EXP: bar
+      CTX: { foo0: {} }
     - "{{ false | default: 'bar', allow_false: true }}": 'false'
     - TPL: "{{ drop | default: 'bar', allow_false: true }}"
       EXP: Nay
@@ -18,4 +39,5 @@ default filter:
     - TPL: "{{ drop | default: 'bar', allow_false: true }}"
       EXP: Yay
       CTX: { drop: !ruby/object:BooleanDrop { value: true } }
+
 

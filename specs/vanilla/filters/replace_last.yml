@@ -1,0 +1,15 @@
+replace_last filter:
+
+- "{{ '1 1 1 1' | replace_last: '1', 2 }}": 1 1 1 2
+
+- TPL: '{{ foo0 | replace_last: "a", "b" }}'
+  EXP: a a a b
+  CTX: { foo0: a a a a }
+
+- TPL: "{{ foo0 | replace_last: 1, 2 }}"
+  EXP: 1 1 1 2
+  CTX: { foo0: 1 1 1 1 }
+
+- TPL: "{{ foo0 | replace_last: 2, 3 }}"
+  EXP: 1 1 1 1
+  CTX: { foo0: 1 1 1 1 }

@@ -1,0 +1,6 @@
+remove_last filter:
+- "{{ '1 1 1 1' | remove_last: 1 }}": '1 1 1 '
+- TPL: '{{ foo0 | remove_last: " a" }}'
+  EXP: a a b
+  CTX: { foo0: a a b a }
+

@@ -1,4 +1,19 @@
 replace filter:
 - "{{ '1 1 1 1' | replace: '1', 2 }}": 2 2 2 2
-- "{{ '1 1 1 1' | replace_last: '1', 2 }}": 1 1 1 2
-- "{{ '1 1 1 1' | replace_first: '1', 2 }}": 2 1 1 1
+
+- TPL: '{{ foo0 | replace: "a", "b" }}'
+  EXP: b b b b
+  CTX: { foo0: a a a a }
+
+- TPL: "{{ foo0 | replace: 1, 2 }}"
+  EXP: 2 2 2 2
+  CTX: { foo0: 1 1 1 1 }
+
+- TPL: "{{ foo0 | replace: 2, 3 }}"
+  EXP: 1 1 1 1
+  CTX: { foo0: 1 1 1 1 }
+
+- TPL: '{{ foo0 | replace: "a", "" }}'
+  EXP: "   "
+  CTX: { foo0: a a a a }
+

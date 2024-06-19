@@ -22,3 +22,89 @@ sort filter:
     EXP: '213'
     CTX: { foo: !ruby/object:TestEnumerable { context: } }
 
+  can sort hashes by a key index:
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}'
+    CTX: { foo0: [{a: 4}, {a: 3}, {a: 1}, {a: 2}] }
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}{}'
+    CTX: { foo0: [{a: 4}, {a: 3}, {}, {a: 1}, {a: 2}] }
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: ''
+    CTX: { foo0: [] }
+
+  when property is sometimes missing puts nils last:
+  - TPL: '{{ foo0 | sort: "price" }}'
+    EXP: '{"price"=>1, "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>4, "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
+    CTX: { foo0: [{price: 4, handle: alpha}, {handle: beta}, {price: 1, handle: gamma}, {handle: delta}, {price: 2, handle: epsilon}] }
+
+  sort with nils:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '1234'
+    CTX: { foo0: [null, 4, 3, 2, 1] }
+
+  numerical vs lexicographical sort:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '210'
+    CTX: { foo0: [10, 2] }
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>2}{"a"=>10}'
+    CTX: { foo0: [{ a: 10 }, { a: 2 }] }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '102'
+    CTX: { foo0: ['10', '2'] }
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>"10"}{"a"=>"2"}'
+    CTX: { foo0: [{ a: '10' }, { a: '2' }] }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | sort }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: 'woot: -33'
+    CTX: { foo0: !ruby/object:TestThing { foo: -35 } }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | sort }}"
+    EXP: barfoo
+    CTX: { foo0: [ foo, bar ] }

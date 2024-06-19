@@ -1,0 +1,20 @@
+split filter:
+
+  splits a string on a pattern:
+  - TPL: '{{ foo0 | split: "~" }}'
+    EXP: '1234'
+    CTX: { foo0: 12~34 }
+  - TPL: '{{ foo0 | split: "~ ~ ~" }}'
+    EXP: "A?  ,Z"
+    CTX: { foo0: "A? ~ ~ ~ ,Z" }
+  - TPL: '{{ foo0 | split: "~" }}'
+    EXP: A?Z
+    CTX: { foo0: A?Z }
+  - TPL: "{{ foo0 | split: 1 }}"
+    EXP: AZ
+    CTX: { foo0: A1Z }
+
+  tolerates null input:
+  - TPL: '{{ foo0 | split: " " }}'
+    EXP: ''
+    CTX: { foo0: null }

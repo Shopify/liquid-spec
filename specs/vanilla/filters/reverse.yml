@@ -1,0 +1,64 @@
+reverse filter:
+
+  reverses an array:
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '4321'
+    CTX: { foo0: [1, 2, 3, 4] }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: barfoo
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{"foo"=>["foo", "bar"]}{"foo"=>true}{"foo"=>nil}{"foo"=>123}{"foo"=>"bar"}'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: 'woot: -23'
+    CTX: { foo0: !ruby/object:TestThing { foo: -25 } }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{"foo"=>3, "bar"=>3}{"foo"=>2, "bar"=>1}{"foo"=>1, "bar"=>2}'
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: 'true'
+    CTX: { foo0: true }

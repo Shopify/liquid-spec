@@ -1,0 +1,15 @@
+replace_first filter:
+- "{{ '1 1 1 1' | replace_first: '1', 2 }}": 2 1 1 1
+
+- TPL: '{{ foo0 | replace_first: "a", "b" }}'
+  EXP: b a a a
+  CTX: { foo0: a a a a }
+
+- TPL: "{{ foo0 | replace_first: 1, 2 }}"
+  EXP: 2 1 1 1
+  CTX: { foo0: 1 1 1 1 }
+
+- TPL: "{{ foo0 | replace_first: 2, 3 }}"
+  EXP: 1 1 1 1
+  CTX: { foo0: 1 1 1 1 }
+

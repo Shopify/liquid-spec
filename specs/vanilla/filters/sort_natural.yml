@@ -1,7 +1,88 @@
 sort_natural filter:
-- TPL: "{{words | sort_natural | join}}"
-  EXP: Assert case Insensitive
-  CTX: {words: [case, Assert, Insensitive]}
-- TPL: "{{hashes | sort_natural: 'a' | map: 'a' | join}}"
-  EXP: A b C
-  CTX: {hashes: [{a: A}, {a: b}, {a: C}]}
+
+  sorts without case sensitivity:
+  - TPL: "{{words | sort_natural | join}}"
+    EXP: Assert case Insensitive
+    CTX: {words: [case, Assert, Insensitive]}
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: abcXYZ
+    CTX: { foo0: [X, Y, Z, a, b, c] }
+
+  takes a property argument and orders hashes on it:
+  - TPL: '{{ foo0 | sort_natural: "a" }}'
+    EXP: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
+    CTX: { foo0: [{a: D}, {a: c}, {a: a}, {a: B}] }
+  - TPL: '{{ foo0 | sort_natural: "key" }}'
+    EXP: '{"key"=>"a"}{"key"=>"b"}{"key"=>"c"}{"key"=>"X"}{"key"=>"Y"}{"key"=>"Z"}{"fake"=>"t"}'
+    CTX: { foo0: [{key: X}, {key: Y}, {key: Z}, {fake: t}, {key: a}, {key: b}, {key: c}] }
+
+  sorts an empty array:
+  - TPL: '{{ foo0 | sort_natural: "a" }}'
+    EXP: ''
+    CTX: { foo0: [] }
+
+  accepts nils:
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: aBcD
+    CTX: { foo0: [null, c, D, a, B] }
+  - TPL: '{{ foo0 | sort_natural: "a" }}'
+    EXP: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}{}'
+    CTX: { foo0: [{a: D}, {a: c}, {}, {a: a}, {a: B}] }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: 'woot: -39'
+    CTX: { foo0: !ruby/object:TestThing { foo: -41 } }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: barfoo
+    CTX: { foo0: [ foo, bar ] }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{:foo=>"bar"}'
+    CTX: 
+      foo0: 
+        :foo: bar

@@ -1,0 +1,6 @@
+remove_first filter:
+- "{{ '1 1 1 1' | remove_first: 1 }}": " 1 1 1"
+- TPL: '{{ foo0 | remove_first: "a " }}'
+  EXP: b a a
+  CTX: { foo0: a b a a }
+

@@ -7,17 +7,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | escape }}"
   EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | sort }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | strip }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
@@ -29,9 +21,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | strip }}"
   EXP: foo
   CTX: { foo0: foo }
@@ -44,9 +33,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | lstrip }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: 'woot: -39'
-  CTX: { foo0: !ruby/object:TestThing { foo: -41 } }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '{:foo=>"bar"}'
   CTX:
@@ -68,9 +54,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape_once }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | base64_decode }}"
   EXP: !binary |-
     TestDrop
@@ -97,18 +80,12 @@ all filters never raise non liquid exception:894:
   CTX:
     foo0:
       :foo: bar
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: '0'
   CTX: { foo0: 0 }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
-- TPL: "{{ foo0 | sort }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | escape }}"
   EXP: "{:foo=&gt;&quot;bar&quot;}"
   CTX:
@@ -119,9 +96,6 @@ all filters never raise non liquid exception:894:
   CTX: { foo0: foo }
 - TPL: "{{ foo0 | h }}"
   EXP: TestEnumerable
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | join }}"
   EXP: '{1=>"bar"}'
@@ -143,9 +117,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | default }}"
   EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '{1=>"bar"}'
-  CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: TestEnumerable
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
@@ -170,9 +141,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | h }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '2'
-  CTX: { foo0: [foo, bar] }
 - TPL: "{{ foo0 | downcase }}"
   EXP: 'false'
   CTX: { foo0: false }
@@ -209,9 +177,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: dHJ1ZQ==
   CTX: { foo0: true }
@@ -221,9 +186,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: [foo, bar] }
@@ -244,25 +206,14 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: true }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | h }}"
   EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
-  CTX: { foo0: [foo, bar] }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: barfoo
   CTX: { foo0: [foo, bar] }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: '1234.3838300038383'
@@ -297,9 +248,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape_once }}"
   EXP: 'true'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | size }}"
-  EXP: '5'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: foo }
@@ -312,9 +260,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | sort }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -345,9 +290,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | lstrip }}"
   EXP: 'woot: -30'
   CTX: { foo0: !ruby/object:TestThing { foo: -31 } }
-- TPL: "{{ foo0 | size }}"
-  EXP: '1'
-  CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '["foo", "bar"]'
   CTX: { foo0: [foo, bar] }
@@ -381,15 +323,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: }
-- TPL: "{{ foo0 | sort }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
   CTX: { foo0: [foo, bar] }
@@ -399,9 +335,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: LTEyMzQuMDAzMDMwMzAz
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | strip }}"
   EXP: ''
   CTX: { foo0: }
@@ -447,9 +380,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | abs }}"
   EXP: '1234.003030303'
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: TestEnumerable
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
@@ -475,9 +405,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: [ foo, bar ] }
@@ -499,9 +426,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: ezE9PiJiYXIifQ==
   CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '{"foo"=>["foo", "bar"]}{"foo"=>true}{"foo"=>nil}{"foo"=>123}{"foo"=>"bar"}'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: { foo: bar } }
@@ -534,12 +458,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape_once }}"
   EXP: 'false'
   CTX: { foo0: false }
-- TPL: "{{ foo0 | size }}"
-  EXP: '3'
-  CTX: { foo0: foo }
-- TPL: "{{ foo0 | sort }}"
-  EXP: 'woot: -33'
-  CTX: { foo0: !ruby/object:TestThing { foo: -35 } }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: 'true'
   CTX: { foo0: true }
@@ -549,15 +467,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: [ foo, bar ] }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '{:foo=>"bar"}'
   CTX: 
@@ -569,15 +481,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | downcase }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: 'false'
   CTX: { foo0: false }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: barfoo
-  CTX: { foo0: [ foo, bar ] }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '["foo", "bar"]'
   CTX: { foo0: [ foo, bar ] }
@@ -626,33 +532,21 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | escape }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | escape }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '8'
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | h }}"
   EXP: '0'
   CTX: { foo0: 0 }
 - TPL: "{{ foo0 | h }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: MTIz
   CTX: { foo0: 123 }
@@ -690,18 +584,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | capitalize }}"
   EXP: Foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | sort }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: W3siZm9vIj0+ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0+bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: !ruby/object:TestThing { foo: -19 } }
 - TPL: "{{ foo0 | round }}"
   EXP: '1234'
   CTX: { foo0: 1234.3838300038383 }
@@ -718,35 +606,23 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | floor }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | h }}"
   EXP: "{:foo=&gt;&quot;bar&quot;}"
   CTX: 
     foo0: 
       :foo: bar
-- TPL: "{{ foo0 | sort }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: false }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
@@ -794,24 +670,15 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: eyJmb28iPT4iYmFyIn0=
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: '{"foo"=>"bar"}'
   CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | downcase }}"
   EXP: 'woot: -13'
   CTX: { foo0: !ruby/object:TestThing { foo: -14 } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: { foo: bar } }
@@ -839,9 +706,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: 'woot: -10'
   CTX: { foo0: !ruby/object:TestThing { foo: -11 } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: !ruby/object:TestThing { foo: -20 } }
@@ -854,9 +718,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: '["foo", "bar"]'
   CTX: { foo0: [foo, bar] }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: TestEnumerable
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
@@ -872,15 +733,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
-- TPL: "{{ foo0 | size }}"
-  EXP: '1'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: MA==
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | compact }}"
   EXP: '{:foo=>"bar"}'
   CTX:
@@ -904,24 +759,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '{1=>"bar"}'
-  CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | capitalize }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
@@ -952,30 +795,15 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | default }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestThing { foo: -47 } }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: 'false'
   CTX: { foo0: false }
-- TPL: "{{ foo0 | size }}"
-  EXP: '8'
-  CTX: { foo0: 0 }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: ''
-  CTX: { foo0: }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | default }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -997,9 +825,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | escape }}"
   EXP: 'woot: -2'
   CTX: { foo0: !ruby/object:TestThing { foo: -3 } }
@@ -1033,9 +858,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | compact }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | sort }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | compact }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -1051,9 +873,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: 'woot: -23'
-  CTX: { foo0: !ruby/object:TestThing { foo: -25 } }
 - TPL: "{{ foo0 | join }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
@@ -1084,11 +903,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | size }}"
-  EXP: '1'
-  CTX: 
-    foo0: 
-      :foo: bar
 - TPL: "{{ foo0 | ceil }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
@@ -1128,15 +942,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | compact }}"
   EXP: '{"foo"=>"bar"}'
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -1151,9 +959,6 @@ all filters never raise non liquid exception:894:
   CTX: { foo0: true }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: ezE9PiJiYXIifQ==
-  CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | sort }}"
-  EXP: '{1=>"bar"}'
   CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | downcase }}"
   EXP: 'true'
@@ -1235,9 +1040,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape_once }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '{"foo"=>3, "bar"=>3}{"foo"=>2, "bar"=>1}{"foo"=>1, "bar"=>2}'
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: MC4w
   CTX: { foo0: 0.0 }
@@ -1250,18 +1052,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: ZmFsc2U=
   CTX: { foo0: false }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '{1=>"bar"}'
   CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: ''
   CTX: { foo0: }
@@ -1342,9 +1138,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: 'true'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | sort }}"
-  EXP: barfoo
-  CTX: { foo0: [ foo, bar ] }
 - TPL: "{{ foo0 | capitalize }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -1366,20 +1159,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape }}"
   EXP: 'true'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: '{:foo=>"bar"}'
-  CTX: 
-    foo0: 
-      :foo: bar
 - TPL: "{{ foo0 | strip }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | first }}"
   EXP: '{"foo"=>1, "bar"=>2}'
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | reverse }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
@@ -1395,9 +1180,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | size }}"
-  EXP: '8'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: VGVzdEVudW1lcmFibGU=
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
@@ -1549,272 +1331,3 @@ default handle false:
 - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
   EXP: bar
   CTX: { foo0: {} }
-map:
-- TPL: '{{ foo0 | map: "a" }}'
-  EXP: '1234'
-  CTX: { foo0: [{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }] }
-
-numerical vs lexicographical sort:
-- TPL: "{{ foo0 | sort }}"
-  EXP: '210'
-  CTX: { foo0: [10, 2] }
-
-- TPL: '{{ foo0 | sort: "a" }}'
-  EXP: '{"a"=>2}{"a"=>10}'
-  CTX: { foo0: [{ a: 10 }, { a: 2 }] }
-
-- TPL: "{{ foo0 | sort }}"
-  EXP: '102'
-  CTX: { foo0: ['10', '2'] }
-
-- TPL: '{{ foo0 | sort: "a" }}'
-  EXP: '{"a"=>"10"}{"a"=>"2"}'
-  CTX: { foo0: [{ a: '10' }, { a: '2' }] }
-
-remove:
-- TPL: '{{ foo0 | replace: "a", "" }}'
-  EXP: "   "
-  CTX: { foo0: a a a a }
-- TPL: '{{ foo0 | remove: "a" }}'
-  EXP: "   "
-  CTX: { foo0: a a a a }
-
-- TPL: '{{ foo0 | replace_first: "a ", "" }}'
-  EXP: b a a
-  CTX: { foo0: a b a a }
-- TPL: '{{ foo0 | remove_first: "a " }}'
-  EXP: b a a
-  CTX: { foo0: a b a a }
-
-- TPL: '{{ foo0 | replace_last: " a", "" }}'
-  EXP: a a b
-  CTX: { foo0: a a b a }
-- TPL: '{{ foo0 | remove_last: " a" }}'
-  EXP: a a b
-  CTX: { foo0: a a b a }
-
-replace:
-- TPL: '{{ foo0 | replace: "a", "b" }}'
-  EXP: b b b b
-  CTX: { foo0: a a a a }
-
-- TPL: "{{ foo0 | replace: 1, 2 }}"
-  EXP: 2 2 2 2
-  CTX: { foo0: 1 1 1 1 }
-
-- TPL: "{{ foo0 | replace: 2, 3 }}"
-  EXP: 1 1 1 1
-  CTX: { foo0: 1 1 1 1 }
-
-- TPL: '{{ foo0 | replace_first: "a", "b" }}'
-  EXP: b a a a
-  CTX: { foo0: a a a a }
-
-- TPL: "{{ foo0 | replace_first: 1, 2 }}"
-  EXP: 2 1 1 1
-  CTX: { foo0: 1 1 1 1 }
-
-- TPL: "{{ foo0 | replace_first: 2, 3 }}"
-  EXP: 1 1 1 1
-  CTX: { foo0: 1 1 1 1 }
-
-- TPL: '{{ foo0 | replace_last: "a", "b" }}'
-  EXP: a a a b
-  CTX: { foo0: a a a a }
-
-- TPL: "{{ foo0 | replace_last: 1, 2 }}"
-  EXP: 1 1 1 2
-  CTX: { foo0: 1 1 1 1 }
-
-- TPL: "{{ foo0 | replace_last: 2, 3 }}"
-  EXP: 1 1 1 1
-  CTX: { foo0: 1 1 1 1 }
-
-reverse:
-- TPL: "{{ foo0 | reverse }}"
-  EXP: '4321'
-  CTX: { foo0: [1, 2, 3, 4] }
-
-size:
-- TPL: "{{ foo0 | size }}"
-  EXP: '3'
-  CTX: { foo0: [1, 2, 3] }
-
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: [] }
-
-- TPL: "{{ foo0 | size }}"
-  EXP: '0'
-  CTX: { foo0: }
-
-slice:
-- TPL: "{{ foo0 | slice: -2, 1000 }}"
-  EXP: ar
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: -1 }}"
-  EXP: r
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: 0 }}"
-  EXP: ''
-  CTX: { foo0: null }
-
-- TPL: "{{ foo0 | slice: 100, 10 }}"
-  EXP: ''
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: -100, 10 }}"
-  EXP: ''
-  CTX: { foo0: foobar }
-
-- TPL: '{{ foo0 | slice: "1", "3" }}'
-  EXP: oob
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: 1, 3 }}"
-  EXP: oob
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: 1, 1000 }}"
-  EXP: oobar
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: 1, 0 }}"
-  EXP: ''
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: 1, 1 }}"
-  EXP: o
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: 3, 3 }}"
-  EXP: bar
-  CTX: { foo0: foobar }
-
-- TPL: "{{ foo0 | slice: -2, 2 }}"
-  EXP: ar
-  CTX: { foo0: foobar }
-
-slice on arrays:
-- TPL: "{{ foo0 | slice: 1, 3 }}"
-  EXP: oob
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: 1, 1000 }}"
-  EXP: oobar
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: 1, 0 }}"
-  EXP: ''
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: 1, 1 }}"
-  EXP: o
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: 3, 3 }}"
-  EXP: bar
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: -2, 2 }}"
-  EXP: ar
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: -2, 1000 }}"
-  EXP: ar
-  CTX: { foo0: [f, o, o, b, a, r] }
-- TPL: "{{ foo0 | slice: -1 }}"
-  EXP: r
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: 100, 10 }}"
-  EXP: ''
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-- TPL: "{{ foo0 | slice: -100, 10 }}"
-  EXP: ''
-  CTX: { foo0: [f, o, o, b, a, r] }
-
-sort:
-- TPL: "{{ foo0 | sort }}"
-  EXP: '1234'
-  CTX: { foo0: [4, 3, 2, 1] }
-
-- TPL: '{{ foo0 | sort: "a" }}'
-  EXP: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}'
-  CTX: { foo0: [{a: 4}, {a: 3}, {a: 1}, {a: 2}] }
-
-sort empty array:
-- TPL: '{{ foo0 | sort: "a" }}'
-  EXP: ''
-  CTX: { foo0: [] }
-
-sort natural:
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: aBcD
-  CTX: { foo0: [c, D, a, B] }
-
-- TPL: '{{ foo0 | sort_natural: "a" }}'
-  EXP: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
-  CTX: { foo0: [{a: D}, {a: c}, {a: a}, {a: B}] }
-
-sort natural case check:
-- TPL: '{{ foo0 | sort_natural: "key" }}'
-  EXP: '{"key"=>"a"}{"key"=>"b"}{"key"=>"c"}{"key"=>"X"}{"key"=>"Y"}{"key"=>"Z"}{"fake"=>"t"}'
-  CTX: { foo0: [{key: X}, {key: Y}, {key: Z}, {fake: t}, {key: a}, {key: b}, {key: c}] }
-
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: abcXYZ
-  CTX: { foo0: [X, Y, Z, a, b, c] }
-
-sort natural empty array:
-- TPL: '{{ foo0 | sort_natural: "a" }}'
-  EXP: ''
-  CTX: { foo0: [] }
-
-sort natural with nils:
-- TPL: "{{ foo0 | sort_natural }}"
-  EXP: aBcD
-  CTX: { foo0: [null, c, D, a, B] }
-
-- TPL: '{{ foo0 | sort_natural: "a" }}'
-  EXP: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}{}'
-  CTX: { foo0: [{a: D}, {a: c}, {}, {a: a}, {a: B}] }
-
-sort when property is sometimes missing puts nils last:
-- TPL: '{{ foo0 | sort: "price" }}'
-  EXP: '{"price"=>1, "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>4, "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
-  CTX: { foo0: [{price: 4, handle: alpha}, {handle: beta}, {price: 1, handle: gamma}, {handle: delta}, {price: 2, handle: epsilon}] }
-
-sort with nils:
-- TPL: "{{ foo0 | sort }}"
-  EXP: '1234'
-  CTX: { foo0: [null, 4, 3, 2, 1] }
-
-- TPL: '{{ foo0 | sort: "a" }}'
-  EXP: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}{}'
-  CTX: { foo0: [{a: 4}, {a: 3}, {}, {a: 1}, {a: 2}] }
-
-split:
-- TPL: '{{ foo0 | split: "~" }}'
-  EXP: '1234'
-  CTX: { foo0: 12~34 }
-
-- TPL: '{{ foo0 | split: "~ ~ ~" }}'
-  EXP: "A?  ,Z"
-  CTX: { foo0: "A? ~ ~ ~ ,Z" }
-
-- TPL: '{{ foo0 | split: "~" }}'
-  EXP: A?Z
-  CTX: { foo0: A?Z }
-
-- TPL: '{{ foo0 | split: " " }}'
-  EXP: ''
-  CTX: { foo0: null }
-
-- TPL: "{{ foo0 | split: 1 }}"
-  EXP: AZ
-  CTX: { foo0: A1Z }
-

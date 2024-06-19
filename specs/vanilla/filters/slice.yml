@@ -1,0 +1,93 @@
+slice filter:
+
+  slices a string:
+  - TPL: "{{ foo0 | slice: -2, 1000 }}"
+    EXP: ar
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: -1 }}"
+    EXP: r
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: 100, 10 }}"
+    EXP: ''
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: -100, 10 }}"
+    EXP: ''
+    CTX: { foo0: foobar }
+
+  - TPL: '{{ foo0 | slice: "1", "3" }}'
+    EXP: oob
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: 1, 3 }}"
+    EXP: oob
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: 1, 1000 }}"
+    EXP: oobar
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: 1, 0 }}"
+    EXP: ''
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: 1, 1 }}"
+    EXP: o
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: 3, 3 }}"
+    EXP: bar
+    CTX: { foo0: foobar }
+
+  - TPL: "{{ foo0 | slice: -2, 2 }}"
+    EXP: ar
+    CTX: { foo0: foobar }
+
+  slices a null:
+  - TPL: "{{ foo0 | slice: 0 }}"
+    EXP: ''
+    CTX: { foo0: null }
+
+  slices arrays:
+  - TPL: "{{ foo0 | slice: 1, 3 }}"
+    EXP: oob
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: 1, 1000 }}"
+    EXP: oobar
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: 1, 0 }}"
+    EXP: ''
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: 1, 1 }}"
+    EXP: o
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: 3, 3 }}"
+    EXP: bar
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: -2, 2 }}"
+    EXP: ar
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: -2, 1000 }}"
+    EXP: ar
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: -1 }}"
+    EXP: r
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: 100, 10 }}"
+    EXP: ''
+    CTX: { foo0: [f, o, o, b, a, r] }
+
+  - TPL: "{{ foo0 | slice: -100, 10 }}"
+    EXP: ''
+    CTX: { foo0: [f, o, o, b, a, r] }
+
