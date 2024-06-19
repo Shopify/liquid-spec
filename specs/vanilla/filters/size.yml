@@ -1,0 +1,4 @@
+size filter:
+- TPL: "{{var | size}}"
+  EXP: '4'
+  CTX: {var: abcd}

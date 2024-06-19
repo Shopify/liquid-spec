@@ -1,0 +1,4 @@
+join filter:
+- TPL: "{{var | join}}"
+  EXP: 1 2 3 4
+  CTX: {var: [1, 2, 3, 4]}

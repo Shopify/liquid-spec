@@ -1,0 +1,7 @@
+sort_natural filter:
+- TPL: "{{words | sort_natural | join}}"
+  EXP: Assert case Insensitive
+  CTX: {words: [case, Assert, Insensitive]}
+- TPL: "{{hashes | sort_natural: 'a' | map: 'a' | join}}"
+  EXP: A b C
+  CTX: {hashes: [{a: A}, {a: b}, {a: C}]}

@@ -1,0 +1,4 @@
+capitalize filter:
+- TPL: "{{ var | capitalize }}"
+  EXP: Blub
+  CTX: {var: blub}

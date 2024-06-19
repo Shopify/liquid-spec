@@ -1,0 +1,7 @@
+compact filter:
+- TPL: "{{words | compact | join}}"
+  EXP: a b c
+  CTX: {words: [a, null, b, null, c]}
+- TPL: "{{hashes | compact: 'a' | map: 'a' | join}}"
+  EXP: A C
+  CTX: {hashes: [{a: A}, {a: }, {a: C}]}

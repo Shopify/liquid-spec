@@ -1,0 +1,9 @@
+strip_html filter:
+  strips tags:
+  - TPL: "{{ var | strip_html }}"
+    EXP: bla blub
+    CTX: {var: "<b>bla blub</a>"}
+  strips html comments:
+  - TPL: "{{ var | strip_html }}"
+    EXP: bla blub
+    CTX: {var: "<!-- split and some <ul> tag --><b>bla blub</a>"}
