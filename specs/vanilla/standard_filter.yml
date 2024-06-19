@@ -2971,19 +2971,19 @@ StandardFilter:
       foo1: "%m/%d/%Y"
   date:547:
   - TPL: '{{ foo0 | date: "%Y" }}'
-    EXP: '2022'
+    EXP: '2008'
     CTX:
       foo0: now
       foo1: "%Y"
   date:548:
   - TPL: '{{ foo0 | date: "%Y" }}'
-    EXP: '2022'
+    EXP: '2008'
     CTX:
       foo0: today
       foo1: "%Y"
   date:549:
   - TPL: '{{ foo0 | date: "%Y" }}'
-    EXP: '2022'
+    EXP: '2008'
     CTX:
       foo0: Today
       foo1: "%Y"
