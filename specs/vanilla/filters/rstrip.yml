@@ -8,6 +8,19 @@ rstrip filter:
     EXP: " ab c"
     CTX: { source: " ab c  " }
 
+  strips certain whitespace characters:
+  - "{{ '' | rstrip }}": ""
+  - "{{ 'a' | rstrip }}": "a"
+  - "{{ \"a \" | rstrip }}": "a"
+  - "{{ \"a\t\" | rstrip }}": "a"
+  - "{{ \"a\n\" | rstrip }}": "a"
+  - "{{ \"a\r\" | rstrip }}": "a"
+  - "{{ \"a\f\" | rstrip }}": "a"
+  - "{{ \"a\v\" | rstrip }}": "a"
+  - "{{ \"a\u00A0\" | rstrip }}": "a\u00A0"
+  - "{{ \"a\u2007\" | rstrip }}": "a\u2007"
+  - "{{ \"a\u202F\" | rstrip }}": "a\u202F"
+
   handles a bunch of value types:
   - TPL: "{{ foo0 | rstrip }}"
     EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'

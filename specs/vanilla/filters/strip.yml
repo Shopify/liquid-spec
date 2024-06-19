@@ -8,6 +8,19 @@ strip filter:
     EXP: ab c
     CTX: { source: " \tab c  \n \t" }
 
+  strips certain whitespace characters:
+  - "{{ '' | strip }}": ""
+  - "{{ 'a' | strip }}": "a"
+  - "{{ \" a \" | strip }}": "a"
+  - "{{ \"\ta\t\" | strip }}": "a"
+  - "{{ \"\na\n\" | strip }}": "a"
+  - "{{ \"\ra\r\" | strip }}": "a"
+  - "{{ \"\fa\f\" | strip }}": "a"
+  - "{{ \"\va\v\" | strip }}": "a"
+  - "{{ \"\u00A0a\u00A0\" | strip }}": "\u00A0a\u00A0"
+  - "{{ \"\u2007a\u2007\" | strip }}": "\u2007a\u2007"
+  - "{{ \"\u202Fa\u202F\" | strip }}": "\u202Fa\u202F"
+
   handles a bunch of value types:
   - TPL: "{{ foo0 | strip }}"
     EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'

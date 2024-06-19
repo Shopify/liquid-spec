@@ -8,6 +8,19 @@ lstrip filter:
     EXP: 'ab c  '
     CTX: { source: " ab c  " }
 
+  strips certain whitespace characters:
+  - "{{ '' | lstrip }}": ""
+  - "{{ 'a' | lstrip }}": "a"
+  - "{{ \" a\" | lstrip }}": "a"
+  - "{{ \"\ta\" | lstrip }}": "a"
+  - "{{ \"\na\" | lstrip }}": "a"
+  - "{{ \"\ra\" | lstrip }}": "a"
+  - "{{ \"\fa\" | lstrip }}": "a"
+  - "{{ \"\va\" | lstrip }}": "a"
+  - "{{ \"\u00A0a\" | lstrip }}": "\u00A0a"
+  - "{{ \"\u2007a\" | lstrip }}": "\u2007a"
+  - "{{ \"\u202Fa\" | lstrip }}": "\u202Fa"
+
   handles a bunch of value types:
   - TPL: "{{ foo0 | lstrip }}"
     EXP: '0.0'
