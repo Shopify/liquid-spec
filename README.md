@@ -68,7 +68,8 @@ Include tag:
 ```
 
 In some cases, no `CTX` or `FSS` are necessary. If it doesn't make the line too
-unreadable, you can also express these using a compact format:
+unreadable, you can also express these using a single-line compact format. For
+example:
 
 ```yaml
 Capture tag:
