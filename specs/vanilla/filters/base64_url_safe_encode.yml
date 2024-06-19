@@ -1,0 +1,10 @@
+base64_url_safe_encode filter:
+
+- TPL: "{{ foo0 | base64_url_safe_encode }}"
+  EXP: "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8"
+  CTX: { foo0: "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\\|" }
+- TPL: "{{ foo0 | base64_url_safe_encode }}"
+  EXP: ''
+  CTX: { foo0: null }
+
+

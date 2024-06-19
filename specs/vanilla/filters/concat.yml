@@ -1,0 +1,10 @@
+concat filter:
+- TPL: "{{ foo0 | concat: foo1 }}"
+  EXP: '1234'
+  CTX: { foo0: [1, 2], foo1: [3, 4] }
+- TPL: "{{ foo0 | concat: foo1 }}"
+  EXP: 12a
+  CTX: { foo0: [1, 2], foo1: [a] }
+- TPL: "{{ foo0 | concat: foo1 }}"
+  EXP: '1210'
+  CTX: { foo0: [1, 2], foo1: [10] }

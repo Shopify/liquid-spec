@@ -1,7 +1,17 @@
 compact filter:
-- TPL: "{{words | compact | join}}"
-  EXP: a b c
-  CTX: {words: [a, null, b, null, c]}
-- TPL: "{{hashes | compact: 'a' | map: 'a' | join}}"
-  EXP: A C
-  CTX: {hashes: [{a: A}, {a: }, {a: C}]}
+
+  removes nulls:
+  - TPL: "{{words | compact | join}}"
+    EXP: a b c
+    CTX: {words: [a, null, b, null, c]}
+
+  removes hashes with a null value at a given key:
+  - TPL: "{{hashes | compact: 'a' | map: 'a' | join}}"
+    EXP: A C
+    CTX: {hashes: [{a: A}, {a: }, {a: C}]}
+
+  can return an empty array:
+  - TPL: '{{ foo0 | compact: "a" }}'
+    EXP: ''
+    CTX:
+      foo0: []

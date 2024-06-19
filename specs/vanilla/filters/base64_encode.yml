@@ -1,0 +1,7 @@
+base64_encode filter:
+- TPL: "{{ foo0 | base64_encode }}"
+  EXP: b25lIHR3byB0aHJlZQ==
+  CTX: { foo0: "one two three" }
+- TPL: "{{ foo0 | base64_encode }}"
+  EXP: ''
+  CTX: { foo0: null }

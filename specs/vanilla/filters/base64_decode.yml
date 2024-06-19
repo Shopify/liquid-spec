@@ -1,0 +1,7 @@
+base64_decode filter:
+- TPL: "{{ foo0 | base64_decode }}"
+  EXP: one two three
+  CTX:
+    foo0: b25lIHR3byB0aHJlZQ==
+
+
