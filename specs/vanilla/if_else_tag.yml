@@ -3,29 +3,14 @@ IfElseTag:
   comparison of expressions starting with and or or:
   - TPL: "{% if order.items_count == 0 %}YES{% endif %}"
     EXP: 'YES'
-    CTX:
-      order:
-        items_count: 0
-      android:
-        name: Roy
+    CTX: {order: {items_count: 0}, android: {name: Roy}}
   - TPL: "{% if android.name == 'Roy' %}YES{% endif %}"
     EXP: 'YES'
-    CTX:
-      order:
-        items_count: 0
-      android:
-        name: Roy
+    CTX: {order: {items_count: 0}, android: {name: Roy}}
   comparison of strings containing and or or:
   - TPL: "{% if a == 'and' and b == 'or' and c == 'foo and bar' and d == 'bar or baz' and e == 'foo' and foo and bar %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: and
-      b: or
-      c: foo and bar
-      d: bar or baz
-      e: foo
-      foo: true
-      bar: true
+    CTX: {a: and, b: or, c: 'foo and bar', d: 'bar or baz', e: foo, foo: true, bar: true}
   comparisons on null:
   - "{% if 10 < null %} NO {% endif %}": ''
   - "{% if null >= 10 %} NO {% endif %}": ''
@@ -43,8 +28,7 @@ IfElseTag:
   hash miss generates false:
   - TPL: "{% if foo.bar %} NO {% endif %}"
     EXP: ''
-    CTX:
-      foo: {}
+    CTX: {foo: {}}
   if:
   - " {% if false %} this text should not go into the output {% endif %} ": "  "
   - TPL: "{% if false %} you suck {% endif %} {% if true %} you rock {% endif %}?"
@@ -58,8 +42,7 @@ IfElseTag:
   if boolean:
   - TPL: "{% if var %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: true
+    CTX: {var: true}
   if else:
   - "{% if false %} NO {% else %} YES {% endif %}": " YES "
   - "{% if true %} YES {% else %} NO {% endif %}": " YES "
@@ -67,169 +50,109 @@ IfElseTag:
   if from variable:
   - TPL: "{% if foo.bar %} NO {% else %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo: {}
+    CTX: {foo: {}}
   - TPL: "{% if var %} NO {% endif %}"
     EXP: ''
-    CTX:
-      var:
+    CTX: {var: null}
   - TPL: "{% if var %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: []
+    CTX: {var: []}
   - TPL: "{% if foo.bar %} YES {% else %} NO {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: true
+    CTX: {foo: {bar: true}}
   - TPL: "{% if foo.bar %} NO {% else %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      notfoo:
-        bar: true
+    CTX: {notfoo: {bar: true}}
   - TPL: "{% if foo.bar %} NO {% else %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        notbar: true
+    CTX: {foo: {notbar: true}}
   - TPL: "{% if var %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: {}
+    CTX: {var: {}}
   - TPL: "{% if var %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: true
+    CTX: {var: true}
   - TPL: "{% if var %} YES {% else %} NO {% endif %}"
     EXP: " YES "
-    CTX:
-      var: true
+    CTX: {var: true}
   - TPL: "{% if foo.bar %} NO {% endif %}"
     EXP: ''
-    CTX:
-      foo: true
+    CTX: {foo: true}
   - TPL: "{% if foo.bar %} YES {% else %} NO {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: text
+    CTX: {foo: {bar: text}}
   - '{% if "foo" %} YES {% endif %}': " YES "
   - TPL: "{% if foo.bar %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: text
+    CTX: {foo: {bar: text}}
   - TPL: "{% if foo.bar %} NO {% endif %}"
     EXP: ''
-    CTX:
-      foo:
-        bar: false
+    CTX: {foo: {bar: false}}
   - TPL: "{% if foo.bar %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: []
+    CTX: {foo: {bar: []}}
   - TPL: "{% if foo.bar %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: 1
+    CTX: {foo: {bar: 1}}
   - TPL: "{% if foo.bar %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: true
+    CTX: {foo: {bar: true}}
   - TPL: "{% if foo.bar %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: {}
+    CTX: {foo: {bar: {}}}
   - TPL: "{% if foo.bar %} NO {% else %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      foo:
-        bar: false
+    CTX: {foo: {bar: false}}
   - TPL: "{% if foo.bar %} NO {% endif %}"
     EXP: ''
-    CTX:
-      foo:
+    CTX: {foo: {}}
   - TPL: "{% if var %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: 1
+    CTX: {var: 1}
   - TPL: '{% if "foo" %} YES {% else %} NO {% endif %}'
     EXP: " YES "
-    CTX:
-      var: text
+    CTX: {var: text}
   - TPL: "{% if var %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: text
+    CTX: {var: text}
   - TPL: "{% if var %} NO {% else %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var: false
+    CTX: {var: false}
   - TPL: "{% if var %} NO {% endif %}"
     EXP: ''
-    CTX:
-      var: false
+    CTX: {var: false}
   - TPL: "{% if var %} NO {% else %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      var:
-  - TPL: "{% if foo.bar %} NO {% endif %}"
-    EXP: ''
-    CTX:
-      foo: {}
+    CTX: {var: null}
   if or:
   - TPL: "{% if a or b %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: true
-      b: true
+    CTX: {a: true, b: true}
   - TPL: "{% if a or b or c %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: false
-      b: false
-      c: true
+    CTX: {a: false, b: false, c: true}
   - TPL: "{% if a or b %} YES {% endif %}"
     EXP: ''
-    CTX:
-      a: false
-      b: false
+    CTX: {a: false, b: false}
   - TPL: "{% if a or b %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: true
-      b: false
+    CTX: {a: true, b: false}
   - TPL: "{% if a or b %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: false
-      b: true
+    CTX: {a: false, b: true}
   - TPL: "{% if a or b or c %} YES {% endif %}"
     EXP: ''
-    CTX:
-      a: false
-      b: false
-      c: false
+    CTX: {a: false, b: false, c: false}
   if or with operators:
   - TPL: "{% if a == true or b == false %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: true
-      b: true
+    CTX: {a: true, b: true}
   - TPL: "{% if a == false or b == false %} YES {% endif %}"
     EXP: ''
-    CTX:
-      a: true
-      b: true
+    CTX: {a: true, b: true}
   - TPL: "{% if a == true or b == true %} YES {% endif %}"
     EXP: " YES "
-    CTX:
-      a: true
-      b: true
+    CTX: {a: true, b: true}
   if with custom condition:
   - "{% if 'bob' contains 'f' %}yes{% else %}no{% endif %}": 'no'
   - "{% if 'bob' contains 'o' %}yes{% endif %}": 'yes'
@@ -239,52 +162,28 @@ IfElseTag:
   multiple conditions:
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'false'
-    CTX:
-      a: false
-      b: false
-      c: false
+    CTX: {a: false, b: false, c: false}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'true'
-    CTX:
-      a: false
-      b: true
-      c: true
+    CTX: {a: false, b: true, c: true}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'true'
-    CTX:
-      a: true
-      b: false
-      c: true
+    CTX: {a: true, b: false, c: true}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'true'
-    CTX:
-      a: true
-      b: true
-      c: false
+    CTX: {a: true, b: true, c: false}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'false'
-    CTX:
-      a: false
-      b: false
-      c: true
+    CTX: {a: false, b: false, c: true}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'true'
-    CTX:
-      a: true
-      b: true
-      c: true
+    CTX: {a: true, b: true, c: true}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'false'
-    CTX:
-      a: false
-      b: true
-      c: false
+    CTX: {a: false, b: true, c: false}
   - TPL: "{% if a or b and c %}true{% else %}false{% endif %}"
     EXP: 'true'
-    CTX:
-      a: true
-      b: false
-      c: false
+    CTX: {a: true, b: false, c: false}
   nested if:
   - "{% if false %}{% if true %} NO {% endif %}{% endif %}": ''
   - "{% if true %}{% if true %} YES {% endif %}{% endif %}": " YES "

@@ -24,60 +24,27 @@ TableRow:
       <tr class="row1">
       <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
       <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
-    CTX:
-      numbers: !ruby/object:TableRowTest::ArrayDrop
-        array:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
+    CTX: {numbers: !ruby/object:TableRowTest::ArrayDrop {array: [1, 2, 3, 4, 5, 6]}}
   offset and limit:
   - TPL: "{% tablerow n in numbers cols:3 offset:1 limit:6%} {{n}} {% endtablerow %}"
     EXP: |
       <tr class="row1">
       <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
       <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
-    CTX:
-      numbers:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
+    CTX: {numbers: [0, 1, 2, 3, 4, 5, 6, 7]}
   quoted fragment:
   - TPL: "{% tablerow n in collections['frontpage'] cols:3%} {{n}} {% endtablerow %}"
     EXP: |
       <tr class="row1">
       <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
       <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
-    CTX:
-      collections:
-        frontpage:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
+    CTX: {collections: {frontpage: [1, 2, 3, 4, 5, 6]}}
   - TPL: "{% tablerow n in collections.frontpage cols:3%} {{n}} {% endtablerow %}"
     EXP: |
       <tr class="row1">
       <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
       <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
-    CTX:
-      collections:
-        frontpage:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
+    CTX: {collections: {frontpage: [1, 2, 3, 4, 5, 6]}}
   table col counter:
   - TPL: "{% tablerow n in numbers cols:2%}{{tablerowloop.col}}{% endtablerow %}"
     EXP: |
@@ -85,14 +52,7 @@ TableRow:
       <td class="col1">1</td><td class="col2">2</td></tr>
       <tr class="row2"><td class="col1">1</td><td class="col2">2</td></tr>
       <tr class="row3"><td class="col1">1</td><td class="col2">2</td></tr>
-    CTX:
-      numbers:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
+    CTX: {numbers: [1, 2, 3, 4, 5, 6]}
   table row:
   - TPL: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
     EXP: |
@@ -105,28 +65,14 @@ TableRow:
       <tr class="row1">
       <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
       <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
-    CTX:
-      numbers:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
+    CTX: {numbers: [1, 2, 3, 4, 5, 6]}
   table row with different cols:
   - TPL: "{% tablerow n in numbers cols:5%} {{n}} {% endtablerow %}"
     EXP: |
       <tr class="row1">
       <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td><td class="col4"> 4 </td><td class="col5"> 5 </td></tr>
       <tr class="row2"><td class="col1"> 6 </td></tr>
-    CTX:
-      numbers:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
+    CTX: {numbers: [1, 2, 3, 4, 5, 6]}
   tablerow loop drop attributes:
   - TPL: |-
       {% tablerow i in (1...2) %}

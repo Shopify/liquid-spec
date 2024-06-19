@@ -1,11 +1,7 @@
 ---
 LiquidTag:
   liquid tag:
-  - ? |
-      {%- liquid echo "a" -%}
-      b
-      {%- liquid echo "c" -%}
-    : abc
+  - "{%- liquid echo \"a\" -%}\nb\n{%- liquid echo \"c\" -%}": abc
   - TPL: |
       {%- liquid
         for value in array
@@ -16,21 +12,13 @@ LiquidTag:
         endfor
       -%}
     EXP: 1 2 3
-    CTX:
-      array:
-      - 1
-      - 2
-      - 3
+    CTX: {array: [1, 2, 3]}
   - TPL: |
       {%- liquid
         echo array | join: " "
       -%}
     EXP: 1 2 3
-    CTX:
-      array:
-      - 1
-      - 2
-      - 3
+    CTX: {array: [1, 2, 3]}
   - TPL: |
       {%- liquid
         for value in array
@@ -45,19 +33,8 @@ LiquidTag:
         echo double_value
       -%}
     EXP: 4 8 12 6
-    CTX:
-      array:
-      - 1
-      - 2
-      - 3
+    CTX: {array: [1, 2, 3]}
   liquid tag in raw:
-  - ? "{% raw %}{% liquid echo 'test' %}{% endraw %}\n"
-    : "{% liquid echo 'test' %}\n"
+  - "{% raw %}{% liquid echo 'test' %}{% endraw %}\n": "{% liquid echo 'test' %}\n"
   nested liquid tag:
-  - ? |
-      {%- if true %}
-        {%- liquid
-          echo "good"
-        %}
-      {%- endif -%}
-    : good
+  - "{%- if true %}\n{%- liquid\n  echo \"good\"\n%}\n{%- endif -%}": good

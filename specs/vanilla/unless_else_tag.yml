@@ -13,16 +13,8 @@ UnlessElseTag:
   unless else in loop:
   - TPL: "{% for i in choices %}{% unless i %} {{ forloop.index }} {% else %} TRUE {% endunless %}{% endfor %}"
     EXP: " TRUE  2  3 "
-    CTX:
-      choices:
-      - 1
-      -
-      - false
+    CTX: {choices: [1, null, false]}
   unless in loop:
   - TPL: "{% for i in choices %}{% unless i %}{{ forloop.index }}{% endunless %}{% endfor %}"
     EXP: '23'
-    CTX:
-      choices:
-      - 1
-      -
-      - false
+    CTX: {choices: [1, null, false]}

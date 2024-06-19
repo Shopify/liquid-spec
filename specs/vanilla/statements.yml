@@ -3,34 +3,25 @@ Statements:
   is collection empty:
   - TPL: " {% if array == empty %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      array: []
+    CTX: { array: [] }
   is not collection empty:
   - TPL: " {% if array == empty %} true {% else %} false {% endif %} "
     EXP: "  false  "
-    CTX:
-      array:
-      - 1
-      - 2
-      - 3
+    CTX: { array: [1, 2, 3] }
   nil:
   - TPL: " {% if var == nil %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      var:
+    CTX: { var: null }
   - TPL: " {% if var == null %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      var:
+    CTX: { var: null }
   not nil:
   - TPL: " {% if var != null %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      var: 1
+    CTX: { var: 1 }
   - TPL: " {% if var != nil %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      var: 1
+    CTX: { var: 1 }
   one lq zero:
   - " {% if 1 > 0 %} true {% else %} false {% endif %} ": "  true  "
   strings:
@@ -46,23 +37,19 @@ Statements:
   var and long string are equal:
   - TPL: " {% if var == 'hello there!' %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      var: hello there!
+    CTX: {var: hello there!}
   var and long string are equal backwards:
   - TPL: " {% if 'hello there!' == var %} true {% else %} false {% endif %} "
     EXP: "  true  "
-    CTX:
-      var: hello there!
+    CTX: {var: hello there!}
   var strings are not equal:
   - TPL: ' {% if "hello there!" == var %} true {% else %} false {% endif %} '
     EXP: "  true  "
-    CTX:
-      var: hello there!
+    CTX: {var: hello there!}
   var strings equal:
   - TPL: ' {% if var == "hello there!" %} true {% else %} false {% endif %} '
     EXP: "  true  "
-    CTX:
-      var: hello there!
+    CTX: {var: hello there!}
   zero lq one:
   - " {% if 0 < 1 %} true {% else %} false {% endif %} ": "  true  "
   zero lq or equal one:

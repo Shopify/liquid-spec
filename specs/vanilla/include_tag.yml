@@ -4,121 +4,78 @@ IncludeTag:
   - "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}": '1'
   - TPL: "{% for i in (1..3) %}{{ i }}{% include 'break' %}{{ i }}{% endfor %}"
     EXP: '1'
-    FSS:
-      break: "{% break %}"
+    FSS: {break: "{% break %}"}
   dynamically choosen template:
   - TPL: "{% include template %}"
     EXP: Test321
-    CTX:
-      template: Test321
-    FSS:
-      Test321: Test321
+    CTX: {template: Test321}
+    FSS: {Test321: Test321}
   - TPL: "{% include template %}"
     EXP: Test123
-    CTX:
-      template: Test123
-    FSS:
-      Test123: Test123
+    CTX: {template: Test123}
+    FSS: {Test123: Test123}
   - TPL: "{% include template for product %}"
     EXP: 'Product: Draft 151cm '
-    CTX:
-      template: product
-      product:
-        title: Draft 151cm
-    FSS:
-      product: 'Product: {{ product.title }} '
+    CTX: {template: product, product: {title: Draft 151cm}}
+    FSS: {product: 'Product: {{ product.title }} '}
   include tag for:
   - TPL: "{% include 'product' for products %}"
     EXP: 'Product: Draft 151cm Product: Element 155cm '
-    CTX:
-      products:
-      - title: Draft 151cm
-      - title: Element 155cm
-    FSS:
-      product: 'Product: {{ product.title }} '
+    CTX: {products: [{title: Draft 151cm}, {title: Element 155cm}]}
+    FSS: {product: 'Product: {{ product.title }} '}
   include tag for alias:
   - TPL: "{% include 'product_alias' for products as product %}"
     EXP: 'Product: Draft 151cm Product: Element 155cm '
-    CTX:
-      products:
-      - title: Draft 151cm
-      - title: Element 155cm
-    FSS:
-      product_alias: 'Product: {{ product.title }} '
+    CTX: {products: [{title: Draft 151cm}, {title: Element 155cm}]}
+    FSS: {product_alias: 'Product: {{ product.title }} '}
   include tag with:
   - TPL: "{% include 'product' with products[0] %}"
     EXP: 'Product: Draft 151cm '
-    CTX:
-      products:
-      - title: Draft 151cm
-      - title: Element 155cm
-    FSS:
-      product: 'Product: {{ product.title }} '
+    CTX: {products: [{title: Draft 151cm}, {title: Element 155cm}]}
+    FSS: {product: 'Product: {{ product.title }} '}
   include tag with alias:
   - TPL: "{% include 'product_alias' with products[0] as product %}"
     EXP: 'Product: Draft 151cm '
-    CTX:
-      products:
-      - title: Draft 151cm
-      - title: Element 155cm
-    FSS:
-      product_alias: 'Product: {{ product.title }} '
+    CTX: {products: [{title: Draft 151cm}, {title: Element 155cm}]}
+    FSS: {product_alias: 'Product: {{ product.title }} '}
   include tag with default name:
   - TPL: "{% include 'product' %}"
     EXP: 'Product: Draft 151cm '
-    CTX:
-      product:
-        title: Draft 151cm
-    FSS:
-      product: 'Product: {{ product.title }} '
+    CTX: {product: {title: Draft 151cm}}
+    FSS: {product: 'Product: {{ product.title }} '}
   include tag with local variables:
   - TPL: "{% include 'locale_variables' echo1: 'test123' %}"
     EXP: 'Locale: test123 '
-    FSS:
-      locale_variables: 'Locale: {{echo1}} {{echo2}}'
+    FSS: {locale_variables: 'Locale: {{echo1}} {{echo2}}'}
   include tag with multiple local variables:
   - TPL: "{% include 'locale_variables' echo1: 'test123', echo2: 'test321' %}"
     EXP: 'Locale: test123 test321'
-    FSS:
-      locale_variables: 'Locale: {{echo1}} {{echo2}}'
+    FSS: {locale_variables: 'Locale: {{echo1}} {{echo2}}'}
   include tag with multiple local variables from context:
   - TPL: "{% include 'locale_variables' echo1: echo1, echo2: more_echos.echo2 %}"
     EXP: 'Locale: test123 test321'
-    CTX:
-      echo1: test123
-      more_echos:
-        echo2: test321
-    FSS:
-      locale_variables: 'Locale: {{echo1}} {{echo2}}'
+    CTX: {echo1: test123, more_echos: {echo2: test321}}
+    FSS: {locale_variables: 'Locale: {{echo1}} {{echo2}}'}
   include tag within if statement:
   - TPL: "{% if true %}{% include 'foo_if_true' %}{% endif %}"
     EXP: foo_if_true
-    FSS:
-      foo_if_true: foo_if_true
+    FSS: {foo_if_true: foo_if_true}
   included templates assigns variables:
   - TPL: "{% include 'assignments' %}{{ foo }}"
     EXP: bar
-    FSS:
-      assignments: "{% assign foo = 'bar' %}"
+    FSS: {assignments: "{% assign foo = 'bar' %}"}
   including via variable value:
   - TPL: "{% assign page = 'product' %}{% include page for foo %}"
     EXP: 'Product: Draft 151cm '
-    CTX:
-      foo:
-        title: Draft 151cm
-    FSS:
-      product: 'Product: {{ product.title }} '
+    CTX: {foo: {title: Draft 151cm}}
+    FSS: {product: 'Product: {{ product.title }} '}
   - TPL: "{% assign page = 'pick_a_source' %}{% include page %}"
     EXP: from TestFileSystem
-    FSS:
-      pick_a_source: from TestFileSystem
+    FSS: {pick_a_source: from TestFileSystem}
   - TPL: "{% assign page = 'product' %}{% include page %}"
     EXP: 'Product: Draft 151cm '
-    CTX:
-      product:
-        title: Draft 151cm
-    FSS:
-      product: 'Product: {{ product.title }} '
+    CTX: {product: {title: Draft 151cm}}
+    FSS: {product: 'Product: {{ product.title }} '}
   nested include tag:
   - TPL: "{% include 'nested_template' %}"
     EXP: header body body_detail footer
@@ -136,18 +93,13 @@ IncludeTag:
   nested include with variable:
   - TPL: "{% include 'nested_product_template' for products %}"
     EXP: 'Product: Draft 151cm details Product: Element 155cm details '
-    CTX:
-      products:
-      - title: Draft 151cm
-      - title: Element 155cm
+    CTX: {products: [{title: Draft 151cm}, {title: Element 155cm}]}
     FSS:
       nested_product_template: 'Product: {{ nested_product_template.title }} {%include ''details''%} '
       details: details
   - TPL: "{% include 'nested_product_template' with product %}"
     EXP: 'Product: Draft 151cm details '
-    CTX:
-      product:
-        title: Draft 151cm
+    CTX: {product: {title: Draft 151cm}}
     FSS:
       nested_product_template: 'Product: {{ nested_product_template.title }} {%include ''details''%} '
       details: details

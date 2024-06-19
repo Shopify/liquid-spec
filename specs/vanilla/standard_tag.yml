@@ -7,69 +7,49 @@ StandardTag:
   assign from case:
   - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
     EXP: womenswear
-    CTX:
-      collection:
-        handle: z
+    CTX: { collection: { handle: z } }
   - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
     EXP: menswear
-    CTX:
-      collection:
-        handle: menswear-t-shirts
+    CTX: { collection: { handle: menswear-t-shirts } }
   - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
     EXP: menswear
-    CTX:
-      collection:
-        handle: menswear-jackets
+    CTX: { collection: { handle: menswear-jackets } }
   - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
     EXP: womenswear
-    CTX:
-      collection:
-        handle: x
+    CTX: { collection: { handle: x } }
   - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
     EXP: womenswear
-    CTX:
-      collection:
-        handle: "y"
+    CTX: { collection: { handle: "y" } }
   assign is global:
   - '{%for i in (1..2) %}{% assign a = "variable"%}{% endfor %}{{a}}': variable
   assign unassigned:
   - TPL: var2:{{var2}} {%assign var2 = var%} var2:{{var2}}
     EXP: 'var2:  var2:content'
-    CTX:
-      var: content
+    CTX: { var: content }
   assign with colon and spaces:
   - TPL: '{%assign var2 = var["a:b c"].paged %}var2: {{var2}}'
     EXP: 'var2: 1'
-    CTX:
-      var:
-        a:b c:
-          paged: '1'
+    CTX: { var: { "a:b c": { paged: '1' } } }
   capture:
   - TPL: "{{ var2 }}{% capture var2 %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2 }}"
     EXP: 'content foo content foo '
-    CTX:
-      var: content
+    CTX: { var: content }
   case:
   - TPL: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}"
     EXP: " its 1 "
-    CTX:
-      condition: 1
+    CTX: { condition: 1 }
   - TPL: '{% case condition %}{% when "string here" %} hit {% endcase %}'
     EXP: ''
-    CTX:
-      condition: bad string here
+    CTX: { condition: bad string here }
   - TPL: '{% case condition %}{% when "string here" %} hit {% endcase %}'
     EXP: " hit "
-    CTX:
-      condition: string here
+    CTX: { condition: string here }
   - TPL: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}"
     EXP: ''
-    CTX:
-      condition: 3
+    CTX: { condition: 3 }
   - TPL: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}"
     EXP: " its 2 "
-    CTX:
-      condition: 2
+    CTX: { condition: 2 }
   case on length with else:
   - TPL: "{% case false %}{% when true %}true{% when false %}false{% else %}else{% endcase %}"
     EXP: 'false'
@@ -82,176 +62,111 @@ StandardTag:
   case on size:
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
     EXP: ''
-    CTX:
-      a:
-      - 1
-      - 1
-      - 1
+    CTX: { a: [1, 1, 1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
     EXP: ''
-    CTX:
-      a: []
+    CTX: { a: [] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
     EXP: ''
-    CTX:
-      a:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 1
+    CTX: { a: [1, 1, 1, 1, 1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
     EXP: '1'
-    CTX:
-      a:
-      - 1
+    CTX: { a: [1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
     EXP: '2'
-    CTX:
-      a:
-      - 1
-      - 1
+    CTX: { a: [1, 1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
     EXP: ''
-    CTX:
-      a:
-      - 1
-      - 1
-      - 1
-      - 1
+    CTX: { a: [1, 1, 1, 1] }
   case on size with else:
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
     EXP: else
-    CTX:
-      a:
-      - 1
-      - 1
-      - 1
+    CTX: { a: [1, 1, 1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
     EXP: else
-    CTX:
-      a: []
+    CTX: { a: [] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
     EXP: '1'
-    CTX:
-      a:
-      - 1
+    CTX: { a: [1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
     EXP: else
-    CTX:
-      a:
-      - 1
-      - 1
-      - 1
-      - 1
+    CTX: { a: [1, 1, 1, 1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
     EXP: '2'
-    CTX:
-      a:
-      - 1
-      - 1
+    CTX: { a: [1, 1] }
   - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
     EXP: else
-    CTX:
-      a:
-      - 1
-      - 1
-      - 1
-      - 1
-      - 1
+    CTX: { a: [1, 1, 1, 1, 1] }
   case when comma:
   - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 1
+    CTX: { condition: 1 }
   - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: ''
-    CTX:
-      condition: something else
+    CTX: { condition: something else }
   - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 3
+    CTX: { condition: 3 }
   - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 1
+    CTX: { condition: 1 }
   - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition:
+    CTX: { condition: null }
   - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: string
+    CTX: { condition: string }
   - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 4 "
-    CTX:
-      condition: 4
+    CTX: { condition: 4 }
   - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: ''
-    CTX:
-      condition: 5
+    CTX: { condition: 5 }
   - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 2
+    CTX: { condition: 2 }
   case when comma and blank body:
   - TPL: '{% case condition %}{% when 1, 2 %} {% assign r = "result" %} {% endcase %}{{ r }}'
     EXP: result
-    CTX:
-      condition: 2
+    CTX: {condition: 2}
   case when or:
   - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: string
+    CTX: {condition: "string"}
   - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 1
+    CTX: {condition: 1}
   - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 3
+    CTX: {condition: 3}
   - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 1
+    CTX: {condition: 1}
   - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: ''
-    CTX:
-      condition: something else
+    CTX: {condition: "something else"}
   - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition: 2
+    CTX: {condition: 2}
   - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
     EXP: " its 1 or 2 or 3 "
-    CTX:
-      condition:
+    CTX: {condition: null}
   - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: " its 4 "
-    CTX:
-      condition: 4
+    CTX: {condition: 4}
   - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
     EXP: ''
-    CTX:
-      condition: 5
+    CTX: {condition: 5}
   case with else:
   - TPL: "{% case condition %} {% when 5 %} hit {% else %} else {% endcase %}"
     EXP: " else "
-    CTX:
-      condition: 6
+    CTX: {condition: 6}
   - TPL: "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}"
     EXP: " hit "
-    CTX:
-      condition: 5
+    CTX: {condition: 5}
   - TPL: "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}"
     EXP: " else "
-    CTX:
-      condition: 6
-  cycle:
+    CTX: {condition: 6}
   - '{%cycle "", "two"%} {%cycle "", "two"%}': " two"
   - '{%cycle "one", "two"%}': one
   - TPL: '{%cycle "text-align: left", "text-align: right" %} {%cycle "text-align: left", "text-align: right"%}'
@@ -290,27 +205,14 @@ StandardTag:
   hyphenated assign:
   - TPL: a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}
     EXP: a-b:1 a-b:2
-    CTX:
-      a-b: '1'
+    CTX: {a-b: '1'}
   ifchanged:
   - TPL: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
     EXP: '123'
-    CTX:
-      array:
-      - 1
-      - 1
-      - 2
-      - 2
-      - 3
-      - 3
+    CTX: {array: [1, 1, 2, 2, 3, 3]}
   - TPL: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
     EXP: '1'
-    CTX:
-      array:
-      - 1
-      - 1
-      - 1
-      - 1
+    CTX: {array: [1, 1, 1, 1]}
   illegal symbols:
   - "{% if true == empty %}?{% endif %}": ''
   - "{% if empty == true %}?{% endif %}": ''
@@ -335,9 +237,7 @@ StandardTag:
   multiple named cycles with names from context:
   - TPL: '{%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %}'
     EXP: one one two two one one
-    CTX:
-      var1: 1
-      var2: 2
+    CTX: {var1: 1, var2: 2}
   no transform:
   - blah: blah
   - '': ''
@@ -354,18 +254,8 @@ StandardTag:
   size of array:
   - TPL: array has {{ array.size }} elements
     EXP: array has 4 elements
-    CTX:
-      array:
-      - 1
-      - 2
-      - 3
-      - 4
+    CTX: {array: [1, 2, 3, 4]}
   size of hash:
   - TPL: hash has {{ hash.size }} elements
     EXP: hash has 4 elements
-    CTX:
-      hash:
-        :a: 1
-        :b: 2
-        :c: 3
-        :d: 4
+    CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}

@@ -3,114 +3,61 @@ Variable:
   case tag calls to liquid value:
   - TPL: "{% case foo %}{% when 1 %}One{% endcase %}"
     EXP: One
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 } }
   dynamic find var:
   - TPL: "{{ [key] }}"
     EXP: bar
-    CTX:
-      key: foo
-      foo: bar
+    CTX: { key: foo, foo: bar }
   expression with whitespace in square brackets:
   - TPL: "{{ a[ [ 'b' ] ] }}"
     EXP: result
-    CTX:
-      b: c
-      a:
-        c: result
+    CTX: { b: c, a: { c: result } }
   - TPL: "{{ a[ 'b' ] }}"
     EXP: result
-    CTX:
-      a:
-        b: result
+    CTX: { a: { b: result } }
   false renders as false:
   - TPL: "{{ foo }}"
     EXP: 'false'
-    CTX:
-      foo: false
+    CTX: { foo: false }
   - "{{ false }}": 'false'
   hash scoping:
   - TPL: "{{ test . test }}"
     EXP: worked
-    CTX:
-      test:
-        test: worked
+    CTX: { test: { test: worked } }
   - TPL: "{{ test.test }}"
     EXP: worked
-    CTX:
-      test:
-        test: worked
+    CTX: { test: { test: worked } }
   if tag calls to liquid value:
   - TPL: "{% if foo == eqv %}one{% endif %}"
     EXP: one
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
-      eqv: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 }, eqv: !ruby/object:IntegerDrop { context: null, value: 1 } }
   - TPL: "{% if a contains x %}one{% endif %}"
     EXP: one
-    CTX:
-      a:
-      - 1
-      x: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { a: [1], x: !ruby/object:IntegerDrop { context: null, value: 1 } }
   - TPL: "{% if foo %}true{% endif %}"
     EXP: ''
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: false
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: false } }
   - TPL: "{% if 0 < foo %}one{% endif %}"
     EXP: one
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 } }
   - TPL: "{% if foo > 0 %}one{% endif %}"
     EXP: one
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 } }
   - TPL: "{% if b > a %}one{% endif %}"
     EXP: one
-    CTX:
-      b: !ruby/object:IntegerDrop
-        context:
-        value: 1
-      a: !ruby/object:IntegerDrop
-        context:
-        value: 0
+    CTX: { b: !ruby/object:IntegerDrop { context: null, value: 1 }, a: !ruby/object:IntegerDrop { context: null, value: 0 } }
   - TPL: "{% if foo %}true{% endif %}"
     EXP: 'true'
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: true
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: true } }
   - TPL: "{% if foo == true %}True{% endif %}"
     EXP: ''
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: false
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: false } }
   - TPL: "{% if foo == true %}true{% endif %}"
     EXP: 'true'
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: true
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: true } }
   - TPL: "{% if foo == 1 %}one{% endif %}"
     EXP: one
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 } }
   ignore unknown:
   - "{{ test }}": ''
   multiline variable:
@@ -119,17 +66,14 @@ Variable:
       test
       }}
     EXP: worked
-    CTX:
-      test: worked
+    CTX: { test: worked }
   nil renders as empty string:
   - "{{ nil }}": ''
   - "{{ nil | append: 'cat' }}": cat
   raw value variable:
   - TPL: "{{ [key] }}"
     EXP: bar
-    CTX:
-      key: foo
-      foo: bar
+    CTX: { key: foo, foo: bar }
   render symbol:
   - TPL: "{{ foo }}"
     EXP: bar
@@ -138,34 +82,24 @@ Variable:
   simple variable:
   - TPL: "{{test}}"
     EXP: worked wonderfully
-    CTX:
-      test: worked wonderfully
+    CTX: { test: worked wonderfully }
   - TPL: "{{test}}"
     EXP: worked
-    CTX:
-      test: worked
+    CTX: { test: worked }
   simple with whitespaces:
   - TPL: "  {{ test }}  "
     EXP: "  worked  "
-    CTX:
-      test: worked
+    CTX: { test: worked }
   - TPL: "  {{ test }}  "
     EXP: "  worked wonderfully  "
-    CTX:
-      test: worked wonderfully
+    CTX: { test: worked wonderfully }
   unless tag calls to liquid value:
   - TPL: "{% unless foo %}true{% endunless %}"
     EXP: ''
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: true
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: true } }
   - TPL: "{% unless foo %}true{% endunless %}"
     EXP: 'true'
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: false
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: false } }
   using blank as variable name:
   - "{% assign foo = blank %}{{ foo }}": ''
   using empty as variable name:
@@ -173,42 +107,20 @@ Variable:
   variable lookup calls to liquid value:
   - TPL: "{{ foo | upcase }}"
     EXP: YAY
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: true
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: true } }
   - TPL: "{{ list[foo] }}"
     EXP: one
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
-      list:
-        1: one
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 }, list: { 1: one } }
   - TPL: "{{ list[foo] }}"
     EXP: '2'
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
-      list:
-      - 1
-      - 2
-      - 3
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 }, list: [1, 2, 3] }
   - TPL: "{{ foo }}"
     EXP: '1'
-    CTX:
-      foo: !ruby/object:IntegerDrop
-        context:
-        value: 1
+    CTX: { foo: !ruby/object:IntegerDrop { context: null, value: 1 } }
   - TPL: "{{ foo }}"
     EXP: Yay
-    CTX:
-      foo: !ruby/object:BooleanDrop
-        context:
-        value: true
+    CTX: { foo: !ruby/object:BooleanDrop { context: null, value: true } }
   variable render calls to liquid:
   - TPL: "{{ foo }}"
     EXP: foobar
-    CTX:
-      foo: !ruby/object:ThingWithToLiquid {}
+    CTX: { foo: !ruby/object:ThingWithToLiquid {} }

@@ -3,5 +3,4 @@ BreakTag:
   break with no block:
   - TPL: before{% break %}after
     EXP: before
-    CTX:
-      i: 1
+    CTX: {i: 1}

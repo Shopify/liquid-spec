@@ -3,5 +3,4 @@ Echo:
   echo outputs its input:
   - TPL: "{%- echo variable-name | upcase -%}\n"
     EXP: BAR
-    CTX:
-      variable-name: bar
+    CTX: {variable-name: bar}

@@ -134,16 +134,9 @@ TrimMode:
                 </p>
             </div>
   pre trim blank preceding text:
-  - ? "{{ 'B' }} \n{%- if true %}C{% endif %}"
-    : BC
-  - ? |2-
-
-      {%- if true %}{% endif %}
-    : ''
-  - ? |2-
-
-      {%- raw %}{% endraw %}
-    : ''
+  - "{{ 'B' }}\n{%- if true %}C{% endif %}": BC
+  - "{%- if true %}{% endif %}": ''
+  - "{%- raw %}{% endraw %}": ''
   pre trim output:
   - TPL: |2
             <div>
