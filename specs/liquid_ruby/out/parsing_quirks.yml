@@ -1,0 +1,39 @@
+---
+ParsingQuirks:
+  blank variable markup:
+  - "{{}}": ''
+  contains in id:
+  - TPL: "{% if containsallshipments == true %} YES {% endif %}"
+    EXP: " YES "
+    CTX:
+      containsallshipments: true
+  extra dots in ranges:
+  - "{% for i in (1...5) %}{{ i }}{% endfor %}": '12345'
+  invalid variables work:
+  - "{% assign 123 = 'bar' %}{{ 123 }}": '123'
+  - "{% assign 123foo = 'bar' %}{{ 123foo }}": bar
+  lookup on var with literal name:
+  - TPL: "{{ blank['x'] }}"
+    EXP: result
+    CTX:
+      blank:
+        x: result
+  - TPL: "{{ blank.x }}"
+    EXP: result
+    CTX:
+      blank:
+        x: result
+  meaningless parens lax:
+  - TPL: "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif %}"
+    EXP: " YES "
+    CTX:
+      b: bar
+      c: baz
+  unanchored filter arguments:
+  - '{{ ''hi there'' | split:"t"" | reverse | first}}': here
+  - "{{ 'hi there' | split$$$:' ' | first }}": hi
+  - "{{ 'X' | downcase) }}": x
+  - '{{ ''hi there'' | split:"t"" | remove:"i" | first}}': 'hi '
+  unexpected characters silently eat logic lax:
+  - "{% if false || true %} YES {% endif %}": ''
+  - "{% if true && false %} YES {% endif %}": " YES "

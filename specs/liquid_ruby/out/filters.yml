@@ -1,0 +1,101 @@
+---
+Filters:
+  capitalize:
+  - TPL: "{{ var | capitalize }}"
+    EXP: Blub
+    CTX:
+      var: blub
+  compact:
+  - TPL: "{{words | compact | join}}"
+    EXP: a b c
+    CTX:
+      words:
+      - a
+      -
+      - b
+      -
+      - c
+  - TPL: "{{hashes | compact: 'a' | map: 'a' | join}}"
+    EXP: A C
+    CTX:
+      hashes:
+      - a: A
+      - a:
+      - a: C
+  join:
+  - TPL: "{{var | join}}"
+    EXP: 1 2 3 4
+    CTX:
+      var:
+      - 1
+      - 2
+      - 3
+      - 4
+  nonexistent filter is ignored:
+  - TPL: "{{ var | xyzzy }}"
+    EXP: '1000'
+    CTX:
+      var: 1000
+  size:
+  - TPL: "{{var | size}}"
+    EXP: '4'
+    CTX:
+      var: abcd
+  sort:
+  - TPL: "{{case_sensitive | sort | join}}"
+    EXP: Expected case sensitive
+    CTX:
+      case_sensitive:
+      - sensitive
+      - Expected
+      - case
+  - TPL: "{{value | sort}}"
+    EXP: '3'
+    CTX:
+      value: 3
+  - TPL: "{{arrays | sort | join}}"
+    EXP: are flower
+    CTX:
+      arrays:
+      - flower
+      - are
+  - TPL: "{{words | sort | join}}"
+    EXP: alphabetic as expected
+    CTX:
+      words:
+      - expected
+      - as
+      - alphabetic
+  - TPL: "{{numbers | sort | join}}"
+    EXP: 1 2 3 4
+    CTX:
+      numbers:
+      - 2
+      - 1
+      - 4
+      - 3
+  sort natural:
+  - TPL: "{{words | sort_natural | join}}"
+    EXP: Assert case Insensitive
+    CTX:
+      words:
+      - case
+      - Assert
+      - Insensitive
+  - TPL: "{{hashes | sort_natural: 'a' | map: 'a' | join}}"
+    EXP: A b C
+    CTX:
+      hashes:
+      - a: A
+      - a: b
+      - a: C
+  strip html:
+  - TPL: "{{ var | strip_html }}"
+    EXP: bla blub
+    CTX:
+      var: "<b>bla blub</a>"
+  strip html ignore comments with html:
+  - TPL: "{{ var | strip_html }}"
+    EXP: bla blub
+    CTX:
+      var: "<!-- split and some <ul> tag --><b>bla blub</a>"

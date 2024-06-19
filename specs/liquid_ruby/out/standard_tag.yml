@@ -1,0 +1,371 @@
+---
+StandardTag:
+  assign:
+  - '{% assign a = "variable"%}{{a}}': variable
+  assign an empty string:
+  - '{% assign a = ""%}{{a}}': ''
+  assign from case:
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: womenswear
+    CTX:
+      collection:
+        handle: z
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: menswear
+    CTX:
+      collection:
+        handle: menswear-t-shirts
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: menswear
+    CTX:
+      collection:
+        handle: menswear-jackets
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: womenswear
+    CTX:
+      collection:
+        handle: x
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: womenswear
+    CTX:
+      collection:
+        handle: "y"
+  assign is global:
+  - '{%for i in (1..2) %}{% assign a = "variable"%}{% endfor %}{{a}}': variable
+  assign unassigned:
+  - TPL: var2:{{var2}} {%assign var2 = var%} var2:{{var2}}
+    EXP: 'var2:  var2:content'
+    CTX:
+      var: content
+  assign with colon and spaces:
+  - TPL: '{%assign var2 = var["a:b c"].paged %}var2: {{var2}}'
+    EXP: 'var2: 1'
+    CTX:
+      var:
+        a:b c:
+          paged: '1'
+  capture:
+  - TPL: "{{ var2 }}{% capture var2 %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2 }}"
+    EXP: 'content foo content foo '
+    CTX:
+      var: content
+  case:
+  - TPL: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}"
+    EXP: " its 1 "
+    CTX:
+      condition: 1
+  - TPL: '{% case condition %}{% when "string here" %} hit {% endcase %}'
+    EXP: ''
+    CTX:
+      condition: bad string here
+  - TPL: '{% case condition %}{% when "string here" %} hit {% endcase %}'
+    EXP: " hit "
+    CTX:
+      condition: string here
+  - TPL: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}"
+    EXP: ''
+    CTX:
+      condition: 3
+  - TPL: "{% case condition %}{% when 1 %} its 1 {% when 2 %} its 2 {% endcase %}"
+    EXP: " its 2 "
+    CTX:
+      condition: 2
+  case on length with else:
+  - TPL: "{% case false %}{% when true %}true{% when false %}false{% else %}else{% endcase %}"
+    EXP: 'false'
+  - TPL: "{% case NULL %}{% when true %}true{% when false %}false{% else %}else{% endcase %}"
+    EXP: else
+  - TPL: "{% case true %}{% when true %}true{% when false %}false{% else %}else{% endcase %}"
+    EXP: 'true'
+  - TPL: "{% case a.empty? %}{% when true %}true{% when false %}false{% else %}else{% endcase %}"
+    EXP: else
+  case on size:
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+    EXP: ''
+    CTX:
+      a:
+      - 1
+      - 1
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+    EXP: ''
+    CTX:
+      a: []
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+    EXP: ''
+    CTX:
+      a:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+    EXP: '1'
+    CTX:
+      a:
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+    EXP: '2'
+    CTX:
+      a:
+      - 1
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% endcase %}"
+    EXP: ''
+    CTX:
+      a:
+      - 1
+      - 1
+      - 1
+      - 1
+  case on size with else:
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+    EXP: else
+    CTX:
+      a:
+      - 1
+      - 1
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+    EXP: else
+    CTX:
+      a: []
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+    EXP: '1'
+    CTX:
+      a:
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+    EXP: else
+    CTX:
+      a:
+      - 1
+      - 1
+      - 1
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+    EXP: '2'
+    CTX:
+      a:
+      - 1
+      - 1
+  - TPL: "{% case a.size %}{% when 1 %}1{% when 2 %}2{% else %}else{% endcase %}"
+    EXP: else
+    CTX:
+      a:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+  case when comma:
+  - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 1
+  - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: ''
+    CTX:
+      condition: something else
+  - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 3
+  - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 1
+  - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition:
+  - TPL: '{% case condition %}{% when 1, "string", null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: string
+  - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 4 "
+    CTX:
+      condition: 4
+  - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: ''
+    CTX:
+      condition: 5
+  - TPL: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 2
+  case when comma and blank body:
+  - TPL: '{% case condition %}{% when 1, 2 %} {% assign r = "result" %} {% endcase %}{{ r }}'
+    EXP: result
+    CTX:
+      condition: 2
+  case when or:
+  - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: string
+  - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 1
+  - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 3
+  - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 1
+  - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: ''
+    CTX:
+      condition: something else
+  - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition: 2
+  - TPL: '{% case condition %}{% when 1 or "string" or null %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}'
+    EXP: " its 1 or 2 or 3 "
+    CTX:
+      condition:
+  - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: " its 4 "
+    CTX:
+      condition: 4
+  - TPL: "{% case condition %}{% when 1 or 2 or 3 %} its 1 or 2 or 3 {% when 4 %} its 4 {% endcase %}"
+    EXP: ''
+    CTX:
+      condition: 5
+  case with else:
+  - TPL: "{% case condition %} {% when 5 %} hit {% else %} else {% endcase %}"
+    EXP: " else "
+    CTX:
+      condition: 6
+  - TPL: "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}"
+    EXP: " hit "
+    CTX:
+      condition: 5
+  - TPL: "{% case condition %}{% when 5 %} hit {% else %} else {% endcase %}"
+    EXP: " else "
+    CTX:
+      condition: 6
+  cycle:
+  - '{%cycle "", "two"%} {%cycle "", "two"%}': " two"
+  - '{%cycle "one", "two"%}': one
+  - TPL: '{%cycle "text-align: left", "text-align: right" %} {%cycle "text-align: left", "text-align: right"%}'
+    EXP: 'text-align: left text-align: right'
+  - '{%cycle "one", "two"%} {%cycle "one", "two"%} {%cycle "one", "two"%}': one two one
+  - '{%cycle "one", "two"%} {%cycle "one", "two"%}': one two
+  has a block which does nothing:
+  - "{% comment %}{% endcomment %}": ''
+  - ? |-
+      foo{%comment%}
+                                           {%endcomment%}bar
+    : foobar
+  - TPL: "{% comment %}{% raw %} {{%%%%}}  }} { {% endcomment %} {% comment {% endraw %} {% endcomment %}"
+    EXP: ''
+  - "{% comment %}{%endcomment%}": ''
+  - '{% comment %}{% " %}{% endcomment %}': ''
+  - foo {%comment%} comment {%endcomment%} bar: foo  bar
+  - foo {%comment%} {%endcomment%} bar: foo  bar
+  - "{% comment %}comment{% endcomment %}": ''
+  - foo {%comment%}comment{%endcomment%} bar: foo  bar
+  - "{%comment%}{% endcomment %}": ''
+  - foo{% comment %}comment{% endcomment %}bar: foobar
+  - foo{%comment%}comment{%endcomment%}bar: foobar
+  - "{% comment %} 1 {% comment %} 2 {% endcomment %} 3 {% endcomment %}": ''
+  - foo{%comment%} comment {%endcomment%}bar: foobar
+  - "{% comment %}{% endwhatever %}{% endcomment %}": ''
+  - "{%comment%}{%blabla%}{%endcomment%}": ''
+  - foo{% comment %} comment {% endcomment %}bar: foobar
+  - "{% comment %}{% blabla %}{% endcomment %}": ''
+  - "{%comment%}{%endcomment%}": ''
+  - "{%comment%}comment{%endcomment%}": ''
+  - "{% comment %}{%%}{% endcomment %}": ''
+  - "{%comment%}{% endif %}{%endcomment%}": ''
+  - TPL: the comment block should be removed {%comment%} be gone.. {%endcomment%} .. right?
+    EXP: the comment block should be removed  .. right?
+  hyphenated assign:
+  - TPL: a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}
+    EXP: a-b:1 a-b:2
+    CTX:
+      a-b: '1'
+  ifchanged:
+  - TPL: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
+    EXP: '123'
+    CTX:
+      array:
+      - 1
+      - 1
+      - 2
+      - 2
+      - 3
+      - 3
+  - TPL: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
+    EXP: '1'
+    CTX:
+      array:
+      - 1
+      - 1
+      - 1
+      - 1
+  illegal symbols:
+  - "{% if true == empty %}?{% endif %}": ''
+  - "{% if empty == true %}?{% endif %}": ''
+  - "{% if null == true %}?{% endif %}": ''
+  - "{% if true == null %}?{% endif %}": ''
+  multiline tag:
+  - ? |-
+      0{%
+      for i in (1..3)
+      %} {{
+      i
+      }}{%
+      endfor
+      %}
+    : 0 1 2 3
+  multiple cycles:
+  - TPL: "{%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%}"
+    EXP: 1 2 1 1 2 3 1
+  multiple named cycles:
+  - TPL: '{%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %} {%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %} {%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %}'
+    EXP: one one two two one one
+  multiple named cycles with names from context:
+  - TPL: '{%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %}'
+    EXP: one one two two one one
+    CTX:
+      var1: 1
+      var2: 2
+  no transform:
+  - blah: blah
+  - '': ''
+  - TPL: this text should come out of the template without change...
+    EXP: this text should come out of the template without change...
+  - "<blah>": "<blah>"
+  - TPL: |-
+      this shouldnt see any transformation either but has multiple lines
+                    as you can clearly see here ...
+    EXP: |-
+      this shouldnt see any transformation either but has multiple lines
+                    as you can clearly see here ...
+  - "|,.:": "|,.:"
+  size of array:
+  - TPL: array has {{ array.size }} elements
+    EXP: array has 4 elements
+    CTX:
+      array:
+      - 1
+      - 2
+      - 3
+      - 4
+  size of hash:
+  - TPL: hash has {{ hash.size }} elements
+    EXP: hash has 4 elements
+    CTX:
+      hash:
+        :a: 1
+        :b: 2
+        :c: 3
+        :d: 4

@@ -1,0 +1,28 @@
+---
+UnlessElseTag:
+  unless:
+  - TPL: "{% unless true %} you suck {% endunless %} {% unless false %} you rock {% endunless %}?"
+    EXP: "  you rock ?"
+  - " {% unless true %} this text should not go into the output {% endunless %} ": "  "
+  - TPL: " {% unless false %} this text should go into the output {% endunless %} "
+    EXP: "  this text should go into the output  "
+  unless else:
+  - '{% unless "foo" %} NO {% else %} YES {% endunless %}': " YES "
+  - "{% unless false %} YES {% else %} NO {% endunless %}": " YES "
+  - "{% unless true %} NO {% else %} YES {% endunless %}": " YES "
+  unless else in loop:
+  - TPL: "{% for i in choices %}{% unless i %} {{ forloop.index }} {% else %} TRUE {% endunless %}{% endfor %}"
+    EXP: " TRUE  2  3 "
+    CTX:
+      choices:
+      - 1
+      -
+      - false
+  unless in loop:
+  - TPL: "{% for i in choices %}{% unless i %}{{ forloop.index }}{% endunless %}{% endfor %}"
+    EXP: '23'
+    CTX:
+      choices:
+      - 1
+      -
+      - false

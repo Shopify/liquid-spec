@@ -1,0 +1,4155 @@
+---
+StandardFilter:
+  all filters never raise non liquid exception:894:
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | sort }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "{1=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | strip }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: 'woot: -38'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -39
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: 'woot: -39'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -41
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: ezpmb289PiJiYXIifQ==
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: !binary |-
+      TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: TESTENUMERABLE
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | h }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: VGVzdEVudW1lcmFibGU=
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | sort }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "{:foo=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | h }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | join }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: 'woot: -27'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -28
+  - TPL: "{{ foo0 | first }}"
+    EXP: 1bar
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | first }}"
+    EXP: foobar
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | first }}"
+    EXP: foobar
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ezpmb289PiJiYXIifQ==
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | h }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | size }}"
+    EXP: '2'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | compact }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: !binary |-
+      true
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: 'True'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | join }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -49
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: dHJ1ZQ==
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: 'woot: -37'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -38
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: eyJmb28iPT4iYmFyIn0=
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | h }}"
+    EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: barfoo
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | h }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | join }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | floor }}"
+    EXP: "-1235"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | join }}"
+    EXP: '{"foo"=>1, "bar"=>2} {"foo"=>2, "bar"=>1} {"foo"=>3, "bar"=>3}'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | default }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: VGVzdERyb3A=
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | escape }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | size }}"
+    EXP: '5'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -46
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '1235'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: 'woot: -9'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -10
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "{1=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: 'woot: -30'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -31
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | size }}"
+    EXP: '1'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | h }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: "-1234"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '99999999'
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | sort }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: LTEyMzQuMDAzMDMwMzAz
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | strip }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | default }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: !binary |-
+      foo=
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: Zm9v
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: d29vdDogLTI4
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -29
+  - TPL: "{{ foo0 | default }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '1234.003030303'
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: !binary |-
+      TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: 'False'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: ''
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "%7B%22foo%22%3D%3E%22bar%22%7D"
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | first }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ezE9PiJiYXIifQ==
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{"foo"=>["foo", "bar"]}{"foo"=>true}{"foo"=>nil}{"foo"=>123}{"foo"=>"bar"}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: 'TRUE'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | h }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | join }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: LTEyMzQuMDAzMDMwMzAz
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | size }}"
+    EXP: '3'
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | sort }}"
+    EXP: 'woot: -33'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -35
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '["FOO", "BAR"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | round }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: barfoo
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | h }}"
+    EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | join }}"
+    EXP: foo bar
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: MC4w
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '1234'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: 'woot: -35'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -36
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "%5B%7B%22foo%22%3D%3E%22bar%22%7D%2C+%7B%22foo%22%3D%3E123%7D%2C+%7B%22foo%22%3D%3Enil%7D%2C+%7B%22foo%22%3D%3Etrue%7D%2C+%7B%22foo%22%3D%3E%5B%22foo%22%2C+%22bar%22%5D%7D%5D"
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: TESTDROP
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | compact }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '[{"FOO"=>"BAR"}, {"FOO"=>123}, {"FOO"=>NIL}, {"FOO"=>TRUE}, {"FOO"=>["FOO", "BAR"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | size }}"
+    EXP: '8'
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | h }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | h }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MTIz
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | h }}"
+    EXP: "{1=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: Testdrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: 'WOOT: -12'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -13
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: WyJmb28iLCAiYmFyIl0=
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: Foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | sort }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: W3siZm9vIj0+ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0+bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -19
+  - TPL: "{{ foo0 | round }}"
+    EXP: '1234'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: !binary |-
+      true
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | floor }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: woot%3A+-34
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -35
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | h }}"
+    EXP: "{:foo=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | sort }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | default }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | compact }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "%7B1%3D%3E%22bar%22%7D"
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | join }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | strip }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: eyJmb28iPT4iYmFyIn0=
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: 'woot: -13'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -14
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: foobar
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: LTk5OTk5OTk5
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | join }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: 'FALSE'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: 'woot: -10'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -11
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -20
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: testdrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | join }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MTIzNC4zODM4MzAwMDM4Mzgz
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | size }}"
+    EXP: '1'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MA==
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: foobar
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -48
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '["foo", "bar"]'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | join }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "%5B%22foo%22%2C+%22bar%22%5D"
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -47
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | size }}"
+    EXP: '8'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: Testenumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | h }}"
+    EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: FOO
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | escape }}"
+    EXP: 'woot: -2'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -3
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | join }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | default }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: "%7B%3Afoo%3D%3E%22bar%22%7D"
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: WyJmb28iLCAiYmFyIl0=
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | strip }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | h }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | compact }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | sort }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | h }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | strip }}"
+    EXP: 'woot: -29'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -30
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: 'woot: -23'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -25
+  - TPL: "{{ foo0 | join }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | last }}"
+    EXP: '{"foo"=>["foo", "bar"]}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: MA==
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | join }}"
+    EXP: '{"foo"=>"bar"} {"foo"=>123} {"foo"=>nil} {"foo"=>true} {"foo"=>["foo", "bar"]}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | compact }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | size }}"
+    EXP: '1'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | last }}"
+    EXP: bar
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | default }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: Zm9v
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | compact }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | h }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | escape }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: 'woot: -31'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -32
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | compact }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: ezE9PiJiYXIifQ==
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | strip }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | compact }}"
+    EXP: foobar
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | default }}"
+    EXP: TestEnumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | h }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | join }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: W3siZm9vIj0-ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0-bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: MTIz
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: 'woot: -49'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -50
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: 'woot: -1'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -3
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '{:FOO=>"BAR"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ZmFsc2U=
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | join }}"
+    EXP: 'woot: -25'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -27
+  - TPL: "{{ foo0 | strip }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | compact }}"
+    EXP: 'woot: -1'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -3
+  - TPL: "{{ foo0 | join }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | h }}"
+    EXP: 'woot: -15'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -16
+  - TPL: "{{ foo0 | join }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{"foo"=>3, "bar"=>3}{"foo"=>2, "bar"=>1}{"foo"=>1, "bar"=>2}'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MC4w
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: ZmFsc2U=
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '{1=>"bar"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: LTk5OTk5OTk5
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '{1=>"BAR"}'
+    CTX:
+      foo0:
+        1: bar
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '0'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -43
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "{:foo=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: d29vdDogLTMy
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -33
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: VGVzdERyb3A=
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: testenumerable
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: 'Woot: -14'
+    CTX:
+      foo0: !ruby/object:TestThing
+        foo: -15
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: dHJ1ZQ==
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | abs }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | sort }}"
+    EXP: barfoo
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | capitalize }}"
+    EXP: '1234.3838300038383'
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  - TPL: "{{ foo0 | compact }}"
+    EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | round }}"
+    EXP: "-1234"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | join }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | round }}"
+    EXP: '123'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | escape }}"
+    EXP: 'true'
+    CTX:
+      foo0: true
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | strip }}"
+    EXP: TestDrop
+    CTX:
+      foo0: !ruby/object:TestDrop
+        value: test
+        context: {}
+  - TPL: "{{ foo0 | first }}"
+    EXP: '{"foo"=>1, "bar"=>2}'
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '0'
+    CTX:
+      foo0: 0
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: 'false'
+    CTX:
+      foo0: false
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | size }}"
+    EXP: '8'
+    CTX:
+      foo0: 123
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: VGVzdEVudW1lcmFibGU=
+    CTX:
+      foo0: !ruby/object:TestEnumerable
+        context: {}
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: "-1234.003030303"
+    CTX:
+      foo0: -1234.003030303
+  - TPL: "{{ foo0 | newline_to_br }}"
+    EXP: '0.0'
+    CTX:
+      foo0: 0.0
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: MTIzNC4zODM4MzAwMDM4Mzgz
+    CTX:
+      foo0: 1234.3838300038383
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '{"FOO"=>"BAR"}'
+    CTX:
+      foo0:
+        foo: bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: "-99999999"
+    CTX:
+      foo0: -99999999
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX:
+      foo0:
+      - foo: bar
+      - foo: 123
+      - foo:
+      - foo: true
+      - foo:
+        - foo
+        - bar
+  - TPL: "{{ foo0 | first }}"
+    EXP: foo
+    CTX:
+      foo0:
+      - foo
+      - bar
+  - TPL: "{{ foo0 | ceil }}"
+    EXP: '0'
+    CTX:
+      foo0:
+        :foo: bar
+  base64 decode:169:
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: one two three
+    CTX:
+      foo0: b25lIHR3byB0aHJlZQ==
+  base64 encode:164:
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: b25lIHR3byB0aHJlZQ==
+    CTX:
+      foo0: one two three
+  base64 encode:165:
+  - TPL: "{{ foo0 | base64_encode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  base64 url safe decode:189:
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
+    CTX:
+      foo0: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8
+  base64 url safe encode:181:
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8
+    CTX:
+      foo0: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
+  base64 url safe encode:183:
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  compact empty array:403:
+  - TPL: '{{ foo0 | compact: "a" }}'
+    EXP: ''
+    CTX:
+      foo0: []
+      foo1: a
+  concat:747:
+  - TPL: "{{ foo0 | concat: foo1 }}"
+    EXP: '1234'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      foo1:
+      - 3
+      - 4
+  concat:748:
+  - TPL: "{{ foo0 | concat: foo1 }}"
+    EXP: 12a
+    CTX:
+      foo0:
+      - 1
+      - 2
+      foo1:
+      - a
+  concat:749:
+  - TPL: "{{ foo0 | concat: foo1 }}"
+    EXP: '1210'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      foo1:
+      - 10
+  date:531:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: May
+    CTX:
+      foo0: 2006-05-05 10:00:00.000000000 -04:00
+      foo1: "%B"
+  date:532:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: June
+    CTX:
+      foo0: 2006-06-05 10:00:00.000000000 -04:00
+      foo1: "%B"
+  date:533:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: July
+    CTX:
+      foo0: 2006-07-05 10:00:00.000000000 -04:00
+      foo1: "%B"
+  date:535:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: May
+    CTX:
+      foo0: '2006-05-05 10:00:00'
+      foo1: "%B"
+  date:536:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: June
+    CTX:
+      foo0: '2006-06-05 10:00:00'
+      foo1: "%B"
+  date:537:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: July
+    CTX:
+      foo0: '2006-07-05 10:00:00'
+      foo1: "%B"
+  date:539:
+  - TPL: '{{ foo0 | date: "" }}'
+    EXP: '2006-07-05 10:00:00'
+    CTX:
+      foo0: '2006-07-05 10:00:00'
+      foo1: ''
+  date:540:
+  - TPL: '{{ foo0 | date: "" }}'
+    EXP: '2006-07-05 10:00:00'
+    CTX:
+      foo0: '2006-07-05 10:00:00'
+      foo1: ''
+  date:541:
+  - TPL: '{{ foo0 | date: "" }}'
+    EXP: '2006-07-05 10:00:00'
+    CTX:
+      foo0: '2006-07-05 10:00:00'
+      foo1: ''
+  date:542:
+  - TPL: "{{ foo0 | date: foo1 }}"
+    EXP: '2006-07-05 10:00:00'
+    CTX:
+      foo0: '2006-07-05 10:00:00'
+      foo1:
+  date:544:
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/05/2006
+    CTX:
+      foo0: '2006-07-05 10:00:00'
+      foo1: "%m/%d/%Y"
+  date:546:
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/16/2004
+    CTX:
+      foo0: Fri Jul 16 01:00:00 2004
+      foo1: "%m/%d/%Y"
+  date:547:
+  - TPL: '{{ foo0 | date: "%Y" }}'
+    EXP: '2022'
+    CTX:
+      foo0: now
+      foo1: "%Y"
+  date:548:
+  - TPL: '{{ foo0 | date: "%Y" }}'
+    EXP: '2022'
+    CTX:
+      foo0: today
+      foo1: "%Y"
+  date:549:
+  - TPL: '{{ foo0 | date: "%Y" }}'
+    EXP: '2022'
+    CTX:
+      foo0: Today
+      foo1: "%Y"
+  date:551:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: ''
+    CTX:
+      foo0:
+      foo1: "%B"
+  date:553:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: ''
+    CTX:
+      foo0: ''
+      foo1: "%B"
+  date:555:
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/05/2006
+    CTX:
+      foo0: 1152098955
+      foo1: "%m/%d/%Y"
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/05/2006
+    CTX:
+      foo0: '1152098955'
+      foo1: "%m/%d/%Y"
+  default:763:
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: foo
+    CTX:
+      foo0: foo
+      foo1: bar
+  default:764:
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX:
+      foo0:
+      foo1: bar
+  default:765:
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX:
+      foo0: ''
+      foo1: bar
+  default:766:
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX:
+      foo0: false
+      foo1: bar
+  default:767:
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX:
+      foo0: []
+      foo1: bar
+  default:768:
+  - TPL: '{{ foo0 | default: "bar" }}'
+    EXP: bar
+    CTX:
+      foo0: {}
+      foo1: bar
+  default handle false:775:
+  - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+    EXP: foo
+    CTX:
+      foo0: foo
+      foo1: bar
+      foo2:
+        allow_false: true
+  default handle false:776:
+  - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+    EXP: bar
+    CTX:
+      foo0:
+      foo1: bar
+      foo2:
+        allow_false: true
+  default handle false:777:
+  - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+    EXP: bar
+    CTX:
+      foo0: ''
+      foo1: bar
+      foo2:
+        allow_false: true
+  default handle false:778:
+  - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+    EXP: 'false'
+    CTX:
+      foo0: false
+      foo1: bar
+      foo2:
+        allow_false: true
+  default handle false:779:
+  - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+    EXP: bar
+    CTX:
+      foo0: []
+      foo1: bar
+      foo2:
+        allow_false: true
+  default handle false:780:
+  - TPL: '{{ foo0 | default: "bar", allow_false: true }}'
+    EXP: bar
+    CTX:
+      foo0: {}
+      foo1: bar
+      foo2:
+        allow_false: true
+  downcase:84:
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: testing
+    CTX:
+      foo0: Testing
+  downcase:85:
+  - TPL: "{{ foo0 | downcase }}"
+    EXP: ''
+    CTX:
+      foo0:
+  escape:146:
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "&lt;strong&gt;"
+    CTX:
+      foo0: "<strong>"
+  escape:147:
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '1'
+    CTX:
+      foo0: 1
+  escape:148:
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '2001-02-03'
+    CTX:
+      foo0: 2001-02-03
+  escape:149:
+  - TPL: "{{ foo0 | escape }}"
+    EXP: ''
+    CTX:
+      foo0:
+  escape once:160:
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: "&lt;strong&gt;Hulk&lt;/strong&gt;"
+    CTX:
+      foo0: "&lt;strong&gt;Hulk</strong>"
+  first last:562:
+  - TPL: "{{ foo0 | first }}"
+    EXP: '1'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+  first last:563:
+  - TPL: "{{ foo0 | last }}"
+    EXP: '3'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+  first last:564:
+  - TPL: "{{ foo0 | first }}"
+    EXP: ''
+    CTX:
+      foo0: []
+  first last:565:
+  - TPL: "{{ foo0 | last }}"
+    EXP: ''
+    CTX:
+      foo0: []
+  h:153:
+  - TPL: "{{ foo0 | h }}"
+    EXP: "&lt;strong&gt;"
+    CTX:
+      foo0: "<strong>"
+  h:154:
+  - TPL: "{{ foo0 | h }}"
+    EXP: '1'
+    CTX:
+      foo0: 1
+  h:155:
+  - TPL: "{{ foo0 | h }}"
+    EXP: '2001-02-03'
+    CTX:
+      foo0: 2001-02-03
+  h:156:
+  - TPL: "{{ foo0 | h }}"
+    EXP: ''
+    CTX:
+      foo0:
+  join:250:
+  - TPL: "{{ foo0 | join }}"
+    EXP: 1 2 3 4
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+      - 4
+  join:251:
+  - TPL: '{{ foo0 | join: " - " }}'
+    EXP: 1 - 2 - 3 - 4
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+      - 4
+      foo1: " - "
+  join:252:
+  - TPL: "{{ foo0 | join: 1 }}"
+    EXP: '1121314'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+      - 4
+      foo1: 1
+  legacy reverse hash:423:
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: "{:a=>1, :b=>2}"
+    CTX:
+      foo0:
+        :a: 1
+        :b: 2
+  legacy sort hash:367:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: "{:a=>1, :b=>2}"
+    CTX:
+      foo0:
+        :a: 1
+        :b: 2
+  map:427:
+  - TPL: '{{ foo0 | map: "a" }}'
+    EXP: '1234'
+    CTX:
+      foo0:
+      - a: 1
+      - a: 2
+      - a: 3
+      - a: 4
+      foo1: a
+  numerical vs lexicographical sort:371:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '210'
+    CTX:
+      foo0:
+      - 10
+      - 2
+  numerical vs lexicographical sort:372:
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>2}{"a"=>10}'
+    CTX:
+      foo0:
+      - a: 10
+      - a: 2
+      foo1: a
+  numerical vs lexicographical sort:373:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '102'
+    CTX:
+      foo0:
+      - '10'
+      - '2'
+  numerical vs lexicographical sort:374:
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>"10"}{"a"=>"2"}'
+    CTX:
+      foo0:
+      - a: '10'
+      - a: '2'
+      foo1: a
+  remove:586:
+  - TPL: '{{ foo0 | replace: "a", "" }}'
+    EXP: "   "
+    CTX:
+      foo0: a a a a
+      foo1: a
+      foo2: ''
+  - TPL: '{{ foo0 | remove: "a" }}'
+    EXP: "   "
+    CTX:
+      foo0: a a a a
+      foo1: a
+  remove:589:
+  - TPL: '{{ foo0 | replace_first: "a ", "" }}'
+    EXP: b a a
+    CTX:
+      foo0: a b a a
+      foo1: 'a '
+      foo2: ''
+  - TPL: '{{ foo0 | remove_first: "a " }}'
+    EXP: b a a
+    CTX:
+      foo0: a b a a
+      foo1: 'a '
+  remove:592:
+  - TPL: '{{ foo0 | replace_last: " a", "" }}'
+    EXP: a a b
+    CTX:
+      foo0: a a b a
+      foo1: " a"
+      foo2: ''
+  - TPL: '{{ foo0 | remove_last: " a" }}'
+    EXP: a a b
+    CTX:
+      foo0: a a b a
+      foo1: " a"
+  replace:569:
+  - TPL: '{{ foo0 | replace: "a", "b" }}'
+    EXP: b b b b
+    CTX:
+      foo0: a a a a
+      foo1: a
+      foo2: b
+  replace:570:
+  - TPL: "{{ foo0 | replace: 1, 2 }}"
+    EXP: 2 2 2 2
+    CTX:
+      foo0: 1 1 1 1
+      foo1: 1
+      foo2: 2
+  replace:571:
+  - TPL: "{{ foo0 | replace: 2, 3 }}"
+    EXP: 1 1 1 1
+    CTX:
+      foo0: 1 1 1 1
+      foo1: 2
+      foo2: 3
+  replace:574:
+  - TPL: '{{ foo0 | replace_first: "a", "b" }}'
+    EXP: b a a a
+    CTX:
+      foo0: a a a a
+      foo1: a
+      foo2: b
+  replace:575:
+  - TPL: "{{ foo0 | replace_first: 1, 2 }}"
+    EXP: 2 1 1 1
+    CTX:
+      foo0: 1 1 1 1
+      foo1: 1
+      foo2: 2
+  replace:576:
+  - TPL: "{{ foo0 | replace_first: 2, 3 }}"
+    EXP: 1 1 1 1
+    CTX:
+      foo0: 1 1 1 1
+      foo1: 2
+      foo2: 3
+  replace:579:
+  - TPL: '{{ foo0 | replace_last: "a", "b" }}'
+    EXP: a a a b
+    CTX:
+      foo0: a a a a
+      foo1: a
+      foo2: b
+  replace:580:
+  - TPL: "{{ foo0 | replace_last: 1, 2 }}"
+    EXP: 1 1 1 2
+    CTX:
+      foo0: 1 1 1 1
+      foo1: 1
+      foo2: 2
+  replace:581:
+  - TPL: "{{ foo0 | replace_last: 2, 3 }}"
+    EXP: 1 1 1 1
+    CTX:
+      foo0: 1 1 1 1
+      foo1: 2
+      foo2: 3
+  reverse:419:
+  - TPL: "{{ foo0 | reverse }}"
+    EXP: '4321'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+      - 4
+  size:78:
+  - TPL: "{{ foo0 | size }}"
+    EXP: '3'
+    CTX:
+      foo0:
+      - 1
+      - 2
+      - 3
+  size:79:
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0: []
+  size:80:
+  - TPL: "{{ foo0 | size }}"
+    EXP: '0'
+    CTX:
+      foo0:
+  slice:100:
+  - TPL: "{{ foo0 | slice: -2, 1000 }}"
+    EXP: ar
+    CTX:
+      foo0: foobar
+      foo1: -2
+      foo2: 1000
+  slice:101:
+  - TPL: "{{ foo0 | slice: -1 }}"
+    EXP: r
+    CTX:
+      foo0: foobar
+      foo1: -1
+  slice:102:
+  - TPL: "{{ foo0 | slice: 0 }}"
+    EXP: ''
+    CTX:
+      foo0:
+      foo1: 0
+  slice:103:
+  - TPL: "{{ foo0 | slice: 100, 10 }}"
+    EXP: ''
+    CTX:
+      foo0: foobar
+      foo1: 100
+      foo2: 10
+  slice:104:
+  - TPL: "{{ foo0 | slice: -100, 10 }}"
+    EXP: ''
+    CTX:
+      foo0: foobar
+      foo1: -100
+      foo2: 10
+  slice:105:
+  - TPL: '{{ foo0 | slice: "1", "3" }}'
+    EXP: oob
+    CTX:
+      foo0: foobar
+      foo1: '1'
+      foo2: '3'
+  slice:94:
+  - TPL: "{{ foo0 | slice: 1, 3 }}"
+    EXP: oob
+    CTX:
+      foo0: foobar
+      foo1: 1
+      foo2: 3
+  slice:95:
+  - TPL: "{{ foo0 | slice: 1, 1000 }}"
+    EXP: oobar
+    CTX:
+      foo0: foobar
+      foo1: 1
+      foo2: 1000
+  slice:96:
+  - TPL: "{{ foo0 | slice: 1, 0 }}"
+    EXP: ''
+    CTX:
+      foo0: foobar
+      foo1: 1
+      foo2: 0
+  slice:97:
+  - TPL: "{{ foo0 | slice: 1, 1 }}"
+    EXP: o
+    CTX:
+      foo0: foobar
+      foo1: 1
+      foo2: 1
+  slice:98:
+  - TPL: "{{ foo0 | slice: 3, 3 }}"
+    EXP: bar
+    CTX:
+      foo0: foobar
+      foo1: 3
+      foo2: 3
+  slice:99:
+  - TPL: "{{ foo0 | slice: -2, 2 }}"
+    EXP: ar
+    CTX:
+      foo0: foobar
+      foo1: -2
+      foo2: 2
+  slice on arrays:116:
+  - TPL: "{{ foo0 | slice: 1, 3 }}"
+    EXP: oob
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: 1
+      foo2: 3
+  slice on arrays:117:
+  - TPL: "{{ foo0 | slice: 1, 1000 }}"
+    EXP: oobar
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: 1
+      foo2: 1000
+  slice on arrays:118:
+  - TPL: "{{ foo0 | slice: 1, 0 }}"
+    EXP: ''
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: 1
+      foo2: 0
+  slice on arrays:119:
+  - TPL: "{{ foo0 | slice: 1, 1 }}"
+    EXP: o
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: 1
+      foo2: 1
+  slice on arrays:120:
+  - TPL: "{{ foo0 | slice: 3, 3 }}"
+    EXP: bar
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: 3
+      foo2: 3
+  slice on arrays:121:
+  - TPL: "{{ foo0 | slice: -2, 2 }}"
+    EXP: ar
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: -2
+      foo2: 2
+  slice on arrays:122:
+  - TPL: "{{ foo0 | slice: -2, 1000 }}"
+    EXP: ar
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: -2
+      foo2: 1000
+  slice on arrays:123:
+  - TPL: "{{ foo0 | slice: -1 }}"
+    EXP: r
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: -1
+  slice on arrays:124:
+  - TPL: "{{ foo0 | slice: 100, 10 }}"
+    EXP: ''
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: 100
+      foo2: 10
+  slice on arrays:125:
+  - TPL: "{{ foo0 | slice: -100, 10 }}"
+    EXP: ''
+    CTX:
+      foo0:
+      - f
+      - o
+      - o
+      - b
+      - a
+      - r
+      foo1: -100
+      foo2: 10
+  sort:256:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '1234'
+    CTX:
+      foo0:
+      - 4
+      - 3
+      - 2
+      - 1
+  sort:257:
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}'
+    CTX:
+      foo0:
+      - a: 4
+      - a: 3
+      - a: 1
+      - a: 2
+      foo1: a
+  sort empty array:335:
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: ''
+    CTX:
+      foo0: []
+      foo1: a
+  sort natural:284:
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: aBcD
+    CTX:
+      foo0:
+      - c
+      - D
+      - a
+      - B
+  sort natural:285:
+  - TPL: '{{ foo0 | sort_natural: "a" }}'
+    EXP: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
+    CTX:
+      foo0:
+      - a: D
+      - a: c
+      - a: a
+      - a: B
+      foo1: a
+  sort natural case check:330:
+  - TPL: '{{ foo0 | sort_natural: "key" }}'
+    EXP: '{"key"=>"a"}{"key"=>"b"}{"key"=>"c"}{"key"=>"X"}{"key"=>"Y"}{"key"=>"Z"}{"fake"=>"t"}'
+    CTX:
+      foo0:
+      - key: X
+      - key: Y
+      - key: Z
+      - fake: t
+      - key: a
+      - key: b
+      - key: c
+      foo1: key
+  sort natural case check:331:
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: abcXYZ
+    CTX:
+      foo0:
+      - X
+      - Y
+      - Z
+      - a
+      - b
+      - c
+  sort natural empty array:351:
+  - TPL: '{{ foo0 | sort_natural: "a" }}'
+    EXP: ''
+    CTX:
+      foo0: []
+      foo1: a
+  sort natural when property is sometimes missing puts nils last:308:
+  - TPL: '{{ foo0 | sort_natural: "price" }}'
+    EXP: '{"price"=>"1", "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>"4", "handle"=>"alpha"}{"handle"=>"delta"}{"handle"=>"beta"}'
+    CTX:
+      foo0:
+      - price: '4'
+        handle: alpha
+      - handle: beta
+      - price: '1'
+        handle: gamma
+      - handle: delta
+      - price: 2
+        handle: epsilon
+      foo1: price
+  sort natural with nils:289:
+  - TPL: "{{ foo0 | sort_natural }}"
+    EXP: aBcD
+    CTX:
+      foo0:
+      -
+      - c
+      - D
+      - a
+      - B
+  sort natural with nils:290:
+  - TPL: '{{ foo0 | sort_natural: "a" }}'
+    EXP: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}{}'
+    CTX:
+      foo0:
+      - a: D
+      - a: c
+      - {}
+      - a: a
+      - a: B
+      foo1: a
+  sort when property is sometimes missing puts nils last:280:
+  - TPL: '{{ foo0 | sort: "price" }}'
+    EXP: '{"price"=>1, "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>4, "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
+    CTX:
+      foo0:
+      - price: 4
+        handle: alpha
+      - handle: beta
+      - price: 1
+        handle: gamma
+      - handle: delta
+      - price: 2
+        handle: epsilon
+      foo1: price
+  sort with nils:261:
+  - TPL: "{{ foo0 | sort }}"
+    EXP: '1234'
+    CTX:
+      foo0:
+      -
+      - 4
+      - 3
+      - 2
+      - 1
+  sort with nils:262:
+  - TPL: '{{ foo0 | sort: "a" }}'
+    EXP: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}{}'
+    CTX:
+      foo0:
+      - a: 4
+      - a: 3
+      - {}
+      - a: 1
+      - a: 2
+      foo1: a
+  split:138:
+  - TPL: '{{ foo0 | split: "~" }}'
+    EXP: '1234'
+    CTX:
+      foo0: 12~34
+      foo1: "~"
+  split:139:
+  - TPL: '{{ foo0 | split: "~ ~ ~" }}'
+    EXP: A?  ,Z
+    CTX:
+      foo0: A? ~ ~ ~ ,Z
+      foo1: "~ ~ ~"
+  split:140:
+  - TPL: '{{ foo0 | split: "~" }}'
+    EXP: A?Z
+    CTX:
+      foo0: A?Z
+      foo1: "~"
+  split:141:
+  - TPL: '{{ foo0 | split: " " }}'
+    EXP: ''
+    CTX:
+      foo0:
+      foo1: " "
+  split:142:
+  - TPL: "{{ foo0 | split: 1 }}"
+    EXP: AZ
+    CTX:
+      foo0: A1Z
+      foo1: 1
+  strip html:237:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX:
+      foo0: "<div>test</div>"
+  strip html:238:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX:
+      foo0: "<div id='test'>test</div>"
+  strip html:239:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX:
+      foo0: "<script type='text/javascript'>document.write('some stuff');</script>"
+  strip html:240:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX:
+      foo0: "<style type='text/css'>foo bar</style>"
+  strip html:241:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX:
+      foo0: |-
+        <div
+        class='multiline'>test</div>
+  strip html:242:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: test
+    CTX:
+      foo0: "<!-- foo bar \n test -->test"
+  strip html:243:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: ''
+    CTX:
+      foo0:
+  strip html:246:
+  - TPL: "{{ foo0 | strip_html }}"
+    EXP: foo;
+    CTX:
+      foo0: "<<<script </script>script>foo;</script>"
+  truncate:129:
+  - TPL: "{{ foo0 | truncate: 7 }}"
+    EXP: 1234...
+    CTX:
+      foo0: '1234567890'
+      foo1: 7
+  truncate:130:
+  - TPL: "{{ foo0 | truncate: 20 }}"
+    EXP: '1234567890'
+    CTX:
+      foo0: '1234567890'
+      foo1: 20
+  truncate:131:
+  - TPL: "{{ foo0 | truncate: 0 }}"
+    EXP: "..."
+    CTX:
+      foo0: '1234567890'
+      foo1: 0
+  truncate:132:
+  - TPL: "{{ foo0 | truncate }}"
+    EXP: '1234567890'
+    CTX:
+      foo0: '1234567890'
+  truncate:133:
+  - TPL: "{{ foo0 | truncate: 5 }}"
+    EXP: 测试...
+    CTX:
+      foo0: 测试测试测试测试
+      foo1: 5
+  truncate:134:
+  - TPL: "{{ foo0 | truncate: 5, 1 }}"
+    EXP: '12341'
+    CTX:
+      foo0: '1234567890'
+      foo1: 5
+      foo2: 1
+  truncatewords:218:
+  - TPL: "{{ foo0 | truncatewords: 4 }}"
+    EXP: one two three
+    CTX:
+      foo0: one two three
+      foo1: 4
+  truncatewords:219:
+  - TPL: "{{ foo0 | truncatewords: 2 }}"
+    EXP: one two...
+    CTX:
+      foo0: one two three
+      foo1: 2
+  truncatewords:220:
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: one two three
+    CTX:
+      foo0: one two three
+  truncatewords:223:
+  - TPL: "{{ foo0 | truncatewords: 15 }}"
+    EXP: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one large basket (13&#8221;...
+    CTX:
+      foo0: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one large basket (13&#8221; x 16&#8221; x 10.5&#8221; high) with cover.
+      foo1: 15
+  truncatewords:225:
+  - TPL: "{{ foo0 | truncatewords: 5 }}"
+    EXP: 测试测试测试测试
+    CTX:
+      foo0: 测试测试测试测试
+      foo1: 5
+  truncatewords:226:
+  - TPL: "{{ foo0 | truncatewords: 2, 1 }}"
+    EXP: one two1
+    CTX:
+      foo0: one two three
+      foo1: 2
+      foo2: 1
+  truncatewords:227:
+  - TPL: "{{ foo0 | truncatewords: 3 }}"
+    EXP: one two three...
+    CTX:
+      foo0: "one  two\tthree\nfour"
+      foo1: 3
+  truncatewords:228:
+  - TPL: "{{ foo0 | truncatewords: 2 }}"
+    EXP: one two...
+    CTX:
+      foo0: one two three four
+      foo1: 2
+  truncatewords:229:
+  - TPL: "{{ foo0 | truncatewords: 0 }}"
+    EXP: one...
+    CTX:
+      foo0: one two three four
+      foo1: 0
+  uniq:378:
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: foo
+    CTX:
+      foo0: foo
+  uniq:379:
+  - TPL: "{{ foo0 | uniq }}"
+    EXP: '1324'
+    CTX:
+      foo0:
+      - 1
+      - 1
+      - 3
+      - 2
+      - 3
+      - 1
+      - 4
+      - 3
+      - 2
+      - 1
+  uniq:380:
+  - TPL: '{{ foo0 | uniq: "a" }}'
+    EXP: '{"a"=>1}{"a"=>3}{"a"=>2}'
+    CTX:
+      foo0:
+      - a: 1
+      - a: 3
+      - a: 1
+      - a: 2
+      foo1: a
+  uniq:383:
+  - TPL: '{{ foo0 | uniq: "value" }}'
+    EXP: TestDrop
+    CTX:
+      foo0:
+      - !ruby/object:TestDrop
+        value: test
+        context: {}
+      - !ruby/object:TestDrop
+        value: test
+        context: {}
+      foo1: value
+  uniq empty array:387:
+  - TPL: '{{ foo0 | uniq: "a" }}'
+    EXP: ''
+    CTX:
+      foo0: []
+      foo1: a
+  upcase:89:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: TESTING
+    CTX:
+      foo0: Testing
+  upcase:90:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: ''
+    CTX:
+      foo0:
+  url decode:205:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo bar
+    CTX:
+      foo0: foo+bar
+  url decode:206:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo bar
+    CTX:
+      foo0: foo%20bar
+  url decode:207:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo+1@example.com
+    CTX:
+      foo0: foo%2B1%40example.com
+  url decode:208:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '1'
+    CTX:
+      foo0: 1
+  url decode:209:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '2001-02-03'
+    CTX:
+      foo0: 2001-02-03
+  url decode:210:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  url encode:198:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: foo%2B1%40example.com
+    CTX:
+      foo0: foo+1@example.com
+  url encode:199:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: '1'
+    CTX:
+      foo0: 1
+  url encode:200:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: '2001-02-03'
+    CTX:
+      foo0: 2001-02-03
+  url encode:201:
+  - TPL: "{{ foo0 | url_encode }}"
+    EXP: ''
+    CTX:
+      foo0:
+  where:808:
+  - TPL: '{{ foo0 | where: "ok", true }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX:
+      foo0:
+      - handle: alpha
+        ok: true
+      - handle: beta
+        ok: false
+      - handle: gamma
+        ok: false
+      - handle: delta
+        ok: true
+      foo1: ok
+      foo2: true
+  where:809:
+  - TPL: '{{ foo0 | where: "ok" }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX:
+      foo0:
+      - handle: alpha
+        ok: true
+      - handle: beta
+        ok: false
+      - handle: gamma
+        ok: false
+      - handle: delta
+        ok: true
+      foo1: ok
+  where array of only unindexable values:864:
+  - TPL: '{{ foo0 | where: "ok", true }}'
+    EXP: ''
+    CTX:
+      foo0:
+      -
+      foo1: ok
+      foo2: true
+  where array of only unindexable values:865:
+  - TPL: '{{ foo0 | where: "ok" }}'
+    EXP: ''
+    CTX:
+      foo0:
+      -
+      foo1: ok
+  where no key set:837:
+  - TPL: '{{ foo0 | where: "ok", true }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX:
+      foo0:
+      - handle: alpha
+        ok: true
+      - handle: beta
+      - handle: gamma
+      - handle: delta
+        ok: true
+      foo1: ok
+      foo2: true
+  where no key set:838:
+  - TPL: '{{ foo0 | where: "ok" }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX:
+      foo0:
+      - handle: alpha
+        ok: true
+      - handle: beta
+      - handle: gamma
+      - handle: delta
+        ok: true
+      foo1: ok
+  where no target value:914:
+  - TPL: '{{ foo0 | where: "foo" }}'
+    EXP: '{"foo"=>true}{"foo"=>"for sure"}'
+    CTX:
+      foo0:
+      - foo: false
+      - foo: true
+      - foo: for sure
+      - bar: true
+      foo1: foo
+  where non array map input:842:
+  - TPL: '{{ foo0 | where: "a", "ok" }}'
+    EXP: '{"a"=>"ok"}'
+    CTX:
+      foo0:
+        a: ok
+      foo1: a
+      foo2: ok
+  where non array map input:843:
+  - TPL: '{{ foo0 | where: "a", "ok" }}'
+    EXP: ''
+    CTX:
+      foo0:
+        a: not ok
+      foo1: a
+      foo2: ok
+  where non boolean value:858:
+  - TPL: '{{ foo0 | where: "language", "French" }}'
+    EXP: '{"message"=>"Bonjour!", "language"=>"French"}'
+    CTX:
+      foo0:
+      - message: Bonjour!
+        language: French
+      - message: Hello!
+        language: English
+      - message: Hallo!
+        language: German
+      foo1: language
+      foo2: French
+  where non boolean value:859:
+  - TPL: '{{ foo0 | where: "language", "German" }}'
+    EXP: '{"message"=>"Hallo!", "language"=>"German"}'
+    CTX:
+      foo0:
+      - message: Bonjour!
+        language: French
+      - message: Hello!
+        language: English
+      - message: Hallo!
+        language: German
+      foo1: language
+      foo2: German
+  where non boolean value:860:
+  - TPL: '{{ foo0 | where: "language", "English" }}'
+    EXP: '{"message"=>"Hello!", "language"=>"English"}'
+    CTX:
+      foo0:
+      - message: Bonjour!
+        language: French
+      - message: Hello!
+        language: English
+      - message: Hallo!
+        language: German
+      foo1: language
+      foo2: English
+  where string keys:821:
+  - TPL: '{{ foo0 | where: "be" }}'
+    EXP: beta
+    CTX:
+      foo0:
+      - alpha
+      - beta
+      - gamma
+      - delta
+      foo1: be

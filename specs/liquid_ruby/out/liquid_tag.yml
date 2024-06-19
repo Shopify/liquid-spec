@@ -1,0 +1,63 @@
+---
+LiquidTag:
+  liquid tag:
+  - ? |
+      {%- liquid echo "a" -%}
+      b
+      {%- liquid echo "c" -%}
+    : abc
+  - TPL: |
+      {%- liquid
+        for value in array
+          echo value
+          unless forloop.last
+            echo " "
+          endunless
+        endfor
+      -%}
+    EXP: 1 2 3
+    CTX:
+      array:
+      - 1
+      - 2
+      - 3
+  - TPL: |
+      {%- liquid
+        echo array | join: " "
+      -%}
+    EXP: 1 2 3
+    CTX:
+      array:
+      - 1
+      - 2
+      - 3
+  - TPL: |
+      {%- liquid
+        for value in array
+          assign double_value = value | times: 2
+          echo double_value | times: 2
+          unless forloop.last
+            echo " "
+          endunless
+        endfor
+
+        echo " "
+        echo double_value
+      -%}
+    EXP: 4 8 12 6
+    CTX:
+      array:
+      - 1
+      - 2
+      - 3
+  liquid tag in raw:
+  - ? "{% raw %}{% liquid echo 'test' %}{% endraw %}\n"
+    : "{% liquid echo 'test' %}\n"
+  nested liquid tag:
+  - ? |
+      {%- if true %}
+        {%- liquid
+          echo "good"
+        %}
+      {%- endif -%}
+    : good

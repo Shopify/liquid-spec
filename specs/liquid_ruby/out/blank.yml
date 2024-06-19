@@ -1,0 +1,64 @@
+---
+Blank:
+  assigns are blank:
+  - TPL: '{% for i in (1..10) %} {% assign foo = "bar" %} {% endfor %}{% if true %} {% assign foo = "bar" %} {% endif %}'
+    EXP: ''
+  captures are blank:
+  - TPL: "{% for i in (1..10) %} {% capture foo %} whatever {% endcapture %} {% endfor %}{% if true %} {% capture foo %} whatever {% endcapture %} {% endif %}"
+    EXP: ''
+  case is blank:
+  - TPL: "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endfor %}{% if true %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} x {% endcase %} {% endif %}"
+    EXP: "   x     x     x     x     x     x     x     x     x     x     x  "
+  - TPL: "{% for i in (1..10) %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true %} {% assign foo = 'bar' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endif %}"
+    EXP: ''
+  - TPL: "{% for i in (1..10) %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endfor %}{% if true %} {% assign foo = 'else' %} {% case foo %} {% when 'bar' %} {% when 'whatever' %} {% else %} {% endcase %} {% endif %}"
+    EXP: ''
+  comments are blank:
+  - TPL: "{% for i in (1..10) %} {% comment %} whatever {% endcomment %} {% endfor %}{% if true %} {% comment %} whatever {% endcomment %} {% endif %}"
+    EXP: ''
+  cycle is not blank:
+  - TPL: "{% for i in (1..10) %}{% cycle ' ', ' ' %}{% endfor %}{% if true %}{% cycle ' ', ' ' %}{% endif %}"
+    EXP: "           "
+  if else are blank:
+  - "{% if true %} {% elsif false %} {% else %} {% endif %}": ''
+  include is blank:
+  - TPL: "{% for i in (1..10) %}{% include 'foobar' %}{% endfor %}{% if true %}{% include 'foobar' %}{% endif %}"
+    EXP: foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar
+    FSS:
+      foobar: foobar
+  - TPL: "{% for i in (1..10) %} {% include ' ' %} {% endfor %}{% if true %} {% include ' ' %} {% endif %}"
+    EXP: "                                 "
+    FSS:
+      " ": " "
+  - TPL: "{% for i in (1..10) %}{% include ' foobar ' %}{% endfor %}{% if true %}{% include ' foobar ' %}{% endif %}"
+    EXP: " foobar  foobar  foobar  foobar  foobar  foobar  foobar  foobar  foobar  foobar  foobar "
+    FSS:
+      " foobar ": " foobar "
+  increment is not blank:
+  - TPL: "{% for i in (1..10) %}{% assign foo = 0 %} {% increment foo %} {% decrement foo %}{% endfor %}{% if true %}{% assign foo = 0 %} {% increment foo %} {% decrement foo %}{% endif %}"
+    EXP: " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+  loops are blank:
+  - "{% for i in (1..10) %} {% endfor %}": ''
+  mark as blank only during parsing:
+  - TPL: "{% for i in (1..10) %} {% if false %} this never happens, but still, this block is not blank {% endif %}{% endfor %}{% if true %} {% if false %} this never happens, but still, this block is not blank {% endif %}{% endif %}"
+    EXP: "           "
+  nested blocks are blank but only if all children are:
+  - TPL: "{% for i in (1..10) %}{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}{% endfor %}{% if true %}{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}{% endif %}"
+    EXP: ''
+  - TPL: |-
+      {% for i in (1..10) %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}
+            {% if true %} but this is not {% endif %}{% endfor %}{% if true %}{% if true %} {% comment %} this is blank {% endcomment %} {% endif %}
+            {% if true %} but this is not {% endif %}{% endif %}
+    EXP: "\n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not \n       but this is not "
+  raw is not blank:
+  - TPL: "{% for i in (1..10) %} {% raw %} {% endraw %}{% endfor %}{% if true %} {% raw %} {% endraw %}{% endif %}"
+    EXP: "                      "
+  unless is blank:
+  - TPL: "{% for i in (1..10) %}{% unless true %} {% endunless %}{% endfor %}{% if true %}{% unless true %} {% endunless %}{% endif %}"
+    EXP: ''
+  whitespace is blank:
+  - "{% for i in (1..10) %} {% endfor %}{% if true %} {% endif %}": ''
+  - "{% for i in (1..10) %}\t{% endfor %}{% if true %}\t{% endif %}": ''
+  whitespace is not blank if other stuff is present:
+  - TPL: "{% for i in (1..10) %}     x {% endfor %}{% if true %}     x {% endif %}"
+    EXP: "     x      x      x      x      x      x      x      x      x      x      x "

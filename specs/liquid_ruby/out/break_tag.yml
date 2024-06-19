@@ -1,0 +1,7 @@
+---
+BreakTag:
+  break with no block:
+  - TPL: before{% break %}after
+    EXP: before
+    CTX:
+      i: 1

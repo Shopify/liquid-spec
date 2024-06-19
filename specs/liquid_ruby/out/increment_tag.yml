@@ -1,0 +1,15 @@
+---
+IncrementTag:
+  dec:
+  - TPL: "{%decrement port %} {{ port }}"
+    EXP: "-1 -1"
+    CTX:
+      port: 10
+  - "{{port}} {%decrement port %} {%decrement port%} {{port}}": " -1 -2 -2"
+  - TPL: "{%increment starboard %} {%increment starboard%} {%increment starboard%} {%increment port %} {%increment starboard%} {%increment port %} {%decrement port%} {%decrement starboard %}"
+    EXP: 0 1 2 0 3 1 1 3
+  inc:
+  - "{{port}} {%increment port %} {%increment port%} {{port}}": " 0 1 2"
+  - "{%increment port %} {{ port }}": 0 1
+  - TPL: "{%increment port %} {%increment starboard%} {%increment port %} {%increment port%} {%increment starboard %}"
+    EXP: 0 0 1 2 1

@@ -1,0 +1,35 @@
+---
+Assign:
+  assign uses error mode:
+  - "{% assign foo = ('X' | downcase) %}": ''
+  assign with filter:
+  - TPL: '{% assign foo = values | split: "," %}.{{ foo[1] }}.'
+    EXP: ".bar."
+    CTX:
+      values: foo,bar,baz
+  assign with hyphen in variable name:
+  - TPL: |
+      {% assign this-thing = 'Print this-thing' -%}
+      {{ this-thing -}}
+    EXP: Print this-thing
+  assigned variable:
+  - TPL: "{% assign foo = values %}.{{ foo[1] }}."
+    EXP: ".bar."
+    CTX:
+      values:
+      - foo
+      - bar
+      - baz
+  - TPL: "{% assign foo = values %}.{{ foo[0] }}."
+    EXP: ".foo."
+    CTX:
+      values:
+      - foo
+      - bar
+      - baz
+  expression with whitespace in square brackets:
+  - TPL: "{% assign r = a[ 'b' ] %}{{ r }}"
+    EXP: result
+    CTX:
+      a:
+        b: result

@@ -1,0 +1,153 @@
+---
+RenderTag:
+  break through render:
+  - TPL: '{% for i in (1..3) %}{{ i }}{% render "break" %}{{ i }}{% endfor %}'
+    EXP: '112233'
+    FSS:
+      break: "{% break %}"
+  - TPL: "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}"
+    EXP: '1'
+    FSS:
+      break: "{% break %}"
+  decrement is isolated between renders:
+  - TPL: '{% decrement %}{% decrement %}{% render "decr" %}'
+    EXP: "-1-2-1"
+    FSS:
+      decr: "{% decrement %}"
+  includes will not render inside nested sibling tags:
+  - TPL: '{% render "nested_render_with_sibling_include" %}'
+    EXP: 'Liquid error (snippets/test_include line 1): include usage is not allowed in this contextLiquid error (snippets/nested_render_with_sibling_include line 1): include usage is not allowed in this context'
+    FSS:
+      foo: bar
+      nested_render_with_sibling_include: '{% render "test_include" %}{% include "foo" %}'
+      test_include: '{% include "foo" %}'
+  includes will not render inside render tag:
+  - TPL: '{% render "test_include" %}'
+    EXP: 'Liquid error (snippets/test_include line 1): include usage is not allowed in this context'
+    FSS:
+      foo: bar
+      test_include: '{% include "foo" %}'
+  increment is isolated between renders:
+  - TPL: '{% increment %}{% increment %}{% render "incr" %}'
+    EXP: '010'
+    FSS:
+      incr: "{% increment %}"
+  nested render tag:
+  - TPL: "{% render 'one' %}"
+    EXP: one two
+    FSS:
+      one: one {% render 'two' %}
+      two: two
+  render accepts literals as arguments:
+  - TPL: '{% render "snippet", price: 123 %}'
+    EXP: '123'
+    FSS:
+      snippet: "{{ price }}"
+  render accepts multiple named arguments:
+  - TPL: '{% render "snippet", one: 1, two: 2 %}'
+    EXP: 1 2
+    FSS:
+      snippet: "{{ one }} {{ two }}"
+  render does not inherit parent scope variables:
+  - TPL: '{% assign outer_variable = "should not be visible" %}{% render "snippet" %}'
+    EXP: ''
+    FSS:
+      snippet: "{{ outer_variable }}"
+  render does not inherit variable with same name as snippet:
+  - TPL: "{% assign snippet = 'should not be visible' %}{% render 'snippet' %}"
+    EXP: ''
+    FSS:
+      snippet: "{{ snippet }}"
+  render does not mutate parent scope:
+  - TPL: "{% render 'snippet' %}{{ inner }}"
+    EXP: ''
+    FSS:
+      snippet: "{% assign inner = 1 %}"
+  render passes named arguments into inner scope:
+  - TPL: '{% render "product", inner_product: outer_product %}'
+    EXP: My Product
+    CTX:
+      outer_product:
+        title: My Product
+    FSS:
+      product: "{{ inner_product.title }}"
+  render tag for alias:
+  - TPL: "{% render 'product_alias' for products as product %}"
+    EXP: 'Product: Draft 151cm Product: Element 155cm '
+    CTX:
+      products:
+      - title: Draft 151cm
+      - title: Element 155cm
+    FSS:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+  render tag for:
+  - TPL: "{% render 'product' for products %}"
+    EXP: 'Product: Draft 151cm Product: Element 155cm '
+    CTX:
+      products:
+      - title: Draft 151cm
+      - title: Element 155cm
+    FSS:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+  render tag for drop:
+  - TPL: "{% render 'loop' for loop as value %}"
+    EXP: '123'
+    CTX:
+      loop: !ruby/object:TestEnumerable
+        context:
+    FSS:
+      loop: "{{ value.foo }}"
+  render tag forloop:
+  - TPL: "{% render 'product' for products %}"
+    EXP: 'Product: Draft 151cm first  index:1 Product: Element 155cm  last index:2 '
+    CTX:
+      products:
+      - title: Draft 151cm
+      - title: Element 155cm
+    FSS:
+      product: 'Product: {{ product.title }} {% if forloop.first %}first{% endif %} {% if forloop.last %}last{% endif %} index:{{ forloop.index }} '
+  render tag looks for file system in registers first:
+  - TPL: '{% render "pick_a_source" %}'
+    EXP: from register file system
+    FSS:
+      pick_a_source: from register file system
+  render tag with:
+  - TPL: "{% render 'product' with products[0] %}"
+    EXP: 'Product: Draft 151cm '
+    CTX:
+      products:
+      - title: Draft 151cm
+      - title: Element 155cm
+    FSS:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+  render tag with alias:
+  - TPL: "{% render 'product_alias' with products[0] as product %}"
+    EXP: 'Product: Draft 151cm '
+    CTX:
+      products:
+      - title: Draft 151cm
+      - title: Element 155cm
+    FSS:
+      product: 'Product: {{ product.title }} '
+      product_alias: 'Product: {{ product.title }} '
+  render tag with drop:
+  - TPL: "{% render 'loop' with loop as value %}"
+    EXP: TestEnumerable
+    CTX:
+      loop: !ruby/object:TestEnumerable
+        context:
+    FSS:
+      loop: "{{ value }}"
+  render tag within if statement:
+  - TPL: '{% if true %}{% render "snippet" %}{% endif %}'
+    EXP: my message
+    FSS:
+      snippet: my message
+  render with no arguments:
+  - TPL: '{% render "source" %}'
+    EXP: rendered content
+    FSS:
+      source: rendered content

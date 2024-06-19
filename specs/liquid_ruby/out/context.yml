@@ -1,0 +1,356 @@
+---
+Context:
+  access hashes with hash access variables:
+  - TPL: "{{ products[nested.var].last }}"
+    EXP: freestyle
+    CTX:
+      var: tags
+      nested:
+        var: tags
+      products:
+        count: 5
+        tags:
+        - deepsnow
+        - freestyle
+  - TPL: "{{ products[var].first }}"
+    EXP: deepsnow
+    CTX:
+      var: tags
+      nested:
+        var: tags
+      products:
+        count: 5
+        tags:
+        - deepsnow
+        - freestyle
+  access hashes with hash notation:
+  - TPL: '{{ product["variants"][1]["title"] }}'
+    EXP: element151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: '{{ product["variants"][0]["title"] }}'
+    EXP: draft151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: '{{ product["variants"][0]["title"] }}'
+    EXP: draft151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: '{{ products["tags"].first }}'
+    EXP: deepsnow
+    CTX:
+      products:
+        count: 5
+        tags:
+        - deepsnow
+        - freestyle
+  - TPL: '{{ products["count"] }}'
+    EXP: '5'
+    CTX:
+      products:
+        count: 5
+        tags:
+        - deepsnow
+        - freestyle
+  - TPL: '{{ product["variants"].last["title"] }}'
+    EXP: element151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: '{{ products["tags"][0] }}'
+    EXP: deepsnow
+    CTX:
+      products:
+        count: 5
+        tags:
+        - deepsnow
+        - freestyle
+  access variable with hash notation:
+  - TPL: '{{ ["foo"] }}'
+    EXP: baz
+    CTX:
+      foo: baz
+  - TPL: "{{ [bar] }}"
+    EXP: baz
+    CTX:
+      foo: baz
+      bar: foo
+  array notation:
+  - TPL: "{{ test[0] }}"
+    EXP: a
+    CTX:
+      test:
+      - a
+      - b
+  - TPL: "{% if test[2] == nil %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      test:
+      - a
+      - b
+  - TPL: "{{ test[1] }}"
+    EXP: b
+    CTX:
+      test:
+      - a
+      - b
+  digits:
+  - TPL: "{% if 100 == expect %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      expect: 100
+  - TPL: "{% if 100.00 == expect %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      expect: 100.0
+  first can appear in middle of callchain:
+  - TPL: "{{ product.variants[0].title }}"
+    EXP: draft151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: "{{ product.variants.last.title }}"
+    EXP: element151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: "{{ product.variants[1].title }}"
+    EXP: element151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  - TPL: "{{ product.variants.first.title }}"
+    EXP: draft151cm
+    CTX:
+      product:
+        variants:
+        - title: draft151cm
+        - title: element151cm
+  hash notation only for hash access:
+  - TPL: "{{ array.first }}"
+    EXP: '1'
+    CTX:
+      array:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  - TPL: '{% if array["first"] == nil %}pass{% endif %}'
+    EXP: pass
+    CTX:
+      array:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  - TPL: '{{ hash["first"] }}'
+    EXP: Hello
+    CTX:
+      hash:
+        first: Hello
+  hash to array transition:
+  - TPL: "{{ colors.Red[3] }}"
+    EXP: FF9999
+    CTX:
+      colors:
+        Blue:
+        - '003366'
+        - '336699'
+        - 6699CC
+        - 99CCFF
+        Green:
+        - '003300'
+        - '336633'
+        - '669966'
+        - 99CC99
+        Yellow:
+        - CC9900
+        - FFCC00
+        - FFFF99
+        - FFFFCC
+        Red:
+        - '660000'
+        - '993333'
+        - CC6666
+        - FF9999
+  - TPL: "{{ colors.Blue[0] }}"
+    EXP: '003366'
+    CTX:
+      colors:
+        Blue:
+        - '003366'
+        - '336699'
+        - 6699CC
+        - 99CCFF
+        Green:
+        - '003300'
+        - '336633'
+        - '669966'
+        - 99CC99
+        Yellow:
+        - CC9900
+        - FFCC00
+        - FFFF99
+        - FFFFCC
+        Red:
+        - '660000'
+        - '993333'
+        - CC6666
+        - FF9999
+  hierachical data:
+  - TPL: "{{ hash.name }}"
+    EXP: tobi
+    CTX:
+      hash:
+        name: tobi
+  - TPL: '{{ hash["name"] }}'
+    EXP: tobi
+    CTX:
+      hash:
+        name: tobi
+  hyphenated variable:
+  - TPL: "{{ oh-my }}"
+    EXP: godz
+    CTX:
+      oh-my: godz
+  keywords:
+  - TPL: "{% if false == expect %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      expect: false
+  - TPL: "{% if true == expect %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      expect: true
+  length query:
+  - TPL: "{% if numbers.size == 1000 %}true{% endif %}"
+    EXP: 'true'
+    CTX:
+      numbers:
+        1: 1
+        2: 2
+        3: 3
+        4: 4
+        size: 1000
+  - TPL: "{% if numbers.size == 4 %}true{% endif %}"
+    EXP: 'true'
+    CTX:
+      numbers:
+        1: 1
+        2: 2
+        3: 3
+        4: 4
+  - TPL: "{% if numbers.size == 4 %}true{% endif %}"
+    EXP: 'true'
+    CTX:
+      numbers:
+      - 1
+      - 2
+      - 3
+      - 4
+  ranges:
+  - TPL: "{{ (test..test) }}"
+    EXP: 5..5
+    CTX:
+      test: '5'
+  - "{{ (1..5) }}": 1..5
+  - TPL: "{{ (1..test) }}"
+    EXP: 1..5
+    CTX:
+      test: '5'
+  - TPL: "{% if (1..5) == expect %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      expect: !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+  recoursive array notation:
+  - TPL: "{{ test.test[0] }}"
+    EXP: '1'
+    CTX:
+      test:
+        test:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+  - TPL: "{{ test[0].test }}"
+    EXP: worked
+    CTX:
+      test:
+      - test: worked
+  strings:
+  - '{{ "hello!" }}': hello!
+  - "{{ 'hello!' }}": hello!
+  try first:
+  - TPL: "{{ test.first }}"
+    EXP: '1'
+    CTX:
+      test:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  - TPL: "{{ test.test.last }}"
+    EXP: '5'
+    CTX:
+      test:
+        test:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+  - TPL: "{{ test.test.first }}"
+    EXP: '1'
+    CTX:
+      test:
+        test:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+  - TPL: "{{ test.first }}"
+    EXP: '1'
+    CTX:
+      test:
+      - 1
+  - TPL: "{{ test.last }}"
+    EXP: '1'
+    CTX:
+      test:
+      - 1
+  - TPL: "{% if test.last == 5 %}pass{% endif %}"
+    EXP: pass
+    CTX:
+      test:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  variables not existing:
+  - "{% if does_not_exist == nil %}true{% endif %}": 'true'

@@ -1,0 +1,174 @@
+---
+TableRow:
+  blank string not iterable:
+  - TPL: "{% tablerow char in characters cols:3 %}I WILL NOT BE OUTPUT{% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      </tr>
+    CTX:
+      characters: ''
+  cols nil constant same as evaluated nil expression:
+  - TPL: "{% tablerow i in (1..2) cols:var %}{{ tablerowloop.col_last }}{% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1">false</td><td class="col2">false</td></tr>
+    CTX:
+      var:
+  - TPL: "{% tablerow i in (1..2) cols:nil %}{{ tablerowloop.col_last }}{% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1">false</td><td class="col2">false</td></tr>
+  enumerable drop:
+  - TPL: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+      <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+    CTX:
+      numbers: !ruby/object:TableRowTest::ArrayDrop
+        array:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+  offset and limit:
+  - TPL: "{% tablerow n in numbers cols:3 offset:1 limit:6%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+      <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+    CTX:
+      numbers:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+  quoted fragment:
+  - TPL: "{% tablerow n in collections['frontpage'] cols:3%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+      <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+    CTX:
+      collections:
+        frontpage:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+  - TPL: "{% tablerow n in collections.frontpage cols:3%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+      <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+    CTX:
+      collections:
+        frontpage:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+  table col counter:
+  - TPL: "{% tablerow n in numbers cols:2%}{{tablerowloop.col}}{% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1">1</td><td class="col2">2</td></tr>
+      <tr class="row2"><td class="col1">1</td><td class="col2">2</td></tr>
+      <tr class="row3"><td class="col1">1</td><td class="col2">2</td></tr>
+    CTX:
+      numbers:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+  table row:
+  - TPL: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      </tr>
+    CTX:
+      numbers: []
+  - TPL: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+      <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+    CTX:
+      numbers:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+  table row with different cols:
+  - TPL: "{% tablerow n in numbers cols:5%} {{n}} {% endtablerow %}"
+    EXP: |
+      <tr class="row1">
+      <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td><td class="col4"> 4 </td><td class="col5"> 5 </td></tr>
+      <tr class="row2"><td class="col1"> 6 </td></tr>
+    CTX:
+      numbers:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+  tablerow loop drop attributes:
+  - TPL: |-
+      {% tablerow i in (1...2) %}
+      col: {{ tablerowloop.col }}
+      col0: {{ tablerowloop.col0 }}
+      col_first: {{ tablerowloop.col_first }}
+      col_last: {{ tablerowloop.col_last }}
+      first: {{ tablerowloop.first }}
+      index: {{ tablerowloop.index }}
+      index0: {{ tablerowloop.index0 }}
+      last: {{ tablerowloop.last }}
+      length: {{ tablerowloop.length }}
+      rindex: {{ tablerowloop.rindex }}
+      rindex0: {{ tablerowloop.rindex0 }}
+      row: {{ tablerowloop.row }}
+      {% endtablerow %}
+    EXP: |
+      <tr class="row1">
+      <td class="col1">
+      col: 1
+      col0: 0
+      col_first: true
+      col_last: false
+      first: true
+      index: 1
+      index0: 0
+      last: false
+      length: 2
+      rindex: 2
+      rindex0: 1
+      row: 1
+      </td><td class="col2">
+      col: 2
+      col0: 1
+      col_first: false
+      col_last: true
+      first: false
+      index: 2
+      index0: 1
+      last: true
+      length: 2
+      rindex: 1
+      rindex0: 0
+      row: 1
+      </td></tr>

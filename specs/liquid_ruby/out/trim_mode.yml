@@ -1,0 +1,351 @@
+---
+TrimMode:
+  complex trim:
+  - TPL: |2
+            <div>
+              {%- if true -%}
+                {%- if true -%}
+                  <p>
+                    {{- 'John' -}}
+                  </p>
+                {%- endif -%}
+              {%- endif -%}
+            </div>
+    EXP: "      <div><p>John</p></div>\n"
+  complex trim output:
+  - TPL: |2
+            <div>
+              <p>
+                {{- 'John' -}}
+                {{- '30' -}}
+              </p>
+              <b>
+                {{ 'John' -}}
+                {{- '30' }}
+              </b>
+              <i>
+                {{- 'John' }}
+                {{ '30' -}}
+              </i>
+            </div>
+    EXP: |2
+            <div>
+              <p>John30</p>
+              <b>
+                John30
+              </b>
+              <i>John
+                30</i>
+            </div>
+  no trim output:
+  - "<p>{{- 'John' -}}</p>": "<p>John</p>"
+  no trim tags:
+  - "<p>{%- if true -%}yes{%- endif -%}</p>": "<p>yes</p>"
+  - "<p>{%- if false -%}no{%- endif -%}</p>": "<p></p>"
+  post and pre trim tags:
+  - TPL: |2
+            <div>
+              <p>
+                {% if true -%}
+                yes
+                {%- endif %}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                yes
+              </p>
+            </div>
+  - TPL: |2
+            <div>
+              <p>
+                {% if false -%}
+                no
+                {%- endif %}
+              </p>
+            </div>
+    EXP: "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+  post trim output:
+  - TPL: |2
+            <div>
+              <p>
+                {{ 'John' -}}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                John</p>
+            </div>
+  post trim tags:
+  - TPL: |2
+            <div>
+              <p>
+                {% if false -%}
+                no
+                {% endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                </p>
+            </div>
+  - TPL: |2
+            <div>
+              <p>
+                {% if true -%}
+                yes
+                {% endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                yes
+                </p>
+            </div>
+  pre and post trim tags:
+  - TPL: |2
+            <div>
+              <p>
+                {%- if false %}
+                no
+                {% endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p></p>
+            </div>
+  - TPL: |2
+            <div>
+              <p>
+                {%- if true %}
+                yes
+                {% endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                yes
+                </p>
+            </div>
+  pre trim blank preceding text:
+  - ? "{{ 'B' }} \n{%- if true %}C{% endif %}"
+    : BC
+  - ? |2-
+
+      {%- if true %}{% endif %}
+    : ''
+  - ? |2-
+
+      {%- raw %}{% endraw %}
+    : ''
+  pre trim output:
+  - TPL: |2
+            <div>
+              <p>
+                {{- 'John' }}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>John
+              </p>
+            </div>
+  pre trim tags:
+  - TPL: |2
+            <div>
+              <p>
+                {%- if false %}
+                no
+                {%- endif %}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+              </p>
+            </div>
+  - TPL: |2
+            <div>
+              <p>
+                {%- if true %}
+                yes
+                {%- endif %}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                yes
+              </p>
+            </div>
+  raw output:
+  - TPL: |2
+            <div>
+              {% raw %}
+                {%- if true -%}
+                  <p>
+                    {{- 'John' -}}
+                  </p>
+                {%- endif -%}
+              {% endraw %}
+            </div>
+    EXP: "      <div>\n        \n          {%- if true -%}\n            <p>\n              {{- 'John' -}}\n            </p>\n          {%- endif -%}\n        \n      </div>\n"
+  right trim followed by tag:
+  - '{{ "a" -}}{{ "b" }} c': ab c
+  single line inner tag:
+  - "<p> {% if true -%} yes {%- endif %} </p>": "<p> yes </p>"
+  - "<p> {% if false -%} no {%- endif %} </p>": "<p>  </p>"
+  single line outer tag:
+  - "<p> {%- if true %} yes {% endif -%} </p>": "<p> yes </p>"
+  - "<p> {%- if false %} no {% endif -%} </p>": "<p></p>"
+  single line post tag:
+  - "<p> {% if true -%} yes {% endif -%} </p>": "<p> yes </p>"
+  - "<p> {% if false -%} no {% endif -%} </p>": "<p> </p>"
+  single line pre tag:
+  - "<p> {%- if true %} yes {%- endif %} </p>": "<p> yes </p>"
+  - "<p> {%- if false %} no {%- endif %} </p>": "<p> </p>"
+  standard output:
+  - TPL: |2
+            <div>
+              <p>
+                {{ 'John' }}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>
+                John
+              </p>
+            </div>
+  standard tags:
+  - TPL: |2
+            <div>
+              <p>
+                {% if false %}
+                no
+                {% endif %}
+              </p>
+            </div>
+    EXP: "      <div>\n        <p>\n          \n        </p>\n      </div>\n"
+  - TPL: |2
+            <div>
+              <p>
+                {% if true %}
+                yes
+                {% endif %}
+              </p>
+            </div>
+    EXP: "      <div>\n        <p>\n          \n          yes\n          \n        </p>\n      </div>\n"
+  tag output with multiple blank lines:
+  - TPL: |2
+            <div>
+              <p>
+
+
+                {%- if true -%}
+                yes
+                {%- endif -%}
+
+
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>yes</p>
+            </div>
+  trim blank:
+  - foo {{-}} bar: foobar
+  trim output:
+  - TPL: |2
+            <div>
+              <p>
+                {{- 'John' -}}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>John</p>
+            </div>
+  trim tags:
+  - TPL: |2
+            <div>
+              <p>
+                {%- if false -%}
+                no
+                {%- endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p></p>
+            </div>
+  - TPL: |2
+            <div>
+              <p>
+                {%- if true -%}
+                yes
+                {%- endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>yes</p>
+            </div>
+  variable output with multiple blank lines:
+  - TPL: |2
+            <div>
+              <p>
+
+
+                {{- 'John' -}}
+
+
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>John</p>
+            </div>
+  whitespace trim output:
+  - TPL: |2
+            <div>
+              <p>
+                {{- 'John' -}},
+                {{- '30' -}}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>John,30</p>
+            </div>
+  whitespace trim tags:
+  - TPL: |2
+            <div>
+              <p>
+                {%- if false -%}
+                no
+                {%- endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p></p>
+            </div>
+  - TPL: |2
+            <div>
+              <p>
+                {%- if true -%}
+                yes
+                {%- endif -%}
+              </p>
+            </div>
+    EXP: |2
+            <div>
+              <p>yes</p>
+            </div>

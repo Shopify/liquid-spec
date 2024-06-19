@@ -1,0 +1,327 @@
+---
+StandardFilters:
+  abs:
+  - "{{ 0 | abs }}": '0'
+  - "{{ 17 | abs }}": '17'
+  - "{{ '-17' | abs }}": '17'
+  - "{{ '0' | abs }}": '0'
+  - "{{ -17 | abs }}": '17'
+  - "{{ '17.42' | abs }}": '17.42'
+  - "{{ -17.42 | abs }}": '17.42'
+  - "{{ '-17.42' | abs }}": '17.42'
+  - "{{ 17.42 | abs }}": '17.42'
+  - "{{ '17' | abs }}": '17'
+  append:
+  - TPL: "{{ a | append: b}}"
+    EXP: bcd
+    CTX:
+      a: bc
+      b: d
+  - TPL: "{{ a | append: 'd'}}"
+    EXP: bcd
+    CTX:
+      a: bc
+      b: d
+  at least:
+  - TPL: "{{ width | at_least:5 }}"
+    EXP: '6'
+    CTX:
+      width: !ruby/object:NumberLikeThing
+        amount: 6
+  - TPL: "{{ width | at_least:5 }}"
+    EXP: '5'
+    CTX:
+      width: !ruby/object:NumberLikeThing
+        amount: 4
+  - "{{ 4.5 | at_least:5 }}": '5'
+  - "{{ 5 | at_least:6 }}": '6'
+  - TPL: "{{ 5 | at_least: width }}"
+    EXP: '6'
+    CTX:
+      width: !ruby/object:NumberLikeThing
+        amount: 6
+  - "{{ 5 | at_least:4 }}": '5'
+  - "{{ 5 | at_least:5 }}": '5'
+  at most:
+  - "{{ 5 | at_most:5 }}": '5'
+  - TPL: "{{ width | at_most:5 }}"
+    EXP: '5'
+    CTX:
+      width: !ruby/object:NumberLikeThing
+        amount: 6
+  - "{{ 5 | at_most:4 }}": '4'
+  - "{{ 5 | at_most:6 }}": '5'
+  - TPL: "{{ 5 | at_most: width }}"
+    EXP: '4'
+    CTX:
+      width: !ruby/object:NumberLikeThing
+        amount: 4
+  - "{{ 4.5 | at_most:5 }}": '4.5'
+  - TPL: "{{ width | at_most:5 }}"
+    EXP: '4'
+    CTX:
+      width: !ruby/object:NumberLikeThing
+        amount: 4
+  cannot access private methods:
+  - "{{ 'a' | to_number }}": a
+  ceil:
+  - "{{ '4.3' | ceil }}": '5'
+  - TPL: "{{ input | ceil }}"
+    EXP: '5'
+    CTX:
+      input: 4.6
+  - TPL: "{{ price | ceil }}"
+    EXP: '5'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 4.6
+  date raises nothing:
+  - "{{ '' | date: '%D' }}": ''
+  - "{{ 'abc' | date: '%D' }}": abc
+  default:
+  - TPL: "{{ drop | default: 'bar' }}"
+    EXP: Yay
+    CTX:
+      drop: !ruby/object:BooleanDrop
+        context:
+        value: true
+  - "{{ false | default: 'bar' }}": bar
+  - TPL: "{{ drop | default: 'bar' }}"
+    EXP: bar
+    CTX:
+      drop: !ruby/object:BooleanDrop
+        context:
+        value: false
+  default handle false:
+  - "{{ false | default: 'bar', allow_false: true }}": 'false'
+  - TPL: "{{ drop | default: 'bar', allow_false: true }}"
+    EXP: Nay
+    CTX:
+      drop: !ruby/object:BooleanDrop
+        context:
+        value: false
+  - TPL: "{{ drop | default: 'bar', allow_false: true }}"
+    EXP: Yay
+    CTX:
+      drop: !ruby/object:BooleanDrop
+        context:
+        value: true
+  divided by:
+  - "{{ 2.0 | divided_by:4 }}": '0.5'
+  - "{{ 14 | divided_by:3 }}": '4'
+  - "{{ 15 | divided_by:3 }}": '5'
+  - TPL: "{{ price | divided_by:2 }}"
+    EXP: '5'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 10
+  - "{{ 12 | divided_by:3 }}": '4'
+  first and last call to liquid:
+  - TPL: "{{ foo | last }}"
+    EXP: foobar
+    CTX:
+      foo:
+      - !ruby/object:ThingWithToLiquid {}
+  - TPL: "{{ foo | first }}"
+    EXP: foobar
+    CTX:
+      foo:
+      - !ruby/object:ThingWithToLiquid {}
+  floor:
+  - TPL: "{{ input | floor }}"
+    EXP: '4'
+    CTX:
+      input: 4.6
+  - "{{ '4.3' | floor }}": '4'
+  - TPL: "{{ price | floor }}"
+    EXP: '5'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 5.4
+  legacy map on hashes with dynamic key:
+  - TPL: "{% assign key = 'foo' %}{{ thing | map: key | map: 'bar' }}"
+    EXP: '42'
+    CTX:
+      thing:
+        foo:
+          bar: 42
+  lstrip:
+  - TPL: "{{ source | lstrip }}"
+    EXP: "ab c  \n \t"
+    CTX:
+      source: " \tab c  \n \t"
+  - TPL: "{{ source | lstrip }}"
+    EXP: 'ab c  '
+    CTX:
+      source: " ab c  "
+  map:
+  - TPL: "{{ ary | map:'foo' | map:'bar' }}"
+    EXP: abc
+    CTX:
+      ary:
+      - foo:
+          bar: a
+      - foo:
+          bar: b
+      - foo:
+          bar: c
+  map calls context=:
+  - "{:test=>1234}": "{:test=>1234}"
+  map calls to liquid:
+  - TPL: '{{ foo | map: "whatever" }}'
+    EXP: 'woot: 1'
+    CTX:
+      foo:
+      - !ruby/object:TestThing
+        foo: 0
+  map doesnt call arbitrary stuff:
+  - '{{ "foo" | map: "__id__" }}': ''
+  - '{{ "foo" | map: "inspect" }}': ''
+  map on hashes:
+  - TPL: '{{ thing | map: "foo" | map: "bar" }}'
+    EXP: '4217'
+    CTX:
+      thing:
+        foo:
+        - bar: 42
+        - bar: 17
+  minus:
+  - "{{ '4.3' | minus:'2' }}": '2.3'
+  - TPL: "{{ price | minus:'2' }}"
+    EXP: '5'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 7
+  - TPL: "{{ input | minus:operand }}"
+    EXP: '4'
+    CTX:
+      input: 5
+      operand: 1
+  modulo:
+  - "{{ 3 | modulo:2 }}": '1'
+  - TPL: "{{ price | modulo:2 }}"
+    EXP: '1'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 3
+  newlines to br:
+  - TPL: "{{ source | newline_to_br }}"
+    EXP: |-
+      a<br />
+      b<br />
+      c
+    CTX:
+      source: |-
+        a
+        b
+        c
+  - TPL: "{{ source | newline_to_br }}"
+    EXP: |-
+      a<br />
+      b<br />
+      c
+    CTX:
+      source: "a\r\nb\nc"
+  pipes in string arguments:
+  - "{{ 'foo|bar' | remove: '|' }}": foobar
+  plus:
+  - "{{ '1' | plus:'1.0' }}": '2.0'
+  - "{{ 1 | plus:1 }}": '2'
+  - TPL: "{{ price | plus:'2' }}"
+    EXP: '5'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 3
+  prepend:
+  - TPL: "{{ a | prepend: 'a'}}"
+    EXP: abc
+    CTX:
+      a: bc
+      b: a
+  - TPL: "{{ a | prepend: b}}"
+    EXP: abc
+    CTX:
+      a: bc
+      b: a
+  remove:
+  - "{{ '1 1 1 1' | remove: 1 }}": "   "
+  - "{{ '1 1 1 1' | remove_first: 1 }}": " 1 1 1"
+  - "{{ '1 1 1 1' | remove_last: 1 }}": '1 1 1 '
+  replace:
+  - "{{ '1 1 1 1' | replace: '1', 2 }}": 2 2 2 2
+  - "{{ '1 1 1 1' | replace_last: '1', 2 }}": 1 1 1 2
+  - "{{ '1 1 1 1' | replace_first: '1', 2 }}": 2 1 1 1
+  round:
+  - "{{ '4.3' | round }}": '4'
+  - TPL: "{{ input | round: 2 }}"
+    EXP: '4.56'
+    CTX:
+      input: 4.5612
+  - TPL: "{{ price | round }}"
+    EXP: '5'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 4.6
+  - TPL: "{{ price | round }}"
+    EXP: '4'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 4.3
+  - TPL: "{{ input | round }}"
+    EXP: '5'
+    CTX:
+      input: 4.6
+  rstrip:
+  - TPL: "{{ source | rstrip }}"
+    EXP: " \tab c"
+    CTX:
+      source: " \tab c  \n \t"
+  - TPL: "{{ source | rstrip }}"
+    EXP: " ab c"
+    CTX:
+      source: " ab c  "
+  sort works on enumerables:
+  - TPL: '{{ foo | sort: "bar" | map: "foo" }}'
+    EXP: '213'
+    CTX:
+      foo: !ruby/object:TestEnumerable
+        context:
+  strip:
+  - TPL: "{{ source | strip }}"
+    EXP: ab c
+    CTX:
+      source: " ab c  "
+  - TPL: "{{ source | strip }}"
+    EXP: ab c
+    CTX:
+      source: " \tab c  \n \t"
+  strip newlines:
+  - TPL: "{{ source | strip_newlines }}"
+    EXP: abc
+    CTX:
+      source: |-
+        a
+        b
+        c
+  - TPL: "{{ source | strip_newlines }}"
+    EXP: abc
+    CTX:
+      source: "a\r\nb\nc"
+  times:
+  - TPL: "{{ price | times:2 }}"
+    EXP: '4'
+    CTX:
+      price: !ruby/object:NumberLikeThing
+        amount: 2
+  - "{{ 3 | times:4 }}": '12'
+  - "{{ 0.0725 | times:100 }}": '7.25'
+  - "{{ 'foo' | times:4 }}": '0'
+  - "{{ '2.1' | times:3 | replace: '.','-' | plus:0}}": '6'
+  - '{{ "-0.0725" | times: -100 }}': '7.25'
+  - '{{ "-0.0725" | times:100 }}': "-7.25"
+  truncate calls to liquid:
+  - TPL: "{{ foo | truncate: 5 }}"
+    EXP: wo...
+    CTX:
+      foo: !ruby/object:TestThing
+        foo: 0

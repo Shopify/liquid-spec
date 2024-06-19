@@ -1,0 +1,4 @@
+---
+ContinueTag:
+  continue with no block:
+  - "{% continue %}": ''
