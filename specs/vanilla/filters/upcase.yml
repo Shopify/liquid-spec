@@ -1,0 +1,69 @@
+upcase filter:
+
+  capitalizes every letter of a string:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: TESTING
+    CTX: { foo0: Testing }
+
+  tolerates null:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: ''
+    CTX: { foo0: }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: TESTENUMERABLE
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: 'TRUE'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '["FOO", "BAR"]'
+    CTX: { foo0: [ foo, bar ] }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: TESTDROP
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '[{"FOO"=>"BAR"}, {"FOO"=>123}, {"FOO"=>NIL}, {"FOO"=>TRUE}, {"FOO"=>["FOO", "BAR"]}]'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: 'WOOT: -12'
+    CTX: { foo0: !ruby/object:TestThing { foo: -13 } }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: 'FALSE'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: FOO
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '{:FOO=>"BAR"}'
+    CTX: 
+      foo0: 
+        :foo: bar
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '{1=>"BAR"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: '{"FOO"=>"BAR"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | upcase }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }

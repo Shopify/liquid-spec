@@ -1,0 +1,84 @@
+url_decode filter:
+
+  unescapes url-escpaed strings:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo bar
+    CTX: { foo0: foo+bar }
+
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo bar
+    CTX: { foo0: foo%20bar }
+
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo+1@example.com
+    CTX: { foo0: foo%2B1%40example.com }
+
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '1'
+    CTX: { foo0: 1 }
+
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '2001-02-03'
+    CTX: { foo0: 2001-02-03 }
+
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: ''
+    CTX: { foo0: }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: 'woot: -35'
+    CTX: { foo0: !ruby/object:TestThing { foo: -36 } }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | url_decode }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar

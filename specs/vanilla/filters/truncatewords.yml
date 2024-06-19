@@ -1,0 +1,104 @@
+truncatewords filter:
+
+  has no effect on strings under treshold:
+  - TPL: "{{ foo0 | truncatewords: 4 }}"
+    EXP: one two three
+    CTX: { foo0: one two three }
+
+  truncates strings longer than threshold:
+  - TPL: "{{ foo0 | truncatewords: 2 }}"
+    EXP: one two...
+    CTX: { foo0: one two three }
+  - TPL: "{{ foo0 | truncatewords: 2 }}"
+    EXP: one two...
+    CTX: { foo0: one two three four }
+
+
+  has no effect on strings at threshold:
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: one two three
+    CTX: { foo0: one two three }
+
+  works in other cases: 
+  - TPL: "{{ foo0 | truncatewords: 15 }}"
+    EXP: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one large basket (13&#8221;...
+    CTX: { foo0: "Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one large basket (13&#8221; x 16&#8221; x 10.5&#8221; high) with cover." }
+  - TPL: "{{ foo0 | truncatewords: 5 }}"
+    EXP: 测试测试测试测试
+    CTX: { foo0: 测试测试测试测试 }
+
+  takes a custom truncation marker:
+  - TPL: "{{ foo0 | truncatewords: 2, 1 }}"
+    EXP: one two1
+    CTX: { foo0: one two three }
+
+  deals with various space characters:
+  - TPL: "{{ foo0 | truncatewords: 3 }}"
+    EXP: one two three...
+    CTX: { foo0: "one  two\tthree\nfour" }
+
+  truncates to one word on 0:
+  - TPL: "{{ foo0 | truncatewords: 1 }}"
+    EXP: one...
+    CTX: { foo0: one two three four }
+  - TPL: "{{ foo0 | truncatewords: 0 }}"
+    EXP: one...
+    CTX: { foo0: one two three four }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: 'woot: -37'
+    CTX: { foo0: !ruby/object:TestThing { foo: -38 } }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | truncatewords }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }

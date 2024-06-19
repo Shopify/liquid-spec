@@ -1,0 +1,55 @@
+where filter:
+
+  selects items where a condition matches:
+  - TPL: '{{ foo0 | where: "ok", true }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta, ok: false }, { handle: gamma, ok: false }, { handle: delta, ok: true } ] }
+  - TPL: '{{ foo0 | where: "ok" }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta, ok: false }, { handle: gamma, ok: false }, { handle: delta, ok: true } ] }
+
+  with array of only unindexable values:
+  - TPL: '{{ foo0 | where: "ok", true }}'
+    EXP: ''
+    CTX: { foo0: [ ] }
+  - TPL: '{{ foo0 | where: "ok" }}'
+    EXP: ''
+    CTX: { foo0: [ ] }
+
+  with no key set:
+  - TPL: '{{ foo0 | where: "ok", true }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta }, { handle: gamma }, { handle: delta, ok: true } ] }
+  - TPL: '{{ foo0 | where: "ok" }}'
+    EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+    CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta }, { handle: gamma }, { handle: delta, ok: true } ] }
+
+  with string keys:
+  - TPL: '{{ foo0 | where: "be" }}'
+    EXP: beta
+    CTX: { foo0: [ alpha, beta, gamma, delta ] }
+
+  with no target value:
+  - TPL: '{{ foo0 | where: "foo" }}'
+    EXP: '{"foo"=>true}{"foo"=>"for sure"}'
+    CTX: { foo0: [ { foo: false }, { foo: true }, { foo: for sure }, { bar: true } ] }
+
+  with non-array map input:
+  - TPL: '{{ foo0 | where: "a", "ok" }}'
+    EXP: '{"a"=>"ok"}'
+    CTX: { foo0: { a: ok } }
+  - TPL: '{{ foo0 | where: "a", "ok" }}'
+    EXP: ''
+    CTX: { foo0: { a: not ok } }
+
+  with non-boolean value:
+  - TPL: '{{ foo0 | where: "language", "French" }}'
+    EXP: '{"message"=>"Bonjour!", "language"=>"French"}'
+    CTX: { foo0: [ { message: Bonjour!, language: French }, { message: Hello!, language: English }, { message: Hallo!, language: German } ] }
+  - TPL: '{{ foo0 | where: "language", "German" }}'
+    EXP: '{"message"=>"Hallo!", "language"=>"German"}'
+    CTX: { foo0: [ { message: Bonjour!, language: French }, { message: Hello!, language: English }, { message: Hallo!, language: German } ] }
+  - TPL: '{{ foo0 | where: "language", "English" }}'
+    EXP: '{"message"=>"Hello!", "language"=>"English"}'
+    CTX: { foo0: [ { message: Bonjour!, language: French }, { message: Hello!, language: English }, { message: Hallo!, language: German } ] }
+

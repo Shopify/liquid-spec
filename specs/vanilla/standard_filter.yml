@@ -18,11 +18,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort }}"
   EXP: 'false'
   CTX: { foo0: false }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | strip }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
@@ -34,12 +29,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | reverse }}"
   EXP: 'false'
   CTX: { foo0: false }
@@ -52,11 +41,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '{1=>"bar"}'
-  CTX:
-    foo0:
-      1: bar
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -66,9 +50,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: 'woot: -39'
   CTX: { foo0: !ruby/object:TestThing { foo: -41 } }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '{:foo=>"bar"}'
   CTX:
@@ -82,11 +63,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: ezpmb289PiJiYXIifQ==
   CTX:
@@ -97,9 +73,6 @@ all filters never raise non liquid exception:894:
   CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | size }}"
   EXP: '0'
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | strip_html }}"
   EXP: '{:foo=>"bar"}'
@@ -118,15 +91,9 @@ all filters never raise non liquid exception:894:
   CTX:
     foo0:
       :foo: bar
-- TPL: "{{ foo0 | upcase }}"
-  EXP: TESTENUMERABLE
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | h }}"
   EXP: 'true'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
-  CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: { foo: bar } }
@@ -144,9 +111,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape_once }}"
   EXP: '0'
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
@@ -190,13 +154,7 @@ all filters never raise non liquid exception:894:
   CTX: 
     foo0:
       :foo: bar
-- TPL: "{{ foo0 | uniq }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | default }}"
-  EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | uniq }}"
   EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | reverse }}"
@@ -226,9 +184,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | h }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | size }}"
   EXP: '2'
   CTX: { foo0: [foo, bar] }
@@ -274,12 +229,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: dHJ1ZQ==
   CTX: { foo0: true }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: 'woot: -37'
-  CTX: { foo0: !ruby/object:TestThing { foo: -38 } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: eyJmb28iPT4iYmFyIn0=
   CTX: { foo0: { foo: bar } }
@@ -318,9 +267,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: true }
@@ -341,9 +287,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | escape_once }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | h }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -427,9 +370,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | lstrip }}"
   EXP: 'woot: -30'
   CTX: { foo0: !ruby/object:TestThing { foo: -31 } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | size }}"
   EXP: '1'
   CTX: { foo0: { 1: bar } }
@@ -472,9 +412,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: TestEnumerable
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
@@ -493,9 +430,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: LTEyMzQuMDAzMDMwMzAz
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | size }}"
   EXP: '0'
   CTX: { foo0: 0.0 }
@@ -559,9 +493,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | rstrip }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | capitalize }}"
   EXP: '123'
   CTX: { foo0: 123 }
@@ -596,12 +527,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip_html }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "%7B%22foo%22%3D%3E%22bar%22%7D"
-  CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -614,9 +539,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | capitalize }}"
   EXP: '["foo", "bar"]'
   CTX: { foo0: [ foo, bar ] }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: ezE9PiJiYXIifQ==
   CTX: { foo0: { 1: bar } }
@@ -626,18 +548,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: { foo: bar } }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: 'TRUE'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | h }}"
   EXP: ''
   CTX: { foo0: }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '{1=>"bar"}'
-  CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | join }}"
   EXP: 'false'
   CTX: { foo0: false }
@@ -667,9 +583,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort }}"
   EXP: 'woot: -33'
   CTX: { foo0: !ruby/object:TestThing { foo: -35 } }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '["FOO", "BAR"]'
-  CTX: { foo0: [ foo, bar ] }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: 'true'
   CTX: { foo0: true }
@@ -685,9 +598,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: [ foo, bar ] }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | size }}"
   EXP: '0'
   CTX: { foo0: 1234.3838300038383 }
@@ -711,9 +621,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: barfoo
   CTX: { foo0: [ foo, bar ] }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: '["foo", "bar"]'
   CTX: { foo0: [ foo, bar ] }
@@ -735,33 +642,18 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: MC4w
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | truncate }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: '123'
   CTX: { foo0: 123 }
 - TPL: "{{ foo0 | floor }}"
   EXP: '1234'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: 'woot: -35'
-  CTX: { foo0: !ruby/object:TestThing { foo: -36 } }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "%5B%7B%22foo%22%3D%3E%22bar%22%7D%2C+%7B%22foo%22%3D%3E123%7D%2C+%7B%22foo%22%3D%3Enil%7D%2C+%7B%22foo%22%3D%3Etrue%7D%2C+%7B%22foo%22%3D%3E%5B%22foo%22%2C+%22bar%22%5D%7D%5D"
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: TESTDROP
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | strip }}"
   EXP: 'false'
   CTX: { foo0: false }
@@ -774,15 +666,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '[{"FOO"=>"BAR"}, {"FOO"=>123}, {"FOO"=>NIL}, {"FOO"=>TRUE}, {"FOO"=>["FOO", "BAR"]}]'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | truncate }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -862,12 +745,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: 'WOOT: -12'
-  CTX: { foo0: !ruby/object:TestThing { foo: -13 } }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: WyJmb28iLCAiYmFyIl0=
   CTX: { foo0: [foo, bar] }
@@ -896,9 +773,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: nil }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | downcase }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -917,9 +791,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: woot%3A+-34
-  CTX: { foo0: !ruby/object:TestThing { foo: -35 } }
 - TPL: "{{ foo0 | sort }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -969,12 +840,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | compact }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "%7B1%3D%3E%22bar%22%7D"
-  CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '["foo", "bar"]'
-  CTX: { foo0: [foo, bar] }
 - TPL: "{{ foo0 | join }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -1014,18 +879,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | downcase }}"
   EXP: 'woot: -13'
   CTX: { foo0: !ruby/object:TestThing { foo: -14 } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: TestEnumerable
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: 'false'
-  CTX: { foo0: false }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: { foo: bar } }
@@ -1050,12 +906,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | join }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: 'FALSE'
-  CTX: { foo0: false }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '{1=>"bar"}'
-  CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: 'woot: -10'
   CTX: { foo0: !ruby/object:TestThing { foo: -11 } }
@@ -1071,9 +921,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | capitalize }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: TestEnumerable
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | downcase }}"
   EXP: testdrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
@@ -1092,9 +939,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | join }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: MTIzNC4zODM4MzAwMDM4Mzgz
   CTX: { foo0: 1234.3838300038383 }
@@ -1118,9 +962,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: foobar
-  CTX: { foo0: [foo, bar] }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: 0.0 }
@@ -1133,18 +974,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: 0 }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '["foo", "bar"]'
-  CTX: { foo0: [foo, bar] }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | strip }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
-  CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
 - TPL: "{{ foo0 | sort }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -1154,18 +986,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | sort_natural }}"
   EXP: '{1=>"bar"}'
   CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | size }}"
   EXP: '0'
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | reverse }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -1175,9 +1001,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: false }
@@ -1187,9 +1010,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | capitalize }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -1202,9 +1022,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | join }}"
   EXP: '123'
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "%5B%22foo%22%2C+%22bar%22%5D"
-  CTX: { foo0: [ foo, bar ] }
 - TPL: "{{ foo0 | default }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
@@ -1226,9 +1043,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | reverse }}"
   EXP: ''
   CTX: { foo0: }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '1234.3838300038383'
-  CTX: { foo0: 1234.3838300038383 }
 - TPL: "{{ foo0 | reverse }}"
   EXP: 'true'
   CTX: { foo0: true }
@@ -1250,27 +1064,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | h }}"
   EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: FOO
-  CTX: { foo0: foo }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: 123 }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: foo
-  CTX: { foo0: foo }
 - TPL: "{{ foo0 | newline_to_br }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | escape }}"
   EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
   CTX: { foo0: { foo: bar } }
@@ -1295,11 +1094,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | default }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: "%7B%3Afoo%3D%3E%22bar%22%7D"
-  CTX: 
-    foo0: 
-      :foo: bar
 - TPL: "{{ foo0 | lstrip }}"
   EXP: '{"foo"=>"bar"}'
   CTX: { foo0: { foo: bar } }
@@ -1330,9 +1124,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip_html }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | h }}"
   EXP: "-1234.003030303"
   CTX: { foo0: -1234.003030303 }
@@ -1419,9 +1210,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | downcase }}"
   EXP: '{1=>"bar"}'
   CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | escape }}"
   EXP: TestDrop
   CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
@@ -1435,9 +1223,6 @@ all filters never raise non liquid exception:894:
   EXP: '0'
   CTX: { foo0: }
 - TPL: "{{ foo0 | strip_newlines }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
-- TPL: "{{ foo0 | url_encode }}"
   EXP: '0'
   CTX: { foo0: 0 }
 - TPL: "{{ foo0 | rstrip }}"
@@ -1455,11 +1240,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort }}"
   EXP: '{1=>"bar"}'
   CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '{:foo=>"bar"}'
-  CTX:
-    foo0:
-      :foo: bar
 - TPL: "{{ foo0 | downcase }}"
   EXP: 'true'
   CTX: { foo0: true }
@@ -1499,9 +1279,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | ceil }}"
   EXP: '0'
   CTX: { foo0: { 1: bar } }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: "-99999999"
-  CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: MTIz
   CTX: { foo0: 123 }
@@ -1514,17 +1291,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: 'woot: -1'
-  CTX: { foo0: !ruby/object:TestThing { foo: -3 } }
 - TPL: "{{ foo0 | last }}"
   EXP: ''
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '{:FOO=>"BAR"}'
-  CTX: 
-    foo0: 
-      :foo: bar
 - TPL: "{{ foo0 | escape }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -1559,9 +1328,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | truncate }}"
   EXP: foo
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '{"foo"=>"bar"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | escape_once }}"
   EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
   CTX: { foo0: { foo: bar } }
@@ -1577,9 +1343,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | compact }}"
   EXP: '{"foo"=>1, "bar"=>2}{"foo"=>2, "bar"=>1}{"foo"=>3, "bar"=>3}'
   CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: }
@@ -1607,15 +1370,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
-  CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: LTk5OTk5OTk5
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '{1=>"BAR"}'
-  CTX: { foo0: { 1: bar } }
 - TPL: "{{ foo0 | downcase }}"
   EXP: '{"foo"=>"bar"}'
   CTX: { foo0: { foo: bar } }
@@ -1628,12 +1385,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | downcase }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: ''
-  CTX: { foo0: }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: "-1234.003030303"
-  CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | abs }}"
   EXP: '0'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
@@ -1657,15 +1408,9 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | downcase }}"
   EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | strip_newlines }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
@@ -1687,18 +1432,12 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | round }}"
   EXP: '0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '123'
-  CTX: { foo0: 123 }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
 - TPL: "{{ foo0 | strip_html }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: 'false'
-  CTX: { foo0: false }
 - TPL: "{{ foo0 | base64_url_safe_encode }}"
   EXP: dHJ1ZQ==
   CTX: { foo0: true }
@@ -1714,36 +1453,21 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | sort }}"
   EXP: barfoo
   CTX: { foo0: [ foo, bar ] }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | capitalize }}"
   EXP: '1234.3838300038383'
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: ''
-  CTX: { foo0: }
 - TPL: "{{ foo0 | compact }}"
   EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: 'true'
-  CTX: { foo0: true }
 - TPL: "{{ foo0 | round }}"
   EXP: "-1234"
   CTX: { foo0: -1234.003030303 }
 - TPL: "{{ foo0 | truncate }}"
   EXP: 'true'
   CTX: { foo0: true }
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: TestDrop
-  CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
 - TPL: "{{ foo0 | floor }}"
   EXP: '0'
   CTX: { foo0: foo }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '0'
-  CTX: { foo0: 0 }
 - TPL: "{{ foo0 | join }}"
   EXP: '0.0'
   CTX: { foo0: 0.0 }
@@ -1776,9 +1500,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | first }}"
   EXP: ''
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '0.0'
-  CTX: { foo0: 0.0 }
 - TPL: "{{ foo0 | lstrip }}"
   EXP: '0'
   CTX: { foo0: 0 }
@@ -1803,9 +1524,6 @@ all filters never raise non liquid exception:894:
 - TPL: "{{ foo0 | base64_encode }}"
   EXP: MTIzNC4zODM4MzAwMDM4Mzgz
   CTX: { foo0: 1234.3838300038383 }
-- TPL: "{{ foo0 | upcase }}"
-  EXP: '{"FOO"=>"BAR"}'
-  CTX: { foo0: { foo: bar } }
 - TPL: "{{ foo0 | rstrip }}"
   EXP: "-99999999"
   CTX: { foo0: -99999999 }
@@ -2272,170 +1990,3 @@ truncate:
   EXP: '12341'
   CTX: { foo0: '1234567890' }
 
-truncatewords:
-- TPL: "{{ foo0 | truncatewords: 4 }}"
-  EXP: one two three
-  CTX: { foo0: one two three }
-
-- TPL: "{{ foo0 | truncatewords: 2 }}"
-  EXP: one two...
-  CTX: { foo0: one two three }
-
-- TPL: "{{ foo0 | truncatewords }}"
-  EXP: one two three
-  CTX: { foo0: one two three }
-
-- TPL: "{{ foo0 | truncatewords: 15 }}"
-  EXP: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one large basket (13&#8221;...
-  CTX: { foo0: "Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one large basket (13&#8221; x 16&#8221; x 10.5&#8221; high) with cover." }
-
-- TPL: "{{ foo0 | truncatewords: 5 }}"
-  EXP: 测试测试测试测试
-  CTX: { foo0: 测试测试测试测试 }
-
-- TPL: "{{ foo0 | truncatewords: 2, 1 }}"
-  EXP: one two1
-  CTX: { foo0: one two three }
-
-- TPL: "{{ foo0 | truncatewords: 3 }}"
-  EXP: one two three...
-  CTX: { foo0: "one  two\tthree\nfour" }
-
-- TPL: "{{ foo0 | truncatewords: 2 }}"
-  EXP: one two...
-  CTX: { foo0: one two three four }
-
-- TPL: "{{ foo0 | truncatewords: 0 }}"
-  EXP: one...
-  CTX: { foo0: one two three four }
-
-uniq:
-- TPL: "{{ foo0 | uniq }}"
-  EXP: foo
-  CTX: { foo0: foo }
-
-- TPL: "{{ foo0 | uniq }}"
-  EXP: '1324'
-  CTX: { foo0: [1, 1, 3, 2, 3, 1, 4, 3, 2, 1] }
-
-- TPL: '{{ foo0 | uniq: "a" }}'
-  EXP: '{"a"=>1}{"a"=>3}{"a"=>2}'
-  CTX: { foo0: [{ a: 1 }, { a: 3 }, { a: 1 }, { a: 2 }] }
-
-- TPL: '{{ foo0 | uniq: "value" }}'
-  EXP: TestDrop
-  CTX: { foo0: [!ruby/object:TestDrop { value: test, context: {} }, !ruby/object:TestDrop { value: test, context: {} }] }
-uniq empty array:
-- TPL: '{{ foo0 | uniq: "a" }}'
-  EXP: ''
-  CTX: { foo0: [] }
-
-upcase:
-- TPL: "{{ foo0 | upcase }}"
-  EXP: TESTING
-  CTX: { foo0: Testing }
-
-- TPL: "{{ foo0 | upcase }}"
-  EXP: ''
-  CTX: { foo0: }
-
-url decode:
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: foo bar
-  CTX: { foo0: foo+bar }
-
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: foo bar
-  CTX: { foo0: foo%20bar }
-
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: foo+1@example.com
-  CTX: { foo0: foo%2B1%40example.com }
-
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '1'
-  CTX: { foo0: 1 }
-
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: '2001-02-03'
-  CTX: { foo0: 2001-02-03 }
-
-- TPL: "{{ foo0 | url_decode }}"
-  EXP: ''
-  CTX: { foo0: }
-
-url encode:
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: foo%2B1%40example.com
-  CTX: { foo0: foo+1@example.com }
-
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: '1'
-  CTX: { foo0: 1 }
-
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: '2001-02-03'
-  CTX: { foo0: 2001-02-03 }
-
-- TPL: "{{ foo0 | url_encode }}"
-  EXP: ''
-  CTX: { foo0: }
-
-where:
-- TPL: '{{ foo0 | where: "ok", true }}'
-  EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
-  CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta, ok: false }, { handle: gamma, ok: false }, { handle: delta, ok: true } ] }
-
-- TPL: '{{ foo0 | where: "ok" }}'
-  EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
-  CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta, ok: false }, { handle: gamma, ok: false }, { handle: delta, ok: true } ] }
-
-where array of only unindexable values:
-- TPL: '{{ foo0 | where: "ok", true }}'
-  EXP: ''
-  CTX: { foo0: [ ] }
-
-- TPL: '{{ foo0 | where: "ok" }}'
-  EXP: ''
-  CTX: { foo0: [ ] }
-
-where no key set:
-- TPL: '{{ foo0 | where: "ok", true }}'
-  EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
-  CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta }, { handle: gamma }, { handle: delta, ok: true } ] }
-
-- TPL: '{{ foo0 | where: "ok" }}'
-  EXP: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
-  CTX: { foo0: [ { handle: alpha, ok: true }, { handle: beta }, { handle: gamma }, { handle: delta, ok: true } ] }
-
-where no target value:
-- TPL: '{{ foo0 | where: "foo" }}'
-  EXP: '{"foo"=>true}{"foo"=>"for sure"}'
-  CTX: { foo0: [ { foo: false }, { foo: true }, { foo: for sure }, { bar: true } ] }
-
-where non array map input:
-- TPL: '{{ foo0 | where: "a", "ok" }}'
-  EXP: '{"a"=>"ok"}'
-  CTX: { foo0: { a: ok } }
-
-- TPL: '{{ foo0 | where: "a", "ok" }}'
-  EXP: ''
-  CTX: { foo0: { a: not ok } }
-
-where non boolean value:
-- TPL: '{{ foo0 | where: "language", "French" }}'
-  EXP: '{"message"=>"Bonjour!", "language"=>"French"}'
-  CTX: { foo0: [ { message: Bonjour!, language: French }, { message: Hello!, language: English }, { message: Hallo!, language: German } ] }
-
-- TPL: '{{ foo0 | where: "language", "German" }}'
-  EXP: '{"message"=>"Hallo!", "language"=>"German"}'
-  CTX: { foo0: [ { message: Bonjour!, language: French }, { message: Hello!, language: English }, { message: Hallo!, language: German } ] }
-
-- TPL: '{{ foo0 | where: "language", "English" }}'
-  EXP: '{"message"=>"Hello!", "language"=>"English"}'
-  CTX: { foo0: [ { message: Bonjour!, language: French }, { message: Hello!, language: English }, { message: Hallo!, language: German } ] }
-
-where string keys:
-- TPL: '{{ foo0 | where: "be" }}'
-  EXP: beta
-  CTX: { foo0: [ alpha, beta, gamma, delta ] }

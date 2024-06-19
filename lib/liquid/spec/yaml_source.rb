@@ -35,6 +35,10 @@ module Liquid
             if value.size == 1
               template = value.keys.first
               expected = value.values.first
+            else
+              if value.keys - %w[TPL EXP CTX FSS] != []
+                raise "Unknown keys: #{value.keys} at #{context.join("/")}"
+              end
             end
 
             trailer = has_multiple ? " (#{index + 1}/#{data.children.size})" : ""
