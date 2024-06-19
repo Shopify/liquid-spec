@@ -31,7 +31,7 @@ module Liquid
 
     def self.all_sources
       Dir[SPEC_FILES]
-        .reject { |path| File.basename(path) == "environment.yml" }
+        .reject { |path| File.basename(path) == "CTX.yml" }
         .map { |path| Liquid::Spec::Source.for(path) }
     end
 

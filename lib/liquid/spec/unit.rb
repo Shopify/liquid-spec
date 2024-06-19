@@ -8,6 +8,8 @@ module Liquid
       :filesystem,
       :error_mode,
       :context_klass,
+      :file,
+      :line,
       keyword_init: true
     ) do
       def initialize(**)

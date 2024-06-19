@@ -19,9 +19,9 @@ module Liquid
 
         source = @context.registers[:theme_render_context].theme.section_templates[section_name].body
 
-        File.write("#{dir}/template.liquid", source)
-        File.write("#{dir}/environment.yml", EnvironmentDumper.new(@context).to_yaml)
-        File.write("#{dir}/expected.html", template.render(@context))
+        File.write("#{dir}/TPL.liquid", source)
+        File.write("#{dir}/CTX.yml", EnvironmentDumper.new(@context).to_yaml)
+        File.write("#{dir}/EXP.html", template.render(@context))
       end
     end
   end

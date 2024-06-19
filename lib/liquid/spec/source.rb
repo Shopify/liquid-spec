@@ -21,7 +21,7 @@ module Liquid
       end
 
       def initialize(path)
-        @spec_path = path
+        @spec_path = File.expand_path(path)
       end
 
       def each(&block)

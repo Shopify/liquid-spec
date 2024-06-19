@@ -22,23 +22,23 @@ module Liquid
       end
 
       def build_expected(dir)
-        filepath = File.join(dir, "expected.html")
+        filepath = File.join(dir, "EXP.html")
         File.read(filepath)
       end
 
       def build_template(dir)
-        filepath = File.join(dir, "template.liquid")
+        filepath = File.join(dir, "TPL.liquid")
         File.read(filepath)
       end
 
       def build_environment(dir)
-        filepath = File.join(dir, "environment.yml")
+        filepath = File.join(dir, "CTX.yml")
         data = File.read(filepath)
         YAML.unsafe_load(data)
       end
 
       def build_filesystem(dir)
-        filepath = File.join(dir, "filesystem")
+        filepath = File.join(dir, "FSS")
         return {} unless File.directory?(filepath)
         raise "Implement filesystem"
       end
