@@ -1,7 +1,67 @@
 strip_newlines filter:
-- TPL: "{{ source | strip_newlines }}"
-  EXP: abc
-  CTX: { source: "a\nb\nc" }
-- TPL: "{{ source | strip_newlines }}"
-  EXP: abc
-  CTX: { source: "a\r\nb\nc" }
+
+  removes newlines from a string:
+  - TPL: "{{ source | strip_newlines }}"
+    EXP: abc
+    CTX: { source: "a\nb\nc" }
+  - TPL: "{{ source | strip_newlines }}"
+    EXP: abc
+    CTX: { source: "a\r\nb\nc" }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: 'woot: -9'
+    CTX: { foo0: !ruby/object:TestThing { foo: -10 } }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | strip_newlines }}"
+    EXP: 'true'
+    CTX: { foo0: true }

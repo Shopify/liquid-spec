@@ -1,7 +1,67 @@
 lstrip filter:
-- TPL: "{{ source | lstrip }}"
-  EXP: "ab c  \n \t"
-  CTX: { source: " \tab c  \n \t" }
-- TPL: "{{ source | lstrip }}"
-  EXP: 'ab c  '
-  CTX: { source: " ab c  " }
+
+  strips leading space:
+  - TPL: "{{ source | lstrip }}"
+    EXP: "ab c  \n \t"
+    CTX: { source: " \tab c  \n \t" }
+  - TPL: "{{ source | lstrip }}"
+    EXP: 'ab c  '
+    CTX: { source: " ab c  " }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: 'woot: -30'
+    CTX: { foo0: !ruby/object:TestThing { foo: -31 } }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | lstrip }}"
+    EXP: '123'
+    CTX: { foo0: 123 }

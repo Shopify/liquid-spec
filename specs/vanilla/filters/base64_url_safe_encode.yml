@@ -1,10 +1,67 @@
 base64_url_safe_encode filter:
 
-- TPL: "{{ foo0 | base64_url_safe_encode }}"
-  EXP: "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8"
-  CTX: { foo0: "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\\|" }
-- TPL: "{{ foo0 | base64_url_safe_encode }}"
-  EXP: ''
-  CTX: { foo0: null }
+  encodes its argument in url-safe format:
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8"
+    CTX: { foo0: "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\\|" }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ''
+    CTX: { foo0: null }
 
-
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ezpmb289PiJiYXIifQ==
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: VGVzdERyb3A=
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: LTEyMzQuMDAzMDMwMzAz
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ezE9PiJiYXIifQ==
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MTIz
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: LTk5OTk5OTk5
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MTIzNC4zODM4MzAwMDM4Mzgz
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: WyJmb28iLCAiYmFyIl0=
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: Zm9v
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: W3siZm9vIj0-ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0-bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+    CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: ZmFsc2U=
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MC4w
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: d29vdDogLTMy
+    CTX: { foo0: !ruby/object:TestThing { foo: -33 } }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: dHJ1ZQ==
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: VGVzdEVudW1lcmFibGU=
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: eyJmb28iPT4iYmFyIn0=
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | base64_url_safe_encode }}"
+    EXP: MA==
+    CTX: { foo0: 0 }

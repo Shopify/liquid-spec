@@ -1,0 +1,59 @@
+h filter:
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | h }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | h }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | h }}"
+    EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | h }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | h }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | h }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | h }}"
+    EXP: "{1=&gt;&quot;bar&quot;}"
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | h }}"
+    EXP: "{:foo=&gt;&quot;bar&quot;}"
+    CTX: 
+      foo0: 
+        :foo: bar
+  - TPL: "{{ foo0 | h }}"
+    EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | h }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | h }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | h }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | h }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | h }}"
+    EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | h }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | h }}"
+    EXP: 'woot: -15'
+    CTX: { foo0: !ruby/object:TestThing { foo: -16 } }
+  - TPL: "{{ foo0 | h }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | h }}"
+    EXP: 'false'
+    CTX: { foo0: false }

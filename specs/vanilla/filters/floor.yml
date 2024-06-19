@@ -1,8 +1,69 @@
 floor filter:
-- TPL: "{{ input | floor }}"
-  EXP: '4'
-  CTX: { input: 4.6 }
-- "{{ '4.3' | floor }}": '4'
-- TPL: "{{ price | floor }}"
-  EXP: '5'
-  CTX: { price: !ruby/object:NumberLikeThing { amount: 5.4 } }
+
+  rounds its argument down:
+  - "{{ 4.6 | floor }}": '4'
+  - "{{ '4.3' | floor }}": '4'
+  - TPL: "{{ price | floor }}"
+    EXP: '5'
+    CTX: { price: !ruby/object:NumberLikeThing { amount: 5.4 } }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: 
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: "-1235"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '1234'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: nil }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: !ruby/object:TestThing { foo: -47 } }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | floor }}"
+    EXP: '0'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | default }}"
+    EXP: foo
+    CTX: { foo0: foo }

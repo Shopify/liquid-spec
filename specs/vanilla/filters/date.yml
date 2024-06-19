@@ -1,5 +1,76 @@
 date filter:
 
+  Extracts the month from a handful of timestamps / formats:
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: May
+    CTX: { foo0: 2006-05-05 10:00:00.000000000 -04:00 }
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: June
+    CTX: { foo0: 2006-06-05 10:00:00.000000000 -04:00 }
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: July
+    CTX: { foo0: 2006-07-05 10:00:00.000000000 -04:00 }
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: May
+    CTX: { foo0: '2006-05-05 10:00:00' }
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: June
+    CTX: { foo0: '2006-06-05 10:00:00' }
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: July
+    CTX: { foo0: '2006-07-05 10:00:00' }
+
+  has this behaviour when the format string is empty or null:
+  - TPL: '{{ foo0 | date: "" }}'
+    EXP: '2006-07-05 10:00:00'
+    CTX: { foo0: '2006-07-05 10:00:00' }
+  - TPL: '{{ foo0 | date: "" }}'
+    EXP: '2006-07-05 10:00:00'
+    CTX: { foo0: '2006-07-05 10:00:00' }
+  - TPL: '{{ foo0 | date: "" }}'
+    EXP: '2006-07-05 10:00:00'
+    CTX: { foo0: '2006-07-05 10:00:00' }
+  - TPL: "{{ foo0 | date: foo1 }}"
+    EXP: '2006-07-05 10:00:00'
+    CTX: { foo0: '2006-07-05 10:00:00', foo1: }
+
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/05/2006
+    CTX: { foo0: '2006-07-05 10:00:00' }
+
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/16/2004
+    CTX: { foo0: Fri Jul 16 01:00:00 2004 }
+
+  "accepts the special sentinel value 'now'":
+  - TPL: '{{ foo0 | date: "%Y" }}'
+    EXP: '2008'
+    CTX: { foo0: now }
+
+  "accepts the special sentinel value 'today'":
+  - TPL: '{{ foo0 | date: "%Y" }}'
+    EXP: '2008'
+    CTX: { foo0: today }
+  - TPL: '{{ foo0 | date: "%Y" }}'
+    EXP: '2008'
+    CTX: { foo0: Today }
+
+  "doesn't freak out if the input is empty":
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: ''
+    CTX: { foo0: null }
+  - TPL: '{{ foo0 | date: "%B" }}'
+    EXP: ''
+    CTX: { foo0: '' }
+
+  accepts UNIX epoch time as input:
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/05/2006
+    CTX: { foo0: 1152098955 }
+  - TPL: '{{ foo0 | date: "%m/%d/%Y" }}'
+    EXP: 07/05/2006
+    CTX: { foo0: '1152098955' }
+
   "doesn't blow up if the input isn't interpretable as a date":
   - "{{ '' | date: '%D' }}": ''
   - "{{ 'abc' | date: '%D' }}": abc

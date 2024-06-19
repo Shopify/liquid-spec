@@ -19,7 +19,6 @@ default filter:
     EXP: bar
     CTX: { drop: !ruby/object:BooleanDrop { value: false } }
 
-
   with allow_false:
     flips the behaviour for false only:
     - '{{ "foo" | default: "bar", allow_false: true }}': foo
@@ -40,4 +39,54 @@ default filter:
       EXP: Yay
       CTX: { drop: !ruby/object:BooleanDrop { value: true } }
 
-
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{:foo=>"bar"}'
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | default }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | default }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | default }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | default }}"
+    EXP: ''
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | default }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | default }}"
+    EXP: foobar
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | default }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | default }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | default }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | default }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | default }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | default }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | default }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }

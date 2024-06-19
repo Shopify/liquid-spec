@@ -1,0 +1,62 @@
+escape filter:
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "[{&quot;foo&quot;=&gt;&quot;bar&quot;}, {&quot;foo&quot;=&gt;123}, {&quot;foo&quot;=&gt;nil}, {&quot;foo&quot;=&gt;true}, {&quot;foo&quot;=&gt;[&quot;foo&quot;, &quot;bar&quot;]}]"
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "{:foo=&gt;&quot;bar&quot;}"
+    CTX:
+      foo0:
+        :foo: bar
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "[&quot;foo&quot;, &quot;bar&quot;]"
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | escape_once }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: "{1=&gt;&quot;bar&quot;}"
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: 'woot: -2'
+    CTX: { foo0: !ruby/object:TestThing { foo: -3 } }
+  - TPL: "{{ foo0 | escape }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }

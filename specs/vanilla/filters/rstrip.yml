@@ -1,7 +1,67 @@
 rstrip filter:
-- TPL: "{{ source | rstrip }}"
-  EXP: " \tab c"
-  CTX: { source: " \tab c  \n \t" }
-- TPL: "{{ source | rstrip }}"
-  EXP: " ab c"
-  CTX: { source: " ab c  " }
+
+  strips trailing space:
+  - TPL: "{{ source | rstrip }}"
+    EXP: " \tab c"
+    CTX: { source: " \tab c  \n \t" }
+  - TPL: "{{ source | rstrip }}"
+    EXP: " ab c"
+    CTX: { source: " ab c  " }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo", "bar"]}]'
+    CTX: { foo0: [{ foo: bar }, { foo: 123 }, { foo: null }, { foo: true }, { foo: [foo, bar] }] }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '{"foo"=>"bar"}'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '0.0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '["foo", "bar"]'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: 'true'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: "-1234.003030303"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: foo
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '{:foo=>"bar"}'
+    CTX: 
+      foo0: 
+        :foo: bar
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: 'false'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: TestEnumerable
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '123'
+    CTX: { foo0: 123 }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '1234.3838300038383'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: ''
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '{1=>"bar"}'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: 'woot: -31'
+    CTX: { foo0: !ruby/object:TestThing { foo: -32 } }
+  - TPL: "{{ foo0 | rstrip }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }

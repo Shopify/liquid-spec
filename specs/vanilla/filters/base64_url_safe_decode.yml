@@ -1,6 +1,20 @@
 base64_url_safe_decode:
-- TPL: "{{ foo0 | base64_url_safe_decode }}"
-  EXP: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
-  CTX: { foo0: "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8" }
 
+  decodes its input from url-safe base64 format:
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
+    CTX: { foo0: "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8" }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: !binary |-
+      TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: !binary |-
+      true
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | base64_url_safe_decode }}"
+    EXP: ''
+    CTX: { foo0: }
 

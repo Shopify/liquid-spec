@@ -1,14 +1,74 @@
 round filter:
-- "{{ '4.3' | round }}": '4'
-- TPL: "{{ input | round: 2 }}"
-  EXP: '4.56'
-  CTX: { input: 4.5612 }
-- TPL: "{{ price | round }}"
-  EXP: '5'
-  CTX: { price: !ruby/object:NumberLikeThing { amount: 4.6 } }
-- TPL: "{{ price | round }}"
-  EXP: '4'
-  CTX: { price: !ruby/object:NumberLikeThing { amount: 4.3 } }
-- TPL: "{{ input | round }}"
-  EXP: '5'
-  CTX: { input: 4.6 }
+
+  rounds numbers to the nearest integer:
+  - "{{ '4.3' | round }}": '4'
+  - TPL: "{{ input | round: 2 }}"
+    EXP: '4.56'
+    CTX: { input: 4.5612 }
+  - TPL: "{{ price | round }}"
+    EXP: '5'
+    CTX: { price: !ruby/object:NumberLikeThing { amount: 4.6 } }
+  - TPL: "{{ price | round }}"
+    EXP: '4'
+    CTX: { price: !ruby/object:NumberLikeThing { amount: 4.3 } }
+  - TPL: "{{ input | round }}"
+    EXP: '5'
+    CTX: { input: 4.6 }
+
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: { 1: bar } }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: !ruby/object:TestThing { foo: -49 } }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: foo }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: 
+      foo0: 
+        :foo: bar
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: [ { foo: bar }, { foo: 123 }, { foo: }, { foo: true }, { foo: [ foo, bar ] } ] }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: 0 }
+  - TPL: "{{ foo0 | round }}"
+    EXP: "-99999999"
+    CTX: { foo0: -99999999 }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '1234'
+    CTX: { foo0: 1234.3838300038383 }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: !ruby/object:TestEnumerable { context: {} } }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: { foo: bar } }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: [foo, bar] }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: false }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '0'
+    CTX: { foo0: 0.0 }
+  - TPL: "{{ foo0 | round }}"
+    EXP: "-1234"
+    CTX: { foo0: -1234.003030303 }
+  - TPL: "{{ foo0 | round }}"
+    EXP: '123'
+    CTX: { foo0: 123 }

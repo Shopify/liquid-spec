@@ -1,7 +1,20 @@
 base64_decode filter:
-- TPL: "{{ foo0 | base64_decode }}"
-  EXP: one two three
-  CTX:
-    foo0: b25lIHR3byB0aHJlZQ==
 
+  decodes its input:
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: one two three
+    CTX:
+      foo0: b25lIHR3byB0aHJlZQ==
 
+  handles a bunch of value types:
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: !binary |-
+      TestDrop
+    CTX: { foo0: !ruby/object:TestDrop { value: test, context: {} } }
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: !binary |-
+      true
+    CTX: { foo0: true }
+  - TPL: "{{ foo0 | base64_decode }}"
+    EXP: ''
+    CTX: { foo0: }
