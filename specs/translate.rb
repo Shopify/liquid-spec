@@ -1,5 +1,5 @@
 require 'liquid'
-require_relative '../../lib/liquid/spec/deps/liquid_ruby'
+require_relative '../lib/liquid/spec/deps/liquid_ruby'
 require 'yaml'
 
 def underscore(str)
@@ -36,13 +36,14 @@ def ugh(pn)
   by_testfile.each do |test_file, specs|
     subject = test_file.sub(/Test$/, '')
     base = underscore(subject)
-    fname = "out/#{base}.yml"
+    fname = "vanilla/#{base}.yml"
 
     data = { subject => reformat_specs(specs) }
 
+    puts "Writing #{fname}"
     File.write(fname, YAML.dump(data, line_width: -1))
   end
 end
 
-ugh('specs.yml')
-ugh('standard_filters.yml')
+ugh('prev/specs.yml')
+ugh('prev/standard_filters.yml')
