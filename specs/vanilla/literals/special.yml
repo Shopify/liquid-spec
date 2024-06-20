@@ -1,0 +1,30 @@
+Special literal handling:
+
+  Recognizes true:
+  - "{{ true }}": "true"
+  - "{{ True }}": ""
+  - "{{ TRUE }}": ""
+
+  Recognizes false:
+  - "{{ false }}": "false"
+  - "{{ False }}": ""
+  - "{{ FALSE }}": ""
+
+  Recognizes null and nil:
+  - TPL: "{{ null }}"
+    EXP: ""
+    CTX: { "null": "non-null" }
+  - TPL: "{{ nil }}"
+    EXP: ""
+    CTX: { "nil": "non-null" }
+  - TPL: "{{ Null }}"
+    EXP: "non-null"
+    CTX: { "Null": "non-null" }
+
+  Recognizes blank and empty:
+  - TPL: "{{ blank }}"
+    EXP: ""
+    CTX: { "blank": "non-null" }
+  - TPL: "{{ empty }}"
+    EXP: ""
+    CTX: { "empty": "non-null" }

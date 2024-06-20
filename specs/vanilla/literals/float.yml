@@ -1,4 +1,4 @@
-Float values:
+Float literal handling:
 
   Works for some really simple cases:
   - "{{ 1.0 }}": "1.0"
@@ -8,7 +8,7 @@ Float values:
   Preserves negative zero:
   - "{{ -0.0 }}": "-0.0"
 
-  Cuts over from decimal to scientific at e-05:
+  Cuts over from decimal to scientific at e-05 (and prints negative exponents with at least two digits):
   - "{{ 0.0001 }}": "0.0001"
   - "{{ 0.00009 }}": "9.0e-05"
 
@@ -46,3 +46,19 @@ Float values:
     EXP: "-1.0e+308"
   - TPL: "{% assign f = -1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0 %}{{ f }}"
     EXP: "-Infinity"
+
+  Does not recognize scientific notation:
+  - "{{ 1.0e-05 }}": ""
+  - "{{ 1.0e+05 }}": ""
+  - "{{ 1.0e5 }}": ""
+
+  Actually matches on multiple decimals too:
+  - "{{ 1.2.3 }}": "1.2"
+  - "{{ 1.2.a }}": ""
+  - "{{ -1.2.3 }}": "-1.2"
+  - "{{ -1.2.a }}": ""
+  - "{{ -1..2 }}": "-1.0"
+
+  Accepts a trailing decimal:
+  - "{{ -1. }}": "-1.0"
+  - "{{ 1. }}": "1.0"

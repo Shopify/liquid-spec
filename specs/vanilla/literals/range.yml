@@ -1,0 +1,52 @@
+Range literal handling:
+
+  Works for a simple case:
+  - "{{ (0..0) }}": "0..0"
+  - "{{ (0..1) }}": "0..1"
+
+  Requires parens:
+  - "{{ 0..1 }}": "0.0" # this is interpreted as a float
+
+  Allows spaces:
+  - "{{ (  1  ..  1  ) }}": "1..1"
+  - "{{ (\t1\t..\t1\t) }}": "1..1"
+  - "{{ (\n1\n..\n1\n) }}": "1..1"
+  - "{{ (\v1\v..\v1\v) }}": "1..1"
+
+  But \b kind of gets in the way of numeric parsing...:
+  - "{{ (1\x08..1\x08) }}": "0..0"
+  - "{{ (\x081..\x081) }}": "0..0"
+  - TPL: "{{ (\x08a\x08..\x08b\x08) }}"
+    EXP: "1..2"
+    CTX: { a: 1, b: 2 }
+
+  Accepts excess dots:
+  - "{{ (0...1) }}": "0..1"
+
+  Not happy with too many dots surrounded by spaces:
+  - "{{ (0... 1) }}": ""
+  - "{{ (0 ...1) }}": ""
+
+  Variables work too:
+  - TPL: "{{ (abc..def) }}"
+    EXP: "1..2"
+    CTX: { abc: 1, def: 2 }
+  - TPL: "{{ (abc..def) }}"
+    EXP: "0..0"
+
+  You can pass ranges as range bounds but its not happy about them:
+  - TPL: "{{ ((1..0)..def) }}"
+    EXP: "Liquid error (templates/index line 1): invalid integer"
+
+  What about floats? Why not:
+  - "{{ (1.2..2.9) }}": "1..2"
+
+  Ranges can go backwards:
+  - "{{ (10..1) }}": "10..1"
+
+  They can go negative:
+  - "{{ (10..-10) }}": "10..-10"
+
+  "They can't just be a bunch of dots but they can almost just be a bunch of dots":
+  - "{{ (..............................................................................................) }}": ""
+  - "{{ (.............................................................................................n) }}": "0..0"
