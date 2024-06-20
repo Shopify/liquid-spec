@@ -1,5 +1,20 @@
 downcase filter:
 
+  downcases strings:
+  - "{{ 'FOO' | downcase }}": 'foo'
+  - "{{ 'Bar' | downcase }}": 'bar'
+  - "{{ '123ABC' | downcase }}": '123abc'
+  - "{{ 'Hello World!' | downcase }}": 'hello world!'
+  - "{{ 'MIXEDcase123' | downcase }}": 'mixedcase123'
+  - "{{ 'already lowercase' | downcase }}": 'already lowercase'
+  - "{{ '1234' | downcase }}": '1234'
+  - "{{ '' | downcase }}": ''
+  - "{{ 'ÜBER' | downcase }}": 'über'
+  - "{{ 'Straße' | downcase }}": 'straße'
+  - "{{ 'Привет' | downcase }}": 'привет'
+  - "{{ 'Γειά σου' | downcase }}": 'γειά σου'
+  - "{{ 'こんにちは' | downcase }}": 'こんにちは'
+
   handles a bunch of value types:
   - TPL: "{{ foo0 | downcase }}"
     EXP: 'false'
