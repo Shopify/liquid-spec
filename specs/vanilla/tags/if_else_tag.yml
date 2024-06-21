@@ -1,6 +1,50 @@
 ---
 IfElseTag:
 
+  comparison with empty:
+  - TPL: " {% if array == empty %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { array: [] }
+  - TPL: " {% if array == empty %} true {% else %} false {% endif %} "
+    EXP: "  false  "
+    CTX: { array: [1, 2, 3] }
+  - TPL: " {% if array != empty %} true {% else %} false {% endif %} "
+    EXP: "  false  "
+    CTX: { array: [] }
+  - TPL: " {% if array != empty %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { array: [1, 2, 3] }
+  - TPL: " {% if empty == array %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { array: [] }
+  - TPL: " {% if empty == array %} true {% else %} false {% endif %} "
+    EXP: "  false  "
+    CTX: { array: [1, 2, 3] }
+  - TPL: " {% if empty != array %} true {% else %} false {% endif %} "
+    EXP: "  false  "
+    CTX: { array: [] }
+  - TPL: " {% if empty != array %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { array: [1, 2, 3] }
+
+  # TODO: I think we should simulate the ActiveSupport alias of Array#empty? and Hash#empty? as #blank?
+  # even when ActiveSupport is not loaded, and maybe String#blank? also.
+  comparison with blank: []
+
+  comparison with nil:
+  - TPL: " {% if var == nil %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { var: null }
+  - TPL: " {% if var == null %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { var: null }
+  - TPL: " {% if var != null %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { var: 1 }
+  - TPL: " {% if var != nil %} true {% else %} false {% endif %} "
+    EXP: "  true  "
+    CTX: { var: 1 }
+
   compares floats:
   - TPL: "{% if expect == 1.5 %}hit{% else %}nohit{% endif %}"
     EXP: hit
@@ -216,3 +260,54 @@ IfElseTag:
   operators are ignored unless isolated:
   - TPL: "{% if 'gnomeslab-and-or-liquid' contains 'gnomeslab-and-or-liquid' %}yes{% endif %}"
     EXP: 'yes'
+
+  float and integer comparisons:
+  - "{% if 1.5 < 2 %}true{% else %}false{% endif %}": "true"
+  - "{% if 2 > 1.5 %}true{% else %}false{% endif %}": "true"
+  - "{% if 1.5 <= 1.5 %}true{% else %}false{% endif %}": "true"
+  - "{% if 1.5 >= 1.5 %}true{% else %}false{% endif %}": "true"
+  - "{% if 1 < 1.1 %}true{% else %}false{% endif %}": "true"
+  - "{% if 1.1 > 1 %}true{% else %}false{% endif %}": "true"
+  - "{% if 2 <= 2.0 %}true{% else %}false{% endif %}": "true"
+  - "{% if 2.0 >= 2 %}true{% else %}false{% endif %}": "true"
+  - "{% if 3.14 < 3.15 %}true{% else %}false{% endif %}": "true"
+  - "{% if 3.15 > 3.14 %}true{% else %}false{% endif %}": "true"
+  - "{% if 1 < 2 %}true{% else %}false{% endif %}": "true"
+  - "{% if 2 > 1 %}true{% else %}false{% endif %}": "true"
+  - "{% if 2 <= 2 %}true{% else %}false{% endif %}": "true"
+  - "{% if 2 >= 2 %}true{% else %}false{% endif %}": "true"
+  - "{% if 1.5 < 1 %}true{% else %}false{% endif %}": "false"
+  - "{% if 1 > 1.5 %}true{% else %}false{% endif %}": "false"
+  - "{% if 2.5 <= 2 %}true{% else %}false{% endif %}": "false"
+  - "{% if 2 >= 2.5 %}true{% else %}false{% endif %}": "false"
+
+  equality of true/false/null:
+  - "{% if true == true %}true{% else %}false{% endif %}": "true"
+  - "{% if false == false %}true{% else %}false{% endif %}": "true"
+  - "{% if null == null %}true{% else %}false{% endif %}": "true"
+  - "{% if true == false %}true{% else %}false{% endif %}": "false"
+  - "{% if true == null %}true{% else %}false{% endif %}": "false"
+  - "{% if false == null %}true{% else %}false{% endif %}": "false"
+  - "{% if true != false %}true{% else %}false{% endif %}": "true"
+  - "{% if true != null %}true{% else %}false{% endif %}": "true"
+  - "{% if false != null %}true{% else %}false{% endif %}": "true"
+
+  accepts parentheses in lax mode but ignores them:
+  - TPL: "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif %}"
+    EXP: { lax: " YES ", strict: {fatal: true} }
+    CTX: { b: bar, c: baz }
+
+  unexpected characters silently eat logic:
+  - "{% if false || true %} YES {% endif %}": {lax: "", strict: {fatal: true}}
+  - "{% if true && false %} YES {% endif %}": {lax: " YES ", strict: {fatal: true}}
+
+  does not get confused by a variable name that contains 'contains' but is not 'contains':
+  - TPL: "{% if containsallshipments == true %} YES {% endif %}"
+    EXP: " YES "
+    CTX: { containsallshipments: true }
+
+  Comparing booleans against method-literal conditions:
+  - "{% if true == empty %}?{% endif %}": ''
+  - "{% if empty == true %}?{% endif %}": ''
+  - "{% if null == true %}?{% endif %}": ''
+  - "{% if true == null %}?{% endif %}": ''

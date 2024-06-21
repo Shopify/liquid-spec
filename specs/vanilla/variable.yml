@@ -1,5 +1,9 @@
 ---
 Variable:
+
+  can be blank:
+  - "{{}}": ''
+
   case tag calls to liquid value:
   - TPL: "{% case foo %}{% when 1 %}One{% endcase %}"
     EXP: One
@@ -124,3 +128,25 @@ Variable:
   - TPL: "{{ foo }}"
     EXP: foobar
     CTX: { foo: !ruby/object:ThingWithToLiquid {} }
+
+  variable traversing:
+  - TPL: " {{car.bmw}} {{car.gm}} {{car.bmw}} "
+    EXP: " good bad good "
+    CTX: { car: { bmw: good, gm: bad } }
+  variable traversing with two brackets:
+  - TPL: "{{ site.data.menu[include.menu][include.locale] }}"
+    EXP: it works!
+    CTX: { site: { data: { menu: { foo: { bar: it works! } } } }, include: { menu: foo, locale: bar } }
+
+  dashes allowed in variable names:
+  - TPL: a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}
+    EXP: a-b:1 a-b:2
+    CTX: {a-b: '1'}
+
+  lookup on var with literal name:
+  - TPL: "{{ blank['x'] }}"
+    EXP: result
+    CTX: { blank: { x: result } }
+  - TPL: "{{ blank.x }}"
+    EXP: result
+    CTX: { blank: { x: result } }

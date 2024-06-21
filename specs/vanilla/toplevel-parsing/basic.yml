@@ -1,18 +1,6 @@
----
-Miscellaneous / sorting TODO:
+Basic parsing specs:
 
-  hyphenated assign:
-  - TPL: a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}
-    EXP: a-b:1 a-b:2
-    CTX: {a-b: '1'}
-
-  illegal symbols:
-  - "{% if true == empty %}?{% endif %}": ''
-  - "{% if empty == true %}?{% endif %}": ''
-  - "{% if null == true %}?{% endif %}": ''
-  - "{% if true == null %}?{% endif %}": ''
-
-  no transform:
+  no transformation when no tags or outputs:
   - blah: blah
   - '': ''
   - TPL: this text should come out of the template without change...

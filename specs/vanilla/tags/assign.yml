@@ -71,3 +71,7 @@ Assign:
   - TPL: "{% assign foo = (x..y) %}{{ foo }}"
     EXP: 1..5
     CTX: { x: 1, "y": 5 }
+
+  can assign invalid variables in lax mode:
+  - "{% assign 123 = 'bar' %}{{ 123 }}": '123'
+  - "{% assign 123foo = 'bar' %}{{ 123foo }}": {lax: "bar", strict: {fatal: true}}

@@ -1,0 +1,18 @@
+Filters:
+
+  nonexistent filter is ignored:
+  - TPL: "{{ var | xyzzy }}"
+    EXP: '1000'
+    CTX: {var: 1000}
+
+  will not call private methods:
+  - "{{ 'a' | to_number }}": a
+
+  do not get confused by pipes in string literals:
+  - "{{ 'foo|bar' | remove: '|' }}": foobar
+
+  unanchored filter arguments:
+  - '{{ ''hi there'' | split:"t"" | reverse | first}}': { lax: "here", strict: {fatal: true} }
+  - "{{ 'hi there' | split$$$:' ' | first }}": { lax: "hi", strict: {fatal: true} }
+  - "{{ 'X' | downcase) }}": { lax: "x", strict: {fatal: true} }
+  - '{{ ''hi there'' | split:"t"" | remove:"i" | first}}': { lax: "hi ", strict: {fatal: true} }
