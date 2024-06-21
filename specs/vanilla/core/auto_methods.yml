@@ -1,0 +1,143 @@
+Auto methods:
+
+  size:
+
+    of string:
+    - TPL: "{{ str.size }}"
+      EXP: "4"
+      CTX: {str: "abcd"}
+
+    of array:
+    - TPL: "{{ array.size }}"
+      EXP: "4"
+      CTX: {array: [1, 2, 3, 4]}
+
+    of hash:
+    - TPL: "{{ hash.size }}"
+      EXP: "4"
+      CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}
+
+    not supported as string property access:
+    - TPL: "{{ str['size'] }}"
+      EXP: ""
+      CTX: {str: "abcd"}
+    - TPL: "{{ array['size'] }}"
+      EXP: ""
+      CTX: {array: [1, 2, 3, 4]}
+    - TPL: "{{ hash['size'] }}"
+      EXP: ""
+      CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}
+    - TPL: "{{ hash['size'] }}"
+      EXP: "8"
+      CTX: {hash: {size: 8}}
+    - TPL: "{{ array[v] }}"
+      EXP: ""
+      CTX: {array: [1, 2, 3, 4], v: "size"}
+
+    of other types:
+    - TPL: "{{ n.size }}"
+      EXP: "8"
+      CTX: {n: 3}
+    - TPL: "{{ n.size }}"
+      EXP: ""
+      CTX: {n: 3.0}
+    - TPL: "{{ t.size }}{{ f.size }}{{ n.size }}"
+      EXP: ""
+      CTX: { t: true, f: false, n: null }
+    - TPL: "{{ t.size }}{{ f.size }}{{ n.size }}"
+      EXP: ""
+      CTX: { t: true, f: false, n: null }
+
+    of range:
+    - "{% assign x = (1..3) %}{{ x.size }}": "3"
+    - "{% assign x = (3..3) %}{{ x.size }}": "1"
+    - "{% assign x = (5..1) %}{{ x.size }}": "0"
+    - "{% assign x = (-5..5) %}{{ x.size }}": "11"
+
+  first:
+    of string does not do anything useful:
+    - TPL: "{{ str.first }}"
+      EXP: ""
+      CTX: {str: "abcd"}
+
+    of array:
+    - TPL: "{{ array.first }}"
+      EXP: "1"
+      CTX: {array: [1, 2, 3, 4]}
+
+    of hash:
+    - TPL: "{{ hash.first[0] }},{{ hash.first[1] }}"
+      EXP: "a,1"
+      CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}
+
+    not supported as string property access:
+    - TPL: "{{ str['first'] }}"
+      EXP: ""
+      CTX: {str: "abcd"}
+    - TPL: "{{ array['first'] }}"
+      EXP: ""
+      CTX: {array: [1, 2, 3, 4]}
+    - TPL: "{{ hash['first'] }}"
+      EXP: ""
+      CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}
+    - TPL: "{{ hash['first'] }}"
+      EXP: "8"
+      CTX: {hash: {first: 8}}
+
+    of other types:
+    - TPL: "{{ n.first }}"
+      EXP: ""
+      CTX: {n: 3}
+    - TPL: "{{ t.first }}{{ f.first }}{{ n.first }}"
+      EXP: ""
+      CTX: { t: true, f: false, n: null }
+
+    of range:
+    - "{% assign x = (1..3) %}{{ x.first }}": "1"
+    - "{% assign x = (3..3) %}{{ x.first }}": "3"
+    - "{% assign x = (5..1) %}{{ x.first }}": "5"
+    - "{% assign x = (-5..5) %}{{ x.first }}": "-5"
+
+  last:
+    of string does not do anything useful:
+    - TPL: "{{ str.last }}"
+      EXP: ""
+      CTX: {str: "abcd"}
+
+    of array:
+    - TPL: "{{ array.last }}"
+      EXP: "4"
+      CTX: {array: [1, 2, 3, 4]}
+
+    of hash does nothing:
+    - TPL: "{{ hash.last[0] }},{{ hash.last[1] }}"
+      EXP: ","
+      CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}
+
+    not supported as string property access:
+    - TPL: "{{ str['last'] }}"
+      EXP: ""
+      CTX: {str: "abcd"}
+    - TPL: "{{ array['last'] }}"
+      EXP: ""
+      CTX: {array: [1, 2, 3, 4]}
+    - TPL: "{{ hash['last'] }}"
+      EXP: ""
+      CTX: {hash: {a: 1, b: 2, c: 3, d: 4}}
+    - TPL: "{{ hash['last'] }}"
+      EXP: "8"
+      CTX: {hash: {last: 8}}
+
+    of other types:
+    - TPL: "{{ n.last }}"
+      EXP: ""
+      CTX: {n: 3}
+    - TPL: "{{ t.last }}{{ f.last }}{{ n.last }}"
+      EXP: ""
+      CTX: { t: true, f: false, n: null }
+
+    of range:
+    - "{% assign x = (1..3) %}{{ x.last }}": "3"
+    - "{% assign x = (3..3) %}{{ x.last }}": "3"
+    - "{% assign x = (5..1) %}{{ x.last }}": "1"
+    - "{% assign x = (-5..5) %}{{ x.last }}": "5"
