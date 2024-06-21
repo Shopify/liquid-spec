@@ -36,7 +36,7 @@ module Liquid
               template = value.keys.first
               expected = value.values.first
             else
-              if value.keys - %w[TPL EXP CTX FSS] != []
+              if value.keys - %w[TPL EXP CTX FSS generates_ruby_warning] != []
                 raise "Unknown keys: #{value.keys} at #{context.join("/")}"
               end
             end
@@ -76,6 +76,7 @@ module Liquid
               filesystem: value["FSS"],
               file: spec_path,
               line: node.start_line,
+              generates_ruby_warning: value["generates_ruby_warning"],
               context_klass: value["context_klass"].nil? ? Liquid::Context : Object.const_get(value["context_klass"])
             }
 

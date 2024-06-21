@@ -10,6 +10,7 @@ module Liquid
       :context_klass,
       :file,
       :line,
+      :generates_ruby_warning,
       keyword_init: true
     ) do
       def initialize(**)

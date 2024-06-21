@@ -27,10 +27,12 @@ module Liquid
       def generate
         specs.each do |spec|
           adapter = @adapter
+          _ = adapter # used in the instance_eval but generates a warning otherwise
           if spec.expected == Unit::FATAL
             @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
               meth_name = "test_ #{spec.name}"
               define_method(meth_name.to_sym) do
+                #{"Warning.stubs(:warn)" if spec.generates_ruby_warning}
                 adapter.render(spec)
               rescue => e
                 assert true
@@ -42,6 +44,7 @@ module Liquid
             @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
               meth_name = "test_ #{spec.name}"
               define_method(meth_name.to_sym) do
+                #{"Warning.stubs(:warn)" if spec.generates_ruby_warning}
                 actual = Timecop.freeze(TEST_TIME) do
                   adapter.render(spec)
                 end
