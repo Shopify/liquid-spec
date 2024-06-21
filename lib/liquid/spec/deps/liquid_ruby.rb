@@ -107,6 +107,10 @@ class IntegerDrop < Liquid::Drop
   def to_liquid_value
     @value
   end
+
+  def to_number
+    @value
+  end
 end
 
 class ThingWithValue < Liquid::Drop

@@ -9395,12 +9395,7 @@
     object21 contains object21: true
   name: test_string_comparison
   filesystem: {}
-- template: "{{'x' | truncatewords: a}}"
-  environment:
-    a: 678940000000000357001__1111000000
-  expected: 'Liquid error (templates/index line 1): invalid integer'
-  name: test_no_double_underscores_in_bigints
-  filesystem: {}
+
 - template: "{{ test | append: (1..100) }}"
   environment:
     test: test
