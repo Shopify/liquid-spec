@@ -1,0 +1,15 @@
+Cycle:
+
+  with multiple implicit cycles:
+  - TPL: "{%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%} {%cycle 1,2,3%}"
+    EXP: 1 2 1 1 2 3 1
+
+  with multiple named cycles:
+  - TPL: '{%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %} {%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %} {%cycle 1: "one", "two" %} {%cycle 2: "one", "two" %}'
+    EXP: one one two two one one
+
+  with multiple named cycles with dynamic names from context:
+  - TPL: '{%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %} {%cycle var1: "one", "two" %} {%cycle var2: "one", "two" %}'
+    EXP: one one two two one one
+    CTX: {var1: 1, var2: 2}
+  # TODO: also demonstrate with two vars resolving to the same int

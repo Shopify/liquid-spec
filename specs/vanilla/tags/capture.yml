@@ -1,6 +1,12 @@
 ---
 Capture:
-  assigning from capture:
+
+  works:
+  - TPL: "{{ var2 }}{% capture var2 %}{{ var }} foo {% endcapture %}{{ var2 }}{{ var2 }}"
+    EXP: 'content foo content foo '
+    CTX: { var: content }
+
+  and assign interact appropriately:
   - TPL: |
       {% assign first = '' -%}
       {% assign second = '' -%}
@@ -10,7 +16,8 @@ Capture:
       {% endfor -%}
       {{ first }}-{{ second -}}
     EXP: 3-3
-  capture to variable from outer scope if existing:
+
+  to variable from outer scope if existing:
   - TPL: |
       {% assign var = '' -%}
       {% if true -%}
@@ -21,10 +28,12 @@ Capture:
       {% endif -%}
       {{var-}}
     EXP: test-string
-  capture with hyphen in variable name:
+
+  with hyphen in variable name:
   - TPL: |
       {% capture this-thing %}Print this-thing{% endcapture -%}
       {{ this-thing -}}
     EXP: Print this-thing
+
   captures block content in variable:
   - "{% capture 'var' %}test string{% endcapture %}{{var}}": test string

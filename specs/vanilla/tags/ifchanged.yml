@@ -1,0 +1,8 @@
+Ifchanged:
+- TPL: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
+  EXP: '123'
+  CTX: {array: [1, 1, 2, 2, 3, 3]}
+- TPL: "{%for item in array%}{%ifchanged%}{{item}}{% endifchanged %}{%endfor%}"
+  EXP: '1'
+  CTX: {array: [1, 1, 1, 1]}
+

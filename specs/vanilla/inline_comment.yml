@@ -1,6 +1,6 @@
----
-InlineComment:
-  inline comment can be written on multiple lines:
+Inline comments:
+
+  can be written on multiple lines:
   - TPL: |
       {%-
         # That kind of block comment is also allowed.
@@ -10,11 +10,14 @@ InlineComment:
         # leading * on new lines.
       -%}
     EXP: ''
-  inline comment does not require a space after the pound sign:
+
+  do not require a space after the pound sign:
   - "{%#this is an inline comment%}": ''
-  inline comment does not support nested tags:
+
+  do not support nested tags:
   - "{%- # {% echo 'hello world' %} -%}": " -%}"
-  inline comment multiple pound signs:
+
+  support this kind of block-ish style in a liquid tag:
   - TPL: |
       {%- liquid
         ######################################
@@ -22,12 +25,12 @@ InlineComment:
         ######################################
       -%}
     EXP: ''
-  inline comment returns nothing:
+
+  return nothing:
   - "{%# this is an inline comment %}": ''
   - "{%-# this is an inline comment -%}": ''
   - "{% # this is an inline comment %}": ''
   - "{%- # this is an inline comment -%}": ''
-  liquid inline comment returns nothing:
   - TPL: |
       {%- liquid
         # This is how you'd write a block comment in a liquid tag.
@@ -41,3 +44,6 @@ InlineComment:
         echo "how are you doing today?"
       -%}
     EXP: Hey there, how are you doing today?
+  
+  can trail other tags in general, although this is actually a quirk of tag parsing:
+  - "{% echo 'hi' # a comment %}": {lax: "hi", strict: {fatal: true}}

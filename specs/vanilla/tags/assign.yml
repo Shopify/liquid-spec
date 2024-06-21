@@ -1,16 +1,56 @@
 ---
 Assign:
+
+  works:
+  - '{% assign a = "variable"%}{{a}}': variable
+
+  assigns an empty string:
+  - '{% assign a = ""%}{{a}}': ''
+
+  can assign from a case:
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: womenswear
+    CTX: { collection: { handle: z } }
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: menswear
+    CTX: { collection: { handle: menswear-t-shirts } }
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: menswear
+    CTX: { collection: { handle: menswear-jackets } }
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: womenswear
+    CTX: { collection: { handle: x } }
+  - TPL: "{% case collection.handle %}{% when 'menswear-jackets' %}{% assign ptitle = 'menswear' %}{% when 'menswear-t-shirts' %}{% assign ptitle = 'menswear' %}{% else %}{% assign ptitle = 'womenswear' %}{% endcase %}{{ ptitle }}"
+    EXP: womenswear
+    CTX: { collection: { handle: "y" } }
+
+  is global:
+  - '{%for i in (1..2) %}{% assign a = "variable"%}{% endfor %}{{a}}': variable
+
+  does not go back in time:
+  - TPL: var2:{{var2}} {%assign var2 = var%} var2:{{var2}}
+    EXP: 'var2:  var2:content'
+    CTX: { var: content }
+
+  with colon and spaces:
+  - TPL: '{%assign var2 = var["a:b c"].paged %}var2: {{var2}}'
+    EXP: 'var2: 1'
+    CTX: { var: { "a:b c": { paged: '1' } } }
+
   uses error mode:
   - "{% assign foo = ('X' | downcase) %}": {lax: '', strict: {fatal: true}}
+
   assign with filter:
   - TPL: '{% assign foo = values | split: "," %}.{{ foo[1] }}.'
     EXP: ".bar."
     CTX: {values: "foo,bar,baz"}
+
   assign with hyphen in variable name:
   - TPL: |
       {% assign this-thing = 'Print this-thing' -%}
       {{ this-thing -}}
     EXP: Print this-thing
+
   assigned variable:
   - TPL: "{% assign foo = values %}.{{ foo[1] }}."
     EXP: ".bar."
@@ -18,6 +58,7 @@ Assign:
   - TPL: "{% assign foo = values %}.{{ foo[0] }}."
     EXP: ".foo."
     CTX: {values: ["foo", "bar", "baz"]}
+
   expression with whitespace in square brackets:
   - TPL: "{% assign r = a[ 'b' ] %}{{ r }}"
     EXP: result
