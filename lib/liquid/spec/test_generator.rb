@@ -25,6 +25,8 @@ module Liquid
       end
 
       def generate
+        t = Time.now
+        n = 0
         specs.each do |spec|
           adapter = @adapter
           _ = adapter # used in the instance_eval but generates a warning otherwise
@@ -52,7 +54,9 @@ module Liquid
               end
             RUBY
           end
+          n += 1
         end
+        puts "Generated #{n} tests in #{Time.now - t}s"
       end
     end
   end
