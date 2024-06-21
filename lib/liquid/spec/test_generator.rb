@@ -29,23 +29,16 @@ module Liquid
         n = 0
         _ = adapter = @adapter # used in the instance_eval but generates a warning otherwise
         specs.each do |spec|
-          _ = meth_name = "test_ #{spec.name}" # again _ = needed for warning
-          if spec.expected == Unit::FATAL
-            @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
-              define_method(meth_name) do
-                #{"Warning.stubs(:warn)" if spec.generates_ruby_warning}
-                assert_raises(Object) { adapter.render(spec) }
-              end
-            RUBY
+          _ = m = "test_ #{spec.name}" # again _ = needed for warning
+          _ = w = spec.generates_ruby_warning ? "Warning.stubs(:warn); " : ""
+
+          # source is kept to one line so that our line tracking lie remains accurate
+          source = if spec.expected == Unit::FATAL
+            "define_method(m) { #{w} assert_raises(Object) { adapter.render(spec) } }"
           else
-            @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
-              define_method(meth_name) do
-                #{"Warning.stubs(:warn)" if spec.generates_ruby_warning}
-                actual = Timecop.freeze(TEST_TIME) { adapter.render(spec) }
-                assert_equal(spec.expected, actual, FailureMessage.new(spec, actual))
-              end
-            RUBY
+            "define_method(m) { #{w} assert_equal(spec.expected, Timecop.freeze(TEST_TIME) { adapter.render(spec) })}"
           end
+          @klass.instance_eval(source, spec.file, spec.line + 1)
           n += 1
         end
         t2 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
