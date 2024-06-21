@@ -27,30 +27,22 @@ module Liquid
       def generate
         t = Time.now
         n = 0
+        _ = adapter = @adapter # used in the instance_eval but generates a warning otherwise
         specs.each do |spec|
-          adapter = @adapter
-          _ = adapter # used in the instance_eval but generates a warning otherwise
+          _ = meth_name = "test_ #{spec.name}" # again _ = needed for warning
           if spec.expected == Unit::FATAL
             @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
-              meth_name = "test_ #{spec.name}"
-              define_method(meth_name.to_sym) do
+              define_method(meth_name) do
                 #{"Warning.stubs(:warn)" if spec.generates_ruby_warning}
-                adapter.render(spec)
-              rescue => e
-                assert true
-              else
-                assert false, "Expected unrecoverable error, but none was raised"
+                assert_raises(Object) { adapter.render(spec) }
               end
             RUBY
           else
             @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
-              meth_name = "test_ #{spec.name}"
-              define_method(meth_name.to_sym) do
+              define_method(meth_name) do
                 #{"Warning.stubs(:warn)" if spec.generates_ruby_warning}
-                actual = Timecop.freeze(TEST_TIME) do
-                  adapter.render(spec)
-                end
-                assert spec.expected == actual, FailureMessage.new(spec, actual)
+                actual = Timecop.freeze(TEST_TIME) { adapter.render(spec) }
+                assert_equal(spec.expected, actual, FailureMessage.new(spec, actual))
               end
             RUBY
           end
