@@ -25,7 +25,7 @@ module Liquid
       end
 
       def generate
-        t = Time.now
+        t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         n = 0
         _ = adapter = @adapter # used in the instance_eval but generates a warning otherwise
         specs.each do |spec|
@@ -48,7 +48,9 @@ module Liquid
           end
           n += 1
         end
-        puts "Generated #{n} tests in #{Time.now - t}s"
+        t2 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        ms = ((t2 - t1) * 1000).round
+        puts "\x1b[1;34m%% Generated #{n} tests in #{ms}ms\x1b[0m"
       end
     end
   end
