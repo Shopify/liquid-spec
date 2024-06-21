@@ -48,17 +48,17 @@ Float literal handling:
     EXP: "-Infinity"
 
   Does not recognize scientific notation:
-  - "{{ 1.0e-05 }}": ""
-  - "{{ 1.0e+05 }}": ""
-  - "{{ 1.0e5 }}": ""
+  - "{{ 1.0e-05 }}": {lax: "", strict: {fatal: true}}
+  - "{{ 1.0e+05 }}": {lax: "", strict: {fatal: true}}
+  - "{{ 1.0e5 }}": {lax: "", strict: {fatal: true}}
 
   Actually matches on multiple decimals too:
-  - "{{ 1.2.3 }}": "1.2"
-  - "{{ 1.2.a }}": ""
-  - "{{ -1.2.3 }}": "-1.2"
-  - "{{ -1.2.a }}": ""
-  - "{{ -1..2 }}": "-1.0"
+  - "{{ 1.2.3 }}": { lax: "1.2", strict: {fatal: true}}
+  - "{{ 1.2.a }}": { lax: "", strict: {fatal: true} }
+  - "{{ -1.2.3 }}": { lax: "-1.2", strict: {fatal: true} }
+  - "{{ -1.2.a }}": { lax: "", strict: {fatal: true} }
+  - "{{ -1..2 }}": { lax: "-1.0", strict: {fatal: true} }
 
   Accepts a trailing decimal:
-  - "{{ -1. }}": "-1.0"
-  - "{{ 1. }}": "1.0"
+  - "{{ -1. }}": {lax: "-1.0", strict: {fatal: true}}
+  - "{{ 1. }}": {lax: "1.0", strict: {fatal: true}}

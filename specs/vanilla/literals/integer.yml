@@ -29,11 +29,11 @@ Integer literal handling:
     EXP: "1000000000000000000000000000000000000000000000000000000000000"
 
   does not do hex:
-  - "{{ 0x10 }}":  ""
+  - "{{ 0x10 }}": {lax: "", strict: {fatal: true}}
 
   does not do octal:
-  - "{{ 0o7 }}": ""
+  - "{{ 0o7 }}": {lax: "", strict: {fatal: true}}
   - "{{ 011 }}": "11"
 
   does not do binary:
-  - "{{ 0b1101 }}": ""
+  - "{{ 0b1101 }}": {lax: "", strict: {fatal: true}}

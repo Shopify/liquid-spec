@@ -18,5 +18,6 @@ module Liquid
         self.filesystem ||= {}
       end
     end
+    Unit::FATAL = :fatal
   end
 end

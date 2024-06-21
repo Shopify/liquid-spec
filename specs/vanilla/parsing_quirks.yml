@@ -7,10 +7,10 @@ ParsingQuirks:
     EXP: " YES "
     CTX: { containsallshipments: true }
   extra dots in ranges:
-  - "{% for i in (1...5) %}{{ i }}{% endfor %}": '12345'
+  - "{% for i in (1...5) %}{{ i }}{% endfor %}": {lax: "12345", strict: {fatal: true}}
   invalid variables work:
   - "{% assign 123 = 'bar' %}{{ 123 }}": '123'
-  - "{% assign 123foo = 'bar' %}{{ 123foo }}": bar
+  - "{% assign 123foo = 'bar' %}{{ 123foo }}": {lax: "bar", strict: {fatal: true}}
   lookup on var with literal name:
   - TPL: "{{ blank['x'] }}"
     EXP: result
@@ -20,13 +20,13 @@ ParsingQuirks:
     CTX: { blank: { x: result } }
   meaningless parens lax:
   - TPL: "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif %}"
-    EXP: " YES "
+    EXP: { lax: " YES ", strict: {fatal: true} }
     CTX: { b: bar, c: baz }
   unanchored filter arguments:
-  - '{{ ''hi there'' | split:"t"" | reverse | first}}': here
-  - "{{ 'hi there' | split$$$:' ' | first }}": hi
-  - "{{ 'X' | downcase) }}": x
-  - '{{ ''hi there'' | split:"t"" | remove:"i" | first}}': 'hi '
+  - '{{ ''hi there'' | split:"t"" | reverse | first}}': { lax: "here", strict: {fatal: true} }
+  - "{{ 'hi there' | split$$$:' ' | first }}": { lax: "hi", strict: {fatal: true} }
+  - "{{ 'X' | downcase) }}": { lax: "x", strict: {fatal: true} }
+  - '{{ ''hi there'' | split:"t"" | remove:"i" | first}}': { lax: "hi ", strict: {fatal: true} }
   unexpected characters silently eat logic lax:
-  - "{% if false || true %} YES {% endif %}": ''
-  - "{% if true && false %} YES {% endif %}": " YES "
+  - "{% if false || true %} YES {% endif %}": {lax: "", strict: {fatal: true}}
+  - "{% if true && false %} YES {% endif %}": {lax: " YES ", strict: {fatal: true}}

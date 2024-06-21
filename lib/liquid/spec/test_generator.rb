@@ -27,15 +27,28 @@ module Liquid
       def generate
         specs.each do |spec|
           adapter = @adapter
-          @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
-            meth_name = "test_ #{spec.name}"
-            define_method(meth_name.to_sym) do
-              actual = Timecop.freeze(TEST_TIME) do
+          if spec.expected == Unit::FATAL
+            @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
+              meth_name = "test_ #{spec.name}"
+              define_method(meth_name.to_sym) do
                 adapter.render(spec)
+              rescue => e
+                assert true
+              else
+                assert false, "Expected unrecoverable error, but none was raised"
               end
-              assert spec.expected == actual, FailureMessage.new(spec, actual)
-            end
-          RUBY
+            RUBY
+          else
+            @klass.instance_eval(<<~RUBY, spec.file, spec.line - 1)
+              meth_name = "test_ #{spec.name}"
+              define_method(meth_name.to_sym) do
+                actual = Timecop.freeze(TEST_TIME) do
+                  adapter.render(spec)
+                end
+                assert spec.expected == actual, FailureMessage.new(spec, actual)
+              end
+            RUBY
+          end
         end
       end
     end

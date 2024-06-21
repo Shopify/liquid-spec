@@ -1,7 +1,7 @@
 ---
 Assign:
   uses error mode:
-  - "{% assign foo = ('X' | downcase) %}": ''
+  - "{% assign foo = ('X' | downcase) %}": {lax: '', strict: {fatal: true}}
   assign with filter:
   - TPL: '{% assign foo = values | split: "," %}.{{ foo[1] }}.'
     EXP: ".bar."

@@ -5,7 +5,7 @@ Range literal handling:
   - "{{ (0..1) }}": "0..1"
 
   Requires parens:
-  - "{{ 0..1 }}": "0.0" # this is interpreted as a float
+  - "{{ 0..1 }}": {lax: "0.0", strict: {fatal: true}}
 
   Allows spaces:
   - "{{ (  1  ..  1  ) }}": "1..1"
@@ -14,18 +14,18 @@ Range literal handling:
   - "{{ (\v1\v..\v1\v) }}": "1..1"
 
   But \b kind of gets in the way of numeric parsing...:
-  - "{{ (1\x08..1\x08) }}": "0..0"
-  - "{{ (\x081..\x081) }}": "0..0"
+  - "{{ (1\x08..1\x08) }}": {lax: "0..0", strict: {fatal: true}}
+  - "{{ (\x081..\x081) }}": {lax: "0..0", strict: {fatal: true}}
   - TPL: "{{ (\x08a\x08..\x08b\x08) }}"
-    EXP: "1..2"
+    EXP: {lax: "1..2", strict: {fatal: true}}
     CTX: { a: 1, b: 2 }
 
   Accepts excess dots:
-  - "{{ (0...1) }}": "0..1"
+  - "{{ (0...1) }}": {lax: "0..1", strict: {fatal: true}}
 
   Not happy with too many dots surrounded by spaces:
-  - "{{ (0... 1) }}": ""
-  - "{{ (0 ...1) }}": ""
+  - "{{ (0... 1) }}": { lax: "", strict: {fatal: true} }
+  - "{{ (0 ...1) }}": { lax: "", strict: {fatal: true} }
 
   Variables work too:
   - TPL: "{{ (abc..def) }}"
@@ -48,5 +48,19 @@ Range literal handling:
   - "{{ (10..-10) }}": "10..-10"
 
   "They can't just be a bunch of dots but they can almost just be a bunch of dots":
-  - "{{ (..............................................................................................) }}": ""
-  - "{{ (.............................................................................................n) }}": "0..0"
+  - "{{ (..............................................................................................) }}":
+      {lax: "", strict: {fatal: true}}
+  - "{{ (.............................................................................................n) }}":
+      {lax: "0..0", strict: {fatal: true}}
+
+  Various other pathological cases:
+  - "{{ (1..2..3) }}": { lax: "1..3", strict: {fatal: true}}
+  - "{{ (1...2...3) }}": { lax: "1..3", strict: {fatal: true}}
+  - "{{ (-3..2..3..4) }}": { lax: "-3..4", strict: {fatal: true} }
+  - "{{ (..1) }}": { lax: "", strict: {fatal: true} }
+  - "{{ (1..) }}": { lax: "", strict: {fatal: true} }
+  - TPL: "{{ (a..b..c) }}"
+    EXP: { lax: "0..3", strict: {fatal: true} }
+    CTX: { a: 1, b: 2, c: 3 }
+  - "{{ (1e10..2e10) }}": { lax: "0..0", strict: {fatal: true} }
+  - "{{ ('a'..'z') }}": "0..0"

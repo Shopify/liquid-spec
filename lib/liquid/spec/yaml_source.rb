@@ -41,18 +41,58 @@ module Liquid
               end
             end
 
+            if expected.is_a?(Hash) && expected.keys.sort == %w[lax strict]
+              lax_expected = expected.fetch("lax")
+              strict_expected = expected.fetch("strict")
+            else
+              lax_expected = expected
+              strict_expected = expected
+            end
+
+            if lax_expected.is_a?(Hash)
+              if lax_expected == {'fatal' => true}
+                lax_expected = Unit::FATAL
+              else
+                raise "Invalid lax expected: #{lax_expected} at #{context.join("/")}"
+              end
+            end
+
+            if strict_expected.is_a?(Hash)
+              if strict_expected == {'fatal' => true}
+                strict_expected = Unit::FATAL
+              else
+                raise "Invalid strict expected: #{strict_expected} at #{context.join("/")}"
+              end
+            end
+
             trailer = has_multiple ? " (#{index + 1}/#{data.children.size})" : ""
-            ret << Unit.new(
-              name: "#{context.join(" ")}#{trailer}",
-              expected: expected,
+
+            # TestThing mutates so we need to clone. We could also change TestThing
+            env1 = value["CTX"] || {}
+            env2 = node.to_ruby["CTX"] || {}
+
+            fixed_args = {
               template: template,
-              environment: value["CTX"] || {},
               filesystem: value["FSS"],
               file: spec_path,
               line: node.start_line,
-              # TODO these are unused?
-              error_mode: value["error_mode"],
               context_klass: value["context_klass"].nil? ? Liquid::Context : Object.const_get(value["context_klass"])
+            }
+
+            ret << Unit.new(
+              name: "[lax] #{context.join(" ")}#{trailer}",
+              environment: env1,
+              expected: lax_expected,
+              error_mode: :lax,
+              **fixed_args,
+            )
+
+            ret << Unit.new(
+              name: "[strict] #{context.join(" ")}#{trailer}",
+              environment: env2,
+              expected: strict_expected,
+              error_mode: :strict,
+              **fixed_args,
             )
           end
         else
