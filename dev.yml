@@ -1,0 +1,5 @@
+up:
+  - ruby: 3.3.3
+  - bundler
+commands:
+  test: bin/test

@@ -8,6 +8,9 @@ group :development, :test do
 end
 
 group :test do
+  gem 'base64' # bootsnap dep, should add upstream
+  gem 'bigdecimal' # bootsnap dep, should add upstream
+  gem 'bootsnap'
   gem 'minitest'
   gem 'minitest-focus', require: false
   gem 'mocha'
