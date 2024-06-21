@@ -16,3 +16,8 @@ Raw tag:
 
   tag in raw:
   - "{% raw %}{% comment %} test {% endcomment %}{% endraw %}": "{% comment %} test {% endcomment %}"
+
+  raw in comment:
+  - "{% comment %}{% raw %}{{ test }}{% endraw %}{% endcomment %}": ""
+  - "{% comment %}{% raw %}{% if condition %}Content{% endif %}{% endraw %}{% endcomment %}": ""
+  - "{% comment %}{% raw %}{% for item in items %}{{ item }}{% endfor %}{% endraw %}{% endcomment %}": ""

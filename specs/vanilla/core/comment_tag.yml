@@ -28,3 +28,17 @@ Comment tag:
   - "{%comment%}{% endif %}{%endcomment%}": ''
   - "comment removed {%comment%} be gone.. {%endcomment%} .. right?": "comment removed  .. right?"
 
+  contents of comment must be parse-able:
+  - "{% comment %}{% if x > 5 %}{% endcomment %}": {fatal: true}
+  - "{% comment %}{{ unclosed_variable {% endcomment %}": {fatal: true}
+  - "{% comment %}{% for item in items %}{% comment %}": {fatal: true}
+  - "{% comment %}{% assign x = 5 {% endcomment %}": {fatal: true}
+  - "{% comment %}{% capture my_variable %}Some text{% endcomment %}": {fatal: true}
+  - "{% comment %}{% increment counter {% endcomment %}": {fatal: true}
+
+  but these aren't parse failures:
+  - "{% comment %}{ { var }}{% endcomment %}": ""
+  - "{% comment %} increment counter %}{% endcomment %}": ""
+
+  contents of comment are not evaluated, can have post-parse errors:
+  - "{% comment %}{% include 'non-existent-file' %}{% endcomment %}": ''

@@ -1,5 +1,10 @@
 up:
+  - packages: ["fswatch"]
   - ruby: 3.3.3
   - bundler
 commands:
   test: bin/test
+  watch:
+    aliases: [w]
+    subcommands:
+      test: { run: bin/watch-test, aliases: [t] }

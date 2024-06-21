@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'open3'
+require 'bundler/setup'
+Bundler.require(:development, :test)
+
+ROOT = File.expand_path('..', __dir__)
+$LOAD_PATH.unshift(File.join(ROOT, 'lib'))
+$LOAD_PATH.unshift(File.join(ROOT, 'tests'))
+
+Bootsnap.setup(
+  cache_dir:          'tmp/cache', # Path to your cache
+  ignore_directories: [],          # Directory names to skip.
+  development_mode:   true,
+  load_path_cache:    true,        # Optimize the LOAD_PATH with a cache
+  compile_cache_iseq: true,        # Compile Ruby code into ISeq cache, breaks coverage reporting.
+  compile_cache_yaml: true,        # Compile YAML into a cache
+  compile_cache_json: true,        # Compile JSON into a cache
+  readonly:           false,       # Use the caches but don't update them on miss or stale entries.
+)
+
+def actually_run_tests
+  require 'test_helper'
+  Dir.glob('tests/**/*_test.rb').each do |file|
+    require File.join(ROOT, file)
+  end
+end
+
+def run_tests!
+  t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  pid = fork { actually_run_tests }
+  _, stat = Process.waitpid2(pid)
+  t2 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  ms = ((t2 - t1) * 1000).round
+  if stat.success?
+    puts "\x1b[1;34m%% Passed in #{ms}ms\x1b[0m"
+  else
+    puts "\x1b[1;31m%% Failed in #{ms}ms\x1b[0m"
+  end
+end
+
+fswatch_args = [
+  '-e', 'tmp',
+  '-e', '/\.git',
+  '--one-per-batch',
+  '.'
+]
+
+run_tests!
+
+Open3.popen3('fswatch', *fswatch_args) do |stdin, stdout, stderr, wait_thr|
+  stdin.close
+  stdout.each { |_| run_tests! }
+end
