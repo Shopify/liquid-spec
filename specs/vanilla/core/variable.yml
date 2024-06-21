@@ -110,6 +110,7 @@ Variable:
   - "{% assign foo = empty %}{{ foo }}": ''
   variable lookup calls to liquid value:
   - TPL: "{{ foo | upcase }}"
+  
     EXP: YAY
     CTX: { foo: !ruby/object:BooleanDrop { context: null, value: true } }
   - TPL: "{{ list[foo] }}"

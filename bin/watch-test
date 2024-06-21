@@ -39,16 +39,28 @@ def run_tests!
   end
 end
 
-fswatch_args = [
-  '-e', 'tmp',
-  '-e', '/\.git',
-  '--one-per-batch',
-  '.'
-]
+fswatch_args = ['-m', 'kqueue_monitor', '--recursive', 'lib', 'specs']
 
-run_tests!
+q = Queue.new
+Thread.new {
+  last_run = 0
+  last_contents = nil
+  while (ts, filename = q.pop)
+    filename.strip!
+    entry = "#{filename}:#{File.read(filename) rescue nil}"
+    if ts - last_run > 0.1 # 100ms debounce
+      if last_contents != entry
+        last_run = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        last_contents = entry
+        run_tests!
+      end
+    end
+  end
+}
 
 Open3.popen3('fswatch', *fswatch_args) do |stdin, stdout, stderr, wait_thr|
   stdin.close
-  stdout.each { |_| run_tests! }
+  stdout.each do |out|
+    q << [Process.clock_gettime(Process::CLOCK_MONOTONIC), out]
+  end
 end
