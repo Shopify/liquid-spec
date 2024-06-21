@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+ROOT = File.expand_path('..', __dir__)
+
+$LOAD_PATH.unshift(File.join(ROOT, 'lib'))
+$LOAD_PATH.unshift(File.join(ROOT, 'tests'))
+
+require 'test_helper'
+
+Dir.glob('tests/**/*_test.rb').each { |file| require File.join(ROOT, file) }
