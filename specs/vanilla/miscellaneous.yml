@@ -1,0 +1,27 @@
+---
+Miscellaneous / sorting TODO:
+
+  hyphenated assign:
+  - TPL: a-b:{{a-b}} {%assign a-b = 2 %}a-b:{{a-b}}
+    EXP: a-b:1 a-b:2
+    CTX: {a-b: '1'}
+
+  illegal symbols:
+  - "{% if true == empty %}?{% endif %}": ''
+  - "{% if empty == true %}?{% endif %}": ''
+  - "{% if null == true %}?{% endif %}": ''
+  - "{% if true == null %}?{% endif %}": ''
+
+  no transform:
+  - blah: blah
+  - '': ''
+  - TPL: this text should come out of the template without change...
+    EXP: this text should come out of the template without change...
+  - "<blah>": "<blah>"
+  - TPL: |-
+      this shouldnt see any transformation either but has multiple lines
+                    as you can clearly see here ...
+    EXP: |-
+      this shouldnt see any transformation either but has multiple lines
+                    as you can clearly see here ...
+  - "|,.:": "|,.:"

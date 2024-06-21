@@ -1,0 +1,12 @@
+String literals:
+
+  Recognize double quotes:
+  - '{{"double quoted"}}': double quoted
+
+  Recognize single quotes:
+  - "{{'single quoted'}}": single quoted
+
+  Spaces are fine:
+  - "{{ 'spaced2' }}": spaced2
+  - "{{ 'spaced' }}": spaced
+

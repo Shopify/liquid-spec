@@ -1,5 +1,5 @@
----
-RawTag:
+Raw tag:
+
   open tag in raw:
   - "{% raw %} Foobar {{ invalid {% endraw %}": " Foobar {{ invalid "
   - "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}": " Foobar {{ invalid 1"
@@ -8,11 +8,11 @@ RawTag:
   - "{% raw %} Foobar {% invalid {% endraw %}": " Foobar {% invalid "
   - "{% raw %} Foobar {% {% {% {% endraw %}": " Foobar {% {% {% "
   - "{% raw %} Foobar invalid %} {% endraw %}": " Foobar invalid %} "
-  - TPL: "{% raw %} Foobar {% invalid {% {% endraw {% endraw %}"
-    EXP: " Foobar {% invalid {% {% endraw "
+  - "{% raw %} Foobar {% invalid {% {% endraw {% endraw %}": " Foobar {% invalid {% {% endraw "
   - "{% raw %} test {% raw %} {% {% endraw %}endraw %}": " test {% raw %} {% endraw %}"
+
   output in raw:
   - "{% raw %}{{ test }}{% endraw %}": "{{ test }}"
+
   tag in raw:
-  - TPL: "{% raw %}{% comment %} test {% endcomment %}{% endraw %}"
-    EXP: "{% comment %} test {% endcomment %}"
+  - "{% raw %}{% comment %} test {% endcomment %}{% endraw %}": "{% comment %} test {% endcomment %}"

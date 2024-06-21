@@ -1,0 +1,30 @@
+Comment tag:
+
+  is just removed from the output:
+  - "{% comment %}{% endcomment %}": ''
+  - TPL: |-
+      foo{%comment%}
+                                           {%endcomment%}bar
+    EXP: foobar
+  - "{% comment %}{% raw %} {{%%%%}}  }} { {% endcomment %} {% comment {% endraw %} {% endcomment %}": ''
+  - "{% comment %}{%endcomment%}": ''
+  - '{% comment %}{% " %}{% endcomment %}': ''
+  - foo {%comment%} comment {%endcomment%} bar: foo  bar
+  - foo {%comment%} {%endcomment%} bar: foo  bar
+  - "{% comment %}comment{% endcomment %}": ''
+  - foo {%comment%}comment{%endcomment%} bar: foo  bar
+  - "{%comment%}{% endcomment %}": ''
+  - foo{% comment %}comment{% endcomment %}bar: foobar
+  - foo{%comment%}comment{%endcomment%}bar: foobar
+  - "{% comment %} 1 {% comment %} 2 {% endcomment %} 3 {% endcomment %}": ''
+  - foo{%comment%} comment {%endcomment%}bar: foobar
+  - "{% comment %}{% endwhatever %}{% endcomment %}": ''
+  - "{%comment%}{%blabla%}{%endcomment%}": ''
+  - foo{% comment %} comment {% endcomment %}bar: foobar
+  - "{% comment %}{% blabla %}{% endcomment %}": ''
+  - "{%comment%}{%endcomment%}": ''
+  - "{%comment%}comment{%endcomment%}": ''
+  - "{% comment %}{%%}{% endcomment %}": ''
+  - "{%comment%}{% endif %}{%endcomment%}": ''
+  - "comment removed {%comment%} be gone.. {%endcomment%} .. right?": "comment removed  .. right?"
+

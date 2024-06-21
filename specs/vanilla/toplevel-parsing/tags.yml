@@ -1,0 +1,13 @@
+Tags:
+
+  can span multiple lines:
+  - TPL: |-
+      0{%
+      for i in (1..3)
+      %} {{
+      i
+      }}{%
+      endfor
+      %}
+    EXP: 0 1 2 3
+

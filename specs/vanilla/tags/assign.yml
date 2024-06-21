@@ -63,3 +63,11 @@ Assign:
   - TPL: "{% assign r = a[ 'b' ] %}{{ r }}"
     EXP: result
     CTX: {a: {b: result}}
+
+  can assign a range:
+  - TPL: "{% assign nums = (x..y) %}{% for num in nums %}{{ num }}{% endfor %}"
+    EXP: '12345'
+    CTX: { x: 1, "y": 5 }
+  - TPL: "{% assign foo = (x..y) %}{{ foo }}"
+    EXP: 1..5
+    CTX: { x: 1, "y": 5 }

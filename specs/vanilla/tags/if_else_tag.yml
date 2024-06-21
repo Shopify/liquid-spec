@@ -1,5 +1,22 @@
 ---
 IfElseTag:
+
+  compares floats:
+  - TPL: "{% if expect == 1.5 %}hit{% else %}nohit{% endif %}"
+    EXP: hit
+    CTX: {expect: 1.5}
+  - TPL: "{% if expect == 1.5000001 %}hit{% else %}nohit{% endif %}"
+    EXP: nohit
+    CTX: {expect: 1.5}
+
+  compares ranges:
+  - TPL: "{% if expect == (1..2) %}hit{% else %}nohit{% endif %}"
+    EXP: hit
+    CTX: {expect: !ruby/range {begin: 1, end: 2, excl: false}}
+  - TPL: "{% if expect == (1..3) %}hit{% else %}nohit{% endif %}"
+    EXP: nohit
+    CTX: {expect: !ruby/range {begin: 1, end: 2, excl: false}}
+
   comparison of expressions starting with and or or:
   - TPL: "{% if order.items_count == 0 %}YES{% endif %}"
     EXP: 'YES'
@@ -7,6 +24,7 @@ IfElseTag:
   - TPL: "{% if android.name == 'Roy' %}YES{% endif %}"
     EXP: 'YES'
     CTX: {order: {items_count: 0}, android: {name: Roy}}
+
   comparison of strings containing and or or:
   - TPL: "{% if a == 'and' and b == 'or' and c == 'foo and bar' and d == 'bar or baz' and e == 'foo' and foo and bar %} YES {% endif %}"
     EXP: " YES "
