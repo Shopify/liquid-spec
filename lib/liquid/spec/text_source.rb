@@ -159,6 +159,7 @@ module Liquid
           template: unit_data["template"],
           environment: unit_data["environment"],
           filesystem: unit_data["filesystem"],
+          context_klass: Liquid::Context,
         )
       end
     end
