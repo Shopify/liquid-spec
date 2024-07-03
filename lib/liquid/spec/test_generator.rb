@@ -7,11 +7,12 @@ module Liquid
       TEST_TIME = Time.utc(2024, 01, 01, 0, 1, 58).freeze
 
       class << self
-        def generate(klass, sources, adapter, run_command: nil)
+        def generate(klass, sources, adapter, run_command:)
           new(klass, sources, adapter, run_command:).generate
         end
       end
-      def initialize(klass, sources, adapter, run_command: nil)
+
+      def initialize(klass, sources, adapter, run_command:)
         @klass = klass
         @sources = sources
         @adapter = adapter
@@ -19,6 +20,8 @@ module Liquid
       end
 
       def generate
+        run_command = @run_command
+
         @sources.each do |source|
           source.each do |spec|
             test_class_name, test_name = spec.name.split("#")
@@ -52,7 +55,7 @@ module Liquid
                   end
                 end
 
-                message = FailureMessage.new(spec, rendered, exception:, run_command: @run_command, test_name:, context:)
+                message = FailureMessage.new(spec, rendered, exception:, run_command:, test_name:, context:)
 
                 assert spec.expected == rendered, message
               rescue Minitest::Assertion => e

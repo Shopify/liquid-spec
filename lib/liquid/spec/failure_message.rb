@@ -12,7 +12,7 @@ module Liquid
         @actual = actual
         @width = width
         @exception = exception
-        @run_command = run_command
+        @run_command = run_command || "dev test test/integration/liquid_spec.rb"
         @test_name = test_name
         @context = context
         @pastel = Pastel.new
@@ -104,9 +104,8 @@ module Liquid
       end
 
       def rerun_command
-        base_run_command = @run_command || "dev test test/integration/liquid_spec.rb"
         slugified_name = Regexp.escape(@test_name)
-        "#{base_run_command} --name=/#{slugified_name}/"
+        "#{@run_command} --name=/#{slugified_name}/"
       end
     end
   end
