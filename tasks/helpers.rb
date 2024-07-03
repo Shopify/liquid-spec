@@ -31,6 +31,8 @@ module Helpers
     data = YAML.unsafe_load(yaml)
     data.sort_by! { |h| h["name"] }
     data.uniq!
+    outfile = File.expand_path(outfile)
+    puts "Writing #{data.size} tests to #{outfile}..."
     File.write(outfile, YAML.dump(data))
   end
 end

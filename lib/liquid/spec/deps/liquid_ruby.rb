@@ -184,3 +184,36 @@ class StubTemplateFactory
     template
   end
 end
+
+
+class StubFileSystem
+  attr_reader :file_read_count
+
+  def initialize(values)
+    @file_read_count = 0
+    @values          = values
+  end
+
+  def read_template_file(template_path)
+    @file_read_count += 1
+    @values.fetch(template_path) do
+      raise Liquid::FileSystemError, "Could not find asset #{template_path}"
+    end
+  end
+end
+
+class StubExceptionRenderer
+  attr_reader :rendered_exceptions
+
+  def initialize
+    @rendered_exceptions = []
+  end
+
+  def call(exception)
+    @rendered_exceptions << exception
+
+    raise exception if exception.is_a?(Liquid::InternalError)
+
+    exception
+  end
+end

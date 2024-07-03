@@ -18,7 +18,7 @@ require_relative(
     "liquid_ruby",
   )
 )
- 
+
 namespace :generate do
   desc 'Generate spec tests from Shopify/liquid'
   task :liquid_ruby do

@@ -11,6 +11,8 @@ module Liquid
       :context_klass,
       :template_factory,
       :request,
+      :render_errors,
+      :message,
       keyword_init: true
     ) do
       def initialize(**)

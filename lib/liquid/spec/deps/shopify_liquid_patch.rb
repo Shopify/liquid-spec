@@ -9,6 +9,9 @@ module ShopifyLiquidPatch
     data = {
       "name" => "#{class_name}##{name}",
       "template" => template,
+      "error_mode" => error_mode.nil? ? Liquid::Template.error_mode : error_mode,
+      "render_errors" => render_errors,
+      "message" => message,
       "environment" => _deep_dup(assigns),
       "expected" => expected,
     }
