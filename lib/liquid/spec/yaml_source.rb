@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Liquid
   module Spec
     class YamlSource < Source

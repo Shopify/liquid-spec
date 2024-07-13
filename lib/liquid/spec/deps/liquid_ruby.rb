@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TestThing
   def initialize
     @foo = 0
@@ -52,10 +54,9 @@ class NumberLikeThing < Liquid::Drop
   end
 end
 
-
 class ThingWithToLiquid
   def to_liquid
-    'foobar'
+    "foobar"
   end
 end
 
@@ -67,9 +68,9 @@ class ForTagTest
       @data = data
     end
 
-    def each
+    def each(&block)
       @each_called = true
-      @data.each { |el| yield el }
+      @data.each(&block)
     end
 
     def load_slice(from, to)
@@ -139,23 +140,23 @@ end
 
 class ErrorDrop < Liquid::Drop
   def standard_error
-    raise Liquid::StandardError, 'standard error'
+    raise Liquid::StandardError, "standard error"
   end
 
   def argument_error
-    raise Liquid::ArgumentError, 'argument error'
+    raise Liquid::ArgumentError, "argument error"
   end
 
   def syntax_error
-    raise Liquid::SyntaxError, 'syntax error'
+    raise Liquid::SyntaxError, "syntax error"
   end
 
   def runtime_error
-    raise 'runtime error'
+    raise "runtime error"
   end
 
   def exception
-    raise Exception, 'exception'
+    raise Exception, "exception"
   end
 end
 
@@ -184,7 +185,6 @@ class StubTemplateFactory
     template
   end
 end
-
 
 class StubFileSystem
   attr_reader :file_read_count

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "assertions"
 require_relative "failure_message"
 
@@ -46,16 +48,14 @@ module Liquid
                 rendered = nil
 
                 Timecop.freeze(Assertions::TEST_TIME) do
-                  begin
-                    rendered, context = adapter.render(spec)
-                  rescue => e
-                    exception = e
-                  end
+                  rendered, context = adapter.render(spec)
+                rescue => e
+                  exception = e
                 end
 
                 message = FailureMessage.new(spec, rendered, exception:, run_command:, test_name:, context:)
 
-                assert spec.expected == rendered, message
+                assert(spec.expected == rendered, message)
               rescue Minitest::Assertion => e
                 e.set_backtrace([]) if exception
                 raise

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SourceTest < Minitest::Test
@@ -23,7 +25,7 @@ class SourceTest < Minitest::Test
         expected: "123",
         name: "test_name",
         filesystem: { "foo" => "bar" },
-      )
+      ),
     ]
 
     assert_equal(expected, runner.to_a)
@@ -31,19 +33,18 @@ class SourceTest < Minitest::Test
 
   def test_failure_message
     spec = Liquid::Spec::Unit.new(
-        template: "{{ foo | capitalize }}",
-        environment: { "foo" => "bar baz" },
-        expected: "BAR BAZ",
-        name: "test_name",
-        filesystem: { "foo" => "bar" },
-      )
+      template: "{{ foo | capitalize }}",
+      environment: { "foo" => "bar baz" },
+      expected: "BAR BAZ",
+      name: "test_name",
+      filesystem: { "foo" => "bar" },
+    )
 
     failure_message = Liquid::Spec::FailureMessage.new(spec, "BAR baz", width: 30)
 
-    assert_includes failure_message.to_s, "{{ foo | capitalize }}"
-    assert_includes failure_message.to_s, '{"foo"=>"bar baz"}'
+    assert_includes(failure_message.to_s, "{{ foo | capitalize }}")
+    assert_includes(failure_message.to_s, '{"foo"=>"bar baz"}')
   end
-
 
   MOCK_TXT = <<~TXT
     ===
@@ -75,9 +76,9 @@ class SourceTest < Minitest::Test
         expected: "Product: Draft 151cm ",
         name: "NAME_2",
         filesystem: {
-          "product" => 'Product: {{ product.title }} '
+          "product" => "Product: {{ product.title }} ",
         },
-      )
+      ),
     ]
 
     assert_equal(expected, runner.to_a)

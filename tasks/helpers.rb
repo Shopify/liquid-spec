@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Helpers
   extend self
 
@@ -9,13 +11,13 @@ module Helpers
 
     puts "Loading Shopify/liquid@#{git_tag}..."
 
-    `git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid`
-    `git -C tmp/liquid checkout #{git_tag}`
+    %x(git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid)
+    %x(git -C tmp/liquid checkout #{git_tag})
   end
-
 
   def insert_patch(file_path, patch)
     return if File.read(file_path).include?(patch)
+
     File.write(file_path, patch, mode: "a+")
   end
 

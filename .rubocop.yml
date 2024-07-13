@@ -1,0 +1,13 @@
+inherit_from: .rubocop_todo.yml
+
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+AllCops:
+  CacheRootDirectory: tmp/cache
+  SuggestExtensions: false
+  TargetRubyVersion: "3.3"
+
+Naming/FileName:
+  Enabled: true
+  Exclude: []

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Liquid
   module Spec
     # Dump Liquid context.environments to plain YAML, expanding all calls to drop methods.
@@ -19,15 +21,16 @@ module Liquid
       private
 
       def dump_liquid_value(value, nested_level:)
-        return nil if nested_level > 5
+        return if nested_level > 5
+
         case value
         when Liquid::Drop
           dump_liquid_drop(value, nested_level: nested_level + 1)
         when Proc
-          if value.arity == 1
-            v = value.call(@context)
+          v = if value.arity == 1
+            value.call(@context)
           else
-            v = value.call
+            value.call
           end
           dump_liquid_value(v, nested_level: nested_level + 1)
         when Array
@@ -46,16 +49,16 @@ module Liquid
           value.to_liquid
         end
       end
-  
+
       def dump_liquid_drop(drop, nested_level:)
         drop.class.invokable_methods.each_with_object({}) do |method, dump|
           drop.context = @context if drop.respond_to?(:context=)
-          if method != "to_liquid" && drop.method(method).arity == 0
-            dump[method] = begin
-              dump_liquid_value(drop.invoke_drop(method), nested_level: nested_level + 1)
-            rescue
-              nil
-            end
+          next unless method != "to_liquid" && drop.method(method).arity == 0
+
+          dump[method] = begin
+            dump_liquid_value(drop.invoke_drop(method), nested_level: nested_level + 1)
+          rescue
+            nil
           end
         end
       end

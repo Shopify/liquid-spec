@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'yaml'
-require 'liquid'
-require 'minitest'
-require 'pry-byebug'
+require "yaml"
+require "liquid"
+require "minitest"
+require "pry-byebug"
 
 require_relative(File.join(__dir__, "helpers"))
 
@@ -16,11 +16,11 @@ require_relative(
     "spec",
     "deps",
     "liquid_ruby",
-  )
+  ),
 )
 
 namespace :generate do
-  desc 'Generate spec tests from Shopify/liquid'
+  desc "Generate spec tests from Shopify/liquid"
   task :liquid_ruby do
     Helpers.load_shopify_liquid
     Helpers.insert_patch(PATCH_PATH, PATCH)
@@ -30,21 +30,20 @@ namespace :generate do
   end
 end
 
-
 PATCH = <<~RUBY
-require_relative(
-  File.join(
-    __dir__, # liquid-spec/tmp/liquid/test
-    "..",    # liquid-spec/tmp/liquid
-    "..",    # liquid-spec/tmp/
-    "..",    # liquid-spec/
-    "lib",
-    "liquid",
-    "spec",
-    "deps",
-    "shopify_liquid_patch",
+  require_relative(
+    File.join(
+      __dir__, # liquid-spec/tmp/liquid/test
+      "..",    # liquid-spec/tmp/liquid
+      "..",    # liquid-spec/tmp/
+      "..",    # liquid-spec/
+      "lib",
+      "liquid",
+      "spec",
+      "deps",
+      "shopify_liquid_patch",
+    )
   )
-)
 RUBY
 PATCH_PATH = "./tmp/liquid/test/test_helper.rb"
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "liquid/spec/unit"
 require "liquid/spec/source"
 require "liquid/spec/yaml_source"
@@ -17,7 +19,7 @@ module Liquid
       "..",
       "specs",
       "**",
-      "*{.yml,.txt}"
+      "*{.yml,.txt}",
     )
 
     DIR_SPECS = File.join(
@@ -26,7 +28,7 @@ module Liquid
       "..",
       "specs",
       "**",
-      "template.liquid"
+      "template.liquid",
     )
 
     def self.all_sources

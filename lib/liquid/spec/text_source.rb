@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Liquid
   module Spec
     class TextSource < Source
@@ -57,6 +59,7 @@ module Liquid
 
           loop do
             break if peek.match(/___+/) || peek.match(/---+/)
+
             yaml << lines.shift
           end
 
@@ -80,6 +83,7 @@ module Liquid
 
           loop do
             break if peek.match(/---+/)
+
             yaml << lines.shift
           end
 
@@ -96,6 +100,7 @@ module Liquid
 
           loop do
             break if peek.match(/\+\+\++/)
+
             template << lines.shift
           end
 
@@ -112,10 +117,11 @@ module Liquid
 
           loop do
             break if peek.nil? || peek.match(/===+/)
+
             expected << lines.shift
           end
 
-          data["expected"] = expected.chomp('')
+          data["expected"] = expected.chomp("")
 
           return Finished.new(lines) if peek.nil?
 
@@ -125,7 +131,6 @@ module Liquid
 
       class Finished < State
         def next(data)
-          binding.pry
           raise NotImplementedError, "Text source reached EOF"
         end
       end
@@ -137,8 +142,10 @@ module Liquid
       def each(&block)
         loop do
           break if @state.is_a?(Finished)
+
           unit = _next
           break if unit.nil?
+
           block.call(unit)
         end
       end

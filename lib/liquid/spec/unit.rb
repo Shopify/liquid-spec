@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Liquid
   module Spec
     Unit = Struct.new(
@@ -14,7 +16,7 @@ module Liquid
       :message,
       :exception_renderer,
       :context,
-      keyword_init: true
+      keyword_init: true,
     ) do
       def initialize(**)
         super
@@ -23,7 +25,7 @@ module Liquid
       end
 
       def context_klass
-       self[:context_klass] || Liquid::Context
+        self[:context_klass] || Liquid::Context
       end
     end
   end

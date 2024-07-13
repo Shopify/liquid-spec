@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 require "liquid/spec/deps/liquid_ruby"
 require "liquid/spec/adapter/liquid_ruby"

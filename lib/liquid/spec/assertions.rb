@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require "timecop"
 require_relative "failure_message"
 
 module Liquid
   module Spec
     class Assertions < Module
-      TEST_TIME = Time.utc(2024, 01, 01, 0, 1, 58).freeze
+      TEST_TIME = Time.utc(2024, 0o1, 0o1, 0, 1, 58).freeze
 
       def self.render_in_forked_process(adapter, spec)
         read, write = IO.pipe
@@ -34,7 +36,6 @@ module Liquid
       end
 
       def self.new(run_command: "dev test", expected_adapter_proc:, actual_adapter_proc:)
-
         Module.new do |mod|
           mod.define_method(:assert_parity) do |liquid_code, expected: nil, **spec_opts|
             caller_method = caller_locations(1, 1)[0].label
@@ -47,7 +48,7 @@ module Liquid
                 template: liquid_code,
                 expected: expected,
                 exception_renderer: StubExceptionRenderer.new(raise_internal_errors: false),
-                **spec_opts
+                **spec_opts,
               )
 
               expected_render_result = Assertions.render_in_forked_process(expected_adapter, expected_spec)
@@ -56,7 +57,7 @@ module Liquid
                 exception = begin
                   pastel = Pastel.new
                   spec = expected_spec.dup
-                  template_opts = {line_numbers: true, error_mode: spec.error_mode&.to_sym}
+                  template_opts = { line_numbers: true, error_mode: spec.error_mode&.to_sym }
                   template_opts = template_opts.compact!.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")
                   context_static_environments = spec.context&.static_environments || Marshal.load(Marshal.dump(spec.environment)).to_yaml
                   adapter_slug = expected_adapter.class.name.split("::").last.downcase

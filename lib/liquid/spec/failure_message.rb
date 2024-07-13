@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "super_diff"
 require "pp"
 require "tty-box"
@@ -76,7 +78,7 @@ module Liquid
 
       def render_kv(content:, name:, color: :cyan)
         name = @pastel.bold.send(color, name)
-        name = "#{name}"
+        name = name.to_s
         value = content.is_a?(String) ? content + "\n" : content.pretty_inspect
         "#{name}\n#{value.strip}\n"
       end
@@ -92,7 +94,7 @@ module Liquid
         end
         bottom_right = @pastel.bold(bottom_right) if bottom_right
         bottom_right = " #{bottom_right} " if bottom_right
-        TTY::Box.frame(content, padding: padding, align: :left, title: {top_left: name, bottom_right:}, border:)
+        TTY::Box.frame(content, padding: padding, align: :left, title: { top_left: name, bottom_right: }, border:)
       end
 
       def filter_backtrace(exception)
