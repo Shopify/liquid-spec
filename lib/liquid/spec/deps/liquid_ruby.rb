@@ -205,14 +205,17 @@ end
 class StubExceptionRenderer
   attr_reader :rendered_exceptions
 
-  def initialize
+  def initialize(raise_internal_errors: true)
+    @raise_internal_errors = raise_internal_errors
     @rendered_exceptions = []
   end
 
   def call(exception)
     @rendered_exceptions << exception
 
-    raise exception if exception.is_a?(Liquid::InternalError)
+    if @raise_internal_errors && exception.is_a?(Liquid::InternalError)
+      raise exception
+    end
 
     exception
   end

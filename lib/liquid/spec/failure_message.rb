@@ -24,13 +24,13 @@ module Liquid
         sections = []
 
         sections << render_kv(content: spec.template, name: "Template")
-        sections << render_kv(content: spec.environment.pretty_inspect, name: "Environment")
+        sections << render_kv(content: environment_or_context_environments.pretty_inspect, name: "Environment")
         unless spec.filesystem.empty?
           sections << render_kv(content: spec.filesystem.pretty_inspect, name: "Filesystem")
         end
         config = {
           error_mode: spec.error_mode,
-          context_klass: spec.context_klass,
+          context_klass: spec.context&.class || spec.context_klass,
           template_factory: spec.template_factory&.class,
           render_errors: spec.render_errors,
         }.map { |k, v| "#{k}: #{v.nil? ? @pastel.dim(v.inspect) : @pastel.bold.blue(v)}" }.join("\n")
@@ -105,7 +105,22 @@ module Liquid
 
       def rerun_command
         slugified_name = Regexp.escape(@test_name)
-        "#{@run_command} --name=/#{slugified_name}/"
+
+        name = if (hex = slugified_name.match(/([0-9a-f]{32})/))
+          hex[1]
+        else
+          slugified_name[-48..-1]
+        end
+
+        "#{@run_command} --name=/#{name}/"
+      end
+
+      def environment_or_context_environments
+        if spec.context
+          spec.context.static_environments
+        else
+          spec.environment
+        end
       end
     end
   end

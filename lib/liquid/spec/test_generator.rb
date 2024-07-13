@@ -1,11 +1,9 @@
-require "timecop"
+require_relative "assertions"
 require_relative "failure_message"
 
 module Liquid
   module Spec
     class TestGenerator
-      TEST_TIME = Time.utc(2024, 01, 01, 0, 1, 58).freeze
-
       class << self
         def generate(klass, sources, adapter, run_command:)
           new(klass, sources, adapter, run_command:).generate
@@ -47,7 +45,7 @@ module Liquid
                 context = nil
                 rendered = nil
 
-                Timecop.freeze(TEST_TIME) do
+                Timecop.freeze(Assertions::TEST_TIME) do
                   begin
                     rendered, context = adapter.render(spec)
                   rescue => e

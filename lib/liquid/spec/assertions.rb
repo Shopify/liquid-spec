@@ -1,0 +1,129 @@
+require "timecop"
+require_relative "failure_message"
+
+module Liquid
+  module Spec
+    class Assertions < Module
+      TEST_TIME = Time.utc(2024, 01, 01, 0, 1, 58).freeze
+
+      def self.render_in_forked_process(adapter, spec)
+        read, write = IO.pipe
+        pid = fork do
+          read.close
+
+          begin
+            rendered, _context = adapter.render(spec)
+            write.write(Marshal.dump(rendered))
+          rescue => e
+            write.write(Marshal.dump(e))
+          end
+          write.close
+          exit!
+        end
+        write.close
+        rendered = Marshal.load(read.read)
+        Process.wait(pid)
+
+        if rendered.is_a?(Exception)
+          e = rendered.is_a?(Liquid::InternalError) ? rendered.cause : rendered
+          e.message << "\n(❌ error when rendering with #{adapter.class.name})"
+          raise e
+        end
+
+        rendered
+      end
+
+      def self.new(run_command: "dev test", expected_adapter_proc:, actual_adapter_proc:)
+
+        Module.new do |mod|
+          mod.define_method(:assert_parity) do |liquid_code, expected: nil, **spec_opts|
+            caller_method = caller_locations(1, 1)[0].label
+            expected_adapter = expected_adapter_proc.call
+            actual_adapter = actual_adapter_proc.call
+
+            Timecop.freeze(TEST_TIME) do
+              expected_spec = Unit.new(
+                name: caller_method,
+                template: liquid_code,
+                expected: expected,
+                exception_renderer: StubExceptionRenderer.new(raise_internal_errors: false),
+                **spec_opts
+              )
+
+              expected_render_result = Assertions.render_in_forked_process(expected_adapter, expected_spec)
+
+              if expected && (expected_render_result != expected)
+                exception = begin
+                  pastel = Pastel.new
+                  spec = expected_spec.dup
+                  template_opts = {line_numbers: true, error_mode: spec.error_mode&.to_sym}
+                  template_opts = template_opts.compact!.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")
+                  context_static_environments = spec.context&.static_environments || Marshal.load(Marshal.dump(spec.environment)).to_yaml
+                  adapter_slug = expected_adapter.class.name.split("::").last.downcase
+                  optional_template_name = spec.template_name ? "\n  > #{pastel.bold.green("template.name")} = #{spec.template_name.inspect}" : ""
+                  context_static_environments = "YAML.unsafe_load(#{context_static_environments.inspect})"
+
+                  info = <<~INFO
+                    When using `assert_parity`, make sure the `expected:` argument is correct.
+
+                    #{SuperDiff::EqualityMatchers::Main.call(expected:, actual: expected_render_result)}
+
+                    To reproduce the mismatch, you can copy and paste the following code into dev console:
+
+                      $ dev console
+
+                      > #{pastel.bold.green("template")} = Liquid::Template.parse(#{liquid_code.inspect}, #{template_opts})#{optional_template_name}
+                      > #{pastel.bold.green("ctx")} = #{spec.context_klass}.build(static_environments: #{context_static_environments})
+                      > #{pastel.bold.green("#{adapter_slug}_result")} = template.render(ctx)
+                  INFO
+
+                  FileUtils.mkdir_p("tmp/liquid-spec")
+                  File.binwrite("tmp/liquid-spec/repro-help.txt", info)
+
+                  raise "Expected result does not match rendered result (adapter: #{expected_adapter.class.name})\n\n#{info}"
+                rescue => e
+                  e
+                end
+
+                message = FailureMessage.new(
+                  expected_spec,
+                  expected_render_result,
+                  exception: exception,
+                  run_command: run_command,
+                  test_name: caller_method,
+                  context: expected_adapter.build_liquid_context(expected_spec).tap do |context|
+                    context.exception_renderer = expected_spec.exception_renderer
+                  end,
+                )
+                assert(expected_render_result == expected, message)
+              end
+
+              spec = expected_spec.dup
+              spec.expected = expected_render_result
+
+              actual_rendered, actual_context, actual_exception = begin
+                [*actual_adapter.render(spec), nil]
+              rescue => e
+                [nil, nil, e]
+              end
+
+              message = FailureMessage.new(
+                spec,
+                actual_rendered,
+                exception: actual_exception,
+                run_command: run_command,
+                test_name: caller_method,
+                context: actual_context,
+              )
+
+              assert(expected_render_result == actual_rendered, message)
+            rescue Minitest::Assertion => e
+              e.set_backtrace([]) if actual_exception
+              raise
+            end
+          end
+        end
+      end
+    end
+  end
+end
