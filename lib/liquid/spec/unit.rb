@@ -15,6 +15,7 @@ module Liquid
       :render_errors,
       :message,
       :exception_renderer,
+      :request,
       :context,
       keyword_init: true,
     ) do
