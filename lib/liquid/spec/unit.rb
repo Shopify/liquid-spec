@@ -13,6 +13,7 @@ module Liquid
       :request,
       :render_errors,
       :message,
+      :exception_renderer,
       keyword_init: true
     ) do
       def initialize(**)

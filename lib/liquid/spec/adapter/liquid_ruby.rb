@@ -3,7 +3,7 @@ module Liquid
     module Adapter
       class LiquidRuby
         def render(spec)
-          exception_renderer = StubExceptionRenderer.new
+          exception_renderer = spec.exception_renderer || StubExceptionRenderer.new
           static_registers = {
             file_system: StubFileSystem.new(spec.filesystem),
             template_factory: spec.template_factory,

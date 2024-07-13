@@ -16,6 +16,7 @@ module Liquid
             template_factory: data["template_factory"],
             template_name: data["template_name"],
             request: data["request"],
+            exception_renderer: data["exception_renderer"],
           )
         end
       end
