@@ -38,7 +38,7 @@ module Liquid
       def self.new(assert_method_name:, expected_adapter_proc:, actual_adapter_proc:, run_command: "dev test")
         Module.new do |mod|
           mod.define_method(assert_method_name) do |liquid_code, expected: nil, **spec_opts|
-            caller_method = caller_locations(1, 1)[0].label
+            caller_method = caller_locations.find { |l| l.label.start_with?("test_") }.label
             expected_adapter = expected_adapter_proc.call
             actual_adapter = actual_adapter_proc.call
 

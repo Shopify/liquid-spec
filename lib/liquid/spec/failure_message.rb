@@ -111,7 +111,7 @@ module Liquid
         name = if (hex = slugified_name.match(/([0-9a-f]{32})/))
           hex[1]
         else
-          slugified_name[-48..-1]
+          slugified_name
         end
 
         "#{@run_command} --name=/#{name}/"
