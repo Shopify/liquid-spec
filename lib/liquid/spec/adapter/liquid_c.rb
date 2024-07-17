@@ -15,6 +15,7 @@ module Liquid
         def around_render
           old_enabled = Liquid::C.enabled
           Liquid::C.enabled = true
+          yield
         ensure
           Liquid::C.enabled = old_enabled
         end
