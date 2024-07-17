@@ -265,7 +265,7 @@
 - template: "{{ foo0 | last }}"
   environment:
     foo0: foo
-  expected: ''
+  expected: 'o'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:929_1081827307687b5fa2e6587aafa0eaf3
 - template: "{{ foo0 | strip }}"
   environment:
@@ -2688,7 +2688,7 @@
 - template: "{{ foo0 | first }}"
   environment:
     foo0: foo
-  expected: ''
+  expected: 'f'
   name: StandardFilterTest#test_all_filters_never_raise_non_liquid_exception:929_c38d2fb4cd234c37c1df27500c7087d1
 - template: "{{ foo0 | url_decode }}"
   environment:

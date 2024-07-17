@@ -24,6 +24,11 @@ namespace :generate do
   task :liquid_ruby do
     Helpers.load_shopify_liquid
     Helpers.insert_patch(PATCH_PATH, PATCH)
+    HELPERS.insert_patch(PATCH_PATH, <<~RUBY)
+      require "active_support/core_ext/object/blank"
+      require "active_support/core_ext/string/access"
+    RUBY
+
     Helpers.reset_captures(CAPTURE_PATH)
     run_liquid_tests
     Helpers.format_and_write_specs(CAPTURE_PATH, SPEC_FILE)

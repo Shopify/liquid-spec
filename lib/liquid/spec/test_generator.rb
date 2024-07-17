@@ -1,67 +1,81 @@
 # frozen_string_literal: true
 
-require_relative "assertions"
+require "timecop"
 require_relative "failure_message"
+require "digest"
 
 module Liquid
   module Spec
     class TestGenerator
+      include Enumerable
+
       class << self
-        def generate(klass, sources, adapter, run_command:)
-          new(klass, sources, adapter, run_command:).generate
+        def define_on(klass, sources:, &block)
+          new(klass, sources).define_on(klass, &block)
+        end
+      end
+      def initialize(klass, sources)
+        @klass = klass
+        @sources = sources
+      end
+
+      def each_group(&block)
+        mapped = sort_by(&:name)
+
+        mapped.map! do |spec|
+          klass, test_name = spec.name.split("#", 2)
+
+          if test_name.nil?
+            test_name = klass
+            klass = "MiscTest"
+          end
+
+          [klass, [test_name, spec]]
+        end
+
+        mapped.group_by(&:first).each do |k, val|
+          items = val.map(&:last).map do |test_name, spec|
+            slug_name = test_name.gsub(/\s+/, "_").downcase
+            slug_name = slug_name.start_with?("test_") ? slug_name : "test_#{slug_name}"
+            slug_name.delete_suffix!("_")
+            spec.name = slug_name
+            spec
+          end
+
+          uniq = items.uniq(&:name).sort_by(&:name)
+
+          if uniq.size != items.size
+            duplicated = items.group_by(&:name).select { |_, v| v.size > 1 }.map(&:first)
+            raise "duplicate test names: #{duplicated}"
+          end
+
+          block.call(k, uniq)
         end
       end
 
-      def initialize(klass, sources, adapter, run_command:)
-        @klass = klass
-        @sources = sources
-        @adapter = adapter
-        @run_command = run_command
-      end
+      def define_on(klass, &block)
+        base = @klass
 
-      def generate
-        run_command = @run_command
+        each_group do |klass_name, specs|
+          if klass_name != "MiscTest"
+            klass = Class.new(base)
+            klass.define_singleton_method(:name) { klass_name }
+            klass.const_set(klass_name, klass)
+          end
 
-        @sources.each do |source|
-          source.each do |spec|
-            test_class_name, test_name = spec.name.split("#")
-
-            if test_name.nil?
-              test_name = test_class_name
-              test_class_name = "MiscTest"
-            end
-
-            test_class = if @klass.const_defined?(test_class_name)
-              @klass.const_get(test_class_name)
-            else
-              test_klass = Class.new(@klass)
-              @klass.const_set(test_class_name, test_klass)
-              test_klass
-            end
-
-            next if test_class.method_defined?(test_name)
-
-            test_class.class_exec(@adapter) do |adapter|
-              define_method(test_name) do
-                exception = nil
-                context = nil
-                rendered = nil
-
-                Timecop.freeze(Assertions::TEST_TIME) do
-                  rendered, context = adapter.render(spec)
-                rescue => e
-                  exception = e
-                end
-
-                message = FailureMessage.new(spec, rendered, exception:, run_command:, test_name:, context:)
-
-                assert(spec.expected == rendered, message)
-              rescue Minitest::Assertion => e
-                e.set_backtrace([]) if exception
-                raise
-              end
+          specs.each do |spec|
+            klass.define_method(spec.name) do
+              instance_exec(spec, &block)
             end
           end
+        end
+      end
+
+      def each(&block)
+        return enum_for(__method__) unless block_given?
+
+        @sources.each do |source|
+          source.each(&block)
         end
       end
     end

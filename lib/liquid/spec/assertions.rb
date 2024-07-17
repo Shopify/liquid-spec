@@ -35,25 +35,33 @@ module Liquid
         rendered
       end
 
-      def self.new(assert_method_name:, expected_adapter_proc:, actual_adapter_proc:, run_command: "dev test")
+      def self.new(assert_method_name:, expected_adapter_proc:, actual_adapter_proc:)
         Module.new do |mod|
-          mod.define_method(assert_method_name) do |liquid_code, expected: nil, **spec_opts|
-            caller_method = caller_locations.find { |l| l.label.start_with?("test_") }.label
+          mod.define_method("#{assert_method_name}_for_spec") do |spec, verify: true, run_command: "dev test"|
+            opts = spec.to_h
+            expected = opts.delete(:expected)
+            liquid_code = opts.delete(:template)
+
+            send(assert_method_name, liquid_code, verify: verify, expected: expected, run_command: run_command, **opts)
+          end
+
+          mod.define_method(assert_method_name) do |liquid_code, expected: nil, verify: true, run_command: "dev test", name: nil, **spec_opts|
+            name = name || caller_locations.find { |l| l.label.start_with?("test_") }&.label || caller_locations.first.label
             expected_adapter = expected_adapter_proc.call
             actual_adapter = actual_adapter_proc.call
 
             Timecop.freeze(TEST_TIME) do
               expected_spec = Unit.new(
-                name: caller_method,
+                name: name,
                 template: liquid_code,
                 expected: expected,
                 exception_renderer: StubExceptionRenderer.new(raise_internal_errors: false),
                 **spec_opts,
               )
 
-              expected_render_result = Assertions.render_in_forked_process(expected_adapter, expected_spec)
+              expected_render_result = verify ? Assertions.render_in_forked_process(expected_adapter, expected_spec) : expected
 
-              if expected && (expected_render_result != expected)
+              if verify && expected && (expected_render_result != expected)
                 exception = begin
                   pastel = Pastel.new
                   spec = expected_spec.dup
@@ -91,7 +99,7 @@ module Liquid
                   expected_render_result,
                   exception: exception,
                   run_command: run_command,
-                  test_name: caller_method,
+                  test_name: name,
                   context: expected_adapter.build_liquid_context(expected_spec).tap do |context|
                     context.exception_renderer = expected_spec.exception_renderer
                   end,
@@ -113,7 +121,7 @@ module Liquid
                 actual_rendered,
                 exception: actual_exception,
                 run_command: run_command,
-                test_name: caller_method,
+                test_name: name,
                 context: actual_context,
               )
 

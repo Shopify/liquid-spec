@@ -17,12 +17,14 @@ module Liquid
       :exception_renderer,
       :request,
       :context,
+      :orig,
       keyword_init: true,
     ) do
-      def initialize(**)
+      def initialize(**orig)
         super
         self.environment ||= {}
         self.filesystem ||= {}
+        self.orig = orig.transform_keys(&:to_s)
       end
 
       def context_klass

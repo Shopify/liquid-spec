@@ -4,6 +4,8 @@ module Liquid
   module Spec
     module Adapter
       class LiquidRuby
+        TEST_TIME = Time.utc(2024, 0o1, 0o1, 0, 1, 58).freeze
+
         def parse_options
           { line_numbers: true, disable_liquid_c_nodes: true }
         end
@@ -16,8 +18,8 @@ module Liquid
           Liquid::C.enabled = old_enabled if defined?(Liquid::C)
         end
 
-        def around_render_liquid_template
-          yield
+        def around_render_liquid_template(&block)
+          Timecop.freeze(TEST_TIME, &block)
         end
 
         def render(spec)

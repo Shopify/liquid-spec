@@ -17,3 +17,5 @@ group :test do
   gem "mocha"
   gem "pry-byebug"
 end
+
+gem "activesupport", "~> 7.1"

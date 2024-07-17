@@ -24,6 +24,7 @@ namespace :generate do
   task :standard_filters do
     Helpers.load_shopify_liquid
     Helpers.insert_patch(FILTER_PATCH_PATH, FILTER_PATCH)
+    Helpers.insert_patch("./tmp/liquid/Gemfile", "gem \"activesupport\", \"~> 7.1\"\n")
     Helpers.reset_captures(FILTER_CAPTURE_PATH)
     run_standard_filters_tests
     Helpers.format_and_write_specs(FILTER_CAPTURE_PATH, FILTER_SPEC_FILE)
@@ -32,6 +33,9 @@ end
 
 FILTER_PATCH_PATH = "./tmp/liquid/test/integration/standard_filter_test.rb"
 FILTER_PATCH = <<~RUBY
+  require "active_support/core_ext/object/blank"
+  require "active_support/core_ext/string/access"
+
   require_relative(
     File.join(
       __dir__, # liquid-spec/tmp/liquid/test/integration
@@ -69,7 +73,7 @@ def run_standard_filters_tests
     system(
       "cd tmp/liquid &&" \
         "bundle install && " \
-        "bundle exec rake base_test TEST=\"test/integration/standard_filter_test.rb\"" \
+        "bundle exec rake base_test MT_SEED=12345 TEST=\"test/integration/standard_filter_test.rb\"" \
         "&& cd ../..",
     )
   end

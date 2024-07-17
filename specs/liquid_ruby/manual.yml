@@ -16,13 +16,13 @@
 
 - template: "{% include 'locale_variables' echo1: 'test123' %}"
   environment: {}
-  expected: "Liquid error (line 1): Could not find asset snippets/locale_variables.liquid"
+  expected: "Liquid error (line 1): Could not find asset locale_variables"
   name: Rendering include tag with variables and file does not exist
   filesystem: {}
 
 - template: "{% include 'foo.liquid' %}"
   environment: {}
-  expected: "Liquid error (line 1): Could not find asset snippets/foo.liquid"
+  expected: "Liquid error (line 1): Could not find asset foo.liquid"
   name: Rendering include tag with file does not exist does not repeat .liquid extension
   filesystem: {}
 
@@ -31,7 +31,7 @@
   environment: {}
   filesystem:
     foo: "{% include 'bar' %}"
-  expected: "Liquid error (foo line 1): Could not find asset snippets/bar.liquid"
+  expected: "Liquid error (foo line 1): Could not find asset bar"
 
 - template: "{% for i in (1..1) %}{{ x }} {% assign x = 2 %}{{ x }}{% endfor %}"
   environment:
