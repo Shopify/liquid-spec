@@ -59,10 +59,10 @@ module Liquid
                   spec = expected_spec.dup
                   template_opts = { line_numbers: true, error_mode: spec.error_mode&.to_sym }
                   template_opts = template_opts.compact!.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")
-                  context_static_environments = spec.context&.static_environments || Marshal.load(Marshal.dump(spec.environment)).to_yaml
+                  context_static_environments = spec.context&.static_environments || Marshal.load(Marshal.dump(spec.environment))
                   adapter_slug = expected_adapter.class.name.split("::").last.downcase
                   optional_template_name = spec.template_name ? "\n  > #{pastel.bold.green("template.name")} = #{spec.template_name.inspect}" : ""
-                  context_static_environments = "YAML.unsafe_load(#{context_static_environments.inspect})"
+                  context_static_environments = "YAML.unsafe_load(#{context_static_environments.to_yaml.dump})"
 
                   info = <<~INFO
                     When using `assert_liquid_ruby_parity`, make sure the `expected:` argument is correct.
