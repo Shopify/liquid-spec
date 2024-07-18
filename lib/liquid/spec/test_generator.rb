@@ -57,11 +57,9 @@ module Liquid
         base = @klass
 
         each_group do |klass_name, specs|
-          if klass_name != "MiscTest"
-            klass = Class.new(base)
-            klass.define_singleton_method(:name) { klass_name }
-            klass.const_set(klass_name, klass)
-          end
+          klass = Class.new(base)
+          klass.define_singleton_method(:name) { klass_name }
+          klass.const_set(klass_name, klass)
 
           specs.each do |spec|
             klass.define_method(spec.name) do
