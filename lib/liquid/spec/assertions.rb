@@ -16,14 +16,22 @@ module Liquid
           begin
             rendered, _context = adapter.render(spec)
             write.write(Marshal.dump(rendered))
-          rescue => e
-            write.write(Marshal.dump(e))
+          rescue Exception => e # rubocop:disable Lint/RescueException
+            begin
+              write.write(Marshal.dump(e))
+            rescue Timeout::ExitException => e
+              write.write(Marshal.dump(e))
+            end
           end
           write.close
           exit!
         end
         write.close
-        rendered = Marshal.load(read.read)
+        rendered = begin
+          Marshal.load(read.read)
+        rescue => e
+          RuntimeError.new("failed to load rendered result from forked process (#{e.class})")
+        end
         Process.wait(pid)
 
         if rendered.is_a?(Exception)
