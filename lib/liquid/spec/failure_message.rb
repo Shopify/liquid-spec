@@ -63,9 +63,11 @@ module Liquid
 
       def render_exception(exception, title:, color: :red, border: :light)
         err = exception.is_a?(Liquid::InternalError) ? exception.cause : exception
+        first_few_lines = @pastel.dim(filter_backtrace(err).first(5).map { |line| @pastel.dim("  #{line}") }.join("\n"))
 
         exception_info = <<~INFO
           #{@pastel.bold(err.class)}: #{err.message}
+          #{first_few_lines}
         INFO
 
         bottom_right = exception.is_a?(Liquid::InternalError) ? "caused by #{exception.class}" : nil

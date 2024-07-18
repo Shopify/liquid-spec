@@ -38,8 +38,17 @@ module Liquid
         end
 
         def build_liquid_context(spec)
+          fs = case spec.filesystem
+          when Hash
+            StubFileSystem.new(spec.filesystem)
+          when nil
+            StubFileSystem.new({})
+          else
+            spec.filesystem
+          end
+
           static_registers = {
-            file_system: StubFileSystem.new(spec.filesystem),
+            file_system: fs,
             template_factory: spec.template_factory,
           }
           context = spec.context_klass.build(
