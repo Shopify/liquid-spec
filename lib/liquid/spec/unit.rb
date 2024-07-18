@@ -24,6 +24,7 @@ module Liquid
         super
         self.environment ||= {}
         self.filesystem ||= {}
+        self.exception_renderer ||= StubExceptionRenderer.new
         self.orig = orig.transform_keys(&:to_s)
       end
 

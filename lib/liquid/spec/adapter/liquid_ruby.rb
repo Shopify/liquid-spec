@@ -27,7 +27,6 @@ module Liquid
             opts = parse_options.merge(error_mode: spec.error_mode&.to_sym).compact
             template = Liquid::Template.parse(spec.template, opts)
             template.name = spec.template_name
-            spec.exception_renderer ||= StubExceptionRenderer.new
             context = spec.context || build_liquid_context(spec)
             context.exception_renderer = spec.exception_renderer
             rendered = around_render_liquid_template do

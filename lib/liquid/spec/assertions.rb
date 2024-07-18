@@ -57,30 +57,27 @@ module Liquid
             name = name || caller_locations.find { |l| l.label.start_with?("test_") }&.label || caller_locations.first.label
             expected_adapter = expected_adapter_proc.call
             actual_adapter = actual_adapter_proc.call
+            spec_opts[:exception_renderer] ||= StubExceptionRenderer.new(raise_internal_errors: false)
+            spec_opts[:name] = name
+            spec_opts[:template] = liquid_code
+            spec_opts[:expected] = expected
 
             Timecop.freeze(TEST_TIME) do
-              expected_spec = Unit.new(
-                name: name,
-                template: liquid_code,
-                expected: expected,
-                exception_renderer: StubExceptionRenderer.new(raise_internal_errors: false),
-                context: Marshal.load(Marshal.dump(spec_opts[:context])),
-                **spec_opts,
-              )
+              expected_spec = Unit.new(**Marshal.load(Marshal.dump(spec_opts)))
 
-              # expected_render_result =Assertions.render_in_forked_process(expected_adapter, expected_spec)
-              expected_render_result, _expected_context = expected_adapter.render(expected_spec.dup)
-              spec = expected_spec.dup
-              spec.expected = expected_render_result
+              expected_render_result, _expected_context = expected_adapter.render(expected_spec)
+              actual_opts = Marshal.load(Marshal.dump(spec_opts))
+              actual_opts[:expected] = expected_render_result
+              actual_spec = Unit.new(**actual_opts)
 
               actual_rendered, actual_context, actual_exception = begin
-                [*actual_adapter.render(spec), nil]
+                [*actual_adapter.render(actual_spec), nil]
               rescue => e
                 [nil, nil, e]
               end
 
               message = FailureMessage.new(
-                spec,
+                actual_spec,
                 actual_rendered,
                 exception: actual_exception,
                 run_command: run_command,

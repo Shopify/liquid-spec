@@ -200,6 +200,10 @@ class StubFileSystem
       raise Liquid::FileSystemError, "Could not find asset #{template_path}"
     end
   end
+
+  def to_h
+    @values.transform_keys(&:to_s)
+  end
 end
 
 class StubExceptionRenderer
