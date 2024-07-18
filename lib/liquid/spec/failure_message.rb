@@ -27,9 +27,7 @@ module Liquid
 
         sections << render_kv(content: spec.template, name: "Template")
         sections << render_kv(content: environment_or_context_environments.pretty_inspect, name: "Environment")
-        unless spec.filesystem.empty?
-          sections << render_kv(content: spec.filesystem.pretty_inspect, name: "Filesystem")
-        end
+        sections << render_filesystem(spec.filesystem)
         config = {
           error_mode: spec.error_mode,
           context_klass: spec.context&.class || spec.context_klass,
@@ -55,6 +53,13 @@ module Liquid
       end
 
       private
+
+      def render_filesystem(filesystem)
+        return unless filesystem
+        return if filesystem.respond_to?(:empty?) && filesystem.empty?
+
+        render_kv(content: filesystem.pretty_inspect, name: "Filesystem")
+      end
 
       def render_exception(exception, title:, color: :red, border: :light)
         err = exception.is_a?(Liquid::InternalError) ? exception.cause : exception
