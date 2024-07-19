@@ -50,6 +50,8 @@ module Liquid
         end
 
         @rendered_message = "#{info}\n#{main}"
+      rescue StandardError => e
+        @rendered_message = "Error rendering failure message: #{e.message}\n#{e.backtrace.join("\n")}\n\n#{pretty_inspect}"
       end
 
       private
@@ -89,7 +91,7 @@ module Liquid
       end
 
       def render_diff(expected, actual)
-        SuperDiff::Basic::Differs::MultilineString.call(expected, actual, indent_level: 0)
+        SuperDiff::Basic::Differs::MultilineString.call(expected || "(no expected value given)", actual || "", indent_level: 0)
       end
 
       def render_box(name:, content:, padding: [0, 1], bottom_right: nil, color: :cyan, border: :light)
