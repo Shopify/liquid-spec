@@ -9,22 +9,22 @@ module Liquid
     class FailureMessage
       attr_reader :spec, :actual, :width
 
-      def initialize(spec, actual, width: nil, exception: nil, run_command: nil, test_name: nil, context: nil)
+      def initialize(spec, actual, width: nil, exception: nil, run_command: nil, test_name: nil, context: nil, message: nil)
+        @pastel = Pastel.new
         @spec = spec
         @actual = actual
         @width = width
         @exception = exception
         @run_command = run_command || "dev test test/integration/liquid_spec.rb"
+        @message = @pastel.bold.red(message || "template did not render as expected")
         @test_name = test_name
         @context = context
-        @pastel = Pastel.new
       end
 
       def to_s
         return @rendered_message if defined?(@rendered_message)
 
         sections = []
-
         sections << render_kv(content: spec.template, name: "Template")
         sections << render_kv(content: environment_or_context_environments.pretty_inspect, name: "Environment")
         sections << render_filesystem(spec.filesystem)
@@ -41,7 +41,7 @@ module Liquid
           sections << render_exception(exception, title: "Handled exception #{i}", color: :yellow, border: nil)
         end
 
-        info = render_box(content: sections.join("\n"), name: nil, border: :light)
+        info = render_box(content: sections.join("\n"), name: @message, border: :light)
 
         main = if @exception
           render_exception(@exception, title: @pastel.bold("Render error"))
@@ -104,7 +104,7 @@ module Liquid
 
       def filter_backtrace(exception)
         if defined?(Minitest)
-          Minitest.filter_backtrace(exception.backtrace)
+          Minitest.filter_backtrace(exception.backtrace || [])
         else
           @exception.backtrace
         end

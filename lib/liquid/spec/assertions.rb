@@ -65,7 +65,27 @@ module Liquid
             Timecop.freeze(TEST_TIME) do
               expected_spec = Unit.new(**Marshal.load(Marshal.dump(spec_opts)))
 
-              expected_render_result, _expected_context = expected_adapter.render(expected_spec)
+              expected_render_result, expected_context, expected_err = begin
+                expected_adapter.render(expected_spec)
+              rescue => e
+                [nil, nil, e]
+              end
+
+              if expected
+                message = FailureMessage.new(
+                  expected_spec,
+                  expected_render_result,
+                  message: "the expected parameter given doesn't match the output of the " \
+                    "#{expected_adapter.class.name} adapter, please check the expected parameter",
+                  exception: expected_err,
+                  run_command: run_command,
+                  test_name: name,
+                  context: expected_context,
+                )
+
+                assert(expected == expected_render_result, message)
+              end
+
               actual_opts = Marshal.load(Marshal.dump(spec_opts))
               actual_opts[:expected] = expected_render_result
               actual_spec = Unit.new(**actual_opts)
