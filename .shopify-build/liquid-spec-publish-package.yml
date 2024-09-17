@@ -1,7 +1,7 @@
 containers:
   default:
     build:
-      from: ubuntu-latest
+      from: ubuntu-24
       type: ci
       ruby: 3.1.0
 
