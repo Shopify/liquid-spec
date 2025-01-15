@@ -1,6 +1,6 @@
 containers:
   code-scanner:
-    docker: gcr.io/shopify-docker-images/apps/production/security-code-scanner:main
+    docker: us-docker.pkg.dev/shopify-docker-images/containers/apps/production/security-code-scanner:main
 
 steps:
   - label: ":buildkite: Configure Security Code Scanner"
