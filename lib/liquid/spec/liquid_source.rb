@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Liquid
   module Spec
     class LiquidSource < Source
@@ -14,8 +16,6 @@ module Liquid
           )
         end
       end
-
-      private
 
       def build_name(dir)
         File.basename(dir)
@@ -40,6 +40,7 @@ module Liquid
       def build_filesystem(dir)
         filepath = File.join(dir, "filesystem")
         return {} unless File.directory?(filepath)
+
         raise "Implement filesystem"
       end
     end

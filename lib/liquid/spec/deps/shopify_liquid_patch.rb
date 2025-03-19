@@ -1,17 +1,26 @@
-require 'json'
-require 'digest'
+# frozen_string_literal: true
+
+require "json"
+require "digest"
 
 CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-capture.yml")
 module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {},
-    message: nil, partials: nil, error_mode: nil, render_errors: false
-  )
+    message: nil, partials: nil, error_mode: nil, render_errors: false, template_factory: nil)
     data = {
+      "name" => "#{class_name}##{name}",
       "template" => template,
+      "error_mode" => error_mode.nil? ? Liquid::Template.error_mode : error_mode,
+      "render_errors" => render_errors,
+      "message" => message,
       "environment" => _deep_dup(assigns),
       "expected" => expected,
-      "name" => "#{class_name}##{name}",
     }
+
+    if template_factory
+      data["template_factory"] = template_factory
+    end
+
     data.delete("environment") if assigns.empty?
     data["filesystem"] = partials if partials
 
@@ -24,7 +33,7 @@ module ShopifyLiquidPatch
         .select { |line| line.match(%r{liquid-spec/tmp/liquid/test/.*_test\.rb}) }
         .first
         .match(%r{liquid-spec/tmp/liquid/(?<filename>test/.+\.rb):(?<lineno>\d+)})
-      git_revision = `git rev-parse HEAD`.chomp
+      git_revision = %x(git rev-parse HEAD).chomp
       data["url"] = "https://github.com/Shopify/liquid/blob/#{git_revision}/#{test_data[:filename]}#L#{test_data[:lineno]}"
 
       yaml = YAML.dump(data)
@@ -36,28 +45,14 @@ module ShopifyLiquidPatch
         File.write(
           CAPTURE_PATH,
           "- #{yaml[4..].gsub("\n", "\n  ").rstrip.chomp("...").rstrip}\n",
-          mode: "a+"
+          mode: "a+",
         )
       end
     end
   end
 
   def _deep_dup(env)
-    if env.is_a?(Hash)
-      new_env = {}
-      env.each do |k, v|
-        new_env[k] = _deep_dup(v)
-      end
-      new_env
-    elsif env.is_a?(Array)
-      new_env = []
-      env.each do |v|
-        new_env << _deep_dup(v)
-      end
-      new_env
-    else
-      env.dup
-    end
+    Marshal.load(Marshal.dump(env))
   end
 end
 

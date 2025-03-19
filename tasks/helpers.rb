@@ -1,17 +1,23 @@
+# frozen_string_literal: true
+
 module Helpers
   extend self
 
   def load_shopify_liquid
-    if File.exist?("./tmp/liquid")
-      `git -C tmp/liquid pull --depth 1 https://github.com/Shopify/liquid.git`
-    else
-      `git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid`
-    end
-  end
+    git_tag = "v5.4.0"
 
+    FileUtils.mkdir_p("tmp")
+    FileUtils.rm_rf("tmp/liquid")
+
+    puts "Loading Shopify/liquid@#{git_tag}..."
+
+    %x(git clone --depth 1 https://github.com/Shopify/liquid.git ./tmp/liquid)
+    %x(git -C tmp/liquid checkout #{git_tag})
+  end
 
   def insert_patch(file_path, patch)
     return if File.read(file_path).include?(patch)
+
     File.write(file_path, patch, mode: "a+")
   end
 
@@ -27,6 +33,8 @@ module Helpers
     data = YAML.unsafe_load(yaml)
     data.sort_by! { |h| h["name"] }
     data.uniq!
+    outfile = File.expand_path(outfile)
+    puts "Writing #{data.size} tests to #{outfile}..."
     File.write(outfile, YAML.dump(data))
   end
 end

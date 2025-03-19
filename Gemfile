@@ -1,15 +1,20 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 
 gemspec
 
 group :development, :test do
-  gem 'liquid', git: "https://github.com/Shopify/liquid", ref: "3ff4170cb0571648a4a46d45ad8de3875cfed75b"
-  gem 'rake'
+  gem "rake"
+  gem "rubocop", require: false
+  gem "rubocop-shopify", require: false
 end
 
 group :test do
-  gem 'minitest'
-  gem 'minitest-focus', require: false
-  gem 'mocha'
-  gem 'pry-byebug'
+  gem "minitest"
+  gem "minitest-focus", require: false
+  gem "mocha"
+  gem "pry-byebug"
 end
+
+gem "activesupport", "~> 7.1"

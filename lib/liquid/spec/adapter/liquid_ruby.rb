@@ -1,45 +1,45 @@
+# frozen_string_literal: true
+
+require_relative "default"
+
 module Liquid
   module Spec
     module Adapter
-      class LiquidRuby
+      class LiquidRuby < Default
+        TEST_TIME = Time.utc(2024, 0o1, 0o1, 0, 1, 58).freeze
+
+        def parse_options
+          { line_numbers: true, disable_liquid_c_nodes: true }
+        end
+
+        def around_render
+          old_enabled = Liquid::C.enabled if defined?(Liquid::C)
+          Liquid::C.enabled = false if defined?(Liquid::C)
+          yield
+        ensure
+          Liquid::C.enabled = old_enabled if defined?(Liquid::C)
+        end
+
+        def around_render_liquid_template(&block)
+          Timecop.freeze(TEST_TIME, &block)
+        end
+
         def render(spec)
-          static_registers = {
-            file_system: MemoryFileSystem.new(spec.filesystem),
-            template_factory: StubTemplateFactory.new,
-          }
-          context = spec.context_klass.build(
-            static_environments: spec.environment,
-            registers: Liquid::Registers.new(static_registers),
-          )
-          template = Liquid::Template.parse(spec.template, error_mode: spec.error_mode, line_numbers: true)
-          context.template_name = "templates/index"
-          template.render(context)
-        end
-      end
-
-      class StubTemplateFactory
-        def for(template_name)
-          template = Liquid::Template.new
-          template.name = "snippets/" + template_name
-          template
-        end
-      end
-
-      MemoryFileSystem = Struct.new(:data) do
-        def read_template_file(template_path)
-          name = template_path.to_s
-
-          body = data[name]
-          return body if body
-
-          data.each do |key, body|
-            return body if key.casecmp?(name)
+          around_render do
+            opts = parse_options.merge(error_mode: spec.error_mode&.to_sym).compact
+            template = Liquid::Template.parse(spec.template, opts)
+            template.name = spec.template_name
+            context = spec.context || build_liquid_context(spec)
+            context.exception_renderer = spec.exception_renderer
+            rendered = around_render_liquid_template do
+              render_liquid_template(template, context)
+            end
+            [rendered, context]
           end
+        end
 
-          # Report the same error as in storefront-renderer
-          # (https://github.com/Shopify/storefront-renderer/blob/9014ee25828c6c5f5e8fec278dd0cd6fd04d803b/app/models/theme.rb#L416)
-          full_name = "snippets/#{name.downcase.end_with?('.liquid') ? name : "#{name}.liquid"}"
-          raise Liquid::FileSystemError, "Could not find asset #{full_name}"
+        def render_liquid_template(template, context)
+          template.render(context)
         end
       end
     end

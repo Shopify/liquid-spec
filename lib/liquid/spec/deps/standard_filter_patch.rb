@@ -1,4 +1,6 @@
-require 'digest'
+# frozen_string_literal: true
+
+require "digest"
 
 module StandardFilterPatch
   extend self
@@ -16,36 +18,16 @@ module StandardFilterPatch
     data["name"] = "#{data["name"]}_#{digest}"
     yaml = YAML.dump(data)
     return if digest =~ /7e27e98b06fa65ed7362f3c738f123ce/
-    binding.irb if yaml.include?("Proc")
+
     File.write(
       CAPTURE_PATH,
       "- #{yaml[4..].gsub("\n", "\n  ").rstrip.chomp("...").rstrip}\n",
-      mode: "a+"
+      mode: "a+",
     )
   end
 
   def _deep_dup(env)
-    if env.is_a?(Hash)
-      new_env = {}
-      env.each do |k, v|
-        new_env[k] = _deep_dup(v)
-      end
-      new_env
-    elsif env.is_a?(Array)
-      new_env = []
-      env.each do |v|
-        new_env << _deep_dup(v)
-      end
-      new_env
-    elsif env.is_a?(Liquid::Drop)
-      env.context = {}
-      env.dup
-    elsif env.is_a?(TestThing)
-      env.instance_eval { @foo -= 1 }
-      env.dup
-    else
-      env.dup
-    end
+    Marshal.load(Marshal.dump(env))
   end
 
   private
@@ -69,9 +51,10 @@ module StandardFilterPatch
   def format_args(args)
     args.map.with_index do |arg, i|
       if arg.is_a?(String)
-        arg.inspect 
+        arg.inspect
       elsif arg.is_a?(Hash)
         raise if arg.size != 1
+
         "#{arg.keys.first}: #{format_args(arg.values)}"
       elsif arg.is_a?(Array)
         "foo#{i + 1}"
@@ -85,7 +68,11 @@ module StandardFilterPatch
 
   def build_environment(args)
     args.each_with_object({}).with_index do |(arg, env), i|
-      env["foo#{i}"] = _deep_dup(arg)
+      sanitized = case arg
+      when TestThing
+        arg.instance_variable_set(:@foo, arg.instance_variable_get(:@foo) - 1) # 🤢
+      end
+      env["foo#{i}"] = sanitized
     end
   end
 
@@ -111,7 +98,7 @@ module StandardFilterPatch
 
   def test_name
     match = caller
-      .select { |l| l.match(%r{test/integration/standard_filter_test.rb} ) }
+      .select { |l| l.match(%r{test/integration/standard_filter_test.rb}) }
       .last
       .match(/\.rb:(?<lineno>\d+):in `(?<test_name>test_\w+).$/)
     "#{match[:test_name]}:#{match[:lineno]}"

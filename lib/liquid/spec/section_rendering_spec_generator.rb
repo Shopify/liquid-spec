@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Liquid
   module Spec
     # Generate specs based on calls to SFR's `SectionRendering.render_template`.

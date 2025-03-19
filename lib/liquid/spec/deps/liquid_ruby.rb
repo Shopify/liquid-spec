@@ -1,12 +1,17 @@
-class TestThing
-  attr_reader :foo
+# frozen_string_literal: true
 
+class TestThing
   def initialize
     @foo = 0
   end
 
   def to_s
     "woot: #{@foo}"
+  end
+
+  def foo
+    # offset the to_liquid call since these tests are not usually called from a liquid template
+    @foo - 1
   end
 
   def [](_whatever)
@@ -49,10 +54,9 @@ class NumberLikeThing < Liquid::Drop
   end
 end
 
-
 class ThingWithToLiquid
   def to_liquid
-    'foobar'
+    "foobar"
   end
 end
 
@@ -64,9 +68,9 @@ class ForTagTest
       @data = data
     end
 
-    def each
+    def each(&block)
       @each_called = true
-      @data.each { |el| yield el }
+      @data.each(&block)
     end
 
     def load_slice(from, to)
@@ -131,5 +135,92 @@ class BooleanDrop < Liquid::Drop
 
   def to_s
     @value ? "Yay" : "Nay"
+  end
+end
+
+class ErrorDrop < Liquid::Drop
+  def standard_error
+    raise Liquid::StandardError, "standard error"
+  end
+
+  def argument_error
+    raise Liquid::ArgumentError, "argument error"
+  end
+
+  def syntax_error
+    raise Liquid::SyntaxError, "syntax error"
+  end
+
+  def runtime_error
+    raise "runtime error"
+  end
+
+  def exception
+    raise Exception, "exception"
+  end
+end
+
+class SettingsDrop < Liquid::Drop
+  def initialize(settings)
+    super()
+    @settings = settings
+  end
+
+  def liquid_method_missing(key)
+    @settings[key]
+  end
+end
+
+class StubTemplateFactory
+  attr_reader :count
+
+  def initialize
+    @count = 0
+  end
+
+  def for(template_name)
+    @count += 1
+    template = Liquid::Template.new
+    template.name = "some/path/" + template_name
+    template
+  end
+end
+
+class StubFileSystem
+  attr_reader :file_read_count
+
+  def initialize(values)
+    @file_read_count = 0
+    @values          = values
+  end
+
+  def read_template_file(template_path)
+    @file_read_count += 1
+    @values.fetch(template_path) do
+      raise Liquid::FileSystemError, "Could not find asset #{template_path}"
+    end
+  end
+
+  def to_h
+    @values.transform_keys(&:to_s)
+  end
+end
+
+class StubExceptionRenderer
+  attr_reader :rendered_exceptions
+
+  def initialize(raise_internal_errors: true)
+    @raise_internal_errors = raise_internal_errors
+    @rendered_exceptions = []
+  end
+
+  def call(exception)
+    @rendered_exceptions << exception
+
+    if @raise_internal_errors && exception.is_a?(Liquid::InternalError)
+      raise exception
+    end
+
+    exception
   end
 end
