@@ -1,16 +1,16 @@
 name: Ruby
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 permissions:
   contents: read
 jobs:
   test:
     runs-on: shopify-ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     - name: Ruby
       uses: ruby/setup-ruby@v1
       with:
