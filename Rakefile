@@ -10,7 +10,7 @@ import("tasks/standard_filters.rake")
 task default: :test
 
 Rake::TestTask.new do |t|
-  t.libs << FileList["lib", "tests"]
-  t.pattern = "tests/**/*_test.rb"
+  t.libs << FileList["lib", "test"]
+  t.pattern = "test/**/*_test.rb"
   t.verbose = false
 end

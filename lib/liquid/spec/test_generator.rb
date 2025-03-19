@@ -10,8 +10,9 @@ module Liquid
       include Enumerable
 
       class << self
-        def define_on(klass, sources:, &block)
-          new(klass, sources).define_on(klass, &block)
+        def define_on(klass, sources: Liquid::Spec.all_sources, &block)
+          blk = block.nil? ? ->(spec) { assert_parity_for_spec(spec) } : block
+          new(klass, sources).define_on(klass, &blk)
         end
       end
       def initialize(klass, sources)

@@ -2,6 +2,7 @@
 
 require "timecop"
 require_relative "failure_message"
+require_relative "adapter/default"
 
 module Liquid
   module Spec
@@ -43,7 +44,7 @@ module Liquid
         rendered
       end
 
-      def self.new(assert_method_name:, expected_adapter_proc:, actual_adapter_proc:)
+      def self.new(assert_method_name: :assert_parity, expected_adapter_proc: -> { Adapter::Default.new }, actual_adapter_proc:)
         Module.new do |mod|
           mod.define_method("#{assert_method_name}_for_spec") do |spec, run_command: "dev test"|
             opts = spec.to_h
