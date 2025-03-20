@@ -5,8 +5,6 @@ require "liquid"
 require "minitest"
 require "pry-byebug"
 
-require_relative(File.join(__dir__, "helpers"))
-
 require_relative(
   File.join(
     __dir__, # liquid-spec/tasks
@@ -51,11 +49,14 @@ FILTER_PATCH = <<~RUBY
     )
   )
 
+  TEST_TIME = Time.utc(2024, 0o1, 0o1, 0, 1, 58).freeze
+  require 'timecop'
+
   StandardFiltersTest::Filters.class_exec do
     @filter_methods.each do |method_name|
       define_method(method_name) do |*args|
         copy_of_args = StandardFilterPatch._deep_dup(args)
-        result = super(*args)
+        result =  super(*args)
         StandardFilterPatch.generate_spec(method_name, result, *copy_of_args)
         result
       rescue => e
@@ -72,7 +73,6 @@ def run_standard_filters_tests
   Bundler.with_unbundled_env do
     system(
       "cd tmp/liquid &&" \
-        "bundle install && " \
         "bundle exec rake base_test MT_SEED=12345 TEST=\"test/integration/standard_filter_test.rb\"" \
         "&& cd ../..",
     )
