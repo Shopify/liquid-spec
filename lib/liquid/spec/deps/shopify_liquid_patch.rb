@@ -8,12 +8,11 @@ module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {},
     message: nil, partials: nil, error_mode: nil, render_errors: false, template_factory: nil)
     data = {
-      "name" => "#{class_name}##{name}",
       "template" => template,
-      "error_mode" => error_mode.nil? ? Liquid::Template.error_mode : error_mode,
+      "environment" => _deep_dup(assigns),
+      "error_mode" => error_mode,
       "render_errors" => render_errors,
       "message" => message,
-      "environment" => _deep_dup(assigns),
       "expected" => expected,
     }
 
@@ -25,10 +24,14 @@ module ShopifyLiquidPatch
     data["filesystem"] = partials if partials
 
     result = super
-  ensure
+
     if result
-      digest = Digest::MD5.hexdigest(YAML.dump(data))
-      data["name"] = "#{data["name"]}_#{digest}"
+      digest = Digest::SHA256.new
+      digest << template
+      digest << data.to_s
+      digest = digest.hexdigest[0..7]
+      test_name = "#{class_name}##{name}_#{digest}"
+      data = { "name" => test_name }.merge(data).compact
       test_data = caller
         .select { |line| line.match(%r{liquid-spec/tmp/liquid/test/.*_test\.rb}) }
         .first
@@ -49,6 +52,8 @@ module ShopifyLiquidPatch
         )
       end
     end
+
+    result
   end
 
   def _deep_dup(env)

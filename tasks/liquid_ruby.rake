@@ -5,8 +5,6 @@ require "liquid"
 require "minitest"
 require "pry-byebug"
 
-require_relative(File.join(__dir__, "helpers"))
-
 require_relative(
   File.join(
     __dir__, # liquid-spec/tasks
@@ -24,7 +22,7 @@ namespace :generate do
   task :liquid_ruby do
     Helpers.load_shopify_liquid
     Helpers.insert_patch(PATCH_PATH, PATCH)
-    HELPERS.insert_patch(PATCH_PATH, <<~RUBY)
+    Helpers.insert_patch(PATCH_PATH, <<~RUBY)
       require "active_support/core_ext/object/blank"
       require "active_support/core_ext/string/access"
     RUBY
@@ -56,7 +54,7 @@ CAPTURE_PATH = "./tmp/liquid-ruby-capture.yml"
 
 def run_liquid_tests
   Bundler.with_unbundled_env do
-    system("cd tmp/liquid && bundle install && bundle exec rake base_test && cd ../..")
+    system("cd tmp/liquid && bundle exec rake base_test MT_SEED=12345 && cd ../..")
   end
 end
 
