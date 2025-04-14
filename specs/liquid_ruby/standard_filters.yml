@@ -38,7 +38,7 @@
     - foo
     - bar
   expected: '0'
-- name: StandardFilterTest#test_abs_4d0b49ee
+- name: StandardFilterTest#test_abs_4fea2bcf
   template: "{{ a0 | abs }}"
   environment:
     a0: !ruby/object:TestThing
@@ -199,17 +199,17 @@
   environment:
     a0: 1234.3838300038383
   expected: MTIzNC4zODM4MzAwMDM4Mzgz
-- name: StandardFilterTest#test_base64_encode_9c52cf3e
-  template: "{{ a0 | base64_encode }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: d29vdDogNA==
 - name: StandardFilterTest#test_base64_encode_a0236850
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: one two three
   expected: b25lIHR3byB0aHJlZQ==
+- name: StandardFilterTest#test_base64_encode_c7234e51
+  template: "{{ a0 | base64_encode }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 1
+  expected: d29vdDogMg==
 - name: StandardFilterTest#test_base64_encode_cbe9e66f
   template: "{{ a0 | base64_encode }}"
   environment:
@@ -276,6 +276,12 @@
     a0: foo
   expected: !binary |-
     foo=
+- name: StandardFilterTest#test_base64_url_safe_encode_1a3e0664
+  template: "{{ a0 | base64_url_safe_encode }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 2
+  expected: d29vdDogMw==
 - name: StandardFilterTest#test_base64_url_safe_encode_1fa6d8d7
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -332,12 +338,6 @@
   environment:
     a0: 0
   expected: MA==
-- name: StandardFilterTest#test_base64_url_safe_encode_61afc271
-  template: "{{ a0 | base64_url_safe_encode }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: d29vdDogNA==
 - name: StandardFilterTest#test_base64_url_safe_encode_656b8a35
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -463,12 +463,12 @@
   environment:
     a0: -99999999
   expected: "-99999999"
-- name: StandardFilterTest#test_capitalize_9f0ac831
+- name: StandardFilterTest#test_capitalize_bc13f402
   template: "{{ a0 | capitalize }}"
   environment:
     a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'Woot: 4'
+      foo: 4
+  expected: 'Woot: 5'
 - name: StandardFilterTest#test_capitalize_c219139a
   template: "{{ a0 | capitalize }}"
   environment:
@@ -494,6 +494,12 @@
   environment:
     a0: 0.0
   expected: '0.0'
+- name: StandardFilterTest#test_ceil_10b1af77
+  template: "{{ a0 | ceil }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: '0'
 - name: StandardFilterTest#test_ceil_1f10ca85
   template: "{{ a0 | ceil }}"
   environment:
@@ -533,12 +539,6 @@
     - *1
     - - foo
     - :foo: bar
-  expected: '0'
-- name: StandardFilterTest#test_ceil_40226061
-  template: "{{ a0 | ceil }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: -1
   expected: '0'
 - name: StandardFilterTest#test_ceil_4f5c4da1
   template: "{{ a0 | ceil }}"
@@ -605,6 +605,12 @@
   environment:
     a0: false
   expected: 'false'
+- name: StandardFilterTest#test_compact_137f99f0
+  template: "{{ a0 | compact }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 1
+  expected: 'woot: 3'
 - name: StandardFilterTest#test_compact_13fafe13
   template: "{{ a0 | compact }}"
   environment:
@@ -672,12 +678,6 @@
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
-- name: StandardFilterTest#test_compact_b87552ab
-  template: "{{ a0 | compact }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 2
-  expected: 'woot: 4'
 - name: StandardFilterTest#test_compact_c15694ad
   template: "{{ a0 | compact }}"
   environment:
@@ -740,12 +740,6 @@
     a1:
     - 10
   expected: '1210'
-- name: StandardFilterTest#test_date_1b4f436a
-  template: "{{ a0 | date: a1 }}"
-  environment:
-    a0: 2006-07-05 10:00:00.000000000 -04:00
-    a1: "%B"
-  expected: July
 - name: StandardFilterTest#test_date_254039a5
   template: "{{ a0 | date: a1 }}"
   environment:
@@ -756,6 +750,12 @@
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-05-05 10:00:00'
+    a1: "%B"
+  expected: May
+- name: StandardFilterTest#test_date_3e1fb281
+  template: "{{ a0 | date: a1 }}"
+  environment:
+    a0: 2006-05-05 10:00:00.000000000 +02:00
     a1: "%B"
   expected: May
 - name: StandardFilterTest#test_date_42fd707e
@@ -818,18 +818,18 @@
     a0: '1152098955'
     a1: "%m/%d/%Y"
   expected: 07/05/2006
-- name: StandardFilterTest#test_date_917287b4
+- name: StandardFilterTest#test_date_d143e04e
   template: "{{ a0 | date: a1 }}"
   environment:
-    a0: 2006-06-05 10:00:00.000000000 -04:00
+    a0: 2006-06-05 10:00:00.000000000 +02:00
     a1: "%B"
   expected: June
-- name: StandardFilterTest#test_date_b43c9613
+- name: StandardFilterTest#test_date_e4f9c31a
   template: "{{ a0 | date: a1 }}"
   environment:
-    a0: 2006-05-05 10:00:00.000000000 -04:00
+    a0: 2006-07-05 10:00:00.000000000 +02:00
     a1: "%B"
-  expected: May
+  expected: July
 - name: StandardFilterTest#test_date_e5c63040
   template: "{{ a0 | date: a1 }}"
   environment:
@@ -884,6 +884,12 @@
     a0:
     a1: bar
   expected: bar
+- name: StandardFilterTest#test_default_33cac7c8
+  template: "{{ a0 | default }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 7
+  expected: 'woot: 9'
 - name: StandardFilterTest#test_default_350c791c
   template: "{{ a0 | default: a1 }}"
   environment:
@@ -1026,12 +1032,6 @@
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
-- name: StandardFilterTest#test_default_f03997ee
-  template: "{{ a0 | default }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 7
-  expected: 'woot: 9'
 - name: StandardFilterTest#test_downcase_0d719d03
   template: "{{ a0 | downcase }}"
   environment:
@@ -1045,12 +1045,6 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, liquid::drop, ["foo"], {:foo=>"bar"}]'
-- name: StandardFilterTest#test_downcase_0f004b44
-  template: "{{ a0 | downcase }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 4'
 - name: StandardFilterTest#test_downcase_0fe5e452
   template: "{{ a0 | downcase }}"
   environment:
@@ -1144,6 +1138,12 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+- name: StandardFilterTest#test_downcase_fa8eebee
+  template: "{{ a0 | downcase }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 4
+  expected: 'woot: 5'
 - name: StandardFilterTest#test_escape_015bf946
   template: "{{ a0 | escape }}"
   environment:
@@ -1160,18 +1160,18 @@
   environment:
     a0: foo
   expected: foo
+- name: StandardFilterTest#test_escape_2e4ede58
+  template: "{{ a0 | escape }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: 'woot: 4'
 - name: StandardFilterTest#test_escape_37b22d4f
   template: "{{ a0 | escape }}"
   environment:
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
-- name: StandardFilterTest#test_escape_3db26e60
-  template: "{{ a0 | escape }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 4'
 - name: StandardFilterTest#test_escape_4269ff9d
   template: "{{ a0 | escape }}"
   environment:
@@ -1374,12 +1374,12 @@
   environment:
     a0: 0.0
   expected: '0.0'
-- name: StandardFilterTest#test_escape_once_f515da10
+- name: StandardFilterTest#test_escape_once_e6059e00
   template: "{{ a0 | escape_once }}"
   environment:
     a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 4'
+      foo: -1
+  expected: 'woot: 0'
 - name: StandardFilterTest#test_find_ca0151cc
   template: "{{ a0 | find: a1, a2 }}"
   environment:
@@ -1427,6 +1427,12 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}'
+- name: StandardFilterTest#test_first_70f91225
+  template: "{{ a0 | first }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 7
+  expected: ''
 - name: StandardFilterTest#test_first_86c1404c
   template: "{{ a0 | first }}"
   environment:
@@ -1468,12 +1474,6 @@
     - foo
     - bar
   expected: foo
-- name: StandardFilterTest#test_first_ac575895
-  template: "{{ a0 | first }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 7
-  expected: ''
 - name: StandardFilterTest#test_first_b63531c8
   template: "{{ a0 | first }}"
   environment:
@@ -1543,12 +1543,6 @@
       - foo
       - bar
   expected: '0'
-- name: StandardFilterTest#test_floor_39f7dd12
-  template: "{{ a0 | floor }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: -1
-  expected: '0'
 - name: StandardFilterTest#test_floor_3ad45232
   template: "{{ a0 | floor }}"
   environment:
@@ -1597,6 +1591,12 @@
   template: "{{ a0 | floor }}"
   environment:
     a0: 0.0
+  expected: '0'
+- name: StandardFilterTest#test_floor_9ccd05a4
+  template: "{{ a0 | floor }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: -1
   expected: '0'
 - name: StandardFilterTest#test_floor_af74b0fe
   template: "{{ a0 | floor }}"
@@ -1659,12 +1659,6 @@
   environment:
     a0: "<strong>"
   expected: "&lt;strong&gt;"
-- name: StandardFilterTest#test_h_366c1d43
-  template: "{{ a0 | h }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: -1
-  expected: 'woot: 0'
 - name: StandardFilterTest#test_h_3bd5cc2f
   template: "{{ a0 | h }}"
   environment:
@@ -1716,6 +1710,12 @@
   environment:
     a0: 2001-02-03
   expected: '2001-02-03'
+- name: StandardFilterTest#test_h_c028f36a
+  template: "{{ a0 | h }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: -1
+  expected: 'woot: 0'
 - name: StandardFilterTest#test_h_c2040486
   template: "{{ a0 | h }}"
   environment:
@@ -1775,6 +1775,12 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+- name: StandardFilterTest#test_join_1eedf238
+  template: "{{ a0 | join }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 5
+  expected: 'woot: 7'
 - name: StandardFilterTest#test_join_37113f09
   template: "{{ a0 | join: a1 }}"
   environment:
@@ -1839,12 +1845,6 @@
     - 4
     a1: " - "
   expected: 1 - 2 - 3 - 4
-- name: StandardFilterTest#test_join_93b9fe43
-  template: "{{ a0 | join }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 5
-  expected: 'woot: 7'
 - name: StandardFilterTest#test_join_a2cdd87d
   template: "{{ a0 | join }}"
   environment:
@@ -1937,7 +1937,7 @@
     a0:
       foo: bar
   expected: ''
-- name: StandardFilterTest#test_last_401f6c16
+- name: StandardFilterTest#test_last_4890644d
   template: "{{ a0 | last }}"
   environment:
     a0: !ruby/object:TestThing
@@ -2061,17 +2061,17 @@
   environment:
     a0: true
   expected: 'true'
-- name: StandardFilterTest#test_lstrip_a090a6df
-  template: "{{ a0 | lstrip }}"
-  environment:
-    a0: false
-  expected: 'false'
-- name: StandardFilterTest#test_lstrip_c1a48ee0
+- name: StandardFilterTest#test_lstrip_9bf7b265
   template: "{{ a0 | lstrip }}"
   environment:
     a0: !ruby/object:TestThing
       foo: 6
   expected: 'woot: 7'
+- name: StandardFilterTest#test_lstrip_a090a6df
+  template: "{{ a0 | lstrip }}"
+  environment:
+    a0: false
+  expected: 'false'
 - name: StandardFilterTest#test_lstrip_d7ff71c5
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2121,6 +2121,12 @@
     - a: 4
     a1: a
   expected: '1234'
+- name: StandardFilterTest#test_newline_to_br_0a7904dd
+  template: "{{ a0 | newline_to_br }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 5
+  expected: 'woot: 6'
 - name: StandardFilterTest#test_newline_to_br_11c10291
   template: "{{ a0 | newline_to_br }}"
   environment:
@@ -2169,12 +2175,6 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
-- name: StandardFilterTest#test_newline_to_br_724b4096
-  template: "{{ a0 | newline_to_br }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 7
-  expected: 'woot: 8'
 - name: StandardFilterTest#test_newline_to_br_83ccb915
   template: "{{ a0 | newline_to_br }}"
   environment:
@@ -2340,6 +2340,12 @@
   environment:
     a0:
   expected: ''
+- name: StandardFilterTest#test_reverse_306357fb
+  template: "{{ a0 | reverse }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 4
+  expected: 'woot: 6'
 - name: StandardFilterTest#test_reverse_365ed512
   template: "{{ a0 | reverse }}"
   environment:
@@ -2414,12 +2420,6 @@
   environment:
     a0: 0.0
   expected: '0.0'
-- name: StandardFilterTest#test_reverse_baa09af6
-  template: "{{ a0 | reverse }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 4
-  expected: 'woot: 6'
 - name: StandardFilterTest#test_reverse_d714ad07
   template: "{{ a0 | reverse }}"
   environment:
@@ -2525,6 +2525,12 @@
       - foo
       - bar
   expected: '0'
+- name: StandardFilterTest#test_round_cfe68fb0
+  template: "{{ a0 | round }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: -1
+  expected: '0'
 - name: StandardFilterTest#test_round_d2964074
   template: "{{ a0 | round }}"
   environment:
@@ -2552,18 +2558,18 @@
   environment:
     a0: 123
   expected: '123'
-- name: StandardFilterTest#test_round_e7d3a6c6
-  template: "{{ a0 | round }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: -1
-  expected: '0'
 - name: StandardFilterTest#test_rstrip_0e32369a
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+- name: StandardFilterTest#test_rstrip_1baf6c80
+  template: "{{ a0 | rstrip }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 6
+  expected: 'woot: 7'
 - name: StandardFilterTest#test_rstrip_1f72cde9
   template: "{{ a0 | rstrip }}"
   environment:
@@ -2620,12 +2626,6 @@
   environment:
     a0: 0.0
   expected: '0.0'
-- name: StandardFilterTest#test_rstrip_99f75fe7
-  template: "{{ a0 | rstrip }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 6
-  expected: 'woot: 7'
 - name: StandardFilterTest#test_rstrip_9c1cec69
   template: "{{ a0 | rstrip }}"
   environment:
@@ -2693,16 +2693,16 @@
     - - foo
     - :foo: bar
   expected: '8'
+- name: StandardFilterTest#test_size_33c9da81
+  template: "{{ a0 | size }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 4
+  expected: '0'
 - name: StandardFilterTest#test_size_350f32de
   template: "{{ a0 | size }}"
   environment:
     a0: []
-  expected: '0'
-- name: StandardFilterTest#test_size_38350a43
-  template: "{{ a0 | size }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
   expected: '0'
 - name: StandardFilterTest#test_size_4b6a3ab5
   template: "{{ a0 | size }}"
@@ -3087,6 +3087,12 @@
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+- name: StandardFilterTest#test_sort_040e6bf1
+  template: "{{ a0 | sort }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 6
+  expected: 'woot: 8'
 - name: StandardFilterTest#test_sort_12dbc714
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3214,12 +3220,6 @@
     - a: 2
     a1: a
   expected: '{"a"=>2}{"a"=>10}'
-- name: StandardFilterTest#test_sort_d14c007f
-  template: "{{ a0 | sort }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 6
-  expected: 'woot: 8'
 - name: StandardFilterTest#test_sort_d648c3af
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3400,6 +3400,12 @@
   environment:
     a0: foo
   expected: foo
+- name: StandardFilterTest#test_sort_natural_b6ffb86c
+  template: "{{ a0 | sort_natural }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: 'woot: 5'
 - name: StandardFilterTest#test_sort_natural_c7356c9f
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
@@ -3434,12 +3440,6 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
-- name: StandardFilterTest#test_sort_natural_e5504912
-  template: "{{ a0 | sort_natural }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 5'
 - name: StandardFilterTest#test_sort_natural_f040361f
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -3515,6 +3515,12 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
+- name: StandardFilterTest#test_strip_8fb4b7f4
+  template: "{{ a0 | strip }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 6
+  expected: 'woot: 7'
 - name: StandardFilterTest#test_strip_a93bd80e
   template: "{{ a0 | strip }}"
   environment:
@@ -3576,12 +3582,6 @@
   environment:
     a0: 0
   expected: '0'
-- name: StandardFilterTest#test_strip_fd911469
-  template: "{{ a0 | strip }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 6
-  expected: 'woot: 7'
 - name: StandardFilterTest#test_strip_html_0c27088d
   template: "{{ a0 | strip_html }}"
   environment:
@@ -3600,12 +3600,6 @@
   environment:
     a0: "<div id='test'>test</div>"
   expected: test
-- name: StandardFilterTest#test_strip_html_2f3c444c
-  template: "{{ a0 | strip_html }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 4'
 - name: StandardFilterTest#test_strip_html_30ef13bf
   template: "{{ a0 | strip_html }}"
   environment:
@@ -3685,6 +3679,12 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
+- name: StandardFilterTest#test_strip_html_a31804e4
+  template: "{{ a0 | strip_html }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: 'woot: 4'
 - name: StandardFilterTest#test_strip_html_ae94334b
   template: "{{ a0 | strip_html }}"
   environment:
@@ -3804,12 +3804,6 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-- name: StandardFilterTest#test_strip_newlines_cc6a08f2
-  template: "{{ a0 | strip_newlines }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 7
-  expected: 'woot: 8'
 - name: StandardFilterTest#test_strip_newlines_d61eb5c8
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -3823,6 +3817,12 @@
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+- name: StandardFilterTest#test_strip_newlines_ec31f2e7
+  template: "{{ a0 | strip_newlines }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 4
+  expected: 'woot: 5'
 - name: StandardFilterTest#test_strip_newlines_f677fc39
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -3838,22 +3838,18 @@
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
-- name: StandardFilterTest#test_sum_080e998a
-  template: "{{ a0 | sum: a1 }}"
-  environment:
-    a0:
-    - 'true': 1
-    - '1.0': 0.2
-      '1': -0.3
-    - 1..5: 0.4
-    a1:
-  expected: '0'
 - name: StandardFilterTest#test_sum_0eea0c63
   template: "{{ a0 | sum }}"
   environment:
     a0:
     - foo
     - bar
+  expected: '0'
+- name: StandardFilterTest#test_sum_15fa98bf
+  template: "{{ a0 | sum }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: -1
   expected: '0'
 - name: StandardFilterTest#test_sum_164ffae7
   template: "{{ a0 | sum }}"
@@ -3910,16 +3906,6 @@
     - weight: 0.4
     a1: quantity
   expected: '1.2'
-- name: StandardFilterTest#test_sum_52804212
-  template: "{{ a0 | sum: a1 }}"
-  environment:
-    a0:
-    - 'true': 1
-    - '1.0': 0.2
-      '1': -0.3
-    - 1..5: 0.4
-    a1: 1.0
-  expected: '0.2'
 - name: StandardFilterTest#test_sum_559ecd1b
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -3952,22 +3938,6 @@
     a0:
       foo: bar
   expected: '0'
-- name: StandardFilterTest#test_sum_662f3d6c
-  template: "{{ a0 | sum: a1 }}"
-  environment:
-    a0:
-    - 'true': 1
-    - '1.0': 0.2
-      '1': -0.3
-    - 1..5: 0.4
-    a1: true
-  expected: '1'
-- name: StandardFilterTest#test_sum_6968f99a
-  template: "{{ a0 | sum }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: -1
-  expected: '0'
 - name: StandardFilterTest#test_sum_72bb38dc
   template: "{{ a0 | sum }}"
   environment:
@@ -3978,19 +3948,20 @@
   environment:
     a0:
   expected: '0'
-- name: StandardFilterTest#test_sum_7add5d0b
+- name: StandardFilterTest#test_sum_7973916b
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
-    - 'true': 1
-    - '1.0': 0.2
-      '1': -0.3
-    - 1..5: 0.4
-    a1: !ruby/range
-      begin: 1
-      end: 5
-      excl: false
-  expected: '0.4'
+    - true: 1
+    - 1.0: 0.2
+      1: -0.3
+    - ? !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+      : 0.4
+    a1:
+  expected: '0'
 - name: StandardFilterTest#test_sum_7d73388f
   template: "{{ a0 | sum }}"
   environment:
@@ -4004,6 +3975,20 @@
   environment:
     a0:
       1: bar
+  expected: '0'
+- name: StandardFilterTest#test_sum_81cb6a64
+  template: "{{ a0 | sum: a1 }}"
+  environment:
+    a0:
+    - true: 1
+    - 1.0: 0.2
+      1: -0.3
+    - ? !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+      : 0.4
+    a1: ''
   expected: '0'
 - name: StandardFilterTest#test_sum_821b1e54
   template: "{{ a0 | sum }}"
@@ -4045,6 +4030,20 @@
       - - 3
         - 4
   expected: '10'
+- name: StandardFilterTest#test_sum_9c500553
+  template: "{{ a0 | sum: a1 }}"
+  environment:
+    a0:
+    - true: 1
+    - 1.0: 0.2
+      1: -0.3
+    - ? !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+      : 0.4
+    a1: 1
+  expected: "-0.3"
 - name: StandardFilterTest#test_sum_9e90e288
   template: "{{ a0 | sum }}"
   environment:
@@ -4059,6 +4058,23 @@
     - foo
     - quantity: 3
   expected: '3'
+- name: StandardFilterTest#test_sum_a7ee6ebb
+  template: "{{ a0 | sum: a1 }}"
+  environment:
+    a0:
+    - true: 1
+    - 1.0: 0.2
+      1: -0.3
+    - ? !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+      : 0.4
+    a1: !ruby/range
+      begin: 1
+      end: 5
+      excl: false
+  expected: '0.4'
 - name: StandardFilterTest#test_sum_b088741e
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4069,16 +4085,6 @@
     - weight: 4
     a1: weight
   expected: '7'
-- name: StandardFilterTest#test_sum_b9fb61b9
-  template: "{{ a0 | sum: a1 }}"
-  environment:
-    a0:
-    - 'true': 1
-    - '1.0': 0.2
-      '1': -0.3
-    - 1..5: 0.4
-    a1: 1
-  expected: "-0.3"
 - name: StandardFilterTest#test_sum_bb643a30
   template: "{{ a0 | sum }}"
   environment:
@@ -4088,16 +4094,20 @@
     -
     - quantity: 2
   expected: '1'
-- name: StandardFilterTest#test_sum_ca6c4222
+- name: StandardFilterTest#test_sum_bd1b8229
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
-    - 'true': 1
-    - '1.0': 0.2
-      '1': -0.3
-    - 1..5: 0.4
-    a1: ''
-  expected: '0'
+    - true: 1
+    - 1.0: 0.2
+      1: -0.3
+    - ? !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+      : 0.4
+    a1: 1.0
+  expected: '0.2'
 - name: StandardFilterTest#test_sum_d4e0176c
   template: "{{ a0 | sum }}"
   environment:
@@ -4147,6 +4157,20 @@
     - 1
     - 2
   expected: '3'
+- name: StandardFilterTest#test_sum_f2dd6156
+  template: "{{ a0 | sum: a1 }}"
+  environment:
+    a0:
+    - true: 1
+    - 1.0: 0.2
+      1: -0.3
+    - ? !ruby/range
+        begin: 1
+        end: 5
+        excl: false
+      : 0.4
+    a1: true
+  expected: '1'
 - name: StandardFilterTest#test_sum_fb61db9c
   template: "{{ a0 | sum }}"
   environment:
@@ -4199,12 +4223,6 @@
   environment:
     a0: false
   expected: 'false'
-- name: StandardFilterTest#test_truncate_881ae550
-  template: "{{ a0 | truncate }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: -1
-  expected: 'woot: 0'
 - name: StandardFilterTest#test_truncate_8b8e9500
   template: "{{ a0 | truncate }}"
   environment:
@@ -4233,6 +4251,12 @@
     a0: 测试测试测试测试
     a1: 5
   expected: 测试...
+- name: StandardFilterTest#test_truncate_a920b711
+  template: "{{ a0 | truncate }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: -1
+  expected: 'woot: 0'
 - name: StandardFilterTest#test_truncate_ad1f50ca
   template: "{{ a0 | truncate }}"
   environment:
@@ -4410,6 +4434,12 @@
   environment:
     a0: foo
   expected: foo
+- name: StandardFilterTest#test_truncatewords_75df4814
+  template: "{{ a0 | truncatewords }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: 'woot: 4'
 - name: StandardFilterTest#test_truncatewords_8490a57c
   template: "{{ a0 | truncatewords }}"
   environment:
@@ -4478,12 +4508,18 @@
     a0: one two three
     a1: 2
   expected: one two...
-- name: StandardFilterTest#test_truncatewords_f8f8cb1b
-  template: "{{ a0 | truncatewords }}"
+- name: StandardFilterTest#test_uniq_0b90eef9
+  template: "{{ a0 | uniq }}"
   environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 4'
+    a0:
+    - foo
+    - !ruby/object:StringDrop
+      context:
+      value: foo
+    - !ruby/object:StringDrop
+      context:
+      value: bar
+  expected: foobar
 - name: StandardFilterTest#test_uniq_0ce0fecb
   template: "{{ a0 | uniq }}"
   environment:
@@ -4506,12 +4542,6 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
-- name: StandardFilterTest#test_uniq_33c68ed4
-  template: "{{ a0 | uniq }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 1
-  expected: 'woot: 3'
 - name: StandardFilterTest#test_uniq_3bfdc5d7
   template: "{{ a0 | uniq }}"
   environment:
@@ -4524,6 +4554,12 @@
     a0: []
     a1: a
   expected: ''
+- name: StandardFilterTest#test_uniq_500a6c12
+  template: "{{ a0 | uniq }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 2
+  expected: 'woot: 4'
 - name: StandardFilterTest#test_uniq_5c4d3b4a
   template: "{{ a0 | uniq }}"
   environment:
@@ -4568,6 +4604,18 @@
     - - foo
     - :foo: bar
   expected: foo123truefalseLiquid::Drop{:foo=>"bar"}
+- name: StandardFilterTest#test_uniq_879d03c3
+  template: "{{ a0 | uniq }}"
+  environment:
+    a0:
+    - !ruby/object:StringDrop
+      context:
+      value: foo
+    - !ruby/object:StringDrop
+      context:
+      value: bar
+    - foo
+  expected: foobar
 - name: StandardFilterTest#test_uniq_9c0e7ae6
   template: "{{ a0 | uniq }}"
   environment:
@@ -4689,12 +4737,6 @@
   environment:
     a0: foo
   expected: FOO
-- name: StandardFilterTest#test_upcase_62b7d7a1
-  template: "{{ a0 | upcase }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'WOOT: 4'
 - name: StandardFilterTest#test_upcase_657766c6
   template: "{{ a0 | upcase }}"
   environment:
@@ -4738,6 +4780,12 @@
   environment:
     a0: 0.0
   expected: '0.0'
+- name: StandardFilterTest#test_upcase_dff0185b
+  template: "{{ a0 | upcase }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 4
+  expected: 'WOOT: 5'
 - name: StandardFilterTest#test_upcase_e519b089
   template: "{{ a0 | upcase }}"
   environment:
@@ -4758,12 +4806,6 @@
   environment:
     a0: 2001-02-03
   expected: '2001-02-03'
-- name: StandardFilterTest#test_url_decode_1f410c65
-  template: "{{ a0 | url_decode }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: 'woot: 4'
 - name: StandardFilterTest#test_url_decode_4f96942b
   template: "{{ a0 | url_decode }}"
   environment:
@@ -4875,6 +4917,12 @@
   environment:
     a0: true
   expected: 'true'
+- name: StandardFilterTest#test_url_decode_ff18d630
+  template: "{{ a0 | url_decode }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: 'woot: 4'
 - name: StandardFilterTest#test_url_encode_09378213
   template: "{{ a0 | url_encode }}"
   environment:
@@ -4924,6 +4972,12 @@
     a0:
       foo: bar
   expected: "%7B%22foo%22%3D%3E%22bar%22%7D"
+- name: StandardFilterTest#test_url_encode_4d5f1e5a
+  template: "{{ a0 | url_encode }}"
+  environment:
+    a0: !ruby/object:TestThing
+      foo: 3
+  expected: woot%3A+4
 - name: StandardFilterTest#test_url_encode_60c8b46a
   template: "{{ a0 | url_encode }}"
   environment:
@@ -4941,12 +4995,6 @@
   environment:
     a0: -99999999
   expected: "-99999999"
-- name: StandardFilterTest#test_url_encode_65dd583c
-  template: "{{ a0 | url_encode }}"
-  environment:
-    a0: !ruby/object:TestThing
-      foo: 3
-  expected: woot%3A+4
 - name: StandardFilterTest#test_url_encode_85e41adc
   template: "{{ a0 | url_encode }}"
   environment:
