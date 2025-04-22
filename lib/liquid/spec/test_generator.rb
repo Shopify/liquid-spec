@@ -69,8 +69,6 @@ module Liquid
             end
           end
         end
-
-        binding.irb
       end
 
       def each(&block)
