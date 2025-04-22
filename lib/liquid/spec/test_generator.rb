@@ -61,7 +61,7 @@ module Liquid
           klass = Class.new(base)
           klass.define_singleton_method(:name) { klass_name }
           klass.define_method(:to_s) { klass_name }
-          klass.const_set(klass_name, klass)
+          base.const_set(klass_name, klass)
 
           specs.each do |spec|
             klass.define_method(spec.name) do
