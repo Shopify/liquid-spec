@@ -18,6 +18,7 @@ module Liquid
       :request,
       :context,
       :orig,
+      :shop_features,
       keyword_init: true,
     ) do
       def initialize(**orig)

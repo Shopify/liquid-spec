@@ -19,6 +19,7 @@ module Liquid
             template_name: data["template_name"],
             request: data["request"],
             exception_renderer: data["exception_renderer"],
+            shop_features: data["shop_features"],
           )
         end
       end
