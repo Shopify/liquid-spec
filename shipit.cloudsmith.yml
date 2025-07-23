@@ -1,3 +1,0 @@
-deploy:
-  override:
-    - buildkite-trigger liquid-spec-publish-package
