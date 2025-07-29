@@ -8,6 +8,9 @@ require "liquid/spec/liquid_source"
 require "liquid/spec/test_generator"
 require "liquid/spec/environment_dumper"
 require "liquid/spec/section_rendering_spec_generator"
+require "liquid/spec/test_drops"
+require "liquid/spec/yaml_initializer"
+require "liquid/spec/test_filters"
 
 module Liquid
   module Spec
