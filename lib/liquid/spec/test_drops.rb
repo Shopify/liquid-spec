@@ -600,7 +600,7 @@ module TestDrops
     end
   end
 
-  class HtmlSafeHash < Hash # Exists in SFR, we need to follow the #to_s rule when we write_to_output.
+  class HtmlSafeHash < Hash
     HTML_ESCAPE_TABLE = {
       ">" => "&gt;",
       "<" => "&lt;",
@@ -612,7 +612,7 @@ module TestDrops
     end
   end
 
-  class CollationAwareHash < Hash # Exists in SFR, we need to follow the #to_s rule when we write_to_output.
+  class CollationAwareHash < Hash
     def []=(key, value)
       super(collate_key(key), value)
     end
