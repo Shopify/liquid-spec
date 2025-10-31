@@ -61,7 +61,7 @@ module Liquid
           klass = Class.new(base)
           klass.define_singleton_method(:name) { klass_name }
           klass.define_method(:to_s) { klass_name }
-          base.const_set(klass_name, klass)
+          base.const_set(sanitized_name(klass_name), klass)
 
           specs.each do |spec|
             klass.define_method(spec.name) do
@@ -69,6 +69,18 @@ module Liquid
             end
           end
         end
+      end
+
+      def sanitized_name(klass)
+        # Sanitizes a class name to create a valid test identifier.
+        #
+        # @example
+        #   sanitized_name("RenderTest::LaxMode")
+        #   # => "RenderTest_LaxMode"
+        #
+        #   sanitized_name("some-invalid.name")
+        #   # => "Test_some_invalid_name"
+        klass.gsub(/[^A-Za-z0-9_]/, "_").gsub(/^[^A-Z]/, 'Test_\0').gsub(/_+/, "_")
       end
 
       def each(&block)

@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
     end
   end
 
-  spec.add_dependency("liquid", "~> 5.8.7")
+  spec.add_dependency("liquid", "~> 5.10.0")
   spec.add_dependency("super_diff", "~> 0.12.1")
   spec.add_dependency("timecop")
   spec.add_dependency("tty-box")
