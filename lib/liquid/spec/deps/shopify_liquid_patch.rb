@@ -6,7 +6,7 @@ require "digest"
 CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-capture.yml")
 module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {},
-    message: nil, partials: nil, error_mode: nil, render_errors: false, template_factory: nil)
+    message: nil, partials: nil, error_mode: Liquid::Environment.default.error_mode, render_errors: false, template_factory: nil)
     data = {
       "template" => template,
       "environment" => _deep_dup(assigns),
@@ -40,7 +40,7 @@ module ShopifyLiquidPatch
       data["url"] = "https://github.com/Shopify/liquid/blob/#{git_revision}/#{test_data[:filename]}#L#{test_data[:lineno]}"
 
       yaml = YAML.dump(data)
-      if yaml.include?("!ruby/object:Proc")
+      if yaml.include?("!ruby/object:Proc") # || yaml.include?("!ruby/hash:%23%3CClass")
         puts "\n=============== Skipped ==============="
         puts yaml
         puts "=======================================\n"
@@ -58,6 +58,9 @@ module ShopifyLiquidPatch
 
   def _deep_dup(env)
     Marshal.load(Marshal.dump(env))
+  rescue
+    # some objects (like Procs) can't be marshaled; just return the original
+    env
   end
 end
 
