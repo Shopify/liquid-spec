@@ -28,6 +28,9 @@ module StandardFilterPatch
 
   def _deep_dup(env)
     Marshal.load(Marshal.dump(env))
+  rescue
+    # Fallback for unmarshalable (anonymous class objects)
+    env
   end
 
   private
