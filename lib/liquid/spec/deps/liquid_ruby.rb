@@ -138,6 +138,26 @@ class BooleanDrop < Liquid::Drop
   end
 end
 
+class CustomToLiquidDrop < Liquid::Drop
+  def initialize(value)
+    @value = value
+  end
+
+  def to_liquid
+    @value
+  end
+end
+
+class HashWithCustomToS < Hash
+  def to_s
+    "kewl"
+  end
+end
+
+class HashWithoutCustomToS < Hash
+end
+
+
 class StringDrop < Liquid::Drop
   include Comparable
 

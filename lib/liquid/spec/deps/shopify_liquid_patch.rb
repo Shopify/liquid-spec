@@ -30,7 +30,7 @@ module ShopifyLiquidPatch
       digest << template
       digest << data.to_s
       digest = digest.hexdigest[0..7]
-      test_name = "#{class_name}##{name}_#{digest}"
+      test_name = "#{self.class.name}##{name}_#{digest}"
       data = { "name" => test_name }.merge(data).compact
       test_data = caller
         .select { |line| line.match(%r{liquid-spec/tmp/liquid/test/.*_test\.rb}) }
