@@ -4,8 +4,47 @@ require "test_helper"
 require "liquid/spec/deps/liquid_ruby"
 require "liquid/spec/adapter/liquid_ruby"
 require "liquid/spec/assertions"
-require "active_support/core_ext/object/blank"
-require "active_support/core_ext/string/access"
+
+# Add blank?/present? if ActiveSupport is not available
+unless Object.method_defined?(:blank?)
+  class Object
+    def blank?
+      respond_to?(:empty?) ? empty? : !self
+    end
+
+    def present?
+      !blank?
+    end
+  end
+
+  class NilClass
+    def blank?
+      true
+    end
+  end
+
+  class FalseClass
+    def blank?
+      true
+    end
+  end
+
+  class TrueClass
+    def blank?
+      false
+    end
+  end
+
+  class String
+    def blank?
+      empty? || /\A[[:space:]]*\z/.match?(self)
+    end
+
+    def first(n = 1)
+      self[0, n]
+    end
+  end
+end
 
 class LiquidRubyTest < Minitest::Test
   include ::Liquid::Spec::Assertions.new(actual_adapter_proc: -> { Liquid::Spec::Adapter::LiquidRuby.new })

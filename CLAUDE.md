@@ -12,11 +12,11 @@ liquid-spec is a test suite for the Liquid templating language. It captures test
 # Run all tests
 bundle exec rake test
 
-# Run a single test file
-bundle exec ruby -Ilib:test test/liquid_ruby_test.rb
+# Run tests without bundler
+ruby -Ilib -Itest test/liquid_ruby_test.rb
 
-# Run a specific test method
-bundle exec ruby -Ilib:test test/liquid_ruby_test.rb -n test_method_name
+# Run a specific test by name pattern
+ruby -Ilib -Itest test/liquid_ruby_test.rb -n '/assign/'
 
 # Generate specs from Shopify/liquid (clones repo to tmp/, runs tests, captures output)
 bundle exec rake generate
@@ -26,6 +26,15 @@ bundle exec rake generate:liquid_ruby
 
 # Generate only standard_filters specs
 bundle exec rake generate:standard_filters
+```
+
+## Using Local Liquid Gem
+
+The Gemfile automatically uses a local `../liquid` directory if it exists. This allows testing against a development version of the liquid gem:
+
+```
+liquid-spec/
+../liquid/     <- local liquid gem (auto-detected)
 ```
 
 ## Architecture
@@ -68,4 +77,5 @@ bundle exec rake generate:standard_filters
 - `specs/liquid_ruby/` - Core Liquid language specs generated from Shopify/liquid tests
 - `specs/dawn/` - Shopify Dawn theme section rendering specs
 - `lib/liquid/spec/deps/` - Patches applied to Shopify/liquid during spec generation
+- `lib/liquid/spec/adapter/` - Adapters for different rendering modes
 - `tasks/` - Rake tasks for spec generation

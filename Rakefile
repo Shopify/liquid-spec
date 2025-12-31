@@ -2,7 +2,6 @@
 
 require "rake"
 require "rake/testtask"
-require "bundler/gem_tasks"
 require_relative("tasks/helpers")
 
 import("tasks/liquid_ruby.rake")
@@ -10,9 +9,9 @@ import("tasks/standard_filters.rake")
 
 task default: :test
 
-Rake::TestTask.new do |t|
+Rake::TestTask.new(:test) do |t|
   t.libs << FileList["lib", "test"]
-  t.pattern = "test/**/*_test.rb"
+  t.pattern = "test/liquid_ruby_test.rb"
   t.verbose = false
 end
 
