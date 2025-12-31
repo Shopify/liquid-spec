@@ -130,6 +130,16 @@ module Liquid
             return
           end
 
+          # Show which suite is being run
+          all_suites = [:liquid_ruby, :dawn]
+          active_suite = config.suite
+
+          puts "Suite: #{active_suite}"
+          if active_suite != :all
+            other_suites = all_suites - [active_suite]
+            puts "  (other available: #{other_suites.join(', ')})"
+          end
+          puts ""
           puts "Running #{specs.size} specs..."
           puts ""
 
@@ -199,19 +209,31 @@ module Liquid
 
         def self.run_single_spec(spec, config)
           Timecop.freeze(TEST_TIME) do
-            template = LiquidSpec.do_compile(spec.template, parse_options_for(spec))
+            # Build compile options from spec
+            compile_options = {
+              line_numbers: true,
+              error_mode: spec.error_mode&.to_sym,
+            }.compact
+
+            template = LiquidSpec.do_compile(spec.template, compile_options)
 
             # Set template name if the spec specifies one and template supports it
             if spec.template_name && template.respond_to?(:name=)
               template.name = spec.template_name
             end
 
+            # Build file system from spec
+            file_system = build_file_system(spec)
+
+            # Pass ALL spec options to the render context
             context = {
-              assigns: spec.environment || {},
               environment: spec.environment || {},
-              registers: build_registers(spec),
+              file_system: file_system,
               template_factory: spec.template_factory,
               exception_renderer: spec.exception_renderer,
+              error_mode: spec.error_mode&.to_sym,
+              render_errors: spec.render_errors,
+              context_klass: spec.context_klass,
             }
 
             actual = LiquidSpec.do_render(template, context)
@@ -227,20 +249,16 @@ module Liquid
           { status: :error, expected: spec.expected, actual: nil, error: e }
         end
 
-        def self.parse_options_for(spec)
-          opts = { line_numbers: true }
-          opts[:error_mode] = spec.error_mode.to_sym if spec.error_mode
-          opts
-        end
-
-        def self.build_registers(spec)
-          registers = {}
-
-          if spec.filesystem
-            registers[:file_system] = SimpleFileSystem.new(spec.filesystem)
+        def self.build_file_system(spec)
+          case spec.filesystem
+          when Hash
+            StubFileSystem.new(spec.filesystem)
+          when nil
+            # No filesystem specified - use blank which raises on any access
+            Liquid::BlankFileSystem.new
+          else
+            spec.filesystem
           end
-
-          registers
         end
 
         def self.load_specs(suite)
@@ -274,43 +292,6 @@ module Liquid
 
         def self.filter_specs(specs, pattern)
           specs.select { |s| s.name =~ pattern }
-        end
-
-        # Simple file system for includes - raises Liquid::FileSystemError like the real one
-        class SimpleFileSystem
-          def initialize(files)
-            @files = normalize_files(files)
-          end
-
-          def read_template_file(path)
-            path = path.to_s
-            # Try with .liquid extension first
-            liquid_path = path.end_with?(".liquid") ? path : "#{path}.liquid"
-
-            @files[liquid_path] || @files[path] || begin
-              # Match the error message format from Liquid::BlankFileSystem
-              raise Liquid::FileSystemError, "Could not find asset #{path}"
-            end
-          end
-
-          private
-
-          def normalize_files(files)
-            return {} unless files
-
-            result = {}
-            source = files.respond_to?(:to_h) ? files.to_h : files
-
-            source.each do |key, value|
-              key = key.to_s
-              # Store with .liquid extension
-              liquid_key = key.end_with?(".liquid") ? key : "#{key}.liquid"
-              result[liquid_key] = value
-              result[key] = value
-            end
-
-            result
-          end
         end
       end
     end

@@ -2,31 +2,38 @@
 # frozen_string_literal: true
 
 #
-# Shopify/liquid adapter (strict mode)
+# Shopify/liquid adapter (strict mode, no liquid-c)
 #
-# Run: liquid-spec adapters/liquid_ruby_strict.rb
+# Run: liquid-spec examples/liquid_ruby_strict.rb
 #
 
 require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do
   require "liquid"
+
+  # Disable liquid-c if present
+  if defined?(Liquid::C)
+    Liquid::C.enabled = false
+  end
 end
 
 LiquidSpec.configure do |config|
   config.suite = :liquid_ruby
-  config.error_mode = :strict
 end
 
 LiquidSpec.compile do |source, options|
-  Liquid::Template.parse(source, line_numbers: true, error_mode: :strict, **options)
+  # Force strict mode regardless of spec
+  Liquid::Template.parse(source, line_numbers: true, error_mode: :strict, disable_liquid_c_nodes: true, **options)
 end
 
 LiquidSpec.render do |template, ctx|
-  liquid_ctx = Liquid::Context.build(
-    environments: [ctx.environment],
+  liquid_ctx = ctx.context_klass.build(
+    static_environments: ctx.environment,
     registers: Liquid::Registers.new(ctx.registers),
+    rethrow_errors: ctx.rethrow_errors?,
   )
-  liquid_ctx.merge(ctx.assigns)
+  liquid_ctx.exception_renderer = ctx.exception_renderer
+
   template.render(liquid_ctx)
 end

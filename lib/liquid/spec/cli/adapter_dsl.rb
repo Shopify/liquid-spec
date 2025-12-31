@@ -2,34 +2,44 @@
 
 module LiquidSpec
   class Configuration
-    attr_accessor :suite, :filter, :verbose, :error_mode
+    attr_accessor :suite, :filter, :verbose
 
     def initialize
       @suite = :all
       @filter = nil
       @verbose = false
-      @error_mode = :lax
     end
   end
 
-  class ContextBuilder
-    attr_reader :assigns, :registers, :environment, :exception_renderer, :template_factory
+  # Context passed to render block - provides clean, ready-to-use data
+  class Context
+    attr_reader :environment, :file_system, :exception_renderer, :template_factory,
+                :error_mode, :render_errors, :context_klass
 
     def initialize(spec_context)
-      @assigns = spec_context[:assigns] || {}
-      @registers = spec_context[:registers] || {}
-      @environment = spec_context[:environment] || {}
+      # Deep copy environment to avoid mutation
+      env = spec_context[:environment] || {}
+      @environment = Marshal.load(Marshal.dump(env))
+
+      @file_system = spec_context[:file_system]
       @exception_renderer = spec_context[:exception_renderer]
       @template_factory = spec_context[:template_factory]
+      @error_mode = spec_context[:error_mode]
+      @render_errors = spec_context[:render_errors]
+      @context_klass = spec_context[:context_klass]
     end
 
-    # All variables merged (environment + assigns)
-    def variables
-      environment.merge(assigns)
+    # Build registers hash with file_system and template_factory
+    def registers
+      {
+        file_system: @file_system,
+        template_factory: @template_factory,
+      }.compact
     end
 
-    def file_system
-      registers[:file_system]
+    # Should errors be rethrown or rendered inline?
+    def rethrow_errors?
+      !@render_errors
     end
   end
 
@@ -48,33 +58,11 @@ module LiquidSpec
     end
 
     # Define how to compile/parse a template
-    #
-    # @example
-    #   LiquidSpec.compile do |source, options|
-    #     Liquid::Template.parse(source, **options)
-    #   end
-    #
     def compile(&block)
       @compile_block = block
     end
 
     # Define how to render a compiled template
-    #
-    # @example Simple - just pass variables
-    #   LiquidSpec.render do |template, ctx|
-    #     template.render(ctx.variables)
-    #   end
-    #
-    # @example Full - use all context info
-    #   LiquidSpec.render do |template, ctx|
-    #     liquid_ctx = Liquid::Context.new(
-    #       [ctx.environment, ctx.assigns],
-    #       {},
-    #       ctx.registers
-    #     )
-    #     template.render(liquid_ctx)
-    #   end
-    #
     def render(&block)
       @render_block = block
     end
@@ -99,11 +87,9 @@ module LiquidSpec
     # Internal: compile a template using the adapter
     def do_compile(source, options = {})
       run_setup!
-      if @compile_block
-        @compile_block.call(source, options)
-      else
-        source # Pass through if no compile block
-      end
+      raise "No compile block defined. Use LiquidSpec.compile { |source, options| ... }" unless @compile_block
+
+      @compile_block.call(source, options)
     end
 
     # Internal: render a template using the adapter
@@ -111,11 +97,10 @@ module LiquidSpec
       run_setup!
       raise "No render block defined. Use LiquidSpec.render { |template, ctx| ... }" unless @render_block
 
-      ctx = ContextBuilder.new(context)
+      ctx = Context.new(context)
       @render_block.call(template, ctx)
     end
 
-    # Mark that we're running through the CLI
     def running_from_cli!
       @running_from_cli = true
     end

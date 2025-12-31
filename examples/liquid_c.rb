@@ -4,7 +4,7 @@
 #
 # Shopify/liquid with liquid-c extension
 #
-# Run: liquid-spec adapters/liquid_c.rb
+# Run: liquid-spec examples/liquid_c.rb
 #
 # Requires: gem install liquid-c
 #
@@ -15,14 +15,12 @@ LiquidSpec.setup do
   require "liquid"
   require "liquid/c"
 
-  unless defined?(Liquid::C) && Liquid::C.enabled
-    abort "liquid-c is not available. Install with: gem install liquid-c"
-  end
+  raise "liquid-c is not available. Install with: gem install liquid-c" unless defined?(Liquid::C)
+  raise "liquid-c is not enabled" unless Liquid::C.enabled
 end
 
 LiquidSpec.configure do |config|
   config.suite = :liquid_ruby
-  config.error_mode = :lax
 end
 
 LiquidSpec.compile do |source, options|
@@ -30,10 +28,12 @@ LiquidSpec.compile do |source, options|
 end
 
 LiquidSpec.render do |template, ctx|
-  liquid_ctx = Liquid::Context.build(
-    environments: [ctx.environment],
+  liquid_ctx = ctx.context_klass.build(
+    static_environments: ctx.environment,
     registers: Liquid::Registers.new(ctx.registers),
+    rethrow_errors: ctx.rethrow_errors?,
   )
-  liquid_ctx.merge(ctx.assigns)
+  liquid_ctx.exception_renderer = ctx.exception_renderer
+
   template.render(liquid_ctx)
 end
