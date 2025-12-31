@@ -1,6 +1,27 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/string/output_safety"
+# Simple html_safe implementation if ActiveSupport is not available
+unless defined?(ActiveSupport::SafeBuffer)
+  class SafeString < String
+    def html_safe?
+      true
+    end
+
+    def html_safe
+      self
+    end
+
+    def to_s
+      self
+    end
+  end
+
+  class String
+    def html_safe
+      SafeString.new(self)
+    end
+  end
+end
 
 class SerializableProc
   class << self
@@ -99,10 +120,13 @@ YAML.add_domain_type("", "context_klass_with_raising_subcontext") do |_, _|
   ContextWithRaisingSubcontext
 end
 
-module ActiveSupport
-  class SafeBuffer
-    def encode_with(coder)
-      coder.represent_scalar("!safe_buffer", to_s)
+# Encode SafeBuffer if ActiveSupport is loaded
+if defined?(ActiveSupport::SafeBuffer)
+  module ActiveSupport
+    class SafeBuffer
+      def encode_with(coder)
+        coder.represent_scalar("!safe_buffer", to_s)
+      end
     end
   end
 end

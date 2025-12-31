@@ -2,7 +2,7 @@
 
 require "test_helper"
 require "liquid/spec/deps/liquid_ruby"
-require "liquid/spec/adapter/liquid_ruby"
+require "liquid/spec/adapter/liquid_ruby_compiled"
 require "liquid/spec/assertions"
 
 # Add blank?/present? if ActiveSupport is not available
@@ -46,8 +46,11 @@ unless Object.method_defined?(:blank?)
   end
 end
 
-class LiquidRubyTest < Minitest::Test
-  include ::Liquid::Spec::Assertions.new(actual_adapter_proc: -> { Liquid::Spec::Adapter::LiquidRuby.new })
+# Load compiled template support
+require "liquid/compile"
+
+class LiquidRubyCompiledTest < Minitest::Test
+  include ::Liquid::Spec::Assertions.new(actual_adapter_proc: -> { Liquid::Spec::Adapter::LiquidRubyCompiled.new })
 
   Liquid::Spec::TestGenerator.define_on(self)
 end

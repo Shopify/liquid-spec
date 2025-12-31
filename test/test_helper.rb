@@ -2,9 +2,20 @@
 
 require "minitest"
 require "minitest/autorun"
-require "mocha/minitest"
 require "liquid"
 require "json"
-require "pry-byebug"
+
+# Optional dependencies - load if available
+begin
+  require "mocha/minitest"
+rescue LoadError
+  # mocha not available, skip
+end
+
+begin
+  require "pry-byebug"
+rescue LoadError
+  # pry-byebug not available, skip
+end
 
 require "liquid/spec"
