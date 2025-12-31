@@ -1,11 +1,16 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
+require "timecop"
 
 module Liquid
   module Spec
     module CLI
       module Runner
+        # Time used for all spec runs (matches liquid test suite)
+        TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
+        MAX_FAILURES_DEFAULT = 10
+
         HELP = <<~HELP
           Usage: liquid-spec run ADAPTER [options]
 
@@ -14,12 +19,15 @@ module Liquid
             -s, --suite SUITE     Spec suite: all, liquid_ruby, dawn (default: from adapter)
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
+            --max-failures N      Stop after N failures (default: #{MAX_FAILURES_DEFAULT})
+            --no-max-failures     Run all specs regardless of failures
             -h, --help            Show this help
 
           Examples:
             liquid-spec run my_adapter.rb
             liquid-spec run my_adapter.rb -n assign
             liquid-spec run my_adapter.rb -s liquid_ruby -v
+            liquid-spec run my_adapter.rb --no-max-failures
 
         HELP
 
@@ -39,6 +47,7 @@ module Liquid
 
           # Load the adapter
           LiquidSpec.reset!
+          LiquidSpec.running_from_cli!
           load File.expand_path(adapter_file)
 
           config = LiquidSpec.config || LiquidSpec.configure
@@ -56,7 +65,7 @@ module Liquid
         end
 
         def self.parse_options(args)
-          options = {}
+          options = { max_failures: MAX_FAILURES_DEFAULT }
 
           while args.any?
             case args.first
@@ -73,6 +82,12 @@ module Liquid
             when "-l", "--list"
               args.shift
               options[:list] = true
+            when "--max-failures"
+              args.shift
+              options[:max_failures] = args.shift.to_i
+            when "--no-max-failures"
+              args.shift
+              options[:max_failures] = nil
             else
               args.shift
             end
@@ -99,7 +114,10 @@ module Liquid
         end
 
         def self.run_specs(config, options)
-          # Load liquid/spec components
+          # Run adapter setup first (loads the liquid gem)
+          LiquidSpec.run_setup!
+
+          # Now load liquid/spec components (they depend on Liquid being loaded)
           require "liquid/spec"
           require "liquid/spec/deps/liquid_ruby"
           require "liquid/spec/yaml_initializer"
@@ -119,6 +137,8 @@ module Liquid
           failed = 0
           errors = 0
           failures = []
+          max_failures = options[:max_failures]
+          stopped_early = false
 
           specs.each do |spec|
             result = run_single_spec(spec, config)
@@ -139,11 +159,23 @@ module Liquid
               puts "ERROR: #{spec.name}" if config.verbose
               failures << { spec: spec, result: result }
             end
+
+            if max_failures && (failed + errors) >= max_failures
+              stopped_early = true
+              break
+            end
           end
 
           puts "" unless config.verbose
           puts ""
-          puts "#{passed} passed, #{failed} failed, #{errors} errors"
+
+          if stopped_early
+            puts "Stopped after #{max_failures} failures (#{passed} passed so far)"
+            puts "Run with --no-max-failures to see all failures"
+            puts ""
+          else
+            puts "#{passed} passed, #{failed} failed, #{errors} errors"
+          end
 
           if failures.any?
             puts ""
@@ -166,21 +198,30 @@ module Liquid
         end
 
         def self.run_single_spec(spec, config)
-          template = LiquidSpec.do_compile(spec.template, parse_options_for(spec))
+          Timecop.freeze(TEST_TIME) do
+            template = LiquidSpec.do_compile(spec.template, parse_options_for(spec))
 
-          context = {
-            assigns: spec.environment || {},
-            environment: spec.environment || {},
-            registers: build_registers(spec),
-          }
+            # Set template name if the spec specifies one and template supports it
+            if spec.template_name && template.respond_to?(:name=)
+              template.name = spec.template_name
+            end
 
-          actual = LiquidSpec.do_render(template, context)
-          expected = spec.expected
+            context = {
+              assigns: spec.environment || {},
+              environment: spec.environment || {},
+              registers: build_registers(spec),
+              template_factory: spec.template_factory,
+              exception_renderer: spec.exception_renderer,
+            }
 
-          if actual == expected
-            { status: :pass }
-          else
-            { status: :fail, expected: expected, actual: actual }
+            actual = LiquidSpec.do_render(template, context)
+            expected = spec.expected
+
+            if actual == expected
+              { status: :pass }
+            else
+              { status: :fail, expected: expected, actual: actual }
+            end
           end
         rescue => e
           { status: :error, expected: spec.expected, actual: nil, error: e }
@@ -203,6 +244,10 @@ module Liquid
         end
 
         def self.load_specs(suite)
+          # Ensure setup has run (loads liquid gem)
+          LiquidSpec.run_setup!
+
+          # Load spec components - these require Liquid to be loaded first
           require "liquid/spec"
           require "liquid/spec/deps/liquid_ruby"
           require "liquid/spec/yaml_initializer"
@@ -231,7 +276,7 @@ module Liquid
           specs.select { |s| s.name =~ pattern }
         end
 
-        # Simple file system for includes
+        # Simple file system for includes - raises Liquid::FileSystemError like the real one
         class SimpleFileSystem
           def initialize(files)
             @files = normalize_files(files)
@@ -239,9 +284,13 @@ module Liquid
 
           def read_template_file(path)
             path = path.to_s
-            path = "#{path}.liquid" unless path.end_with?(".liquid")
+            # Try with .liquid extension first
+            liquid_path = path.end_with?(".liquid") ? path : "#{path}.liquid"
 
-            @files[path] || @files[path.sub(/\.liquid$/, "")] || raise("Template not found: #{path}")
+            @files[liquid_path] || @files[path] || begin
+              # Match the error message format from Liquid::BlankFileSystem
+              raise Liquid::FileSystemError, "Could not find asset #{path}"
+            end
           end
 
           private
@@ -249,12 +298,18 @@ module Liquid
           def normalize_files(files)
             return {} unless files
 
-            case files
-            when Hash
-              files.transform_keys(&:to_s)
-            else
-              files.respond_to?(:to_h) ? files.to_h.transform_keys(&:to_s) : {}
+            result = {}
+            source = files.respond_to?(:to_h) ? files.to_h : files
+
+            source.each do |key, value|
+              key = key.to_s
+              # Store with .liquid extension
+              liquid_key = key.end_with?(".liquid") ? key : "#{key}.liquid"
+              result[liquid_key] = value
+              result[key] = value
             end
+
+            result
           end
         end
       end
