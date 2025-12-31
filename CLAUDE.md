@@ -4,78 +4,103 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Project Is
 
-liquid-spec is a test suite for the Liquid templating language. It captures test cases from the reference Shopify/liquid implementation and can verify that other Liquid implementations produce identical output.
+liquid-spec is a test suite and CLI for testing Liquid template implementations. It captures test cases from the reference Shopify/liquid implementation and can verify that any Liquid implementation produces correct output.
 
-## Common Commands
+## CLI Usage
 
 ```bash
-# Run all tests
-bundle exec rake test
+# Install the gem
+gem install liquid-spec
 
-# Run tests without bundler
+# Generate an adapter template
+liquid-spec init my_adapter.rb
+
+# Generate a pre-filled adapter for Shopify/liquid
+liquid-spec init my_adapter.rb --liquid-ruby
+
+# Run specs with your adapter
+liquid-spec run my_adapter.rb
+
+# Run specific specs by name pattern
+liquid-spec run my_adapter.rb -n assign
+
+# Run only liquid_ruby specs
+liquid-spec run my_adapter.rb -s liquid_ruby
+
+# Verbose output
+liquid-spec run my_adapter.rb -v
+
+# List available specs
+liquid-spec run my_adapter.rb -l
+```
+
+## Writing an Adapter
+
+An adapter defines how your Liquid implementation compiles and renders templates:
+
+```ruby
+# my_adapter.rb
+require "my_liquid"
+
+LiquidSpec.configure do |config|
+  config.suite = :liquid_ruby  # :all, :liquid_ruby, :dawn
+end
+
+LiquidSpec.compile do |source, options|
+  MyLiquid::Template.parse(source)
+end
+
+LiquidSpec.render do |template, context|
+  template.render(context[:assigns])
+end
+```
+
+## Development Commands
+
+```bash
+# Run the existing test suite
 ruby -Ilib -Itest test/liquid_ruby_test.rb
 
-# Run a specific test by name pattern
-ruby -Ilib -Itest test/liquid_ruby_test.rb -n '/assign/'
+# Test the CLI locally
+ruby -Ilib bin/liquid-spec help
+ruby -Ilib bin/liquid-spec init test.rb
+ruby -I../liquid/lib -Ilib bin/liquid-spec run test.rb
 
-# Generate specs from Shopify/liquid (clones repo to tmp/, runs tests, captures output)
+# Generate specs from Shopify/liquid
 bundle exec rake generate
-
-# Generate only liquid_ruby specs
-bundle exec rake generate:liquid_ruby
-
-# Generate only standard_filters specs
-bundle exec rake generate:standard_filters
 ```
 
 ## Using Local Liquid Gem
 
-The Gemfile automatically uses a local `../liquid` directory if it exists. This allows testing against a development version of the liquid gem:
+The Gemfile automatically uses a local `../liquid` directory if it exists:
 
 ```
 liquid-spec/
-../liquid/     <- local liquid gem (auto-detected)
+../liquid/     <- auto-detected for development
 ```
 
 ## Architecture
 
-### Spec Generation Flow
+### CLI Components
 
-1. `rake generate` clones Shopify/liquid to `tmp/liquid/` at the version matching the liquid gem dependency
-2. Patches are injected into the cloned repo's test helper to capture test data during execution
-3. Tests run in the cloned repo, writing captured specs to `tmp/liquid-ruby-capture.yml`
-4. Captured data is formatted and written to `specs/liquid_ruby/*.yml`
+- **`bin/liquid-spec`** - Entry point
+- **`lib/liquid/spec/cli.rb`** - Command dispatcher  
+- **`lib/liquid/spec/cli/init.rb`** - Generates adapter templates
+- **`lib/liquid/spec/cli/runner.rb`** - Runs specs with an adapter
+- **`lib/liquid/spec/cli/adapter_dsl.rb`** - DSL for LiquidSpec.compile/render
 
-### Key Components
+### Spec Components
 
-- **`Liquid::Spec::Unit`** (`lib/liquid/spec/unit.rb`): Struct representing a single test case with fields: name, expected, template, environment, filesystem, error_mode, etc.
-
-- **`Liquid::Spec::Source`** (`lib/liquid/spec/source.rb`): Factory for loading specs from different formats (YAML, text, directory-based)
-
-- **`Liquid::Spec::TestGenerator`** (`lib/liquid/spec/test_generator.rb`): Dynamically generates test methods on a test class from spec sources. Groups specs by class name prefix (e.g., `AssignTest#test_foo` creates `AssignTest` subclass).
-
-- **`Liquid::Spec::Adapter`** (`lib/liquid/spec/adapter/`): Adapters render templates. `Default` returns expected values; `LiquidRuby` actually renders with the liquid gem.
-
-- **`Liquid::Spec::Assertions`** (`lib/liquid/spec/assertions.rb`): Module factory that provides `assert_parity_for_spec` comparing expected adapter output against actual adapter output.
-
-### Spec File Format (YAML)
-
-```yaml
-- name: TestClass#test_description_hash
-  template: "{{ foo | upcase }}"
-  environment:
-    foo: bar
-  expected: "BAR"
-  error_mode: :lax  # optional
-  render_errors: false
-  filesystem:       # optional, for include/render tags
-    snippet: "content"
-```
+- **`Liquid::Spec::Unit`** - Single test case struct
+- **`Liquid::Spec::Source`** - Loads specs from YAML/text/directories
+- **`Liquid::Spec::TestGenerator`** - Generates Minitest methods from specs
+- **`Liquid::Spec::Adapter`** - Adapters for the Minitest-based runner
 
 ### Directory Structure
 
-- `specs/liquid_ruby/` - Core Liquid language specs generated from Shopify/liquid tests
-- `specs/dawn/` - Shopify Dawn theme section rendering specs
-- `lib/liquid/spec/deps/` - Patches applied to Shopify/liquid during spec generation
-- `lib/liquid/spec/adapter/` - Adapters for different rendering modes
+- `bin/` - CLI executable
+- `lib/liquid/spec/cli/` - CLI implementation
+- `lib/liquid/spec/adapter/` - Adapters for Minitest runner
+- `specs/liquid_ruby/` - Core Liquid specs from Shopify/liquid
+- `specs/dawn/` - Shopify Dawn theme specs
 - `tasks/` - Rake tasks for spec generation
