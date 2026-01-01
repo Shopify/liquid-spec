@@ -1,0 +1,27 @@
+---
+# These specs verify that strict mode correctly REJECTS invalid syntax
+# that lax mode would accept. Each spec expects a Liquid::SyntaxError.
+#
+# This is the inverse of liquid_ruby_lax/specs.yml - same templates,
+# but with error_mode: :strict and expecting syntax errors.
+
+- name: StrictModeTest#test_assign_with_parentheses_rejected
+  template: "{% assign foo = ('X' | downcase) %}"
+  error_mode: :strict
+  render_errors: true
+  expected: "Liquid syntax error (line 1): Expected dotdot but found pipe in \"{{('X' | downcase) }}\""
+  hint: "Parentheses in assign expressions are invalid - lax mode tolerates this, strict rejects it"
+
+- name: StrictModeTest#test_quirky_negative_sign_rejected
+  template: "{{ - 'theme.css' - }}"
+  error_mode: :strict
+  render_errors: true
+  expected: "Liquid syntax error (line 1): [:dash, \"-\"] is not a valid expression in \"{{ - 'theme.css' - }}\""
+  hint: "Leading/trailing dashes in variable output are invalid - lax mode tolerates this, strict rejects it"
+
+- name: StrictModeTest#test_unclosed_bracket_lookup_rejected
+  template: "{{['foo'}}"
+  error_mode: :strict
+  render_errors: true
+  expected: "Liquid syntax error (line 1): Expected close_square but found end_of_string in \"{{['foo'}}\""
+  hint: "Unclosed bracket in variable lookup is invalid - lax mode tolerates this, strict rejects it"

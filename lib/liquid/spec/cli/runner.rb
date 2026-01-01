@@ -294,6 +294,7 @@ module Liquid
           # Merge source-level required_options with spec-level options
           # Spec-level options take precedence
           required_opts = spec.source_required_options || {}
+          render_errors = spec.render_errors || required_opts[:render_errors]
 
           # Build compile options from spec (spec values override required_options)
           compile_options = {
@@ -301,7 +302,16 @@ module Liquid
             error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
           }.compact
 
-          template = LiquidSpec.do_compile(spec.template, compile_options)
+          template = begin
+            LiquidSpec.do_compile(spec.template, compile_options)
+          rescue Liquid::SyntaxError => e
+            # If render_errors is true, treat compile errors as rendered output
+            if render_errors
+              return compare_result(e.message, spec.expected)
+            else
+              raise
+            end
+          end
 
           # Set template name if the spec specifies one and template supports it
           if spec.template_name && template.respond_to?(:name=)
@@ -319,21 +329,23 @@ module Liquid
             template_factory: spec.template_factory,
             exception_renderer: spec.exception_renderer,
             error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
-            render_errors: spec.render_errors,
+            render_errors: render_errors,
             context_klass: spec.context_klass,
           }
 
           actual = LiquidSpec.do_render(template, context)
-          expected = spec.expected
+          compare_result(actual, spec.expected)
+        rescue Exception => e
+          # Catch all exceptions including SyntaxError
+          { status: :error, expected: spec.expected, actual: nil, error: e }
+        end
 
+        def self.compare_result(actual, expected)
           if actual == expected
             { status: :pass }
           else
             { status: :fail, expected: expected, actual: actual }
           end
-        rescue Exception => e
-          # Catch all exceptions including SyntaxError
-          { status: :error, expected: spec.expected, actual: nil, error: e }
         end
 
         def self.build_file_system(spec)
