@@ -19,7 +19,8 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  config.suite = :liquid_ruby
+  # Only core feature - no lax_parsing support
+  config.features = [:core]
 end
 
 LiquidSpec.compile do |source, options|

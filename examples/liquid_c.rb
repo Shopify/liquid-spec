@@ -20,7 +20,8 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  config.suite = :liquid_ruby
+  # liquid-c supports both core and lax parsing
+  config.features = [:core, :lax_parsing]
 end
 
 LiquidSpec.compile do |source, options|
