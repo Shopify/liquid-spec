@@ -1,0 +1,39 @@
+---
+_metadata:
+  hint: "These specs require error_mode: :lax to parse invalid syntax gracefully"
+  required_options:
+    error_mode: :lax
+specs:
+- name: RecordedTest#test_float_literal_lookup_507a9b74
+  template: "{% assign a = vals | join: delim: delims[0.0] %}{% assign b = vals |
+    join: delim: delims[1.4] %}{% assign c = vals | join: delim: delims[2.8] %}{{a}}
+    {{b}} {{c}}"
+  expected: a{"delim"=>nil}b{"delim"=>nil}c a{"delim"=>nil}b{"delim"=>nil}c a{"delim"=>nil}b{"delim"=>nil}c
+  environment:
+    vals:
+    - a
+    - b
+    - c
+    delims:
+    - ","
+    - ":"
+    - "|"
+  exception_renderer: !stub_exception_renderer
+    raise_internal_errors: false
+  caller_location: test/integration/spec_helper.rb:108
+- name: RecordedTest#test_float_literal_lookup_f7cb99ff
+  template: "{% assign a = vals | join: delims[0.0] %}{% assign b = vals | join: delims[1.4]
+    %}{% assign c = vals | join: delims[2.8] %}{{a}} {{b}} {{c}}"
+  expected: abc abc abc
+  environment:
+    vals:
+    - a
+    - b
+    - c
+    delims:
+    - ","
+    - ":"
+    - "|"
+  exception_renderer: !stub_exception_renderer
+    raise_internal_errors: false
+  caller_location: test/integration/spec_helper.rb:108

@@ -33552,41 +33552,6 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:108
-- name: RecordedTest#test_float_literal_lookup_507a9b74
-  template: "{% assign a = vals | join: delim: delims[0.0] %}{% assign b = vals |
-    join: delim: delims[1.4] %}{% assign c = vals | join: delim: delims[2.8] %}{{a}}
-    {{b}} {{c}}"
-  expected: a{"delim"=>nil}b{"delim"=>nil}c a{"delim"=>nil}b{"delim"=>nil}c a{"delim"=>nil}b{"delim"=>nil}c
-  environment:
-    vals:
-    - a
-    - b
-    - c
-    delims:
-    - ","
-    - ":"
-    - "|"
-  error_mode: :lax
-  exception_renderer: !stub_exception_renderer
-    raise_internal_errors: false
-  caller_location: test/integration/spec_helper.rb:108
-- name: RecordedTest#test_float_literal_lookup_f7cb99ff
-  template: "{% assign a = vals | join: delims[0.0] %}{% assign b = vals | join: delims[1.4]
-    %}{% assign c = vals | join: delims[2.8] %}{{a}} {{b}} {{c}}"
-  expected: abc abc abc
-  environment:
-    vals:
-    - a
-    - b
-    - c
-    delims:
-    - ","
-    - ":"
-    - "|"
-  error_mode: :lax
-  exception_renderer: !stub_exception_renderer
-    raise_internal_errors: false
-  caller_location: test/integration/spec_helper.rb:108
 - name: RecordedTest#test_float_literal_lookup_f9c70490
   template: "{% assign a = vals | join: delims[0.0] %}{% assign b = vals | join: delims[1.4]
     %}{% assign c = vals | join: delims[2.8] %}{{a}} {{b}} {{c}}"
@@ -34860,7 +34825,6 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
----
 - name: RecordedTest#range_contains_value_95d2ee1d
   template: "{% if a0 contains a1 %}true{% else %}false{% endif %}"
   expected: 'true'

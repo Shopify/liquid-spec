@@ -1,0 +1,22 @@
+---
+# Shopify Production Recordings
+# Captured from Shopify/liquid compiler and unit tests
+
+name: "Shopify Production Recordings"
+description: "Specs recorded from Shopify/liquid compiler tests and production behavior"
+
+# NOT included in default runs - large suite, run separately
+default: false
+
+hint: |
+  These specs were recorded from Shopify's production Liquid implementation.
+  They test internal compiler behavior and may include Shopify-specific extensions.
+  Failures here may be expected if your implementation differs from Shopify's.
+
+# Required features for this suite
+required_features:
+  - core
+
+# Default options applied to all specs
+defaults:
+  render_errors: false

@@ -2,24 +2,49 @@
 
 module LiquidSpec
   class Configuration
-    attr_accessor :suite, :filter, :verbose
+    attr_accessor :suite, :filter, :verbose, :strict_only, :features
+
+    # Default suite when not specified via CLI (defaults to :liquid_ruby)
+    DEFAULT_SUITE = :liquid_ruby
+
+    # Default features that most Liquid implementations support
+    DEFAULT_FEATURES = [:core].freeze
 
     def initialize
-      @suite = :all
+      @suite = DEFAULT_SUITE
       @filter = nil
       @verbose = false
+      @strict_only = false
+      @features = DEFAULT_FEATURES.dup
+    end
+
+    # Check if a feature is supported
+    def feature?(name)
+      @features.include?(name.to_sym)
+    end
+
+    # Add features
+    def add_features(*names)
+      names.each { |n| @features << n.to_sym unless @features.include?(n.to_sym) }
     end
   end
 
   # Context passed to render block - provides clean, ready-to-use data
   class Context
-    attr_reader :environment, :file_system, :exception_renderer, :template_factory,
-                :error_mode, :render_errors, :context_klass
+    attr_reader :environment,
+      :file_system,
+      :exception_renderer,
+      :template_factory,
+      :error_mode,
+      :render_errors,
+      :context_klass
 
     def initialize(spec_context)
       # Deep copy environment to avoid mutation
       env = spec_context[:environment] || {}
-      @environment = Marshal.load(Marshal.dump(env))
+      # Use deep_dup if available (ActiveSupport), otherwise Marshal
+      # Marshal fails with TestDrops objects due to module lookup issues
+      @environment = env.respond_to?(:deep_dup) ? env.deep_dup : Marshal.load(Marshal.dump(env))
 
       @file_system = spec_context[:file_system]
       @exception_renderer = spec_context[:exception_renderer]

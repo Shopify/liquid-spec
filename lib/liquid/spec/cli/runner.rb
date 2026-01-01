@@ -8,7 +8,9 @@ module Liquid
     module CLI
       module Runner
         # Time used for all spec runs (matches liquid test suite)
+        # Frozen to a known time so date/time filters produce consistent results
         TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
+        TEST_TZ = "UTC"
         MAX_FAILURES_DEFAULT = 10
 
         HELP = <<~HELP
@@ -16,9 +18,11 @@ module Liquid
 
           Options:
             -n, --name PATTERN    Only run specs matching PATTERN
-            -s, --suite SUITE     Spec suite: all, liquid_ruby, dawn (default: from adapter)
+            -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
+            --strict              Only run specs with error_mode: strict (or no error_mode)
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
+            --list-suites         List available suites
             --max-failures N      Stop after N failures (default: #{MAX_FAILURES_DEFAULT})
             --no-max-failures     Run all specs regardless of failures
             -h, --help            Show this help
@@ -27,7 +31,9 @@ module Liquid
             liquid-spec run my_adapter.rb
             liquid-spec run my_adapter.rb -n assign
             liquid-spec run my_adapter.rb -s liquid_ruby -v
+            liquid-spec run my_adapter.rb --strict
             liquid-spec run my_adapter.rb --no-max-failures
+            liquid-spec run my_adapter.rb --list-suites
 
         HELP
 
@@ -42,13 +48,13 @@ module Liquid
 
           unless File.exist?(adapter_file)
             $stderr.puts "Error: Adapter file not found: #{adapter_file}"
-            exit 1
+            exit(1)
           end
 
           # Load the adapter
           LiquidSpec.reset!
           LiquidSpec.running_from_cli!
-          load File.expand_path(adapter_file)
+          load(File.expand_path(adapter_file))
 
           config = LiquidSpec.config || LiquidSpec.configure
 
@@ -56,8 +62,11 @@ module Liquid
           config.suite = options[:suite] if options[:suite]
           config.filter = options[:filter] if options[:filter]
           config.verbose = options[:verbose] if options[:verbose]
+          config.strict_only = options[:strict_only] if options[:strict_only]
 
-          if options[:list]
+          if options[:list_suites]
+            list_suites(config)
+          elsif options[:list]
             list_specs(config)
           else
             run_specs(config, options)
@@ -68,36 +77,61 @@ module Liquid
           options = { max_failures: MAX_FAILURES_DEFAULT }
 
           while args.any?
-            case args.first
+            arg = args.shift
+            case arg
             when "-n", "--name"
-              args.shift
               pattern = args.shift
               options[:filter] = Regexp.new(pattern, Regexp::IGNORECASE)
+            when /\A--name=(.+)\z/, /\A-n(.+)\z/
+              options[:filter] = Regexp.new(::Regexp.last_match(1), Regexp::IGNORECASE)
             when "-s", "--suite"
-              args.shift
               options[:suite] = args.shift.to_sym
+            when /\A--suite=(.+)\z/
+              options[:suite] = ::Regexp.last_match(1).to_sym
+            when "--strict"
+              options[:strict_only] = true
             when "-v", "--verbose"
-              args.shift
               options[:verbose] = true
             when "-l", "--list"
-              args.shift
               options[:list] = true
+            when "--list-suites"
+              options[:list_suites] = true
             when "--max-failures"
-              args.shift
               options[:max_failures] = args.shift.to_i
+            when /\A--max-failures=(\d+)\z/
+              options[:max_failures] = ::Regexp.last_match(1).to_i
             when "--no-max-failures"
-              args.shift
               options[:max_failures] = nil
-            else
-              args.shift
             end
           end
 
           options
         end
 
+        def self.list_suites(config)
+          # Load spec components
+          LiquidSpec.run_setup!
+          require "liquid/spec"
+          require "liquid/spec/suite"
+
+          puts "Available suites:"
+          puts ""
+
+          Liquid::Spec::Suite.all.each do |suite|
+            default_marker = suite.default? ? " (default)" : ""
+            runnable = suite.runnable_with?(config.features)
+            status = runnable ? "" : " [missing features: #{suite.missing_features(config.features).join(", ")}]"
+
+            puts "  #{suite.id}#{default_marker}#{status}"
+            puts "    #{suite.description}" if suite.description && config.verbose
+            if config.verbose && suite.required_features.any?
+              puts "    Required features: #{suite.required_features.join(", ")}"
+            end
+          end
+        end
+
         def self.list_specs(config)
-          specs = load_specs(config.suite)
+          specs = load_specs(config)
           specs = filter_specs(specs, config.filter) if config.filter
 
           puts "Available specs (#{specs.size} total):"
@@ -105,25 +139,40 @@ module Liquid
 
           specs.group_by { |s| s.name.split("#").first }.each do |group, group_specs|
             puts "  #{group} (#{group_specs.size} specs)"
-            if config.verbose
-              group_specs.each do |spec|
-                puts "    - #{spec.name.split('#').last}"
-              end
+            next unless config.verbose
+
+            group_specs.each do |spec|
+              puts "    - #{spec.name.split("#").last}"
             end
           end
         end
 
         def self.run_specs(config, options)
+          # Set timezone BEFORE loading anything else to ensure consistent behavior
+          original_tz = ENV["TZ"]
+          ENV["TZ"] = TEST_TZ
+
+          # Freeze time BEFORE adapter setup so adapters see frozen time
+          Timecop.freeze(TEST_TIME) do
+            run_specs_frozen(config, options)
+          end
+        ensure
+          ENV["TZ"] = original_tz
+        end
+
+        def self.run_specs_frozen(config, options)
           # Run adapter setup first (loads the liquid gem)
           LiquidSpec.run_setup!
 
           # Now load liquid/spec components (they depend on Liquid being loaded)
           require "liquid/spec"
+          require "liquid/spec/suite"
           require "liquid/spec/deps/liquid_ruby"
           require "liquid/spec/yaml_initializer"
 
-          specs = load_specs(config.suite)
+          specs = load_specs(config)
           specs = filter_specs(specs, config.filter) if config.filter
+          specs = filter_strict_only(specs) if config.strict_only
 
           if specs.empty?
             puts "No specs to run"
@@ -131,13 +180,15 @@ module Liquid
           end
 
           # Show which suite is being run
-          all_suites = [:liquid_ruby, :dawn]
           active_suite = config.suite
+          available_suites = Liquid::Spec::Suite.all.map(&:id)
 
           puts "Suite: #{active_suite}"
+          puts "Features: #{config.features.join(", ")}"
+          puts "Mode: strict only" if config.strict_only
           if active_suite != :all
-            other_suites = all_suites - [active_suite]
-            puts "  (other available: #{other_suites.join(', ')})"
+            other_suites = available_suites - [active_suite]
+            puts "  (other available: #{other_suites.join(", ")})"
           end
           puts ""
           puts "Running #{specs.size} specs..."
@@ -156,16 +207,16 @@ module Liquid
             case result[:status]
             when :pass
               passed += 1
-              print "." unless config.verbose
+              print(".") unless config.verbose
               puts "PASS: #{spec.name}" if config.verbose
             when :fail
               failed += 1
-              print "F" unless config.verbose
+              print("F") unless config.verbose
               puts "FAIL: #{spec.name}" if config.verbose
               failures << { spec: spec, result: result }
             when :error
               errors += 1
-              print "E" unless config.verbose
+              print("E") unless config.verbose
               puts "ERROR: #{spec.name}" if config.verbose
               failures << { spec: spec, result: result }
             end
@@ -192,6 +243,8 @@ module Liquid
             puts "Failures:"
             puts ""
 
+            # Collect hints grouped by source
+            hints_by_source = {}
             failures.each_with_index do |f, i|
               puts "#{i + 1}) #{f[:spec].name}"
               puts "   Template: #{f[:spec].template.inspect[0..80]}"
@@ -201,51 +254,85 @@ module Liquid
                 puts "   Error:    #{f[:result][:error].class}: #{f[:result][:error].message}"
               end
               puts ""
+
+              # Collect hints by source (source_hint) and spec-level hints
+              source_hint = f[:spec].source_hint
+              spec_hint = f[:spec].hint
+
+              if source_hint
+                hints_by_source[source_hint] ||= []
+                hints_by_source[source_hint] << spec_hint if spec_hint
+              elsif spec_hint
+                hints_by_source[nil] ||= []
+                hints_by_source[nil] << spec_hint
+              end
             end
 
-            exit 1
+            # Print hints grouped by source, unique and limited to 5
+            if hints_by_source.any?
+              puts ""
+              puts "Hints:"
+              hints_by_source.each do |source_hint, spec_hints|
+                if source_hint
+                  puts ""
+                  puts "  #{source_hint.strip.gsub("\n", " ")}"
+                end
+                unique_spec_hints = spec_hints.uniq.compact.first(5)
+                unique_spec_hints.each do |hint|
+                  puts "    - #{hint.strip.gsub("\n", " ")}"
+                end
+              end
+            end
+
+            exit(1)
           end
         end
 
-        def self.run_single_spec(spec, config)
-          Timecop.freeze(TEST_TIME) do
-            # Build compile options from spec
-            compile_options = {
-              line_numbers: true,
-              error_mode: spec.error_mode&.to_sym,
-            }.compact
+        def self.run_single_spec(spec, _config)
+          # Time is already frozen at the run_specs level
 
-            template = LiquidSpec.do_compile(spec.template, compile_options)
+          # Merge source-level required_options with spec-level options
+          # Spec-level options take precedence
+          required_opts = spec.source_required_options || {}
 
-            # Set template name if the spec specifies one and template supports it
-            if spec.template_name && template.respond_to?(:name=)
-              template.name = spec.template_name
-            end
+          # Build compile options from spec (spec values override required_options)
+          compile_options = {
+            line_numbers: true,
+            error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+          }.compact
 
-            # Build file system from spec
-            file_system = build_file_system(spec)
+          template = LiquidSpec.do_compile(spec.template, compile_options)
 
-            # Pass ALL spec options to the render context
-            context = {
-              environment: spec.environment || {},
-              file_system: file_system,
-              template_factory: spec.template_factory,
-              exception_renderer: spec.exception_renderer,
-              error_mode: spec.error_mode&.to_sym,
-              render_errors: spec.render_errors,
-              context_klass: spec.context_klass,
-            }
-
-            actual = LiquidSpec.do_render(template, context)
-            expected = spec.expected
-
-            if actual == expected
-              { status: :pass }
-            else
-              { status: :fail, expected: expected, actual: actual }
-            end
+          # Set template name if the spec specifies one and template supports it
+          if spec.template_name && template.respond_to?(:name=)
+            template.name = spec.template_name
           end
-        rescue => e
+
+          # Build file system from spec
+          file_system = build_file_system(spec)
+
+          # Pass ALL spec options to the render context
+          # Spec-level options override source-level required_options
+          context = {
+            environment: spec.environment || {},
+            file_system: file_system,
+            template_factory: spec.template_factory,
+            exception_renderer: spec.exception_renderer,
+            error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+            render_errors: spec.render_errors,
+            context_klass: spec.context_klass,
+          }
+
+          actual = LiquidSpec.do_render(template, context)
+          expected = spec.expected
+
+          if actual == expected
+            { status: :pass }
+          else
+            { status: :fail, expected: expected, actual: actual }
+          end
+        rescue Exception => e
+          # Catch all exceptions including SyntaxError
           { status: :error, expected: spec.expected, actual: nil, error: e }
         end
 
@@ -261,37 +348,60 @@ module Liquid
           end
         end
 
-        def self.load_specs(suite)
+        def self.load_specs(config)
           # Ensure setup has run (loads liquid gem)
           LiquidSpec.run_setup!
 
           # Load spec components - these require Liquid to be loaded first
           require "liquid/spec"
+          require "liquid/spec/suite"
           require "liquid/spec/deps/liquid_ruby"
           require "liquid/spec/yaml_initializer"
 
-          case suite
+          suite_id = config.suite
+          features = config.features
+
+          case suite_id
           when :all
-            Liquid::Spec.all_sources.flat_map(&:to_a)
-          when :liquid_ruby
-            liquid_ruby_path = File.join(Liquid::Spec::SPEC_FILES.sub("**/*{.yml,.txt}", ""), "liquid_ruby", "*.yml")
-            Dir[liquid_ruby_path].flat_map do |path|
-              Liquid::Spec::Source.for(path).to_a
-            end
-          when :dawn
-            dawn_path = File.join(Liquid::Spec::SPEC_FILES.sub("**/*{.yml,.txt}", ""), "dawn", "*")
-            Dir[dawn_path].select { |p| File.directory?(p) }.flat_map do |path|
-              Liquid::Spec::Source.for(path).to_a rescue []
-            end
+            # Load all default suites that are runnable with the adapter's features
+            Liquid::Spec::Suite.defaults.select { |s| s.runnable_with?(features) }.flat_map(&:specs)
           else
-            $stderr.puts "Unknown suite: #{suite}"
-            $stderr.puts "Available suites: all, liquid_ruby, dawn"
-            exit 1
+            suite = Liquid::Spec::Suite.find(suite_id)
+            if suite.nil?
+              available = Liquid::Spec::Suite.all.map(&:id).join(", ")
+              $stderr.puts "Unknown suite: #{suite_id}"
+              $stderr.puts "Available suites: all, #{available}"
+              exit(1)
+            end
+
+            unless suite.runnable_with?(features)
+              missing = suite.missing_features(features)
+              $stderr.puts "Suite '#{suite_id}' requires features not supported by this adapter:"
+              $stderr.puts "  Missing: #{missing.join(", ")}"
+              $stderr.puts "  Adapter features: #{features.join(", ")}"
+              $stderr.puts ""
+              $stderr.puts "Add the required features to your adapter configuration:"
+              $stderr.puts "  LiquidSpec.configure do |config|"
+              $stderr.puts "    config.features = #{(features + missing).inspect}"
+              $stderr.puts "  end"
+              exit(1)
+            end
+
+            suite.specs
           end
         end
 
         def self.filter_specs(specs, pattern)
           specs.select { |s| s.name =~ pattern }
+        end
+
+        # Filter to only specs that work in strict mode
+        # Includes specs with error_mode: :strict or nil (default is strict)
+        def self.filter_strict_only(specs)
+          specs.select do |s|
+            mode = s.error_mode&.to_sym
+            mode.nil? || mode == :strict
+          end
         end
       end
     end

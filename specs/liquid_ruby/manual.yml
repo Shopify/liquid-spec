@@ -134,6 +134,7 @@
   template: "{{ (1..end) }}"
   environment:
     end: 2.5
+  render_errors: true
   expected: "Liquid error (line 1): invalid integer"
 
 - name: Tablerow renders empty string when lookup returns nil

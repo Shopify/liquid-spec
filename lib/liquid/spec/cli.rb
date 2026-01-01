@@ -2,6 +2,8 @@
 
 require_relative "cli/runner"
 require_relative "cli/init"
+require_relative "cli/inspect"
+require_relative "cli/eval"
 
 module Liquid
   module Spec
@@ -13,22 +15,20 @@ module Liquid
           liquid-spec [command] [options]
 
         Commands:
-          init [FILE]     Generate an adapter template (default: liquid_adapter.rb)
-          run ADAPTER     Run specs using the specified adapter file
-          help            Show this help message
+          run ADAPTER         Run specs using the specified adapter file
+          inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
+          eval ADAPTER        Quick test a template against your adapter
+          init [FILE]         Generate an adapter template (default: liquid_adapter.rb)
+          help                Show this help message
 
         Examples:
-          liquid-spec init                    # Creates liquid_adapter.rb
-          liquid-spec init my_adapter.rb     # Creates my_adapter.rb
-          liquid-spec run liquid_adapter.rb  # Run all specs
-          liquid-spec run adapter.rb -n for  # Run specs matching 'for'
-          liquid-spec run adapter.rb -s liquid_ruby  # Run only liquid_ruby specs
+          liquid-spec init                              # Creates liquid_adapter.rb
+          liquid-spec run adapter.rb                    # Run all specs
+          liquid-spec run adapter.rb -n for             # Run specs matching 'for'
+          liquid-spec inspect adapter.rb -n "case.*empty"  # Inspect failing spec
+          liquid-spec eval adapter.rb -l "{{ 'hi' | upcase }}"  # Quick test
 
-        Options for 'run':
-          -n, --name PATTERN    Only run specs matching PATTERN
-          -s, --suite SUITE     Spec suite: all, liquid_ruby, dawn (default: all)
-          -v, --verbose         Show verbose output
-          -h, --help            Show help for command
+        Run 'liquid-spec <command> --help' for command-specific help.
 
       HELP
 
@@ -40,6 +40,10 @@ module Liquid
           Init.run(args)
         when "run"
           Runner.run(args)
+        when "inspect"
+          Inspect.run(args)
+        when "eval"
+          Eval.run(args)
         when "help", "-h", "--help", nil
           puts HELP
         else

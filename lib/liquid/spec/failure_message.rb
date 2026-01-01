@@ -36,6 +36,8 @@ module Liquid
         }.map { |k, v| "#{k}: #{v.nil? ? @pastel.dim(v.inspect) : @pastel.bold.blue(v)}" }.join("\n")
         sections << render_kv(content: config, name: "Config")
         sections << render_kv(content: spec.message, name: "Message") if spec.message
+        effective_hint = spec.respond_to?(:effective_hint) ? spec.effective_hint : spec.hint
+        sections << render_kv(content: effective_hint, name: "Hint", color: :yellow) if effective_hint
         sections << render_kv(content: rerun_command, name: "Rerun command")
         @context&.exception_renderer&.rendered_exceptions&.each_with_index do |exception, i|
           sections << render_exception(exception, title: "Handled exception #{i}", color: :yellow, border: nil)

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rake"
-require "rake/testtask"
 require_relative("tasks/helpers")
 
 import("tasks/liquid_ruby.rake")
@@ -9,10 +8,10 @@ import("tasks/standard_filters.rake")
 
 task default: :test
 
-Rake::TestTask.new(:test) do |t|
-  t.libs << FileList["lib", "test"]
-  t.pattern = "test/liquid_ruby_test.rb"
-  t.verbose = false
+desc "Run liquid-spec tests using the CLI runner"
+task :test do
+  require_relative "lib/liquid/spec/cli"
+  Liquid::Spec::CLI.run(["run", "examples/liquid_ruby.rb"])
 end
 
 desc "Generate spec tests from Shopify/liquid"

@@ -10,6 +10,7 @@
 require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do
+  require "active_support/all"
   require "liquid"
 
   # Disable liquid-c if present
@@ -32,7 +33,8 @@ LiquidSpec.render do |template, ctx|
     registers: Liquid::Registers.new(ctx.registers),
     rethrow_errors: ctx.rethrow_errors?,
   )
-  liquid_ctx.exception_renderer = ctx.exception_renderer
+  # Only set exception_renderer if provided (otherwise keep default)
+  liquid_ctx.exception_renderer = ctx.exception_renderer if ctx.exception_renderer
 
   template.render(liquid_ctx)
 end

@@ -5,6 +5,7 @@ require "liquid/spec/source"
 require "liquid/spec/yaml_source"
 require "liquid/spec/text_source"
 require "liquid/spec/liquid_source"
+require "liquid/spec/suite"
 require "liquid/spec/test_generator"
 require "liquid/spec/environment_dumper"
 require "liquid/spec/section_rendering_spec_generator"
@@ -16,6 +17,7 @@ module Liquid
   module Spec
     NotImplementedError = Class.new(StandardError)
 
+    # Legacy: SPEC_FILES glob for backward compatibility
     SPEC_FILES = File.join(
       __dir__,
       "..",
@@ -34,9 +36,12 @@ module Liquid
       "template.liquid",
     )
 
+    # Legacy: all_sources for backward compatibility
+    # Prefer using Suite.all for new code
     def self.all_sources
       Dir[SPEC_FILES]
         .reject { |path| File.basename(path) == "environment.yml" }
+        .reject { |path| File.basename(path) == "suite.yml" }
         .map { |path| Liquid::Spec::Source.for(path) }
     end
 
