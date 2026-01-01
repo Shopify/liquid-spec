@@ -41,10 +41,9 @@ module LiquidSpec
 
     def initialize(spec_context)
       # Deep copy environment to avoid mutation
+      # Skip deep copy for recursive structures (they'll cause stack overflow)
       env = spec_context[:environment] || {}
-      # Use deep_dup if available (ActiveSupport), otherwise Marshal
-      # Marshal fails with TestDrops objects due to module lookup issues
-      @environment = env.respond_to?(:deep_dup) ? env.deep_dup : Marshal.load(Marshal.dump(env))
+      @environment = safe_deep_copy(env)
 
       @file_system = spec_context[:file_system]
       @exception_renderer = spec_context[:exception_renderer]
@@ -65,6 +64,29 @@ module LiquidSpec
     # Should errors be rethrown or rendered inline?
     def rethrow_errors?
       !@render_errors
+    end
+
+    private
+
+    def safe_deep_copy(obj, seen = {}.compare_by_identity)
+      return seen[obj] if seen.key?(obj)
+
+      case obj
+      when Hash
+        # Preserve the original class (for custom Hash subclasses like HashWithCustomToS)
+        copy = obj.class.new
+        seen[obj] = copy
+        obj.each { |k, v| copy[safe_deep_copy(k, seen)] = safe_deep_copy(v, seen) }
+        copy
+      when Array
+        copy = []
+        seen[obj] = copy
+        obj.each { |v| copy << safe_deep_copy(v, seen) }
+        copy
+      else
+        # Immutable or not worth copying (strings, numbers, symbols, drops, etc.)
+        obj
+      end
     end
   end
 

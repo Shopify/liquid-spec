@@ -24,7 +24,7 @@ module Liquid
             -l, --list            List available specs without running
             --list-suites         List available suites
             --max-failures N      Stop after N failures (default: #{MAX_FAILURES_DEFAULT})
-            --no-max-failures     Run all specs regardless of failures
+            --no-max-failures     Run all specs regardless of failures (not recommended)
             -h, --help            Show this help
 
           Examples:
