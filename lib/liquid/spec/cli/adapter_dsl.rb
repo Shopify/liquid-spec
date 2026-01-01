@@ -1,21 +1,41 @@
 # frozen_string_literal: true
 
 module LiquidSpec
+  # Standard features that can be declared by adapters
+  # Suites require specific features to run
+  FEATURES = {
+    # Core Liquid parsing and rendering (always enabled by default)
+    core: "Basic Liquid template parsing and rendering",
+
+    # Lax error mode - tolerates invalid syntax (deprecated backwards-compat mode)
+    lax_parsing: "Supports error_mode: :lax for lenient parsing",
+
+    # Shopify-specific extensions
+    shopify_tags: "Shopify-specific tags (schema, style, section, etc.)",
+    shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
+    shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
+  }.freeze
+
   class Configuration
-    attr_accessor :suite, :filter, :verbose, :strict_only, :features
+    attr_accessor :suite, :filter, :verbose, :strict_only
+    attr_reader :features
 
-    # Default suite when not specified via CLI (defaults to :liquid_ruby)
-    DEFAULT_SUITE = :liquid_ruby
-
-    # Default features that most Liquid implementations support
-    DEFAULT_FEATURES = [:core].freeze
+    # Default suite - :all runs all suites the adapter supports
+    DEFAULT_SUITE = :all
 
     def initialize
       @suite = DEFAULT_SUITE
       @filter = nil
       @verbose = false
       @strict_only = false
-      @features = DEFAULT_FEATURES.dup
+      @features = [:core] # Core is always enabled by default
+    end
+
+    # Set the features this adapter implements
+    def features=(list)
+      @features = Array(list).map(&:to_sym)
+      # Core is always included
+      @features << :core unless @features.include?(:core)
     end
 
     # Check if a feature is supported

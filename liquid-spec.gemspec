@@ -15,7 +15,6 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0"
 
-  spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
 
   spec.files = Dir.chdir(__dir__) do
@@ -28,9 +27,8 @@ Gem::Specification.new do |spec|
   spec.executables = ["liquid-spec"]
 
   # No runtime dependencies on liquid - the adapter provides it
-  spec.add_dependency("super_diff", "~> 0.12.1")
-  spec.add_dependency("timecop")
-  spec.add_dependency("tty-box")
+  spec.add_dependency("super_diff", "~> 0.18")
+  spec.add_dependency("timecop", "~> 0.9")
 
   spec.require_paths = ["lib"]
 end

@@ -19,7 +19,6 @@ module Liquid
           Options:
             -n, --name PATTERN    Only run specs matching PATTERN
             -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
-            --strict              Only run specs with error_mode: strict (or no error_mode)
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
             --list-suites         List available suites
@@ -31,7 +30,6 @@ module Liquid
             liquid-spec run my_adapter.rb
             liquid-spec run my_adapter.rb -n assign
             liquid-spec run my_adapter.rb -s liquid_ruby -v
-            liquid-spec run my_adapter.rb --strict
             liquid-spec run my_adapter.rb --no-max-failures
             liquid-spec run my_adapter.rb --list-suites
 
@@ -179,64 +177,91 @@ module Liquid
             return
           end
 
-          # Show which suite is being run
-          active_suite = config.suite
-          available_suites = Liquid::Spec::Suite.all.map(&:id)
+          # Show what we're running
+          features = config.features
 
-          puts "Suite: #{active_suite}"
-          puts "Features: #{config.features.join(", ")}"
-          puts "Mode: strict only" if config.strict_only
-          if active_suite != :all
-            other_suites = available_suites - [active_suite]
-            puts "  (other available: #{other_suites.join(", ")})"
-          end
-          puts ""
-          puts "Running #{specs.size} specs..."
+          puts "Features: #{features.join(", ")}"
           puts ""
 
-          passed = 0
-          failed = 0
-          errors = 0
-          failures = []
+          # Collect suites to run
+          suites_to_run = Liquid::Spec::Suite.all.select { |s| s.default? && s.runnable_with?(features) }
+          skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
+
+          total_passed = 0
+          total_failed = 0
+          total_errors = 0
+          all_failures = []
           max_failures = options[:max_failures]
           stopped_early = false
 
-          specs.each do |spec|
-            result = run_single_spec(spec, config)
+          # Run each suite with its own header
+          suites_to_run.each do |suite|
+            break if stopped_early
 
-            case result[:status]
-            when :pass
-              passed += 1
-              print(".") unless config.verbose
-              puts "PASS: #{spec.name}" if config.verbose
-            when :fail
-              failed += 1
-              print("F") unless config.verbose
-              puts "FAIL: #{spec.name}" if config.verbose
-              failures << { spec: spec, result: result }
-            when :error
-              errors += 1
-              print("E") unless config.verbose
-              puts "ERROR: #{spec.name}" if config.verbose
-              failures << { spec: spec, result: result }
+            suite_specs = suite.specs
+            suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+
+            next if suite_specs.empty?
+
+            suite_name_padded = "#{suite.name} ".ljust(40, ".")
+            print("#{suite_name_padded} ")
+            $stdout.flush
+
+            passed = 0
+            failed = 0
+            errors = 0
+
+            suite_specs.each do |spec|
+              result = run_single_spec(spec, config)
+
+              case result[:status]
+              when :pass
+                passed += 1
+              when :fail
+                failed += 1
+                all_failures << { spec: spec, result: result }
+              when :error
+                errors += 1
+                all_failures << { spec: spec, result: result }
+              end
+
+              if max_failures && (total_failed + total_errors + failed + errors) >= max_failures
+                stopped_early = true
+                break
+              end
             end
 
-            if max_failures && (failed + errors) >= max_failures
-              stopped_early = true
-              break
+            # Show result
+            if failed + errors == 0
+              puts "#{passed}/#{suite_specs.size} passed"
+            else
+              puts "#{passed}/#{suite_specs.size} passed, #{failed} failed, #{errors} errors"
             end
+
+            total_passed += passed
+            total_failed += failed
+            total_errors += errors
           end
 
-          puts "" unless config.verbose
+          # Show skipped suites
+          skipped_suites.each do |suite|
+            missing = suite.missing_features(features)
+            suite_name_padded = "#{suite.name} ".ljust(40, ".")
+            puts "#{suite_name_padded} skipped (needs #{missing.join(", ")})"
+          end
+
           puts ""
 
           if stopped_early
-            puts "Stopped after #{max_failures} failures (#{passed} passed so far)"
+            puts "Stopped after #{max_failures} failures (#{total_passed} passed so far)"
             puts "Run with --no-max-failures to see all failures"
             puts ""
           else
-            puts "#{passed} passed, #{failed} failed, #{errors} errors"
+            puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors"
           end
+
+          # Use all_failures for the failure report
+          failures = all_failures
 
           if failures.any?
             puts ""

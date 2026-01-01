@@ -20,7 +20,11 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  config.suite = :liquid_ruby
+  # Declare which features this Liquid implementation supports
+  config.features = [
+    :core,        # Basic Liquid parsing and rendering
+    :lax_parsing, # Supports error_mode: :lax
+  ]
 end
 
 LiquidSpec.compile do |source, options|

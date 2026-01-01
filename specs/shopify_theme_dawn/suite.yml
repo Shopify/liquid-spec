@@ -5,8 +5,8 @@
 name: "Shopify Theme Dawn"
 description: "Real-world Liquid templates from Shopify's Dawn starter theme"
 
-# NOT included in default runs - requires Shopify-specific tags
-default: false
+# Included in default runs, but skipped if adapter doesn't implement shopify features
+default: true
 
 hint: |
   These specs require Shopify-specific Liquid tags and objects that are not part

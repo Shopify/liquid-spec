@@ -2,15 +2,22 @@
 
 require "super_diff"
 require "pp"
-require "tty-box"
 
 module Liquid
   module Spec
     class FailureMessage
       attr_reader :spec, :actual, :width
 
+      def self.color_enabled?
+        !ENV["NO_COLOR"]
+      end
+
+      SuperDiff.configure do |config|
+        config.color_enabled = color_enabled?
+      end
+
       def initialize(spec, actual, width: nil, exception: nil, run_command: nil, test_name: nil, context: nil, message: nil)
-        @pastel = Pastel.new
+        @pastel = Pastel.new(enabled: self.class.color_enabled?)
         @spec = spec
         @actual = actual
         @width = width
@@ -97,13 +104,38 @@ module Liquid
       end
 
       def render_box(name:, content:, padding: [0, 1], bottom_right: nil, color: :cyan, border: :light)
-        if name
-          name = @pastel.send(color, name)
-          name = " #{name} "
+        title = name ? @pastel.send(color, name) : nil
+        footer = bottom_right ? @pastel.bold(bottom_right) : nil
+
+        lines = content.lines.map(&:chomp)
+        content_width = lines.map { |l| strip_ansi(l).length }.max || 0
+        title_width = title ? strip_ansi(title).length + 4 : 0
+        footer_width = footer ? strip_ansi(footer).length + 4 : 0
+        box_width = [content_width + 4, title_width + 4, footer_width + 4].max
+
+        top = if title
+          "┌─ #{title} " + "─" * [0, box_width - strip_ansi(title).length - 5].max + "┐"
+        else
+          "┌" + "─" * (box_width - 2) + "┐"
         end
-        bottom_right = @pastel.bold(bottom_right) if bottom_right
-        bottom_right = " #{bottom_right} " if bottom_right
-        TTY::Box.frame(content, padding: padding, align: :left, title: { top_left: name, bottom_right: }, border:)
+
+        middle = lines.map do |line|
+          visible_len = strip_ansi(line).length
+          pad = " " * [0, box_width - visible_len - 4].max
+          "│ #{line}#{pad} │"
+        end.join("\n")
+
+        bottom = if footer
+          "└" + "─" * [0, box_width - strip_ansi(footer).length - 5].max + " #{footer} ─┘"
+        else
+          "└" + "─" * (box_width - 2) + "┘"
+        end
+
+        "#{top}\n#{middle}\n#{bottom}"
+      end
+
+      def strip_ansi(str)
+        str.gsub(/\e\[[0-9;]*m/, "")
       end
 
       def filter_backtrace(exception)

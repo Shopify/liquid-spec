@@ -1,21 +1,15 @@
 ---
-# Liquid Ruby Core Specs
-# Extracted from the Shopify/liquid test suite
-
 name: "Liquid Ruby"
-description: "Core Liquid template engine behavior extracted from Shopify/liquid integration tests"
+description: "Core Liquid template engine behavior from Shopify/liquid"
 
-# Included in default runs
 default: true
 
 hint: |
   These specs test core Liquid functionality from the reference implementation.
   Failures indicate missing or incorrect Liquid behavior.
 
-# Required features for this suite
 required_features:
   - core
 
-# Default options applied to all specs (can be overridden per-file or per-spec)
 defaults:
   render_errors: false
