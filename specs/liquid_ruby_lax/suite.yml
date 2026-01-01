@@ -1,0 +1,24 @@
+---
+# Liquid Ruby Lax Mode Specs
+# Specs that require error_mode: :lax to parse invalid/quirky syntax
+
+name: "Liquid Ruby (Lax Mode)"
+description: "Specs that test lax parsing mode behavior - invalid syntax that lax mode tolerates"
+
+# Included in default runs - lax mode is Liquid's default
+default: true
+
+hint: |
+  These specs require error_mode: :lax to pass.
+  Lax mode is a deprecated backwards-compatible parsing mode that tolerates invalid syntax.
+  It exists for legacy Shopify templates but can be safely ignored by new implementations.
+  If running in strict mode, these specs will fail with syntax errors.
+
+# Required features for this suite
+required_features:
+  - core
+
+# Default options - force lax mode for all specs
+defaults:
+  error_mode: :lax
+  render_errors: false

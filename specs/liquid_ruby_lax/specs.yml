@@ -1,9 +1,4 @@
 ---
-_metadata:
-  hint: "These specs require error_mode: :lax to parse invalid syntax gracefully"
-  required_options:
-    error_mode: :lax
-specs:
 - name: AssignTest#test_assign_uses_error_mode_2aa5686f
   template: "{% assign foo = ('X' | downcase) %}"
   render_errors: false
