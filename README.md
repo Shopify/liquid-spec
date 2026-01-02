@@ -84,21 +84,22 @@ end
 
 # Parse template source into a template object
 LiquidSpec.compile do |source, options|
+  # options includes: :line_numbers, :error_mode
   MyLiquid::Template.parse(source, **options)
 end
 
-# Render a compiled template with test context
-LiquidSpec.render do |template, ctx|
-  template.render(ctx.environment)
+# Render a compiled template
+LiquidSpec.render do |template, assigns, options|
+  # assigns = variables hash
+  # options includes: :registers, :strict_errors, :exception_renderer
+  template.render(assigns, **options)
 end
 ```
 
-The `ctx` object in render provides:
-- `ctx.environment` - Variables to render with (Hash)
-- `ctx.file_system` - For `{% include %}` and `{% render %}` tags
-- `ctx.error_mode` - `:lax` or `:strict`
-- `ctx.registers` - Implementation-specific data
-- `ctx.rethrow_errors?` - Whether to raise or capture errors
+The `options` hash in render includes:
+- `:registers` - Hash with `:file_system` and `:template_factory`
+- `:strict_errors` - If true, raise errors; if false, render them inline
+- `:exception_renderer` - Custom exception handler (optional)
 
 ## Test Suites
 
