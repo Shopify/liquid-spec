@@ -105,9 +105,32 @@ The `options` hash in render includes:
 
 | Suite | Tests | Description |
 |-------|-------|-------------|
+| **basics** | 183 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
 | **liquid_ruby** | ~1,700 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **shopify_production_recordings** | ~3,000 | Recorded behavior from Shopify's production Liquid compiler |
 | **shopify_theme_dawn** | 26 | Real-world templates from [Shopify Dawn](https://github.com/Shopify/dawn) theme |
+
+### The Basics Suite
+
+If you're building a new Liquid implementation, **start with the basics suite**. It runs first and covers all fundamental features from the [official Liquid documentation](https://shopify.github.io/liquid/).
+
+Specs are ordered by complexity so you can implement features progressively:
+
+| Complexity | Features |
+|------------|----------|
+| 10-20 | Raw text output, string/number/boolean literals |
+| 30-40 | Variables, basic filters (upcase, size, default) |
+| 50-60 | Assign tag, simple if/else conditionals |
+| 70-80 | For loops, filter chains, comparison operators |
+| 85-90 | Math filters, forloop object, capture tag |
+| 100-110 | Case/when, elsif, string manipulation filters |
+| 115-130 | Increment/decrement, comments, echo, liquid tag |
+| 140-150 | Array filters, property access (dot/bracket notation) |
+| 170-180 | Truthy/falsy edge cases, cycle, tablerow |
+
+Each spec includes a detailed `hint` explaining how the feature should be implemented.
+
+### Feature-Based Suite Selection
 
 Suites run based on feature declarations:
 
@@ -158,12 +181,13 @@ $ liquid-spec examples/liquid_ruby.rb
 
 Features: core, lax_parsing
 
+Basics ................................. 183/183 passed
 Liquid Ruby ............................ 1683/1683 passed
 Liquid Ruby (Lax Mode) ................. 6/6 passed
 Shopify Production Recordings .......... 2338/2338 passed
 Shopify Theme Dawn ..................... skipped (needs shopify_tags, shopify_objects, shopify_filters)
 
-Total: 4027 passed, 0 failed, 0 errors
+Total: 4210 passed, 0 failed, 0 errors
 ```
 
 ## Example Adapters
@@ -188,12 +212,17 @@ Specs are YAML files with this structure:
   environment:
     values: "foo,bar,baz"
   expected: "bar"
+  complexity: 50
+  hint: |
+    The assign tag creates a variable. Filters can be used in the expression.
 ```
 
 Each spec defines:
 - **template** - Liquid source to compile and render
 - **environment** - Variables available during rendering
 - **expected** - Expected output string
+- **complexity** - Optional: ordering hint (lower = simpler, runs first)
+- **hint** - Optional: implementation guidance for this feature
 - **error_mode** - Optional: `:lax` or `:strict`
 - **filesystem** - Optional: mock files for include/render tags
 
