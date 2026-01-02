@@ -40,3 +40,56 @@
   render_errors: false
   expected: bar
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L201
+
+# Unknown operator tests - these rely on lax-mode's "blank tag swallows error" behavior
+# In strict mode, {% if true true %} is a syntax error at parse time
+- name: Conditional tag returns false when the operator is unknown
+  template: "{% if a true %}{% endif %}"
+  expected: ""
+  hint: |
+    Lax mode quirk: unknown operators in conditions with empty bodies don't render errors.
+    In strict mode this would be a parse error.
+
+- name: Ignore unknown operators when the tags body is empty
+  template: "{% if true true %}{% endif %}"
+  expected: ""
+  hint: |
+    Lax mode quirk: blank tag bodies swallow render errors.
+    In strict mode {% if true true %} is a syntax error.
+
+- name: Does not ignore unknown operators when the tags body is empty but there is an else
+  template: "{% if true true %}{% else %}1{% endif %}"
+  expected: "Liquid error (line 1): Unknown operator true"
+  hint: |
+    Even in lax mode, errors are shown when there's an else block with content.
+
+- name: Does not output error when unknown operators are used in elsif but if is true
+  template: "{% if true %}a{% elsif true true %}b{% endif %}"
+  expected: "a"
+  hint: |
+    Lax mode quirk: short-circuit evaluation means the invalid elsif is never evaluated.
+
+- name: Correct error when unknown operators are used in elsif and if is false
+  template: |-
+    {% if false %}
+      a
+    {% elsif true true %}
+      b
+    {% endif %}
+  expected: "Liquid error (line 1): Unknown operator true"
+  hint: |
+    When the if branch is false, the elsif is evaluated and the error is shown.
+
+- name: Unsupported operators render an error
+  template: "{% if 0 = 0 %}NOPE{% endif %}"
+  expected: "Liquid error (line 1): Unknown operator ="
+  hint: |
+    The = operator is not valid in conditions (use ==). Shows error because body has content.
+
+- name: Does not output error when short circuit evaluation avoids using the unknown operator
+  template: "{% if dynamic and true true %}a{% else %}b{% endif %}"
+  environment:
+    dynamic: false
+  expected: "b"
+  hint: |
+    Lax mode quirk: short-circuit 'and' with false left side skips evaluating the invalid right side.

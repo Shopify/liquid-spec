@@ -165,10 +165,6 @@
   template: "{% for i in (0..1) %}{% tablerow a in b %}{{ a }}{% endtablerow %}{{ i }}{% endfor %}"
   expected: "01"
 
-- name: Conditional tag returns false when the operator is unknown
-  template: "{% if a true %}{% endif %}"
-  expected: ""
-
 - name: Comparing empty and blank resolves to false
   template: "{% if blank == empty %}NOPE{% endif %}"
   expected: ""
@@ -180,31 +176,6 @@
 - name: Comparing blank and blank resolves to false
   template: "{% if blank == blank %}NOPE{% endif %}"
   expected: ""
-
-- name: Ignore unknown operators when the tags body is empty
-  template: "{% if true true %}{% endif %}"
-  expected: ""
-
-- name: Does not ignore unknown operators when the tags body is empty but there is an else
-  template: "{% if true true %}{% else %}1{% endif %}"
-  expected: "Liquid error (line 1): Unknown operator true"
-
-- name: Does not output error when unknown operators are used in elsif but if is true
-  template: "{% if true %}a{% elsif true true %}b{% endif %}"
-  expected: "a"
-
-- name: Correct error when unknown operators are used in elsif and if is false
-  template: |-
-    {% if false %}
-      a
-    {% elsif true true %}
-      b
-    {% endif %}
-  expected: "Liquid error (line 1): Unknown operator true"
-
-- name: Unsupported operators render an error
-  template: "{% if 0 = 0 %}NOPE{% endif %}"
-  expected: "Liquid error (line 1): Unknown operator ="
 
 - name: Reading a variable before assigning it in a local scope
   environment:
@@ -223,12 +194,6 @@
     x: "\vGround\tcontrol\nto\rMajor\nTom."
   template: "{{ x | truncatewords: 3}}"
   expected: "Ground control to..."
-
-- name: Does not output error when short circuit evaluation avoids using the unknown operator
-  template: "{% if dynamic and true true %}a{% else %}b{% endif %}"
-  environment:
-    dynamic: false
-  expected: "b"
 
 - name: Tablerow renders empty string when collection is false
   template: "{% tablerow a in collection %}{{ a }}{% endtablerow %}"
