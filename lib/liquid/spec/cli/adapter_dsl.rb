@@ -17,18 +17,21 @@ module LiquidSpec
   }.freeze
 
   class Configuration
+    # CLI-controlled options
     attr_accessor :suite, :filter, :verbose, :strict_only
+
+    # Adapter-declared features
     attr_reader :features
 
-    # Default suite - :all runs all suites the adapter supports
-    DEFAULT_SUITE = :all
-
     def initialize
-      @suite = DEFAULT_SUITE
+      # CLI defaults
+      @suite = :all
       @filter = nil
       @verbose = false
       @strict_only = false
-      @features = [:core] # Core is always enabled by default
+
+      # Adapter defaults
+      @features = [:core]
     end
 
     # Set the features this adapter implements
