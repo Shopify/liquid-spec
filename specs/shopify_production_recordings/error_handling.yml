@@ -1,0 +1,39 @@
+---
+# Specs that test Shopify-specific error handling behavior
+# These require the shopify_error_handling feature
+
+- name: RecordedTest#test_subcontext_enter_fails_and_leaves_runtime_in_good_state_ec4f06d3a
+  required_features:
+    - shopify_error_handling
+  expected: |2+
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+      Liquid error (line 2): internal
+
+  template: |
+    {% for x in (1..10) %}
+      {% render 'foo' %}
+    {% endfor %}
+  environment: {}
+  filesystem:
+    foo: foo
+  context_klass: !context_klass_with_raising_subcontext
+  exception_renderer: !stub_exception_renderer
+    raise_internal_errors:

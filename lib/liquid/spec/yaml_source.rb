@@ -58,6 +58,7 @@ module Liquid
             source_hint: effective_hint,
             source_required_options: effective_defaults,
             complexity: data["complexity"],
+            required_features: data["required_features"] || [],
           )
         end
       end
