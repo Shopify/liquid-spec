@@ -53,7 +53,7 @@ module Liquid
           else
             $stderr.puts "Unknown command: #{command}"
             $stderr.puts "Run 'liquid-spec help' for usage"
-            exit 1
+            exit(1)
           end
         end
       end

@@ -47,18 +47,18 @@ module Liquid
           unless options[:liquid] || options[:spec_file]
             $stderr.puts "Error: --liquid TEMPLATE or --spec FILE is required"
             $stderr.puts "Run 'liquid-spec eval --help' for usage"
-            exit 1
+            exit(1)
           end
 
           unless File.exist?(adapter_file)
             $stderr.puts "Error: Adapter file not found: #{adapter_file}"
-            exit 1
+            exit(1)
           end
 
           # Load the adapter
           LiquidSpec.reset!
           LiquidSpec.running_from_cli!
-          load File.expand_path(adapter_file)
+          load(File.expand_path(adapter_file))
 
           run_eval(options)
         end
@@ -72,21 +72,21 @@ module Liquid
             when "-l", "--liquid"
               options[:liquid] = args.shift
             when /\A--liquid=(.+)\z/
-              options[:liquid] = $1
+              options[:liquid] = ::Regexp.last_match(1)
             when "-s", "--spec"
               options[:spec_file] = args.shift
             when /\A--spec=(.+)\z/
-              options[:spec_file] = $1
+              options[:spec_file] = ::Regexp.last_match(1)
             when "-e", "--expected"
               options[:expected] = args.shift
             when /\A--expected=(.+)\z/
-              options[:expected] = $1
+              options[:expected] = ::Regexp.last_match(1)
             when "-a", "--assigns"
               require "json"
               options[:assigns] = JSON.parse(args.shift)
             when /\A--assigns=(.+)\z/
               require "json"
-              options[:assigns] = JSON.parse($1)
+              options[:assigns] = JSON.parse(::Regexp.last_match(1))
             when "-v", "--verbose"
               options[:verbose] = true
             end
@@ -152,13 +152,13 @@ module Liquid
                 puts "\nSTATUS: PASS"
               else
                 puts "\nSTATUS: FAIL"
-                exit 1
+                exit(1)
               end
             end
           rescue => e
             puts "\nERROR: #{e.class}: #{e.message}"
             puts e.backtrace.first(10).join("\n") if verbose
-            exit 1
+            exit(1)
           end
         end
 
@@ -168,10 +168,10 @@ module Liquid
           spec_file = options[:spec_file]
           unless File.exist?(spec_file)
             $stderr.puts "Error: Spec file not found: #{spec_file}"
-            exit 1
+            exit(1)
           end
 
-          spec = YAML.safe_load(File.read(spec_file), permitted_classes: [Symbol])
+          spec = YAML.safe_load_file(spec_file, permitted_classes: [Symbol])
 
           options[:liquid] = spec["template"] || spec[:template]
           options[:expected] = spec["expected"] || spec[:expected] if spec.key?("expected") || spec.key?(:expected)
@@ -179,7 +179,7 @@ module Liquid
 
           unless options[:liquid]
             $stderr.puts "Error: Spec file must contain 'template' key"
-            exit 1
+            exit(1)
           end
         end
       end

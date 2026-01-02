@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "English"
 module LiquidSpec
   # Standard features that can be declared by adapters
   # Suites require specific features to run
@@ -119,7 +120,7 @@ end
 # When an adapter file is run directly (not through liquid-spec CLI),
 # show a helpful message
 at_exit do
-  unless LiquidSpec.running_from_cli? || $!
+  unless LiquidSpec.running_from_cli? || $ERROR_INFO
     if LiquidSpec.compile_block || LiquidSpec.render_block
       adapter_file = $PROGRAM_NAME
       $stderr.puts <<~MSG

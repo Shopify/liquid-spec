@@ -330,8 +330,8 @@ module Liquid
             error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
           }.compact
 
-          template = begin
-            LiquidSpec.do_compile(spec.template, compile_options)
+          begin
+            template = LiquidSpec.do_compile(spec.template, compile_options)
           rescue Liquid::SyntaxError => e
             # If render_errors is true, treat compile errors as rendered output
             if render_errors
@@ -358,8 +358,8 @@ module Liquid
 
           actual = LiquidSpec.do_render(template, assigns, render_options)
           compare_result(actual, spec.expected)
-        rescue Exception => e
-          # Catch all exceptions including SyntaxError
+        rescue StandardError => e
+          # Catch standard errors (not SystemExit, Interrupt, etc.)
           { status: :error, expected: spec.expected, actual: nil, error: e }
         end
 

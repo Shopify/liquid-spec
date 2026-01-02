@@ -157,7 +157,6 @@ end
 class HashWithoutCustomToS < Hash
 end
 
-
 class StringDrop < Liquid::Drop
   include Comparable
 

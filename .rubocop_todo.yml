@@ -12,14 +12,11 @@ Lint/MissingSuper:
   Exclude:
     - 'lib/liquid/spec/deps/liquid_ruby.rb'
 
-# Offense count: 4
-# This cop supports safe autocorrection (--autocorrect).
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: def_self, self_class
+# Using def self.method style for consistency with existing code
 Style/ClassMethodsDefinitions:
-  Exclude:
-    - 'lib/liquid/spec.rb'
-    - 'lib/liquid/spec/assertions.rb'
+  Enabled: false
 
 # Offense count: 3
 # This cop supports safe autocorrection (--autocorrect).

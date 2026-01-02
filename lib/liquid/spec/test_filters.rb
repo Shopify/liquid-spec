@@ -162,7 +162,7 @@ module LiquidHelper
       raise "Error"
     end
 
-    def is_html_safe_in_ruby(text)
+    def html_safe_in_ruby?(text)
       text.html_safe?
     end
 

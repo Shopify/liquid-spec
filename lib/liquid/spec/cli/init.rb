@@ -4,11 +4,11 @@ module Liquid
   module Spec
     module CLI
       module Init
-        TEMPLATE = <<~'RUBY'
+        TEMPLATE = <<~RUBY
           # frozen_string_literal: true
 
           # Liquid Spec Adapter
-          # 
+          ##{" "}
           # This file defines how your Liquid implementation compiles and renders templates.
           # Implement the two methods below to test your implementation against the spec.
           #
@@ -64,7 +64,7 @@ module Liquid
           end
         RUBY
 
-        LIQUID_RUBY_TEMPLATE = <<~'RUBY'
+        LIQUID_RUBY_TEMPLATE = <<~RUBY
           # frozen_string_literal: true
 
           # Liquid Spec Adapter for Shopify/liquid
@@ -103,7 +103,7 @@ module Liquid
           if File.exist?(filename)
             $stderr.puts "Error: #{filename} already exists"
             $stderr.puts "Delete it first or choose a different name"
-            exit 1
+            exit(1)
           end
 
           template = case template_type

@@ -44,18 +44,18 @@ module Liquid
           unless options[:filter]
             $stderr.puts "Error: -n PATTERN is required for inspect"
             $stderr.puts "Run 'liquid-spec inspect --help' for usage"
-            exit 1
+            exit(1)
           end
 
           unless File.exist?(adapter_file)
             $stderr.puts "Error: Adapter file not found: #{adapter_file}"
-            exit 1
+            exit(1)
           end
 
           # Load the adapter
           LiquidSpec.reset!
           LiquidSpec.running_from_cli!
-          load File.expand_path(adapter_file)
+          load(File.expand_path(adapter_file))
 
           config = LiquidSpec.config || LiquidSpec.configure
           config.suite = options[:suite] if options[:suite]
@@ -75,11 +75,11 @@ module Liquid
               pattern = args.shift
               options[:filter] = Regexp.new(pattern, Regexp::IGNORECASE)
             when /\A--name=(.+)\z/, /\A-n(.+)\z/
-              options[:filter] = Regexp.new($1, Regexp::IGNORECASE)
+              options[:filter] = Regexp.new(::Regexp.last_match(1), Regexp::IGNORECASE)
             when "-s", "--suite"
               options[:suite] = args.shift.to_sym
             when /\A--suite=(.+)\z/
-              options[:suite] = $1.to_sym
+              options[:suite] = ::Regexp.last_match(1).to_sym
             when "--strict"
               options[:strict_only] = true
             end
@@ -125,7 +125,7 @@ module Liquid
 
           if spec.environment && !spec.environment.empty?
             puts "\nENVIRONMENT:"
-            pp spec.environment
+            pp(spec.environment)
           end
 
           if spec.filesystem && !spec.filesystem.empty?
@@ -230,7 +230,9 @@ module Liquid
           when :dawn
             dawn_path = File.join(Liquid::Spec::SPEC_FILES.sub("**/*{.yml,.txt}", ""), "dawn", "*")
             Dir[dawn_path].select { |p| File.directory?(p) }.flat_map do |path|
-              Liquid::Spec::Source.for(path).to_a rescue []
+              Liquid::Spec::Source.for(path).to_a
+            rescue
+              []
             end
           else
             []
