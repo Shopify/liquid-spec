@@ -112,7 +112,7 @@ module Liquid
             suite: :all,
             verbose: false,
             max_failures: MAX_FAILURES_DEFAULT,
-            reference: "liquid_ruby_strict",
+            reference: "liquid_ruby",
           }
 
           while args.any?

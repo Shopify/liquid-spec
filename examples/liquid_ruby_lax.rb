@@ -2,15 +2,14 @@
 # frozen_string_literal: true
 
 #
-# Shopify/liquid adapter with ActiveSupport (strict mode, no liquid-c)
+# Shopify/liquid adapter (lax mode, no liquid-c)
 #
-# Run: liquid-spec examples/liquid_ruby_strict_activesupport.rb
+# Run: liquid-spec examples/liquid_ruby_lax.rb
 #
 
 require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do
-  require "active_support/all"
   require "liquid"
 
   # Disable liquid-c if present
@@ -20,15 +19,15 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :activesupport]
+  config.features = [:core, :lax_parsing]
 end
 
 LiquidSpec.compile do |source, options|
-  # Force strict mode regardless of spec
-  Liquid::Template.parse(source, error_mode: :strict, **options)
+  Liquid::Template.parse(source, **options)
 end
 
 LiquidSpec.render do |template, assigns, options|
+  # Build context with static_environments (read-only assigns that can be shadowed)
   context = Liquid::Context.build(
     static_environments: assigns,
     registers: Liquid::Registers.new(options[:registers] || {}),

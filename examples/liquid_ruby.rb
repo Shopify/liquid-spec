@@ -19,15 +19,15 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :lax_parsing]
+  config.features = [:core]
 end
 
 LiquidSpec.compile do |source, options|
-  Liquid::Template.parse(source, **options)
+  # Force strict mode regardless of spec
+  Liquid::Template.parse(source, error_mode: :strict, **options)
 end
 
 LiquidSpec.render do |template, assigns, options|
-  # Build context with static_environments (read-only assigns that can be shadowed)
   context = Liquid::Context.build(
     static_environments: assigns,
     registers: Liquid::Registers.new(options[:registers] || {}),
