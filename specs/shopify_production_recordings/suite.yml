@@ -12,5 +12,8 @@ hint: |
 required_features:
   - core
 
+# Default complexity for unscored specs in this suite (see COMPLEXITY.md)
+minimum_complexity: 1000
+
 defaults:
   render_errors: false

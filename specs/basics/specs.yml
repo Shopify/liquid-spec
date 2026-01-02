@@ -6,15 +6,7 @@
 # Every Liquid implementation must pass these tests.
 # Specs are ordered by complexity (lower numbers = simpler features).
 #
-# Complexity guide:
-#   10-20: Raw text, literals (no parsing logic)
-#   30-40: Variables, basic filters
-#   50-60: Assign, simple conditionals
-#   70-80: For loops, filter chains
-#   90-100: Complex control flow, capture
-#   110-130: Special tags (increment, comments, liquid)
-#   150-170: Property access, truthy/falsy edge cases
-#   180-200: Advanced features, edge cases
+# See COMPLEXITY.md for the full complexity scoring guide.
 #
 # Reference: https://shopify.github.io/liquid/
 #

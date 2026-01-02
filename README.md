@@ -147,17 +147,19 @@ end
 ## CLI Reference
 
 ```bash
-liquid-spec ADAPTER [options]
+liquid-spec [command] [options]
 
 Commands:
-  liquid-spec ADAPTER              Run specs with adapter
-  liquid-spec init [FILE]          Generate adapter template
+  liquid-spec run ADAPTER          Run specs with adapter
+  liquid-spec test                 Run specs against all bundled example adapters
+  liquid-spec eval ADAPTER         Quick test a template (YAML via stdin)
   liquid-spec inspect ADAPTER      Inspect specific specs (use with -n)
-  liquid-spec eval ADAPTER         Quick test a template expression
+  liquid-spec init [FILE]          Generate adapter template
 
-Options:
+Run Options:
   -n, --name PATTERN       Only run specs matching PATTERN
   -s, --suite SUITE        Run specific suite (liquid_ruby, shopify_production_recordings, etc.)
+  -c, --compare            Compare output against reference liquid-ruby
   -v, --verbose            Show detailed output
   -l, --list               List available specs
   --list-suites            List available test suites
@@ -166,13 +168,48 @@ Options:
   -h, --help               Show help
 
 Examples:
-  liquid-spec my_adapter.rb                    # Run all applicable specs
-  liquid-spec my_adapter.rb -n for_tag         # Run specs matching 'for_tag'
-  liquid-spec my_adapter.rb -s liquid_ruby     # Run only liquid_ruby suite
-  liquid-spec my_adapter.rb --no-max-failures  # See all failures
-  liquid-spec inspect my_adapter.rb -n "case"  # Debug specific specs
-  liquid-spec eval my_adapter.rb -l "{{ 'hi' | upcase }}"  # Quick test
+  liquid-spec run my_adapter.rb                    # Run all applicable specs
+  liquid-spec run my_adapter.rb -n for_tag         # Run specs matching 'for_tag'
+  liquid-spec run my_adapter.rb -s liquid_ruby     # Run only liquid_ruby suite
+  liquid-spec run my_adapter.rb --compare          # Compare against reference
+  liquid-spec run my_adapter.rb --no-max-failures  # See all failures
+  liquid-spec test                                 # Test all bundled adapters
+  liquid-spec inspect my_adapter.rb -n "case"      # Debug specific specs
 ```
+
+### Quick Testing with `eval`
+
+The `eval` command lets you quickly test individual templates. Specs are passed via YAML on stdin, and results are compared against the reference liquid-ruby implementation by default:
+
+```bash
+liquid-spec eval examples/liquid_ruby.rb <<EOF
+name: upcase-test
+complexity: 20
+template: "{{ x | upcase }}"
+expected: "HI"
+environment:
+  x: hi
+hint: "Test upcase filter on simple string variable"
+EOF
+```
+
+Output:
+```
+upcase-test
+Test upcase filter on simple string variable
+
+Template: {{ x | upcase }}
+Complexity: 20
+
+✓ PASS (matches reference)
+  "HI"
+
+Saved to: /tmp/liquid-spec-2026-01-02.yml
+```
+
+When using `--compare` (the default), the `expected` field can be omitted - it will be filled from the reference implementation. If your implementation differs from the reference, you'll see a prominent message encouraging you to contribute the spec.
+
+Specs are automatically saved to `/tmp/liquid-spec-{date}.yml` for easy contribution back to liquid-spec.
 
 ## Example Output
 

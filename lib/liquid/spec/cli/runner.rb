@@ -380,12 +380,7 @@ module Liquid
             suite_specs.each do |spec|
               begin
                 result = compare_single_spec(spec, config)
-              rescue Exception => e # rubocop:disable Lint/RescueException
-                # Using Exception instead of StandardError because Ruby::Box (Ruby 4.0+)
-                # creates isolated copies of exception classes inside the sandbox.
-                # When an exception is raised inside a Box, its class is different from
-                # the outer world's StandardError, so `rescue StandardError` won't catch it.
-                # This is a known limitation of Box isolation.
+              rescue StandardError, Exception => e
                 result = { status: :error, error: e }
               end
 

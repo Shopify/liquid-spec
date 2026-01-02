@@ -26,6 +26,75 @@ task :test do
   ruby("bin/liquid-spec", "examples/liquid_ruby.rb") || abort
 end
 
+desc "Run liquid-spec tests against all available example adapters"
+task :test_all_adapters, [:compare] do |_t, args|
+  compare_mode = args[:compare] == "compare" || ENV["COMPARE"] == "1"
+  adapters = Dir["examples/*.rb"]
+  available = []
+  skipped = []
+
+  adapters.each do |adapter|
+    adapter_name = File.basename(adapter, ".rb")
+
+    # Check if the adapter's dependencies are available
+    case adapter_name
+    when "liquid_c"
+      begin
+        require "liquid/c"
+        available << adapter if defined?(Liquid::C)
+      rescue LoadError
+        skipped << [adapter, "liquid-c gem not installed"]
+      end
+    when "liquid_ruby", "liquid_ruby_strict"
+      begin
+        require "liquid"
+        available << adapter
+      rescue LoadError
+        skipped << [adapter, "liquid gem not installed"]
+      end
+    else
+      # Unknown adapter - try to load and see
+      available << adapter
+    end
+  end
+
+  puts "Testing #{available.size} adapter(s)..."
+  puts ""
+
+  skipped.each do |adapter, reason|
+    puts "SKIP: #{File.basename(adapter)} (#{reason})"
+  end
+  puts "" if skipped.any?
+
+  failed = []
+  available.each do |adapter|
+    puts "=" * 60
+    puts "Testing: #{File.basename(adapter)}"
+    puts "=" * 60
+    puts ""
+
+    cmd = ["ruby", "bin/liquid-spec", adapter]
+    cmd << "--compare" if compare_mode
+    success = system(*cmd)
+    failed << adapter unless success
+
+    puts ""
+  end
+
+  puts "=" * 60
+  puts "Summary"
+  puts "=" * 60
+  puts "Passed: #{available.size - failed.size}/#{available.size}"
+  puts "Skipped: #{skipped.size}" if skipped.any?
+
+  if failed.any?
+    puts ""
+    puts "Failed adapters:"
+    failed.each { |a| puts "  - #{File.basename(a)}" }
+    abort
+  end
+end
+
 # Spec generation tasks (only needed for development)
 import("tasks/liquid_ruby.rake")
 import("tasks/standard_filters.rake")

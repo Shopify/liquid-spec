@@ -200,10 +200,33 @@ hint: |
 required_features:
   - core
 
+# Default complexity for specs without explicit complexity (see COMPLEXITY.md)
+# Specs without complexity default to 1000 unless this is set
+minimum_complexity: 1000
+
 # Default options applied to all specs (can be overridden per-file or per-spec)
 defaults:
   render_errors: false
 ```
+
+### Complexity Scoring
+
+Each spec should have a `complexity` field indicating implementation difficulty. Lower scores = simpler features to implement first. Specs without explicit complexity default to 1000 or the suite's `minimum_complexity`.
+
+| Range | Feature |
+|-------|---------|
+| 10-20 | Literals, raw text output |
+| 30-50 | Variables, filters, assign |
+| 55-60 | Whitespace control, if/else/unless |
+| 70-80 | For loops, operators, filter chains |
+| 85-100 | Math filters, forloop object, capture, case/when |
+| 105-130 | String filters, increment, comment, raw, echo, liquid tag |
+| 140-180 | Array filters, property access, truthy/falsy, cycle, tablerow |
+| 190-220 | Advanced: offset:continue, parentloop, partials |
+| 300-500 | Edge cases, deprecated features |
+| 1000+ | Production recordings, unscored specs (default) |
+
+See [COMPLEXITY.md](COMPLEXITY.md) for the full guide with examples.
 
 ### Available Suites
 
@@ -226,3 +249,126 @@ Common features:
 - `:shopify_tags` - Shopify-specific tags (schema, style, section)
 - `:shopify_objects` - Shopify-specific objects (section, block)
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
+
+## The Eval Tool
+
+The `liquid-spec eval` command is the primary tool for testing individual templates and discovering behavioral differences. **Always use `--compare`** to validate your implementation against the reference liquid-ruby.
+
+### Why Use Eval?
+
+1. **Quick iteration** - Test a single template without running the full suite
+2. **Discover differences** - `--compare` shows exactly where your implementation differs from the reference
+3. **Generate specs** - Results are automatically saved to `/tmp/liquid-spec-{date}.yml` for contribution
+4. **Debug failures** - Understand why a specific template produces unexpected output
+
+### Basic Usage
+
+```bash
+# Quick test with automatic comparison to reference
+liquid-spec eval adapter.rb -n test_name --liquid="{{ 'hello' | upcase }}"
+
+# Test with environment variables
+liquid-spec eval adapter.rb -n test_var -l "{{ x | size }}" -a '{"x": [1,2,3]}'
+
+# Test with expected output (pass/fail check)
+liquid-spec eval adapter.rb -n test_check -l "{{ 5 | plus: 3 }}" -e "8"
+```
+
+### Using --compare (Recommended)
+
+The `--compare` flag runs your template against the reference liquid-ruby implementation first, then compares results. This is the best way to find behavioral differences:
+
+```bash
+# Compare mode (default for inline templates)
+liquid-spec eval adapter.rb -n test_filter --liquid="{{ 'hi' | upcase }}" --compare
+
+# When implementations differ, you'll see:
+# ✗ FAIL
+# Difference: Reference output "HI" but yours produced "Hi"
+```
+
+**When to use --compare:**
+- Testing any new feature implementation
+- Debugging a failing spec
+- Exploring edge cases
+- Generating specs for contribution
+
+### YAML Spec Input
+
+For complex tests, use YAML input via stdin or file:
+
+```bash
+# From stdin (heredoc) - great for multi-line templates
+cat <<EOF | liquid-spec eval adapter.rb --compare
+name: test_for_loop_with_break
+hint: "break should exit the loop immediately"
+complexity: 75
+template: |
+  {% for i in (1..5) %}
+    {% if i == 3 %}{% break %}{% endif %}
+    {{ i }}
+  {% endfor %}
+expected: |
+  
+    1
+  
+    2
+  
+EOF
+
+# From a YAML file
+liquid-spec eval adapter.rb --spec=my_test.yml --compare
+```
+
+### Spec YAML Format
+
+```yaml
+name: test_descriptive_name          # Required: unique identifier
+hint: "Explain what this tests"      # Recommended: helps debug failures
+complexity: 75                       # Recommended: see COMPLEXITY.md
+template: "{{ x | upcase }}"         # Required: the Liquid template
+expected: "HELLO"                    # Optional with --compare: auto-filled from reference
+environment:                         # Optional: variables available to template
+  x: hello
+```
+
+### Auto-Save and Contribution
+
+Every eval run saves results to `/tmp/liquid-spec-{date}.yml`. When a difference is detected, you'll see:
+
+```
+============================================================
+  DIFFERENCE DETECTED
+============================================================
+
+This spec reveals a behavioral difference worth documenting.
+Please contribute it: https://github.com/Shopify/liquid-spec
+```
+
+Review the saved specs and contribute interesting ones to liquid-spec!
+
+### Programmatic API
+
+You can also use eval from Ruby code for automated testing:
+
+```ruby
+require 'liquid/spec/cli/adapter_dsl'
+
+# Run a spec and get results
+LiquidSpec.evaluate("adapter.rb", <<~YAML, compare: true)
+  name: test_upcase_filter
+  hint: "upcase should convert to uppercase"
+  complexity: 40
+  template: "{{ 'hello' | upcase }}"
+  expected: "HELLO"
+YAML
+```
+
+### Tips for Effective Testing
+
+1. **Always name your specs** - Use descriptive names like `test_for_break_in_nested_loop`
+2. **Add hints** - Explain what behavior you're testing and why it matters
+3. **Set complexity** - Helps organize specs by implementation difficulty
+4. **Use --compare first** - Let the reference fill in `expected` before asserting
+5. **Test edge cases** - Empty arrays, nil values, unusual inputs
+6. **Save interesting failures** - Differences reveal implementation gaps worth documenting

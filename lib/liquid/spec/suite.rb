@@ -8,7 +8,7 @@ module Liquid
     class Suite
       SUITE_FILE = "suite.yml"
 
-      attr_reader :path, :name, :description, :hint, :required_features, :defaults
+      attr_reader :path, :name, :description, :hint, :required_features, :defaults, :minimum_complexity
 
       def initialize(path)
         @path = path
@@ -18,6 +18,7 @@ module Liquid
         @hint = @config["hint"]
         @required_features = (@config["required_features"] || []).map(&:to_sym)
         @defaults = (@config["defaults"] || {}).transform_keys(&:to_sym)
+        @minimum_complexity = @config["minimum_complexity"]
       end
 
       # Whether this suite should be included in default runs

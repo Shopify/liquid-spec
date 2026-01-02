@@ -12,6 +12,7 @@ require "liquid/spec/section_rendering_spec_generator"
 require "liquid/spec/test_drops"
 require "liquid/spec/yaml_initializer"
 require "liquid/spec/test_filters"
+require "liquid/spec/cli/adapter_dsl"
 
 module Liquid
   module Spec

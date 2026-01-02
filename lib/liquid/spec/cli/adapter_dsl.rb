@@ -117,6 +117,46 @@ module LiquidSpec
     def running_from_cli?
       @running_from_cli
     end
+
+    # Programmatic API for evaluating specs from Ruby code
+    # Usage:
+    #   require 'liquid/spec/cli/adapter_dsl'
+    #   LiquidSpec.evaluate("path/to/adapter.rb", <<~YAML)
+    #     hint: "Test upcase filter"
+    #     complexity: 200
+    #     template: "{{ 'hello' | upcase }}"
+    #     expected: "HELLO"
+    #   YAML
+    #
+    # Options:
+    #   compare: true    - Compare against reference liquid-ruby
+    #   verbose: true    - Show detailed output
+    #
+    def evaluate(adapter_path, yaml_or_hash, options = {})
+      require_relative "eval"
+
+      reset!
+      @running_from_cli = true
+      load(File.expand_path(adapter_path))
+
+      eval_options = {
+        verbose: options[:verbose],
+        compare: options[:compare],
+        assigns: {},
+      }
+
+      if yaml_or_hash.is_a?(Hash)
+        eval_options[:liquid] = yaml_or_hash[:template] || yaml_or_hash["template"]
+        eval_options[:expected] = yaml_or_hash[:expected] || yaml_or_hash["expected"]
+        eval_options[:assigns] = yaml_or_hash[:environment] || yaml_or_hash["environment"] ||
+          yaml_or_hash[:assigns] || yaml_or_hash["assigns"] || {}
+        eval_options[:spec_data] = yaml_or_hash.transform_keys(&:to_s)
+      else
+        eval_options[:stdin_yaml] = yaml_or_hash.to_s
+      end
+
+      Liquid::Spec::CLI::Eval.run_eval(eval_options, adapter_path)
+    end
   end
 end
 

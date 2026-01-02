@@ -2,6 +2,6 @@
 
 module Liquid
   module Spec
-    VERSION = "0.5.0"
+    VERSION = "0.8.0"
   end
 end
