@@ -19,25 +19,21 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  # Declare which features this Liquid implementation supports
-  config.features = [
-    :core,        # Basic Liquid parsing and rendering
-    :lax_parsing, # Supports error_mode: :lax
-  ]
+  config.features = [:core, :lax_parsing]
 end
 
 LiquidSpec.compile do |source, options|
-  Liquid::Template.parse(source, line_numbers: true, disable_liquid_c_nodes: true, **options)
+  Liquid::Template.parse(source, **options)
 end
 
-LiquidSpec.render do |template, ctx|
-  liquid_ctx = ctx.context_klass.build(
-    static_environments: ctx.environment,
-    registers: Liquid::Registers.new(ctx.registers),
-    rethrow_errors: ctx.rethrow_errors?,
+LiquidSpec.render do |template, assigns, options|
+  # Build context with static_environments (read-only assigns that can be shadowed)
+  context = Liquid::Context.build(
+    static_environments: assigns,
+    registers: Liquid::Registers.new(options[:registers] || {}),
+    rethrow_errors: options[:strict_errors],
   )
-  # Only set exception_renderer if provided (otherwise keep default)
-  liquid_ctx.exception_renderer = ctx.exception_renderer if ctx.exception_renderer
+  context.exception_renderer = options[:exception_renderer] if options[:exception_renderer]
 
-  template.render(liquid_ctx)
+  template.render(context)
 end

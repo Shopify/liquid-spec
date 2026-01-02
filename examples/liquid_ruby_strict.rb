@@ -19,22 +19,21 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  # Only core feature - no lax_parsing support
   config.features = [:core]
 end
 
 LiquidSpec.compile do |source, options|
   # Force strict mode regardless of spec
-  Liquid::Template.parse(source, line_numbers: true, error_mode: :strict, disable_liquid_c_nodes: true, **options)
+  Liquid::Template.parse(source, error_mode: :strict, **options)
 end
 
-LiquidSpec.render do |template, ctx|
-  liquid_ctx = ctx.context_klass.build(
-    static_environments: ctx.environment,
-    registers: Liquid::Registers.new(ctx.registers),
-    rethrow_errors: ctx.rethrow_errors?,
+LiquidSpec.render do |template, assigns, options|
+  context = Liquid::Context.build(
+    static_environments: assigns,
+    registers: Liquid::Registers.new(options[:registers] || {}),
+    rethrow_errors: options[:strict_errors],
   )
-  liquid_ctx.exception_renderer = ctx.exception_renderer
+  context.exception_renderer = options[:exception_renderer] if options[:exception_renderer]
 
-  template.render(liquid_ctx)
+  template.render(context)
 end

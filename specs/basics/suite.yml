@@ -1,0 +1,16 @@
+---
+name: "Basics"
+description: "Essential Liquid features every implementation must support - start here"
+
+# Always run first, no features required
+default: true
+
+hint: |
+  These specs cover the fundamental Liquid features documented at https://shopify.github.io/liquid/
+  Every Liquid implementation should pass these tests. They are ordered from simplest to most complex.
+  If you're building a new Liquid implementation, start here and work through each failure.
+
+required_features: []
+
+defaults:
+  render_errors: false

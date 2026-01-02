@@ -17,18 +17,21 @@ module LiquidSpec
   }.freeze
 
   class Configuration
+    # CLI-controlled options
     attr_accessor :suite, :filter, :verbose, :strict_only
+
+    # Adapter-declared features
     attr_reader :features
 
-    # Default suite - :all runs all suites the adapter supports
-    DEFAULT_SUITE = :all
-
     def initialize
-      @suite = DEFAULT_SUITE
+      # CLI defaults
+      @suite = :all
       @filter = nil
       @verbose = false
       @strict_only = false
-      @features = [:core] # Core is always enabled by default
+
+      # Adapter defaults
+      @features = [:core]
     end
 
     # Set the features this adapter implements
@@ -41,72 +44,6 @@ module LiquidSpec
     # Check if a feature is supported
     def feature?(name)
       @features.include?(name.to_sym)
-    end
-
-    # Add features
-    def add_features(*names)
-      names.each { |n| @features << n.to_sym unless @features.include?(n.to_sym) }
-    end
-  end
-
-  # Context passed to render block - provides clean, ready-to-use data
-  class Context
-    attr_reader :environment,
-      :file_system,
-      :exception_renderer,
-      :template_factory,
-      :error_mode,
-      :render_errors,
-      :context_klass
-
-    def initialize(spec_context)
-      # Deep copy environment to avoid mutation
-      # Skip deep copy for recursive structures (they'll cause stack overflow)
-      env = spec_context[:environment] || {}
-      @environment = safe_deep_copy(env)
-
-      @file_system = spec_context[:file_system]
-      @exception_renderer = spec_context[:exception_renderer]
-      @template_factory = spec_context[:template_factory]
-      @error_mode = spec_context[:error_mode]
-      @render_errors = spec_context[:render_errors]
-      @context_klass = spec_context[:context_klass]
-    end
-
-    # Build registers hash with file_system and template_factory
-    def registers
-      {
-        file_system: @file_system,
-        template_factory: @template_factory,
-      }.compact
-    end
-
-    # Should errors be rethrown or rendered inline?
-    def rethrow_errors?
-      !@render_errors
-    end
-
-    private
-
-    def safe_deep_copy(obj, seen = {}.compare_by_identity)
-      return seen[obj] if seen.key?(obj)
-
-      case obj
-      when Hash
-        # Preserve the original class (for custom Hash subclasses like HashWithCustomToS)
-        copy = obj.class.new
-        seen[obj] = copy
-        obj.each { |k, v| copy[safe_deep_copy(k, seen)] = safe_deep_copy(v, seen) }
-        copy
-      when Array
-        copy = []
-        seen[obj] = copy
-        obj.each { |v| copy << safe_deep_copy(v, seen) }
-        copy
-      else
-        # Immutable or not worth copying (strings, numbers, symbols, drops, etc.)
-        obj
-      end
     end
   end
 
@@ -125,11 +62,13 @@ module LiquidSpec
     end
 
     # Define how to compile/parse a template
+    # Block receives: |source, options|
     def compile(&block)
       @compile_block = block
     end
 
     # Define how to render a compiled template
+    # Block receives: |template, assigns, options|
     def render(&block)
       @render_block = block
     end
@@ -160,12 +99,11 @@ module LiquidSpec
     end
 
     # Internal: render a template using the adapter
-    def do_render(template, context)
+    def do_render(template, assigns, options = {})
       run_setup!
-      raise "No render block defined. Use LiquidSpec.render { |template, ctx| ... }" unless @render_block
+      raise "No render block defined. Use LiquidSpec.render { |template, assigns, options| ... }" unless @render_block
 
-      ctx = Context.new(context)
-      @render_block.call(template, ctx)
+      @render_block.call(template, assigns, options)
     end
 
     def running_from_cli!

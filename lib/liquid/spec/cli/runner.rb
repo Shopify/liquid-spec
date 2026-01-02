@@ -183,8 +183,10 @@ module Liquid
           puts "Features: #{features.join(", ")}"
           puts ""
 
-          # Collect suites to run
-          suites_to_run = Liquid::Spec::Suite.all.select { |s| s.default? && s.runnable_with?(features) }
+          # Collect suites to run (basics first, then others alphabetically)
+          suites_to_run = Liquid::Spec::Suite.all
+            .select { |s| s.default? && s.runnable_with?(features) }
+            .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
           skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
 
           total_passed = 0
@@ -200,6 +202,7 @@ module Liquid
 
             suite_specs = suite.specs
             suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+            suite_specs = sort_by_complexity(suite_specs)
 
             next if suite_specs.empty?
 
@@ -343,22 +346,17 @@ module Liquid
             template.name = spec.template_name
           end
 
-          # Build file system from spec
-          file_system = build_file_system(spec)
+          # Build assigns (deep copy to avoid mutation between tests)
+          assigns = deep_copy(spec.environment || {})
 
-          # Pass ALL spec options to the render context
-          # Spec-level options override source-level required_options
-          context = {
-            environment: spec.environment || {},
-            file_system: file_system,
-            template_factory: spec.template_factory,
+          # Build render options
+          render_options = {
+            registers: build_registers(spec),
+            strict_errors: !render_errors,
             exception_renderer: spec.exception_renderer,
-            error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
-            render_errors: render_errors,
-            context_klass: spec.context_klass,
-          }
+          }.compact
 
-          actual = LiquidSpec.do_render(template, context)
+          actual = LiquidSpec.do_render(template, assigns, render_options)
           compare_result(actual, spec.expected)
         rescue Exception => e
           # Catch all exceptions including SyntaxError
@@ -382,6 +380,32 @@ module Liquid
             Liquid::BlankFileSystem.new
           else
             spec.filesystem
+          end
+        end
+
+        def self.build_registers(spec)
+          registers = {}
+          registers[:file_system] = build_file_system(spec)
+          registers[:template_factory] = spec.template_factory if spec.template_factory
+          registers
+        end
+
+        def self.deep_copy(obj, seen = {}.compare_by_identity)
+          return seen[obj] if seen.key?(obj)
+
+          case obj
+          when Hash
+            copy = obj.class.new
+            seen[obj] = copy
+            obj.each { |k, v| copy[deep_copy(k, seen)] = deep_copy(v, seen) }
+            copy
+          when Array
+            copy = []
+            seen[obj] = copy
+            obj.each { |v| copy << deep_copy(v, seen) }
+            copy
+          else
+            obj
           end
         end
 
@@ -438,6 +462,14 @@ module Liquid
           specs.select do |s|
             mode = s.error_mode&.to_sym
             mode.nil? || mode == :strict
+          end
+        end
+
+        # Sort specs by complexity (lower first), specs without complexity come last
+        def self.sort_by_complexity(specs)
+          specs.sort_by do |s|
+            # Specs with complexity sort by it, specs without go to the end (infinity)
+            s.complexity || Float::INFINITY
           end
         end
       end
