@@ -475,6 +475,16 @@ module Liquid
 
               puts "#{i + 1}) #{spec.name}"
               puts "   Template: #{spec.template.inspect[0..80]}"
+
+              # Show environment if present
+              if spec.raw_environment.is_a?(Hash) && !spec.raw_environment.empty?
+                env_str = spec.raw_environment.inspect[0..80]
+                puts "   Environment: #{env_str}"
+              elsif spec.raw_environment.is_a?(String) && !spec.raw_environment.empty?
+                env_str = spec.raw_environment[0..80]
+                puts "   Environment: #{env_str}"
+              end
+
               puts "   Expected: #{result[:expected].inspect[0..80]}"
               puts "   Got:      #{result[:actual].inspect[0..80]}"
               if result[:error]
