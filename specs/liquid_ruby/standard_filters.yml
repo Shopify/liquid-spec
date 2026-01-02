@@ -468,7 +468,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'Woot: 4'
+  expected: 'Woot: 2'
 - name: StandardFilterTest#test_capitalize_c219139a
   template: "{{ a0 | capitalize }}"
   environment:
@@ -666,7 +666,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 2
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_compact_9dbc5c7b
   template: "{{ a0 | compact }}"
   environment:
@@ -1007,7 +1007,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 7
-  expected: 'woot: 9'
+  expected: 'woot: 7'
 - name: StandardFilterTest#test_default_a8c7a8f0
   template: "{{ a0 | default }}"
   environment:
@@ -1075,7 +1075,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_downcase_5f1a5415
   template: "{{ a0 | downcase }}"
   environment:
@@ -1228,7 +1228,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_escape_db3990d0
   template: "{{ a0 | escape }}"
   environment:
@@ -1374,7 +1374,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_escape_once_e05388e6
   template: "{{ a0 | escape_once }}"
   environment:
@@ -1715,7 +1715,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 7
-  expected: 'woot: 8'
+  expected: 'woot: 7'
 - name: StandardFilterTest#test_h_c2040486
   template: "{{ a0 | h }}"
   environment:
@@ -3175,7 +3175,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 6
-  expected: 'woot: 8'
+  expected: 'woot: 7'
 - name: StandardFilterTest#test_sort_68f7d892
   template: "{{ a0 | sort }}"
   environment:
@@ -3612,7 +3612,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_strip_html_1b3f3c5a
   template: "{{ a0 | strip_html }}"
   environment:
@@ -3768,7 +3768,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_strip_newlines_6826588b
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -4381,7 +4381,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_truncatewords_4896de83
   template: "{{ a0 | truncatewords }}"
   environment:
@@ -4744,7 +4744,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'WOOT: 4'
+  expected: 'WOOT: 2'
 - name: StandardFilterTest#test_upcase_406bfebc
   template: "{{ a0 | upcase }}"
   environment:
@@ -4907,7 +4907,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: 'woot: 4'
+  expected: 'woot: 2'
 - name: StandardFilterTest#test_url_decode_bf1f382b
   template: "{{ a0 | url_decode }}"
   environment:
