@@ -3,19 +3,9 @@
 require "yaml"
 require "liquid"
 require "minitest"
-require "pry-byebug"
 
-require_relative(
-  File.join(
-    __dir__, # liquid-spec/tasks
-    "..",    # liquid-spec/
-    "lib",
-    "liquid",
-    "spec",
-    "deps",
-    "liquid_ruby",
-  ),
-)
+require_relative "helpers"
+require_relative "../lib/liquid/spec/deps/liquid_ruby"
 
 namespace :generate do
   desc "Generate spec tests from Shopify/liquid"

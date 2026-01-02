@@ -1,14 +1,9 @@
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift(File.expand_path("lib", __dir__))
-
 require "rake"
 require "fileutils"
-require_relative "lib/liquid/spec/version"
-require_relative("tasks/helpers")
 
-import("tasks/liquid_ruby.rake")
-import("tasks/standard_filters.rake")
+require_relative "lib/liquid/spec/version"
 
 task default: :test
 
@@ -28,9 +23,12 @@ end
 
 desc "Run liquid-spec tests using the CLI runner"
 task :test do
-  require_relative "lib/liquid/spec/cli"
-  Liquid::Spec::CLI.run(["run", "examples/liquid_ruby.rb"])
+  ruby("bin/liquid-spec", "examples/liquid_ruby.rb") || abort
 end
+
+# Spec generation tasks (only needed for development)
+import("tasks/liquid_ruby.rake")
+import("tasks/standard_filters.rake")
 
 desc "Generate spec tests from Shopify/liquid"
 task generate: ["generate:liquid_ruby", "generate:standard_filters"]
