@@ -8,10 +8,20 @@ module Liquid
         metadata["hint"]
       end
 
+      # Global doc reference for all specs in this source file
+      def doc
+        metadata["doc"]
+      end
+
       # Required options that adapters must support to run these specs
       # e.g., { error_mode: :lax }
       def required_options
         @required_options ||= (metadata["required_options"] || {}).transform_keys(&:to_sym)
+      end
+
+      # Effective minimum complexity from suite (defaults to 1000 if not set)
+      def effective_minimum_complexity
+        suite&.minimum_complexity || 1000
       end
 
       private
@@ -57,8 +67,10 @@ module Liquid
             hint: data["hint"],
             source_hint: effective_hint,
             source_required_options: effective_defaults,
-            complexity: data["complexity"],
+            complexity: data["complexity"] || effective_minimum_complexity,
             required_features: data["required_features"] || [],
+            errors: data["errors"] || {},
+            doc: data["doc"] || effective_doc,
           )
         end
       end

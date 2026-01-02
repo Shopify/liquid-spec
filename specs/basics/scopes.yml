@@ -1,0 +1,215 @@
+---
+# =============================================================================
+# COMPLEXITY 190-210: Variable Scopes and Resolution
+# =============================================================================
+#
+# These specs cover variable scoping behaviors that implementers need to
+# handle correctly. Basic assign and variable access is covered in specs.yml
+# at complexity 30-50.
+#
+# Complexity levels:
+#   190: For loop scope isolation, assign writes to current scope
+#   200: Scope shadowing, nested loops
+#   210: Render vs include scope behavior, environment layering
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/scopes.md
+
+specs:
+# =============================================================================
+# For Loop Scope (Complexity 190)
+# =============================================================================
+
+- name: scope_for_loop_variable_isolated
+  template: "{% for item in items %}{{ item }}{% endfor %}{{ item }}"
+  environment:
+    items: [a, b, c]
+  expected: "abc"
+  complexity: 190
+  hint: |
+    Loop variable 'item' is only available inside the loop. Outside the
+    loop, it's undefined (outputs empty).
+
+- name: scope_assign_inside_for_persists
+  template: "{% for i in (1..2) %}{% assign x = i %}{{ x }}{% endfor %}{{ x }}"
+  expected: "122"
+  complexity: 190
+  hint: |
+    assign inside a for loop writes to the OUTER scope, not the loop's scope.
+    The variable persists after the loop ends with its last assigned value.
+
+- name: scope_outer_variable_visible_in_for
+  template: "{% assign prefix = 'item-' %}{% for i in (1..3) %}{{ prefix }}{{ i }} {% endfor %}"
+  expected: "item-1 item-2 item-3 "
+  complexity: 190
+  hint: |
+    Variables from outer scope are visible inside the for loop.
+    The lookup searches from innermost to outermost scope.
+
+# =============================================================================
+# Scope Shadowing (Complexity 200)
+# =============================================================================
+
+- name: scope_for_shadows_outer_variable
+  template: "{% assign x = 'outer' %}{% for x in items %}{{ x }}{% endfor %}{{ x }}"
+  environment:
+    items: [a, b]
+  expected: "abouter"
+  complexity: 200
+  hint: |
+    Loop variable 'x' shadows outer 'x' during the loop. After the loop,
+    outer 'x' is visible again.
+
+- name: scope_assign_inside_modifies_outer
+  template: "{% assign x = 'outer' %}{% for i in (1..1) %}{% assign x = 'inner' %}{{ x }}{% endfor %}{{ x }}"
+  expected: "innerinner"
+  complexity: 200
+  hint: |
+    assign inside loop MODIFIES the outer variable, not shadowing it.
+    After the loop, x remains 'inner'.
+
+- name: scope_nested_for_each_has_own_scope
+  template: "{% for i in (1..2) %}{% assign x = i %}{% for j in (1..2) %}{% assign y = j %}{{ x }}-{{ y }} {% endfor %}{% endfor %}"
+  expected: "1-1 1-2 2-1 2-2 "
+  complexity: 200
+  hint: |
+    Each for loop has its own scope. Inner loop's y is separate from
+    outer loop's x.
+
+# =============================================================================
+# Forloop Object Scope (Complexity 200)
+# =============================================================================
+
+- name: scope_forloop_isolated_to_loop
+  template: "{% for i in (1..2) %}{{ forloop.index }}{% endfor %}{{ forloop.index }}"
+  expected: "12"
+  complexity: 200
+  hint: |
+    forloop object is only available inside the loop. Outside, it's
+    undefined.
+
+- name: scope_forloop_shadowed_in_nested
+  template: "{% for i in (1..2) %}{% for j in (1..2) %}{{ forloop.index }}{% endfor %}{% endfor %}"
+  expected: "1212"
+  complexity: 200
+  hint: |
+    Inner loop's forloop shadows outer loop's forloop. Use parentloop
+    to access outer.
+
+# =============================================================================
+# Render Scope Isolation (Complexity 210)
+# =============================================================================
+
+- name: scope_render_cannot_see_outer_variables
+  template: "{% assign x = 'outer' %}{% render 'snippet' %}"
+  filesystem:
+    snippet: "[{{ x }}]"
+  expected: "[]"
+  complexity: 210
+  hint: |
+    render creates isolated scope. Variables from outer template are
+    not visible inside the partial.
+
+- name: scope_render_variables_dont_leak_out
+  template: "{% render 'snippet' %}[{{ inner }}]"
+  filesystem:
+    snippet: "{% assign inner = 'from partial' %}"
+  expected: "[]"
+  complexity: 210
+  hint: |
+    Variables assigned in render don't leak back to outer template.
+
+- name: scope_render_parameters_visible
+  template: "{% assign x = 'outer' %}{% render 'snippet', x: x, y: 'param' %}"
+  filesystem:
+    snippet: "{{ x }}-{{ y }}"
+  expected: "outer-param"
+  complexity: 210
+  hint: |
+    Explicitly passed parameters ARE visible in rendered partial.
+
+- name: scope_render_static_env_visible
+  template: "{% render 'snippet' %}"
+  environment:
+    shop_name: "My Shop"
+  filesystem:
+    snippet: "{{ shop_name }}"
+  expected: "My Shop"
+  complexity: 210
+  hint: |
+    static_environments (global data) IS shared with rendered partials.
+
+# =============================================================================
+# Include Scope Sharing (Complexity 210)
+# =============================================================================
+
+- name: scope_include_sees_outer_variables
+  template: "{% assign x = 'outer' %}{% include 'snippet' %}"
+  filesystem:
+    snippet: "[{{ x }}]"
+  expected: "[outer]"
+  complexity: 210
+  hint: |
+    include shares scope. Outer variables are visible in the partial.
+
+- name: scope_include_variables_leak_out
+  template: "{% include 'snippet' %}[{{ inner }}]"
+  filesystem:
+    snippet: "{% assign inner = 'leaked' %}"
+  expected: "[leaked]"
+  complexity: 210
+  hint: |
+    Variables assigned in include ARE visible in outer template.
+
+- name: scope_include_can_modify_outer
+  template: "{% assign x = 'before' %}{% include 'snippet' %}{{ x }}"
+  filesystem:
+    snippet: "{% assign x = 'after' %}"
+  expected: "after"
+  complexity: 210
+  hint: |
+    include can modify outer variables because scope is shared.
+
+# =============================================================================
+# Capture Scope (Complexity 200)
+# =============================================================================
+
+- name: scope_capture_variables_persist
+  template: "{% capture result %}{% assign x = 'inside' %}captured{% endcapture %}{{ result }}-{{ x }}"
+  expected: "captured-inside"
+  complexity: 200
+  hint: |
+    capture doesn't create a new scope. Variables assigned inside
+    persist after capture ends.
+
+- name: scope_capture_sees_outer
+  template: "{% assign prefix = 'Hello' %}{% capture msg %}{{ prefix }} World{% endcapture %}{{ msg }}"
+  expected: "Hello World"
+  complexity: 200
+  hint: |
+    capture can access outer scope variables.
+
+# =============================================================================
+# Tablerow Scope (Complexity 200)
+# =============================================================================
+
+- name: scope_tablerow_variable_isolated
+  template: "{% tablerow item in items cols:2 %}{{ item }}{% endtablerow %}{{ item }}"
+  environment:
+    items: [a, b]
+  expected: "<tr class=\"row1\">\n<td class=\"col1\">a</td><td class=\"col2\">b</td></tr>\n"
+  complexity: 200
+  hint: |
+    tablerow loop variable is only available inside the tablerow.
+    Outside, it's undefined.
+
+- name: scope_tablerow_has_tablerowloop
+  template: "{% tablerow item in items cols:2 %}{{ tablerowloop.index }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: "<tr class=\"row1\">\n<td class=\"col1\">1</td><td class=\"col2\">2</td></tr>\n<tr class=\"row2\"><td class=\"col1\">3</td></tr>\n"
+  complexity: 200
+  hint: |
+    tablerow provides tablerowloop (not forloop) with iteration info.

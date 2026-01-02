@@ -1,0 +1,185 @@
+---
+# =============================================================================
+# COMPLEXITY 190-220: Advanced for Loop Features
+# =============================================================================
+#
+# These specs cover advanced for loop features that implementers need to
+# handle correctly. Basic for loop usage and forloop properties are covered
+# in specs.yml at complexity 70-90.
+#
+# Complexity levels:
+#   190: offset:continue, parentloop basics
+#   200: parentloop chain, offset:continue edge cases
+#   210: forloop.length with limit, render/include isolation
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/for-loops.md
+
+specs:
+# =============================================================================
+# offset:continue (Complexity 190)
+# =============================================================================
+
+- name: for_offset_continue_basic
+  template: "{% for i in items limit:3 %}{{ i }}{% endfor %}|{% for i in items offset:continue limit:3 %}{{ i }}{% endfor %}"
+  environment:
+    items: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  expected: "123|456"
+  complexity: 190
+  hint: |
+    offset:continue resumes from where the previous loop left off.
+    First loop takes 1,2,3. Second loop continues with 4,5,6.
+
+- name: for_offset_continue_until_end
+  template: "{% for i in items limit:2 %}{{ i }}{% endfor %}|{% for i in items offset:continue limit:2 %}{{ i }}{% endfor %}|{% for i in items offset:continue %}{{ i }}{% endfor %}"
+  environment:
+    items: [1, 2, 3, 4, 5]
+  expected: "12|34|5"
+  complexity: 190
+  hint: |
+    The last loop without limit takes remaining items.
+
+- name: for_offset_continue_different_collections
+  template: "{% for i in a limit:2 %}{{ i }}{% endfor %}|{% for i in b limit:2 %}{{ i }}{% endfor %}|{% for i in a offset:continue %}{{ i }}{% endfor %}"
+  environment:
+    a: [1, 2, 3, 4]
+    b: [x, y, z]
+  expected: "12|xy|34"
+  complexity: 190
+  hint: |
+    offset:continue is keyed by "variable-collection", so different
+    collections have independent continue positions.
+
+# =============================================================================
+# parentloop (Complexity 190)
+# =============================================================================
+
+- name: forloop_parentloop_basic
+  template: "{% for i in (1..2) %}{% for j in (1..2) %}{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}{% endfor %}"
+  expected: "1.1 1.2 2.1 2.2 "
+  complexity: 190
+  hint: |
+    forloop.parentloop gives access to the outer loop's forloop object.
+
+- name: forloop_parentloop_index0
+  template: "{% for i in (1..2) %}{% for j in (1..2) %}{{ forloop.parentloop.index0 }}-{{ forloop.index0 }} {% endfor %}{% endfor %}"
+  expected: "0-0 0-1 1-0 1-1 "
+  complexity: 190
+  hint: |
+    All forloop properties are accessible via parentloop.
+
+- name: forloop_parentloop_first_last
+  template: "{% for i in (1..2) %}{% for j in (1..2) %}{% if forloop.parentloop.first and forloop.first %}START {% endif %}{{ i }}.{{ j }} {% if forloop.parentloop.last and forloop.last %}END{% endif %}{% endfor %}{% endfor %}"
+  expected: "START 1.1 1.2 2.1 2.2 END"
+  complexity: 190
+  hint: |
+    parentloop.first and parentloop.last work as expected.
+
+# =============================================================================
+# Deeper parentloop Chain (Complexity 200)
+# =============================================================================
+
+- name: forloop_parentloop_nil_at_top
+  template: "{% for i in (1..2) %}[{{ forloop.parentloop.index }}]{% endfor %}"
+  expected: "[][]"
+  complexity: 200
+  hint: |
+    At the top level (no outer loop), parentloop is nil.
+    Accessing .index on nil returns nil/empty.
+
+- name: forloop_parentloop_three_levels
+  template: "{% for i in (1..2) %}{% for j in (1..2) %}{% for k in (1..2) %}{{ forloop.parentloop.parentloop.index }}.{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}{% endfor %}{% endfor %}"
+  expected: "1.1.1 1.1.2 1.2.1 1.2.2 2.1.1 2.1.2 2.2.1 2.2.2 "
+  complexity: 200
+  hint: |
+    parentloop can be chained for deeply nested loops.
+
+# =============================================================================
+# offset:continue Edge Cases (Complexity 200)
+# =============================================================================
+
+- name: for_offset_continue_exhausted
+  template: "{% for i in items limit:3 %}{{ i }}{% endfor %}|{% for i in items offset:continue limit:3 %}{{ i }}{% endfor %}|{% for i in items offset:continue %}{{ i }}{% endfor %}"
+  environment:
+    items: [1, 2, 3, 4, 5]
+  expected: "123|45|"
+  complexity: 200
+  hint: |
+    When continue position exceeds collection size, loop is empty.
+
+- name: for_offset_continue_same_variable_different_collection
+  template: "{% for i in a limit:2 %}{{ i }}{% endfor %}|{% for i in b limit:2 %}{{ i }}{% endfor %}|{% for i in a offset:continue %}{{ i }}{% endfor %}|{% for i in b offset:continue %}{{ i }}{% endfor %}"
+  environment:
+    a: [1, 2, 3]
+    b: [x, y, z]
+  expected: "12|xy|3|z"
+  complexity: 200
+  hint: |
+    Same variable name with different collections tracks positions separately.
+    Key is "variable-collection_expression".
+
+# =============================================================================
+# forloop.length with limit (Complexity 210)
+# =============================================================================
+
+- name: forloop_length_reflects_limit
+  template: "{% for i in (1..10) limit:3 %}{{ forloop.length }}-{% endfor %}"
+  expected: "3-3-3-"
+  complexity: 210
+  hint: |
+    forloop.length is the SEGMENT length (after limit/offset), not the
+    full collection length.
+
+- name: forloop_length_with_offset
+  template: "{% for i in (1..10) offset:5 limit:3 %}{{ forloop.length }}-{% endfor %}"
+  expected: "3-3-3-"
+  complexity: 210
+  hint: |
+    Length is segment size, regardless of offset.
+
+- name: forloop_length_offset_continue
+  template: "{% for i in items limit:2 %}{{ forloop.length }}-{% endfor %}|{% for i in items offset:continue limit:2 %}{{ forloop.length }}-{% endfor %}"
+  environment:
+    items: [1, 2, 3, 4, 5]
+  expected: "2-2-|2-2-"
+  complexity: 210
+  hint: |
+    Length reflects each segment independently.
+
+# =============================================================================
+# Render/Include Isolation (Complexity 210)
+# =============================================================================
+
+- name: for_offset_continue_isolated_in_render
+  template: "{% for i in items limit:2 %}{{ i }}{% endfor %}{% render 'cont', items: items %}{% for i in items offset:continue %}{{ i }}{% endfor %}"
+  environment:
+    items: [1, 2, 3, 4, 5]
+  filesystem:
+    cont: "{% for i in items limit:2 %}{{ i }}{% endfor %}"
+  expected: "1212345"
+  complexity: 210
+  hint: |
+    render creates isolated registers. The partial's loop (12) doesn't affect
+    the outer continue position. Outer: 12, partial: 12, outer continue: 345.
+
+- name: for_parentloop_nil_in_render
+  template: "{% for i in (1..2) %}{% render 'inner' %}{% endfor %}"
+  filesystem:
+    inner: "{% for j in (1..2) %}{{ forloop.parentloop.index }}-{{ forloop.index }} {% endfor %}"
+  expected: "-1 -2 -1 -2 "
+  complexity: 210
+  hint: |
+    render creates isolated context. Inside the partial, there is no
+    parentloop (nil) even though outer template has a for loop.
+
+- name: for_parentloop_available_in_include
+  template: "{% for i in (1..2) %}{% include 'inner' %}{% endfor %}"
+  filesystem:
+    inner: "{% for j in (1..2) %}{{ forloop.parentloop.index }}-{{ forloop.index }} {% endfor %}"
+  expected: "1-1 1-2 2-1 2-2 "
+  complexity: 210
+  hint: |
+    include shares context. The partial's inner loop can access the
+    outer loop's forloop via parentloop.

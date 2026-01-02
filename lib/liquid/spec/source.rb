@@ -40,9 +40,19 @@ module Liquid
         nil
       end
 
+      # Global doc reference for all specs in this source (from file-level _metadata)
+      def doc
+        nil
+      end
+
       # Effective hint: source-level hint, or suite-level hint as fallback
       def effective_hint
         hint || suite&.hint
+      end
+
+      # Effective doc: source-level doc (no suite fallback)
+      def effective_doc
+        doc
       end
 
       # Required options that must be supported by the adapter (from file-level _metadata)

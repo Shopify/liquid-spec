@@ -19,6 +19,7 @@ module Liquid
           Options:
             -n, --name PATTERN    Only run specs matching PATTERN (use /regex/ for regex)
             -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
+            -c, --compare         Compare adapter output against reference liquid-ruby
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
             --list-suites         List available suites
@@ -31,6 +32,7 @@ module Liquid
             liquid-spec run my_adapter.rb -n assign
             liquid-spec run my_adapter.rb -n "/test_.*filter/"
             liquid-spec run my_adapter.rb -s liquid_ruby -v
+            liquid-spec run my_adapter.rb --compare
             liquid-spec run my_adapter.rb --no-max-failures
             liquid-spec run my_adapter.rb --list-suites
 
@@ -89,6 +91,8 @@ module Liquid
               options[:suite] = ::Regexp.last_match(1).to_sym
             when "--strict"
               options[:strict_only] = true
+            when "-c", "--compare"
+              options[:compare] = true
             when "-v", "--verbose"
               options[:verbose] = true
             when "-l", "--list"
@@ -153,7 +157,11 @@ module Liquid
 
           # Freeze time BEFORE adapter setup so adapters see frozen time
           Timecop.freeze(TEST_TIME) do
-            run_specs_frozen(config, options)
+            if options[:compare]
+              run_specs_compare(config, options)
+            else
+              run_specs_frozen(config, options)
+            end
           end
         ensure
           ENV["TZ"] = original_tz
@@ -185,10 +193,18 @@ module Liquid
           puts ""
 
           # Collect suites to run (basics first, then others alphabetically)
-          suites_to_run = Liquid::Spec::Suite.all
-            .select { |s| s.default? && s.runnable_with?(features) }
-            .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
-          skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
+          # When a specific suite is requested via -s, run that suite regardless of default?
+          specific_suite = config.suite != :all ? Liquid::Spec::Suite.find(config.suite) : nil
+
+          if specific_suite
+            suites_to_run = [specific_suite]
+            skipped_suites = []
+          else
+            suites_to_run = Liquid::Spec::Suite.all
+              .select { |s| s.default? && s.runnable_with?(features) }
+              .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
+            skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
+          end
 
           total_passed = 0
           total_failed = 0
@@ -273,8 +289,9 @@ module Liquid
             puts "Failures:"
             puts ""
 
-            # Collect hints grouped by source
-            hints_by_source = {}
+            # Track which hints we've already shown (dedup)
+            shown_hints = Set.new
+
             failures.each_with_index do |f, i|
               puts "#{i + 1}) #{f[:spec].name}"
               puts "   Template: #{f[:spec].template.inspect[0..80]}"
@@ -283,39 +300,281 @@ module Liquid
               if f[:result][:error]
                 puts "   Error:    #{f[:result][:error].class}: #{f[:result][:error].message}"
               end
-              puts ""
 
-              # Collect hints by source (source_hint) and spec-level hints
-              source_hint = f[:spec].source_hint
-              spec_hint = f[:spec].hint
-
-              if source_hint
-                hints_by_source[source_hint] ||= []
-                hints_by_source[source_hint] << spec_hint if spec_hint
-              elsif spec_hint
-                hints_by_source[nil] ||= []
-                hints_by_source[nil] << spec_hint
+              # Show hint inline, but only first occurrence of each unique hint
+              effective_hint = f[:spec].effective_hint
+              if effective_hint && !shown_hints.include?(effective_hint)
+                shown_hints << effective_hint
+                puts ""
+                puts "   Hint: #{effective_hint.strip.gsub("\n", "\n         ")}"
               end
-            end
 
-            # Print hints grouped by source, unique and limited to 5
-            if hints_by_source.any?
               puts ""
-              puts "Hints:"
-              hints_by_source.each do |source_hint, spec_hints|
-                if source_hint
-                  puts ""
-                  puts "  #{source_hint.strip.tr("\n", " ")}"
-                end
-                unique_spec_hints = spec_hints.uniq.compact.first(5)
-                unique_spec_hints.each do |hint|
-                  puts "    - #{hint.strip.tr("\n", " ")}"
-                end
-              end
             end
 
             exit(1)
           end
+        end
+
+        # Compare mode: run specs against both reference liquid-ruby and the adapter
+        def self.run_specs_compare(config, options)
+          # Run adapter setup first (loads the liquid gem)
+          LiquidSpec.run_setup!
+
+          # Now load liquid/spec components (they depend on Liquid being loaded)
+          require "liquid/spec"
+          require "liquid/spec/suite"
+          require "liquid/spec/deps/liquid_ruby"
+          require "liquid/spec/yaml_initializer"
+
+          specs = load_specs(config)
+          specs = filter_specs(specs, config.filter) if config.filter
+          specs = filter_strict_only(specs) if config.strict_only
+
+          if specs.empty?
+            puts "No specs to run"
+            return
+          end
+
+          features = config.features
+          puts "Compare mode: checking adapter against reference liquid-ruby"
+          puts "Features: #{features.join(", ")}"
+          puts ""
+
+          # Collect suites to run
+          specific_suite = config.suite != :all ? Liquid::Spec::Suite.find(config.suite) : nil
+
+          suites_to_run = if specific_suite
+            [specific_suite]
+          else
+            Liquid::Spec::Suite.all
+              .select { |s| s.default? && s.runnable_with?(features) }
+              .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
+          end
+
+          total_same = 0
+          total_different = 0
+          total_errors = 0
+          all_differences = []
+          max_failures = options[:max_failures]
+          stopped_early = false
+
+          suites_to_run.each do |suite|
+            break if stopped_early
+
+            suite_specs = suite.specs
+            suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+            suite_specs = filter_by_features(suite_specs, features)
+            suite_specs = sort_by_complexity(suite_specs)
+
+            next if suite_specs.empty?
+
+            suite_name_padded = "#{suite.name} ".ljust(40, ".")
+            print("#{suite_name_padded} ")
+            $stdout.flush
+
+            same = 0
+            different = 0
+            errors = 0
+
+            suite_specs.each do |spec|
+              begin
+                result = compare_single_spec(spec, config)
+              rescue Exception => e # rubocop:disable Lint/RescueException
+                # Using Exception instead of StandardError because Ruby::Box (Ruby 4.0+)
+                # creates isolated copies of exception classes inside the sandbox.
+                # When an exception is raised inside a Box, its class is different from
+                # the outer world's StandardError, so `rescue StandardError` won't catch it.
+                # This is a known limitation of Box isolation.
+                result = { status: :error, error: e }
+              end
+
+              case result[:status]
+              when :same
+                same += 1
+              when :different
+                different += 1
+                all_differences << { spec: spec, result: result }
+              when :error
+                errors += 1
+                all_differences << { spec: spec, result: result }
+              end
+
+              if max_failures && (total_different + total_errors + different + errors) >= max_failures
+                stopped_early = true
+                break
+              end
+            end
+
+            if different + errors == 0
+              puts "#{same}/#{suite_specs.size} match"
+            else
+              puts "#{same}/#{suite_specs.size} match, \e[33m#{different} different\e[0m, #{errors} errors"
+            end
+
+            total_same += same
+            total_different += different
+            total_errors += errors
+          end
+
+          puts ""
+
+          if stopped_early
+            puts "Stopped after #{max_failures} differences (#{total_same} matching so far)"
+            puts "Run with --no-max-failures to see all differences"
+            puts ""
+          elsif total_different == 0 && total_errors == 0
+            puts "\e[32mTotal: #{total_same} specs match reference implementation\e[0m"
+          else
+            puts "Total: #{total_same} match, \e[33m#{total_different} different\e[0m, #{total_errors} errors"
+          end
+
+          if all_differences.any?
+            puts ""
+            puts "\e[33mDifferences from reference liquid-ruby:\e[0m"
+            puts ""
+
+            all_differences.each_with_index do |d, i|
+              puts "#{i + 1}) #{d[:spec].name}"
+              puts "   Template: #{d[:spec].template.inspect[0..80]}"
+              if d[:result][:reference_error]
+                puts "   Reference: \e[31mERROR\e[0m #{d[:result][:reference_error].class}: #{d[:result][:reference_error].message[0..60]}"
+              else
+                puts "   Reference: #{d[:result][:reference].inspect[0..80]}"
+              end
+              if d[:result][:adapter_error]
+                puts "   Adapter:   \e[31mERROR\e[0m #{d[:result][:adapter_error].class}: #{d[:result][:adapter_error].message[0..60]}"
+              else
+                puts "   Adapter:   #{d[:result][:adapter].inspect[0..80]}"
+              end
+              if d[:spec].hint
+                puts "   Hint: #{d[:spec].hint.strip.tr("\n", " ")[0..80]}"
+              end
+              puts ""
+            end
+
+            puts ""
+            puts "\e[1;33m#{"=" * 60}\e[0m"
+            puts "\e[1;33m  #{all_differences.size} DIFFERENCES DETECTED\e[0m"
+            puts "\e[1;33m#{"=" * 60}\e[0m"
+            puts ""
+            puts "These specs show behavioral differences between your implementation"
+            puts "and the reference liquid-ruby. This could indicate:"
+            puts "  - Bugs in your implementation"
+            puts "  - Intentional differences (document these!)"
+            puts "  - Missing features"
+            puts ""
+            puts "Please contribute documented differences to liquid-spec:"
+            puts "  \e[4mhttps://github.com/Shopify/liquid-spec\e[0m"
+            puts ""
+
+            exit(1)
+          end
+        end
+
+        def self.compare_single_spec(spec, _config)
+          # Build compile/render options
+          required_opts = spec.source_required_options || {}
+          render_errors = spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
+
+          compile_options = {
+            line_numbers: true,
+            error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+          }.compact
+
+          assigns = deep_copy(spec.environment || {})
+          render_options = {
+            registers: build_registers(spec),
+            strict_errors: !render_errors,
+            exception_renderer: spec.exception_renderer,
+          }.compact
+
+          # Run reference implementation (catches all errors internally)
+          reference_result, reference_error = run_reference_spec(spec, compile_options, assigns, render_options)
+
+          # Run adapter implementation (catches all errors internally)
+          adapter_result, adapter_error = run_adapter_spec(spec, compile_options, assigns, render_options)
+
+          # Compare results
+          if reference_error && adapter_error
+            # Both errored - check if same error type
+            if reference_error.class == adapter_error.class
+              { status: :same }
+            else
+              {
+                status: :different,
+                reference: nil,
+                reference_error: reference_error,
+                adapter: nil,
+                adapter_error: adapter_error,
+              }
+            end
+          elsif reference_error
+            {
+              status: :different,
+              reference: nil,
+              reference_error: reference_error,
+              adapter: adapter_result,
+              adapter_error: nil,
+            }
+          elsif adapter_error
+            {
+              status: :different,
+              reference: reference_result,
+              reference_error: nil,
+              adapter: nil,
+              adapter_error: adapter_error,
+            }
+          elsif reference_result == adapter_result
+            { status: :same }
+          else
+            {
+              status: :different,
+              reference: reference_result,
+              reference_error: nil,
+              adapter: adapter_result,
+              adapter_error: nil,
+            }
+          end
+        rescue StandardError => e
+          { status: :error, error: e }
+        end
+
+        def self.run_reference_spec(spec, _compile_options, assigns, render_options)
+          # Always run reference in strict mode for consistent comparison
+          strict_compile_options = { line_numbers: true, error_mode: :strict }
+
+          # Compile with reference Liquid in strict mode
+          template = Liquid::Template.parse(spec.template, **strict_compile_options)
+
+          # Set template name if specified
+          template.name = spec.template_name if spec.template_name && template.respond_to?(:name=)
+
+          # Build context with strict errors
+          context = Liquid::Context.build(
+            static_environments: assigns,
+            registers: Liquid::Registers.new(render_options[:registers] || {}),
+            rethrow_errors: true,
+          )
+          context.exception_renderer = render_options[:exception_renderer] if render_options[:exception_renderer]
+
+          ref_result = template.render(context)
+          [ref_result, nil]
+        rescue => e
+          [nil, e]
+        end
+
+        def self.run_adapter_spec(spec, compile_options, assigns, render_options)
+          adapter_result = nil
+          adapter_error = nil
+          begin
+            template = LiquidSpec.do_compile(spec.template, compile_options)
+            template.name = spec.template_name if spec.template_name && template.respond_to?(:name=)
+            adapter_result = LiquidSpec.do_render(template, assigns, render_options)
+          rescue StandardError => e
+            adapter_error = e
+          end
+          [adapter_result, adapter_error]
         end
 
         def self.run_single_spec(spec, _config)
@@ -324,7 +583,7 @@ module Liquid
           # Merge source-level required_options with spec-level options
           # Spec-level options take precedence
           required_opts = spec.source_required_options || {}
-          render_errors = spec.render_errors || required_opts[:render_errors]
+          render_errors = spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
 
           # Build compile options from spec (spec values override required_options)
           compile_options = {
@@ -335,12 +594,25 @@ module Liquid
           begin
             template = LiquidSpec.do_compile(spec.template, compile_options)
           rescue Liquid::SyntaxError => e
+            # If spec expects a parse error, check against patterns
+            if spec.expects_parse_error?
+              return check_error_patterns(e, spec.error_patterns(:parse_error), "parse_error")
+            end
             # If render_errors is true, treat compile errors as rendered output
             if render_errors
               return compare_result(e.message, spec.expected)
             else
               raise
             end
+          end
+
+          # If we expected a parse error but didn't get one, that's a failure
+          if spec.expects_parse_error?
+            return {
+              status: :fail,
+              expected: "parse_error matching #{spec.error_patterns(:parse_error).map(&:inspect).join(", ")}",
+              actual: "no error (template parsed successfully)",
+            }
           end
 
           # Set template name if the spec specifies one and template supports it
@@ -358,11 +630,64 @@ module Liquid
             exception_renderer: spec.exception_renderer,
           }.compact
 
-          actual = LiquidSpec.do_render(template, assigns, render_options)
+          begin
+            actual = LiquidSpec.do_render(template, assigns, render_options)
+          rescue StandardError => e
+            # If spec expects a render error, check against patterns
+            if spec.expects_render_error?
+              return check_error_patterns(e, spec.error_patterns(:render_error), "render_error")
+            end
+
+            raise
+          end
+
+          # If we expected a render error but didn't get one, that's a failure
+          if spec.expects_render_error?
+            return {
+              status: :fail,
+              expected: "render_error matching #{spec.error_patterns(:render_error).map(&:inspect).join(", ")}",
+              actual: "no error (rendered: #{actual.inspect})",
+            }
+          end
+
+          # If spec uses output patterns, match against them instead of exact match
+          if spec.expects_output_patterns?
+            return check_output_patterns(actual, spec.error_patterns(:output))
+          end
+
           compare_result(actual, spec.expected)
         rescue StandardError => e
           # Catch standard errors (not SystemExit, Interrupt, etc.)
           { status: :error, expected: spec.expected, actual: nil, error: e }
+        end
+
+        def self.check_error_patterns(error, patterns, error_type)
+          message = error.message
+          failed_patterns = patterns.reject { |pattern| pattern.match?(message) }
+
+          if failed_patterns.empty?
+            { status: :pass }
+          else
+            {
+              status: :fail,
+              expected: "#{error_type} matching #{failed_patterns.map(&:inspect).join(", ")}",
+              actual: "#{error.class}: #{message}",
+            }
+          end
+        end
+
+        def self.check_output_patterns(output, patterns)
+          failed_patterns = patterns.reject { |pattern| pattern.match?(output) }
+
+          if failed_patterns.empty?
+            { status: :pass }
+          else
+            {
+              status: :fail,
+              expected: "output matching #{patterns.map(&:inspect).join(", ")}",
+              actual: output,
+            }
+          end
         end
 
         def self.compare_result(actual, expected)

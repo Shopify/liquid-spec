@@ -1,0 +1,189 @@
+---
+# =============================================================================
+# COMPLEXITY 190-210: Advanced break/continue Behavior
+# =============================================================================
+#
+# These specs cover advanced interrupt behaviors that implementers need to
+# handle correctly. Basic break/continue in for loops is covered in specs.yml
+# at complexity 75.
+#
+# Complexity levels:
+#   190: Propagation through nested blocks (if, case)
+#   200: Nested loops, interrupts only affect innermost loop
+#   210: Outside loops, render vs include isolation
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/interrupts.md
+
+specs:
+# =============================================================================
+# Propagation Through Nested Blocks (Complexity 190)
+# =============================================================================
+
+- name: break_propagates_through_if
+  template: "{% for i in (1..5) %}{% if i == 3 %}{% break %}{% endif %}{{ i }}{% endfor %}"
+  expected: "12"
+  complexity: 190
+  hint: |
+    break inside an if block propagates up to the for loop and exits it.
+    The if block doesn't consume the interrupt.
+
+- name: break_propagates_through_nested_if
+  template: "{% for i in (1..5) %}{% if i > 1 %}{% if i == 3 %}{% break %}{% endif %}{% endif %}{{ i }}{% endfor %}"
+  expected: "12"
+  complexity: 190
+  hint: |
+    break propagates through multiple levels of if blocks.
+
+- name: continue_propagates_through_if
+  template: "{% for i in (1..5) %}{% if i == 3 %}{% continue %}{% endif %}{{ i }}{% endfor %}"
+  expected: "1245"
+  complexity: 190
+  hint: |
+    continue inside an if block propagates to the for loop, skipping
+    to the next iteration.
+
+- name: break_propagates_through_case
+  template: "{% for i in (1..5) %}{% case i %}{% when 3 %}{% break %}{% else %}{{ i }}{% endcase %}{% endfor %}"
+  expected: "12"
+  complexity: 190
+  hint: |
+    break inside a case block propagates up to the for loop.
+
+- name: break_propagates_through_unless
+  template: "{% for i in (1..5) %}{% unless i < 3 %}{% break %}{% endunless %}{{ i }}{% endfor %}"
+  expected: "12"
+  complexity: 190
+  hint: |
+    break inside an unless block propagates up to the for loop.
+
+# =============================================================================
+# Nested Loops - Innermost Only (Complexity 200)
+# =============================================================================
+
+- name: break_affects_innermost_loop_only
+  template: "{% for i in (1..3) %}{% for j in (1..3) %}{% if j == 2 %}{% break %}{% endif %}{{ i }}-{{ j }} {% endfor %}{% endfor %}"
+  expected: "1-1 2-1 3-1 "
+  complexity: 200
+  hint: |
+    break only affects the innermost loop. The outer loop continues normally.
+
+- name: continue_affects_innermost_loop_only
+  template: "{% for i in (1..2) %}{% for j in (1..3) %}{% if j == 2 %}{% continue %}{% endif %}{{ i }}-{{ j }} {% endfor %}{% endfor %}"
+  expected: "1-1 1-3 2-1 2-3 "
+  complexity: 200
+  hint: |
+    continue only affects the innermost loop. Outer loop unaffected.
+
+- name: break_outer_loop_pattern
+  template: "{% assign done = false %}{% for i in (1..3) %}{% unless done %}{% for j in (1..3) %}{% if j == 2 and i == 2 %}{% assign done = true %}{% break %}{% endif %}{{ i }}-{{ j }} {% endfor %}{% if done %}{% break %}{% endif %}{% endunless %}{% endfor %}"
+  expected: "1-1 1-2 1-3 2-1 "
+  complexity: 200
+  hint: |
+    To break outer loop from inner, use a flag variable and check it
+    after the inner loop.
+
+# =============================================================================
+# Interrupts Outside Loops (Complexity 210)
+# =============================================================================
+
+- name: break_outside_loop_stops_rendering
+  template: "before{% break %}after"
+  expected: "before"
+  complexity: 210
+  hint: |
+    break outside a loop stops rendering the rest of the template.
+    This is intentional - not an error.
+
+- name: continue_outside_loop_stops_rendering
+  template: "before{% continue %}after"
+  expected: "before"
+  complexity: 210
+  hint: |
+    continue outside a loop also stops rendering. Same behavior as break.
+
+- name: break_in_if_outside_loop
+  template: "{% if true %}start{% break %}end{% endif %}after"
+  expected: "start"
+  complexity: 210
+  hint: |
+    break in an if block outside a loop still stops rendering.
+
+# =============================================================================
+# Render vs Include Isolation (Complexity 210)
+# =============================================================================
+
+- name: break_contained_in_render
+  template: "{% for i in (1..3) %}{{ i }}{% render 'breaker' %}{{ i }}{% endfor %}"
+  filesystem:
+    breaker: "{% break %}"
+  expected: "112233"
+  complexity: 210
+  hint: |
+    render creates isolated interrupt stack. The break in the partial
+    doesn't affect the outer loop.
+
+- name: continue_contained_in_render
+  template: "{% for i in (1..3) %}{{ i }}{% render 'cont' %}{{ i }}{% endfor %}"
+  filesystem:
+    cont: "{% continue %}"
+  expected: "112233"
+  complexity: 210
+  hint: |
+    continue in render is also contained. Doesn't skip outer iteration.
+
+- name: break_propagates_through_include
+  template: "{% for i in (1..3) %}{{ i }}{% include 'breaker' %}{{ i }}{% endfor %}"
+  filesystem:
+    breaker: "{% break %}"
+  expected: "1"
+  complexity: 210
+  hint: |
+    include shares interrupt stack. The break propagates and exits
+    the outer loop.
+
+- name: continue_propagates_through_include
+  template: "{% for i in (1..3) %}{{ i }}{% include 'cont' %}{{ i }}{% endfor %}"
+  filesystem:
+    cont: "{% continue %}"
+  expected: "123"
+  complexity: 210
+  hint: |
+    continue in include propagates. Each iteration's second {{ i }} is skipped.
+
+- name: break_in_nested_include_blocks
+  template: "{% for i in (1..3) %}{% include 'outer' %}{{ i }}{% endfor %}"
+  filesystem:
+    outer: "{% if i == 2 %}{% include 'inner' %}{% endif %}"
+    inner: "{% break %}"
+  expected: "1"
+  complexity: 210
+  hint: |
+    break propagates through nested includes all the way to the for loop.
+    At i=1: no break, output "1". At i=2: break before output, loop exits.
+
+# =============================================================================
+# Tablerow Interrupts (Complexity 210)
+# =============================================================================
+
+- name: tablerow_break
+  template: "{% tablerow item in items cols:3 %}{% if item == 'c' %}{% break %}{% endif %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: "<tr class=\"row1\">\n<td class=\"col1\">a</td><td class=\"col2\">b</td><td class=\"col3\"></td></tr>\n"
+  complexity: 210
+  hint: |
+    break works in tablerow. The cell where break occurs is still output
+    (empty), then the row is closed properly.
+
+- name: tablerow_continue
+  template: "{% tablerow item in items cols:3 %}{% if item == 'b' %}{% continue %}{% endif %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d]
+  expected: "<tr class=\"row1\">\n<td class=\"col1\">a</td><td class=\"col2\"></td><td class=\"col3\">c</td></tr>\n<tr class=\"row2\"><td class=\"col1\">d</td></tr>\n"
+  complexity: 210
+  hint: |
+    continue in tablerow skips the cell content but still outputs the
+    table cell structure.
