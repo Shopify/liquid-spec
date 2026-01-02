@@ -19,3 +19,5 @@ gem "timecop"
 group :development do
   gem "rake"
 end
+
+gem "base64", "~> 0.3.0"
