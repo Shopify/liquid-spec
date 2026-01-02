@@ -4,9 +4,29 @@ require "yaml"
 
 module Liquid
   module Spec
+    # Error raised when a spec fails validation
+    class SpecValidationError < StandardError
+      attr_reader :spec_name, :source_file, :line_number, :errors
+
+      def initialize(spec_name:, source_file:, line_number:, errors:)
+        @spec_name = spec_name
+        @source_file = source_file
+        @line_number = line_number
+        @errors = errors
+
+        location = source_file
+        location = "#{location}:#{line_number}" if line_number
+        message = "Invalid spec '#{spec_name}' at #{location}:\n"
+        errors.each { |e| message += "  - #{e}\n" }
+        super(message)
+      end
+    end
+
     # A lazy spec that delays drop instantiation until render time
     # Environment data may be stored as a YAML string for deferred instantiation
     class LazySpec
+      VALID_ERROR_KEYS = ["parse_error", "render_error", "output"].freeze
+
       attr_reader :name, :template, :expected, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :render_errors, :required_features
       attr_reader :source_file, :line_number
@@ -119,6 +139,85 @@ module Liquid
 
       # Returns source-level required options
       attr_reader :source_required_options
+
+      # Validate the spec and raise SpecValidationError if invalid
+      def validate!
+        validation_errors = []
+
+        # Rule 1: Must have name
+        if name.nil? || name.to_s.strip.empty?
+          validation_errors << "missing required field 'name'"
+        end
+
+        # Rule 2: Must have template (can be empty string, but not nil)
+        if template.nil?
+          validation_errors << "missing required field 'template'"
+        end
+
+        # Rule 3: Must have either expected or errors
+        if expected.nil? && (errors.nil? || errors.empty?)
+          validation_errors << "must have either 'expected' or 'errors' (got neither)"
+        end
+
+        # Rule 4: Check for unknown error keys
+        if errors && !errors.empty?
+          error_keys = errors.keys.map(&:to_s)
+          unknown_keys = error_keys - VALID_ERROR_KEYS
+          if unknown_keys.any?
+            validation_errors << "unknown error type(s): #{unknown_keys.join(", ")} (valid: #{VALID_ERROR_KEYS.join(", ")})"
+          end
+        end
+
+        # Rule 5: render_errors: true should only have output errors, not thrown errors
+        if render_errors && errors && !errors.empty?
+          has_thrown_errors = errors.key?("parse_error") || errors.key?(:parse_error) ||
+            errors.key?("render_error") || errors.key?(:render_error)
+          if has_thrown_errors
+            validation_errors << "render_errors: true but has parse_error/render_error (use errors.output for rendered errors)"
+          end
+        end
+
+        # Rule 6: render_errors: false (or not set) should not have output errors
+        if !render_errors && errors && !errors.empty?
+          has_output_errors = errors.key?("output") || errors.key?(:output)
+          if has_output_errors
+            validation_errors << "has errors.output but render_errors is not true (output errors require render_errors: true)"
+          end
+        end
+
+        # Rule 7: If expected contains "Liquid error", render_errors should be true
+        if expected.is_a?(String) && expected =~ /\ALiquid(?: \w+)? error/i && !render_errors
+          validation_errors << "expected contains 'Liquid error' but render_errors is not true (error output requires render_errors: true, or use errors.output)"
+        end
+
+        # Raise if any validation errors
+        if validation_errors.any?
+          raise SpecValidationError.new(
+            spec_name: name || "(unnamed)",
+            source_file: source_file,
+            line_number: line_number,
+            errors: validation_errors,
+          )
+        end
+
+        true
+      end
+
+      # Check if spec is valid without raising
+      def valid?
+        validate!
+        true
+      rescue SpecValidationError
+        false
+      end
+
+      # Get validation errors without raising
+      def validation_errors
+        validate!
+        []
+      rescue SpecValidationError => e
+        e.errors
+      end
 
       # Instantiate environment for this spec
       # If raw_environment is a String, parse it as YAML with custom object support

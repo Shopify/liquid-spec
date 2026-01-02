@@ -211,10 +211,16 @@ module Liquid
               source_required_options: source_required_options,
             )
 
+            # Validate spec - raises SpecValidationError if invalid
+            spec.validate!
+
             specs << spec
           end
 
           specs
+        rescue SpecValidationError
+          # Re-raise validation errors - these are fatal
+          raise
         rescue Psych::SyntaxError => e
           warn("YAML syntax error in #{path}: #{e.message}")
           []
