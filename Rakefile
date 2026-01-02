@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+$LOAD_PATH.unshift(File.expand_path("lib", __dir__))
+
 require "rake"
 require "fileutils"
 require_relative "lib/liquid/spec/version"
