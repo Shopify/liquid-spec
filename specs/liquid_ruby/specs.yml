@@ -1923,8 +1923,7 @@
 - name: ForTagTest#test_for_with_drop_value_range_52a95a35
   template: "{%for item in (1..foobar.value) %} {{item}} {%endfor%}"
   environment:
-    foobar: !ruby/object:ThingWithValue
-      context:
+    foobar: instantiate:ThingWithValue.new()
   render_errors: false
   expected: " 1  2  3 "
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/for_tag_test.rb#L62
@@ -3336,8 +3335,7 @@
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_c34cdb86
   template: "{% include 'foo' with errors %}"
   environment:
-    errors: !ruby/object:ErrorDrop
-      context:
+    errors: instantiate:ErrorDrop.new()
   render_errors: true
   expected: 'Liquid error (foo line 1): standard error'
   filesystem:
@@ -3346,12 +3344,10 @@
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_c92c1757
   template: "{% include 'foo' with errors %}"
   environment:
-    errors: !ruby/object:ErrorDrop
-      context:
+    errors: instantiate:ErrorDrop.new()
   render_errors: true
   expected: 'Liquid error (some/path/foo line 1): standard error'
-  template_factory: !ruby/object:StubTemplateFactory
-    count: 1
+  template_factory: instantiate:StubTemplateFactory.new()
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L394
@@ -3845,8 +3841,7 @@
 - name: RenderTagTest#test_render_tag_for_drop_cf2ab489
   template: "{% render 'loop' for loop as value %}"
   environment:
-    loop: !ruby/object:TestEnumerable
-      context:
+    loop: instantiate:TestEnumerable.new()
   render_errors: false
   expected: '123'
   filesystem:
@@ -3874,8 +3869,7 @@
 - name: RenderTagTest#test_render_tag_renders_error_with_template_name_79f1a430
   template: "{% render 'foo' with errors %}"
   environment:
-    errors: !ruby/object:ErrorDrop
-      context:
+    errors: instantiate:ErrorDrop.new()
   render_errors: true
   expected: 'Liquid error (foo line 1): standard error'
   filesystem:
@@ -3884,12 +3878,10 @@
 - name: RenderTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_8dab9308
   template: "{% render 'foo' with errors %}"
   environment:
-    errors: !ruby/object:ErrorDrop
-      context:
+    errors: instantiate:ErrorDrop.new()
   render_errors: true
   expected: 'Liquid error (some/path/foo line 1): standard error'
-  template_factory: !ruby/object:StubTemplateFactory
-    count: 1
+  template_factory: instantiate:StubTemplateFactory.new()
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L308
@@ -3920,8 +3912,7 @@
 - name: RenderTagTest#test_render_tag_with_drop_e577945d
   template: "{% render 'loop' with loop as value %}"
   environment:
-    loop: !ruby/object:TestEnumerable
-      context:
+    loop: instantiate:TestEnumerable.new()
   render_errors: false
   expected: TestEnumerable
   filesystem:
@@ -4037,48 +4028,42 @@
 - name: StandardFiltersTest#test_at_least_73914ab2
   template: "{{ width | at_least:5 }}"
   environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 4
+    width: instantiate:NumberLikeThing.new(4)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L798
 - name: StandardFiltersTest#test_at_least_a060ad5f
   template: "{{ 5 | at_least: width }}"
   environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 6
+    width: instantiate:NumberLikeThing.new(6)
   render_errors: false
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L799
 - name: StandardFiltersTest#test_at_least_aaf61adc
   template: "{{ width | at_least:5 }}"
   environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 6
+    width: instantiate:NumberLikeThing.new(6)
   render_errors: false
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L797
 - name: StandardFiltersTest#test_at_most_2d96296b
   template: "{{ width | at_most:5 }}"
   environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 6
+    width: instantiate:NumberLikeThing.new(6)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L786
 - name: StandardFiltersTest#test_at_most_5574738c
   template: "{{ 5 | at_most: width }}"
   environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 4
+    width: instantiate:NumberLikeThing.new(4)
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L788
 - name: StandardFiltersTest#test_at_most_8295a338
   template: "{{ width | at_most:5 }}"
   environment:
-    width: !ruby/object:NumberLikeThing
-      amount: 4
+    width: instantiate:NumberLikeThing.new(4)
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L787
@@ -4122,8 +4107,7 @@
 - name: StandardFiltersTest#test_ceil_cb3952da
   template: "{{ price | ceil }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 4.6
+    price: instantiate:NumberLikeThing.new(4.6)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L767
@@ -4140,9 +4124,7 @@
 - name: StandardFiltersTest#test_default_18953643
   template: "{{ drop | default: 'bar' }}"
   environment:
-    drop: !ruby/object:BooleanDrop
-      context:
-      value: true
+    drop: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: Yay
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L833
@@ -4154,9 +4136,7 @@
 - name: StandardFiltersTest#test_default_ce94fa11
   template: "{{ drop | default: 'bar' }}"
   environment:
-    drop: !ruby/object:BooleanDrop
-      context:
-      value: false
+    drop: instantiate:BooleanDrop.new(false)
   render_errors: false
   expected: bar
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L832
@@ -4168,18 +4148,14 @@
 - name: StandardFiltersTest#test_default_handle_false_b5a82ccc
   template: "{{ drop | default: 'bar', allow_false: true }}"
   environment:
-    drop: !ruby/object:BooleanDrop
-      context:
-      value: false
+    drop: instantiate:BooleanDrop.new(false)
   render_errors: false
   expected: Nay
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L844
 - name: StandardFiltersTest#test_default_handle_false_d4715f99
   template: "{{ drop | default: 'bar', allow_false: true }}"
   environment:
-    drop: !ruby/object:BooleanDrop
-      context:
-      value: true
+    drop: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: Yay
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L845
@@ -4201,8 +4177,7 @@
 - name: StandardFiltersTest#test_divided_by_d11a1702
   template: "{{ price | divided_by:2 }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 10
+    price: instantiate:NumberLikeThing.new(10)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L736
@@ -4290,8 +4265,7 @@
 - name: StandardFiltersTest#test_floor_636680d1
   template: "{{ price | floor }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 5.4
+    price: instantiate:NumberLikeThing.new(5.4)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L777
@@ -4494,8 +4468,7 @@
 - name: StandardFiltersTest#test_minus_bb1d552b
   template: "{{ price | minus:'2' }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 7
+    price: instantiate:NumberLikeThing.new(7)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L698
@@ -4515,8 +4488,7 @@
 - name: StandardFiltersTest#test_modulo_b3186ea4
   template: "{{ price | modulo:2 }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 3
+    price: instantiate:NumberLikeThing.new(3)
   render_errors: false
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L745
@@ -4566,8 +4538,7 @@
 - name: StandardFiltersTest#test_plus_e90b7ed6
   template: "{{ price | plus:'2' }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 3
+    price: instantiate:NumberLikeThing.new(3)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L691
@@ -4670,8 +4641,7 @@
 - name: StandardFiltersTest#test_round_597b1190
   template: "{{ price | round }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 4.6
+    price: instantiate:NumberLikeThing.new(4.6)
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L756
@@ -4685,8 +4655,7 @@
 - name: StandardFiltersTest#test_round_bd878af6
   template: "{{ price | round }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 4.3
+    price: instantiate:NumberLikeThing.new(4.3)
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L757
@@ -4714,8 +4683,7 @@
 - name: StandardFiltersTest#test_sort_works_on_enumerables_83b00155
   template: '{{ foo | sort: "bar" | map: "foo" }}'
   environment:
-    foo: !ruby/object:TestEnumerable
-      context:
+    foo: instantiate:TestEnumerable.new()
   render_errors: false
   expected: '213'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L580
@@ -4837,8 +4805,7 @@
 - name: StandardFiltersTest#test_times_02542210
   template: "{{ price | times:2 }}"
   environment:
-    price: !ruby/object:NumberLikeThing
-      amount: 2
+    price: instantiate:NumberLikeThing.new(2)
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L721
@@ -4875,8 +4842,7 @@
 - name: StandardFiltersTest#test_truncate_calls_to_liquid_0fbde2bf
   template: "{{ foo | truncate: 5 }}"
   environment:
-    foo: !ruby/object:TestThing
-      foo: 0
+    foo: instantiate:TestThing.new(0)
   render_errors: false
   expected: wo...
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L589
@@ -6731,9 +6697,7 @@
 - name: VariableTest#test_case_tag_calls_to_liquid_value_b1c40961
   template: "{% case foo %}{% when 1 %}One{% endcase %}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: One
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L48
@@ -6743,9 +6707,7 @@
     list:
     - 1
     - foo: bar
-    settings: !ruby/object:SettingsDrop
-      context:
-      settings:
+    settings: instantiate:SettingsDrop.new()
         zero: 0
     bar: foo
   render_errors: false
@@ -6764,9 +6726,7 @@
   environment:
     list:
     - foo: bar
-    settings: !ruby/object:SettingsDrop
-      context:
-      settings:
+    settings: instantiate:SettingsDrop.new()
         zero: 0
     bar: foo
   render_errors: false
@@ -6777,9 +6737,7 @@
   environment:
     list:
     - foo
-    settings: !ruby/object:SettingsDrop
-      context:
-      settings:
+    settings: instantiate:SettingsDrop.new()
         zero: 0
     foo: bar
   render_errors: false
@@ -6833,48 +6791,36 @@
 - name: VariableTest#test_if_tag_calls_to_liquid_value_1a8da583
   template: "{% if foo == true %}true{% endif %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: true
+    foo: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L32
 - name: VariableTest#test_if_tag_calls_to_liquid_value_2159fa48
   template: "{% if foo == 1 %}one{% endif %}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L27
 - name: VariableTest#test_if_tag_calls_to_liquid_value_2914c337
   template: "{% if foo and true %}SHOULD NOT HAPPEN{% endif %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: false
+    foo: instantiate:BooleanDrop.new(false)
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L37
 - name: VariableTest#test_if_tag_calls_to_liquid_value_5996f88f
   template: "{% if foo == eqv %}one{% endif %}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
-    eqv: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
+    eqv: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L28
 - name: VariableTest#test_if_tag_calls_to_liquid_value_9f617983
   template: "{% if foo > 0 %}one{% endif %}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L30
@@ -6883,57 +6829,43 @@
   environment:
     a:
     - 1
-    x: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    x: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L39
 - name: VariableTest#test_if_tag_calls_to_liquid_value_beb794c0
   template: "{% if b > a %}one{% endif %}"
   environment:
-    b: !ruby/object:IntegerDrop
-      context:
-      value: 1
-    a: !ruby/object:IntegerDrop
-      context:
-      value: 0
+    b: instantiate:IntegerDrop.new(1)
+    a: instantiate:IntegerDrop.new(0)
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L31
 - name: VariableTest#test_if_tag_calls_to_liquid_value_d3fc1f6e
   template: "{% if 0 < foo %}one{% endif %}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L29
 - name: VariableTest#test_if_tag_calls_to_liquid_value_e162081a
   template: "{% if foo == true %}True{% endif %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: false
+    foo: instantiate:BooleanDrop.new(false)
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L36
 - name: VariableTest#test_if_tag_calls_to_liquid_value_ebf53802
   template: "{% if foo %}true{% endif %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: true
+    foo: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L33
 - name: VariableTest#test_if_tag_calls_to_liquid_value_ffebcff7
   template: "{% if foo %}true{% endif %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: false
+    foo: instantiate:BooleanDrop.new(false)
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L35
@@ -7016,18 +6948,14 @@
 - name: VariableTest#test_unless_tag_calls_to_liquid_value_037c21b9
   template: "{% unless foo %}true{% endunless %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: false
+    foo: instantiate:BooleanDrop.new(false)
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L44
 - name: VariableTest#test_unless_tag_calls_to_liquid_value_33d2b786
   template: "{% unless foo %}true{% endunless %}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: true
+    foo: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L43
@@ -7044,9 +6972,7 @@
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_00c93c8b
   template: "{{ list[foo] }}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
     list:
       1: one
   render_errors: false
@@ -7055,9 +6981,7 @@
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_06333239
   template: "{{ list[foo] }}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
     list:
     - 1
     - 2
@@ -7068,27 +6992,21 @@
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_64e7e768
   template: "{{ foo }}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: true
+    foo: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: Yay
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L22
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_d8c9669a
   template: "{{ foo | upcase }}"
   environment:
-    foo: !ruby/object:BooleanDrop
-      context:
-      value: true
+    foo: instantiate:BooleanDrop.new(true)
   render_errors: false
   expected: YAY
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L23
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_e91aed83
   template: "{{ foo }}"
   environment:
-    foo: !ruby/object:IntegerDrop
-      context:
-      value: 1
+    foo: instantiate:IntegerDrop.new(1)
   render_errors: false
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L19

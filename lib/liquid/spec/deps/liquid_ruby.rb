@@ -8,7 +8,7 @@ class TestThing < Liquid::Drop
   # Tracks how many times properties are accessed via [] bracket notation
   # This is used in tests to verify filter behavior with custom drops.
 
-  def initialize(foo: 0)
+  def initialize(foo = 0)
     @foo = foo
     @call_count = 0 # Track bracket accesses
   end

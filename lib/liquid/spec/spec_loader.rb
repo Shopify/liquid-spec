@@ -196,6 +196,9 @@ module Liquid
             # Keep environment as-is (may contain tagged objects or plain data)
             raw_env = spec_data["environment"] || {}
 
+            # Process instantiate strings in environment
+            raw_env = process_instantiate_strings(raw_env)
+
             # Get line number for this spec from AST
             spec_line_number = line_numbers ? line_numbers[idx] : nil
 
@@ -486,6 +489,101 @@ module Liquid
           spec_nodes.map do |node|
             (node.start_line + 1) if node.respond_to?(:start_line)
           end
+        end
+
+        # Process instantiate strings in spec data
+        # Pattern: "instantiate:ClassName.new(arg1, arg2)"
+        def process_instantiate_strings(data)
+          case data
+          when Hash
+            data.transform_values { |v| process_instantiate_strings(v) }
+          when Array
+            data.map { |v| process_instantiate_strings(v) }
+          when String
+            if data.start_with?("instantiate:")
+              instantiate_object(data)
+            else
+              data
+            end
+          else
+            data
+          end
+        end
+
+        # Parse and execute an instantiate string
+        # Format: "instantiate:ClassName.new(arg1, arg2, ...)"
+        def instantiate_object(instantiate_string)
+          # Extract class name and arguments
+          match = instantiate_string.match(/^instantiate:(\w+)\.new\((.*)\)$/)
+          return instantiate_string unless match
+
+          class_name = match[1]
+          args_str = match[2]
+
+          # Look up the class in the registry
+          klass = ClassRegistry.lookup(class_name)
+          return instantiate_string unless klass
+
+          # Parse arguments - handle simple cases: numbers and strings
+          args = parse_arguments(args_str)
+
+          # Instantiate with arguments
+          begin
+            klass.new(*args)
+          rescue => e
+            warn("Failed to instantiate #{class_name}: #{e.message}")
+            instantiate_string
+          end
+        end
+
+        # Parse argument string like "3" or "5, 'hello'"
+        def parse_arguments(args_str)
+          return [] if args_str.empty? || args_str.strip.empty?
+
+          # Split by comma, but respect quoted strings
+          args = []
+          current = +"" # Use + to create unfrozen string in Ruby 4.0
+          in_quotes = false
+          args_str.each_char do |c|
+            case c
+            when "'"
+              in_quotes = !in_quotes
+              current << c
+            when ","
+              if in_quotes
+                current << c
+              else
+                args << parse_single_argument(current.strip)
+                current = +"" # Reset to unfrozen string
+              end
+            else
+              current << c
+            end
+          end
+          args << parse_single_argument(current.strip) unless current.empty?
+
+          args
+        end
+
+        # Parse a single argument value
+        def parse_single_argument(arg_str)
+          arg_str = arg_str.strip
+
+          # Try to parse as integer
+          return Integer(arg_str) if arg_str =~ /^\d+$/
+          return Integer(arg_str) if arg_str =~ /^-\d+$/
+
+          # Try to parse as float
+          return Float(arg_str) if arg_str =~ /^\d+\.\d+$/
+          return Float(arg_str) if arg_str =~ /^-\d+\.\d+$/
+
+          # Remove quotes if it's a quoted string
+          if arg_str.start_with?("'") && arg_str.end_with?("'")
+            return arg_str[1..-2]
+          end
+
+          # Return as-is (might be a symbol or other value)
+          arg_str
         end
       end
     end

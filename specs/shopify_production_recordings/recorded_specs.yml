@@ -389,8 +389,7 @@
     join(set): Liquid error (foo line 3): internal
     join(arr): c, d, e
   environment:
-    some_set: !ruby/object:Set
-      hash:
+    some_set: instantiate:Set.new()
         a: true
         b: true
         c: true
