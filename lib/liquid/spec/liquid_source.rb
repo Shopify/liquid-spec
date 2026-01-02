@@ -28,19 +28,34 @@ module Liquid
       end
 
       def specs
+        # Check if this directory itself is a spec (has template.liquid, expected.html)
+        if single_spec_directory?
+          return [build_spec(@spec_path)]
+        end
+
+        # Otherwise, look for subdirectories that are specs
         Dir[File.join(@spec_path, "*")].reject do |p|
           File.basename(p).start_with?("_") || File.basename(p) == "suite.yml"
         end.select { |p| File.directory?(p) }.map do |spec_dir|
-          Unit.new(
-            name: build_name(spec_dir),
-            expected: build_expected(spec_dir),
-            template: build_template(spec_dir),
-            environment: build_environment(spec_dir),
-            filesystem: build_filesystem(spec_dir),
-            source_hint: effective_hint,
-            source_required_options: effective_defaults,
-          )
+          build_spec(spec_dir)
         end
+      end
+
+      def single_spec_directory?
+        File.exist?(File.join(@spec_path, "template.liquid")) &&
+          File.exist?(File.join(@spec_path, "expected.html"))
+      end
+
+      def build_spec(spec_dir)
+        Unit.new(
+          name: build_name(spec_dir),
+          expected: build_expected(spec_dir),
+          template: build_template(spec_dir),
+          environment: build_environment(spec_dir),
+          filesystem: build_filesystem(spec_dir),
+          source_hint: effective_hint,
+          source_required_options: effective_defaults,
+        )
       end
 
       def build_name(dir)
