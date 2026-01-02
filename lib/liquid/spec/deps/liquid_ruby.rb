@@ -63,7 +63,8 @@ class TestThing < Liquid::Drop
       key = counter_key
       @context.registers[key] ||= 0
     else
-      @call_count
+      # Initialize @call_count if it was never set (e.g., from YAML deserialization)
+      @call_count ||= 0
     end
   end
 
