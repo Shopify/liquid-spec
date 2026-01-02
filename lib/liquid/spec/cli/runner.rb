@@ -17,7 +17,7 @@ module Liquid
           Usage: liquid-spec run ADAPTER [options]
 
           Options:
-            -n, --name PATTERN    Only run specs matching PATTERN
+            -n, --name PATTERN    Only run specs matching PATTERN (use /regex/ for regex)
             -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
@@ -29,6 +29,7 @@ module Liquid
           Examples:
             liquid-spec run my_adapter.rb
             liquid-spec run my_adapter.rb -n assign
+            liquid-spec run my_adapter.rb -n "/test_.*filter/"
             liquid-spec run my_adapter.rb -s liquid_ruby -v
             liquid-spec run my_adapter.rb --no-max-failures
             liquid-spec run my_adapter.rb --list-suites
@@ -79,9 +80,9 @@ module Liquid
             case arg
             when "-n", "--name"
               pattern = args.shift
-              options[:filter] = Regexp.new(pattern, Regexp::IGNORECASE)
+              options[:filter] = parse_filter_pattern(pattern)
             when /\A--name=(.+)\z/, /\A-n(.+)\z/
-              options[:filter] = Regexp.new(::Regexp.last_match(1), Regexp::IGNORECASE)
+              options[:filter] = parse_filter_pattern(::Regexp.last_match(1))
             when "-s", "--suite"
               options[:suite] = args.shift.to_sym
             when /\A--suite=(.+)\z/
@@ -460,6 +461,29 @@ module Liquid
         # Filter specs by required features
         def self.filter_by_features(specs, features)
           specs.select { |s| s.runnable_with?(features) }
+        end
+
+        # Parse a filter pattern, supporting /regex/ syntax
+        # Returns a Regexp object
+        #
+        # Examples:
+        #   "assign"        -> case-insensitive match (backward compatible)
+        #   "/test_.*/"     -> case-sensitive regex
+        #   "/test_.*/i"    -> case-insensitive regex
+        def self.parse_filter_pattern(pattern)
+          if pattern =~ %r{\A/(.+)/([imx]*)\z}
+            # Regex syntax: /pattern/ or /pattern/flags
+            regex_str = ::Regexp.last_match(1)
+            flags = ::Regexp.last_match(2)
+            options = 0
+            options |= Regexp::IGNORECASE if flags.include?("i")
+            options |= Regexp::MULTILINE if flags.include?("m")
+            options |= Regexp::EXTENDED if flags.include?("x")
+            Regexp.new(regex_str, options)
+          else
+            # Plain string: case-insensitive regex (backward compatible)
+            Regexp.new(pattern, Regexp::IGNORECASE)
+          end
         end
 
         # Filter to only specs that work in strict mode
