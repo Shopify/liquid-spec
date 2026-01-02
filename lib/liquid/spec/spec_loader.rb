@@ -139,6 +139,10 @@ module Liquid
           content = File.read(path)
           specs = []
 
+          # Parse YAML AST to extract line numbers
+          doc = Psych.parse(content)
+          line_numbers = extract_line_numbers_from_ast(doc) if doc
+
           # Check if file contains custom Ruby objects
           has_custom_objects = content.include?("!ruby/")
 
@@ -177,7 +181,7 @@ module Liquid
           default_render_errors = suite_defaults[:render_errors]
 
           # Convert each spec hash to LazySpec
-          spec_list.each do |spec_data|
+          spec_list.each_with_index do |spec_data, idx|
             next unless spec_data.is_a?(Hash)
 
             # Determine render_errors: spec > metadata > suite default
@@ -192,6 +196,9 @@ module Liquid
             # Keep environment as-is (may contain tagged objects or plain data)
             raw_env = spec_data["environment"] || {}
 
+            # Get line number for this spec from AST
+            spec_line_number = line_numbers ? line_numbers[idx] : nil
+
             spec = LazySpec.new(
               name: spec_data["name"],
               template: spec_data["template"],
@@ -204,7 +211,7 @@ module Liquid
               render_errors: spec_render_errors || false,
               required_features: spec_data["required_features"] || [],
               source_file: path,
-              line_number: nil,
+              line_number: spec_line_number,
               raw_environment: raw_env,
               raw_filesystem: spec_data["filesystem"] || {},
               source_hint: source_hint,
@@ -453,6 +460,32 @@ module Liquid
           doc.children << node
           stream.children << doc
           stream.to_yaml.sub(/\A---\n?/, "").sub(/\n?\.\.\.\n?\z/, "").strip
+        end
+
+        # Extract line numbers from YAML AST for each spec
+        def extract_line_numbers_from_ast(doc)
+          return unless doc&.root
+
+          root = doc.root
+          spec_nodes = case root
+          when Psych::Nodes::Sequence
+            root.children
+          when Psych::Nodes::Mapping
+            # Check for specs key
+            root.children.each_slice(2) do |key, value|
+              if key.is_a?(Psych::Nodes::Scalar) && key.value == "specs"
+                return value.children if value.is_a?(Psych::Nodes::Sequence)
+              end
+            end
+            []
+          else
+            []
+          end
+
+          # Extract line number from each spec node (Psych uses 0-based, convert to 1-based)
+          spec_nodes.map do |node|
+            (node.start_line + 1) if node.respond_to?(:start_line)
+          end
         end
       end
     end
