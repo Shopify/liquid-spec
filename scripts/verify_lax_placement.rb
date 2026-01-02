@@ -178,15 +178,16 @@ module LaxPlacementVerifier
       # Build assigns
       assigns = deep_copy(spec.environment || {})
 
-      # Build render context
-      render_options = {
-        registers: build_registers(spec),
-        strict_variables: false,
-        strict_filters: false,
-      }
+      # Build context with static_environments (same as liquid_ruby adapter)
+      # This is important for increment/decrement tests which use separate namespaces
+      context = Liquid::Context.build(
+        static_environments: assigns,
+        registers: Liquid::Registers.new(build_registers(spec)),
+        rethrow_errors: false,
+      )
 
       begin
-        actual = template.render(assigns, **render_options)
+        actual = template.render(context)
         if actual == spec.expected
           :pass
         else
