@@ -202,6 +202,7 @@ module Liquid
 
             suite_specs = suite.specs
             suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+            suite_specs = filter_by_features(suite_specs, features)
             suite_specs = sort_by_complexity(suite_specs)
 
             next if suite_specs.empty?
@@ -303,11 +304,11 @@ module Liquid
               hints_by_source.each do |source_hint, spec_hints|
                 if source_hint
                   puts ""
-                  puts "  #{source_hint.strip.gsub("\n", " ")}"
+                  puts "  #{source_hint.strip.tr("\n", " ")}"
                 end
                 unique_spec_hints = spec_hints.uniq.compact.first(5)
                 unique_spec_hints.each do |hint|
-                  puts "    - #{hint.strip.gsub("\n", " ")}"
+                  puts "    - #{hint.strip.tr("\n", " ")}"
                 end
               end
             end
@@ -454,6 +455,11 @@ module Liquid
 
         def self.filter_specs(specs, pattern)
           specs.select { |s| s.name =~ pattern }
+        end
+
+        # Filter specs by required features
+        def self.filter_by_features(specs, features)
+          specs.select { |s| s.runnable_with?(features) }
         end
 
         # Filter to only specs that work in strict mode

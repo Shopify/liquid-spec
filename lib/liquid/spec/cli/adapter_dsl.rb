@@ -15,6 +15,9 @@ module LiquidSpec
     shopify_tags: "Shopify-specific tags (schema, style, section, etc.)",
     shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
     shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
+
+    # Shopify internal error handling (specific error messages, recovery behavior)
+    shopify_error_handling: "Shopify-specific error handling and recovery behavior",
   }.freeze
 
   class Configuration
