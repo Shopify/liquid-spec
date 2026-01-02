@@ -22,6 +22,7 @@ module Liquid
       :hint,
       :source_hint,
       :source_required_options,
+      :complexity,
       keyword_init: true,
     ) do
       def initialize(**orig)

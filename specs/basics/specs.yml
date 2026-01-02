@@ -4,23 +4,31 @@
 # =============================================================================
 #
 # Every Liquid implementation must pass these tests.
-# Ordered from simplest to most complex.
+# Specs are ordered by complexity (lower numbers = simpler features).
+#
+# Complexity guide:
+#   10-20: Raw text, literals (no parsing logic)
+#   30-40: Variables, basic filters
+#   50-60: Assign, simple conditionals
+#   70-80: For loops, filter chains
+#   90-100: Complex control flow, capture
+#   110-130: Special tags (increment, comments, liquid)
+#   150-170: Property access, truthy/falsy edge cases
+#   180-200: Advanced features, edge cases
 #
 # Reference: https://shopify.github.io/liquid/
-#
-# Each spec includes extensive hints to help implementers understand
-# exactly how each feature should work.
 #
 # =============================================================================
 
 # =============================================================================
-# SECTION 1: Raw Text Output
-# The most basic thing - templates that contain no Liquid at all
+# COMPLEXITY 10: Raw Text Output
+# The most basic - templates with no Liquid syntax at all
 # =============================================================================
 
 - name: raw_text_empty
   template: ""
   expected: ""
+  complexity: 10
   hint: |
     The simplest possible template is an empty string. Your implementation should
     return an empty string when given an empty template. This tests that your
@@ -29,6 +37,7 @@
 - name: raw_text_hello_world
   template: "Hello World"
   expected: "Hello World"
+  complexity: 10
   hint: |
     A template with no Liquid tags or objects should pass through unchanged.
     This is plain text - your lexer/parser should recognize it as raw text
@@ -38,6 +47,7 @@
 - name: raw_text_with_newlines
   template: "Line 1\nLine 2\nLine 3"
   expected: "Line 1\nLine 2\nLine 3"
+  complexity: 10
   hint: |
     Whitespace including newlines should be preserved exactly. Liquid templates
     often contain HTML with specific formatting, so preserving whitespace is
@@ -46,19 +56,21 @@
 - name: raw_text_special_characters
   template: "Special chars: <>&\"' and unicode: äöü 中文"
   expected: "Special chars: <>&\"' and unicode: äöü 中文"
+  complexity: 10
   hint: |
     Special characters and unicode should pass through unchanged. Liquid does NOT
     automatically escape HTML - that's the job of filters like 'escape'. Raw text
     is always output verbatim. Your implementation must handle UTF-8 correctly.
 
 # =============================================================================
-# SECTION 2: Object Output ({{ }})
-# The double curly brace syntax for outputting values
+# COMPLEXITY 20: Object Output with Literals
+# Outputting literal values - strings, numbers, booleans
 # =============================================================================
 
 - name: object_string_literal_single_quotes
   template: "{{ 'hello' }}"
   expected: "hello"
+  complexity: 20
   hint: |
     String literals in Liquid use single quotes. The {{ }} syntax outputs the value
     of an expression. Here we're outputting a literal string 'hello'. Your parser
@@ -68,6 +80,7 @@
 - name: object_string_literal_double_quotes
   template: '{{ "hello" }}'
   expected: "hello"
+  complexity: 20
   hint: |
     String literals can also use double quotes. Both single and double quotes
     create string literals - there is no difference in behavior between them.
@@ -76,6 +89,7 @@
 - name: object_integer_literal
   template: "{{ 42 }}"
   expected: "42"
+  complexity: 20
   hint: |
     Integer literals are written without quotes. When output, they are converted
     to their string representation. Your implementation needs to parse integers
@@ -85,6 +99,7 @@
 - name: object_negative_integer
   template: "{{ -17 }}"
   expected: "-17"
+  complexity: 20
   hint: |
     Negative integers are supported. The minus sign is part of the number literal.
     Parse this as a single negative number token, not as a subtraction operation.
@@ -92,6 +107,7 @@
 - name: object_float_literal
   template: "{{ 3.14 }}"
   expected: "3.14"
+  complexity: 20
   hint: |
     Float literals use a decimal point. When output, floats should preserve their
     decimal representation. Be careful with floating point precision - you should
@@ -101,12 +117,14 @@
 - name: object_negative_float
   template: "{{ -2.5 }}"
   expected: "-2.5"
+  complexity: 20
   hint: |
     Negative floats combine the negative sign with decimal numbers.
 
 - name: object_true_literal
   template: "{{ true }}"
   expected: "true"
+  complexity: 20
   hint: |
     Boolean true is a literal keyword (not a string). When output, it renders as
     the lowercase string "true". Note: booleans are primarily used in conditions,
@@ -115,6 +133,7 @@
 - name: object_false_literal
   template: "{{ false }}"
   expected: "false"
+  complexity: 20
   hint: |
     Boolean false is a literal keyword. When output, it renders as the lowercase
     string "false".
@@ -122,16 +141,32 @@
 - name: object_nil_literal
   template: "{{ nil }}"
   expected: ""
+  complexity: 20
   hint: |
     The nil literal represents "nothing" or "no value". When output, nil renders
     as an empty string - it produces NO visible output. This is important behavior
     that many templates rely on. Do not output "nil" as a string.
+
+- name: object_whitespace_inside_braces
+  template: "{{   'hi'   }}"
+  expected: "hi"
+  complexity: 20
+  hint: |
+    Whitespace inside {{ }} (between the braces and the expression) is ignored.
+    This allows for readable formatting without affecting output. Your lexer
+    should skip whitespace between the {{ and the start of the expression.
+
+# =============================================================================
+# COMPLEXITY 30: Variables from Environment
+# Looking up values passed to the template
+# =============================================================================
 
 - name: object_variable_string
   template: "{{ name }}"
   environment:
     name: "World"
   expected: "World"
+  complexity: 30
   hint: |
     Variables are looked up by name in the environment (also called "assigns" or
     "context"). When you write {{ name }}, Liquid looks for a variable called
@@ -143,6 +178,7 @@
   environment:
     count: 42
   expected: "42"
+  complexity: 30
   hint: |
     Variables can hold any type. When outputting an integer variable, it should
     be converted to its string representation automatically.
@@ -150,6 +186,7 @@
 - name: object_undefined_variable
   template: "{{ undefined_var }}"
   expected: ""
+  complexity: 30
   hint: |
     Accessing an undefined variable returns nil, which outputs as empty string.
     This is a key Liquid design decision - undefined variables don't cause errors,
@@ -161,6 +198,7 @@
   environment:
     name: "World"
   expected: "Hello World!"
+  complexity: 30
   hint: |
     Object tags can be mixed with raw text. The {{ }} is replaced with the value,
     and the surrounding text is preserved. This is the bread and butter of
@@ -172,142 +210,20 @@
     greeting: "Hello"
     name: "World"
   expected: "Hello World!"
+  complexity: 30
   hint: |
     Multiple object tags can appear in a single template. Each is evaluated
     independently and replaced with its value. Process them left to right.
 
-- name: object_whitespace_inside_braces
-  template: "{{   'hi'   }}"
-  expected: "hi"
-  hint: |
-    Whitespace inside {{ }} (between the braces and the expression) is ignored.
-    This allows for readable formatting without affecting output. Your lexer
-    should skip whitespace between the {{ and the start of the expression.
-
 # =============================================================================
-# SECTION 3: Whitespace Control
-# Using hyphens to strip whitespace
-# =============================================================================
-
-- name: whitespace_control_left_strip
-  template: "  {{- 'hi' }}"
-  expected: "hi"
-  hint: |
-    The {{- syntax (hyphen after opening braces) strips whitespace to the LEFT
-    of the tag. This removes all whitespace characters (spaces, tabs, newlines)
-    before the tag. Implementation: when you see {{-, after rendering, look
-    backwards and remove all contiguous whitespace until you hit non-whitespace.
-
-- name: whitespace_control_right_strip
-  template: "{{ 'hi' -}}  "
-  expected: "hi"
-  hint: |
-    The -}} syntax (hyphen before closing braces) strips whitespace to the RIGHT
-    of the tag. This removes all whitespace characters after the tag.
-    Implementation: when you see -}}, look ahead and skip all whitespace.
-
-- name: whitespace_control_both_sides
-  template: "  {{- 'hi' -}}  "
-  expected: "hi"
-  hint: |
-    Both {{- and -}} can be used together to strip whitespace on both sides.
-    This is common for producing compact output from formatted template source.
-
-- name: whitespace_control_tag_left
-  template: "  {%- assign x = 'hi' %}{{ x }}"
-  expected: "hi"
-  hint: |
-    Whitespace control also works on tag delimiters {% %}. The {%- syntax strips
-    whitespace to the left of the tag.
-
-- name: whitespace_control_tag_right
-  template: "{% assign x = 'hi' -%}  {{ x }}"
-  expected: "hi"
-  hint: |
-    The -%} syntax strips whitespace to the right of the tag.
-
-- name: whitespace_control_newlines
-  template: "\n{{- 'hi' -}}\n"
-  expected: "hi"
-  hint: |
-    Whitespace stripping includes newlines. This is particularly useful for
-    keeping template source readable while producing compact output. Strip
-    ALL whitespace characters: space, tab, newline, carriage return.
-
-# =============================================================================
-# SECTION 4: Variable Assignment ({% assign %})
-# Creating and setting variables
-# =============================================================================
-
-- name: assign_string
-  template: "{% assign foo = 'bar' %}{{ foo }}"
-  expected: "bar"
-  hint: |
-    The assign tag creates a new variable. Syntax: {% assign name = value %}
-    The variable is available for the rest of the template. Note that assign
-    itself produces NO output - only {{ foo }} outputs the value. The assigned
-    variable is stored in the template's scope and persists until the end.
-
-- name: assign_integer
-  template: "{% assign num = 42 %}{{ num }}"
-  expected: "42"
-  hint: |
-    Variables can be assigned integer values. The value is stored as a number
-    type, then converted to string when output.
-
-- name: assign_boolean_true
-  template: "{% assign flag = true %}{{ flag }}"
-  expected: "true"
-  hint: |
-    Variables can hold boolean values. Remember that true and false are keywords,
-    not strings - don't put them in quotes. {% assign x = true %} is correct,
-    {% assign x = 'true' %} would create a string.
-
-- name: assign_boolean_false
-  template: "{% assign flag = false %}{{ flag }}"
-  expected: "false"
-  hint: |
-    The false keyword assigns the boolean false value.
-
-- name: assign_from_variable
-  template: "{% assign copy = original %}{{ copy }}"
-  environment:
-    original: "source"
-  expected: "source"
-  hint: |
-    You can assign one variable to another. This copies the value. For simple
-    values like strings and numbers, this creates an independent copy.
-
-- name: assign_overwrites
-  template: "{% assign x = 'first' %}{% assign x = 'second' %}{{ x }}"
-  expected: "second"
-  hint: |
-    Assigning to an existing variable overwrites it. There's no error or warning.
-    The last assignment wins.
-
-- name: assign_produces_no_output
-  template: "before{% assign x = 'test' %}after"
-  expected: "beforeafter"
-  hint: |
-    The assign tag itself produces NO output, not even whitespace. The output
-    contains only "before" and "after" with nothing between them. Tags like
-    assign perform actions but don't render anything.
-
-- name: assign_with_filter
-  template: "{% assign upper = 'hello' | upcase %}{{ upper }}"
-  expected: "HELLO"
-  hint: |
-    You can use filters in assign expressions. The filter is applied before
-    the value is stored in the variable. This is powerful for pre-processing.
-
-# =============================================================================
-# SECTION 5: Filters
-# Transforming values with the pipe syntax
+# COMPLEXITY 40: Basic Filters
+# Single filter applications
 # =============================================================================
 
 - name: filter_upcase
   template: "{{ 'hello' | upcase }}"
   expected: "HELLO"
+  complexity: 40
   hint: |
     Filters modify the output of an expression. The pipe | symbol connects a
     value to a filter. upcase converts a string to UPPERCASE. Filters are
@@ -317,12 +233,14 @@
 - name: filter_downcase
   template: "{{ 'HELLO' | downcase }}"
   expected: "hello"
+  complexity: 40
   hint: |
     downcase converts a string to lowercase. It's the opposite of upcase.
 
 - name: filter_capitalize
   template: "{{ 'hello world' | capitalize }}"
   expected: "Hello world"
+  complexity: 40
   hint: |
     capitalize uppercases the FIRST character and lowercases ALL the rest.
     Note: it only capitalizes the very first letter, not each word. "hELLO"
@@ -331,6 +249,7 @@
 - name: filter_size_string
   template: "{{ 'hello' | size }}"
   expected: "5"
+  complexity: 40
   hint: |
     size returns the length of a string (number of characters) or array
     (number of elements). The result is a number that gets converted to
@@ -344,35 +263,31 @@
       - b
       - c
   expected: "3"
+  complexity: 40
   hint: |
     size on arrays returns the number of elements.
 
 - name: filter_with_argument
   template: "{{ 'hello' | append: ' world' }}"
   expected: "hello world"
+  complexity: 40
   hint: |
     Some filters take arguments, specified after a colon. append adds a string
     to the end of the input. Syntax: value | filter: arg1, arg2, ...
     The colon separates the filter name from its first argument.
 
-- name: filter_chain
-  template: "{{ 'hello' | upcase | append: '!' }}"
-  expected: "HELLO!"
+- name: filter_strip
+  template: "{{ '  hello  ' | strip }}"
+  expected: "hello"
+  complexity: 40
   hint: |
-    Filters can be chained - the output of one becomes the input of the next.
-    They are applied left to right. Here: 'hello' -> 'HELLO' -> 'HELLO!'
-    Each pipe passes the result to the next filter.
-
-- name: filter_chain_three
-  template: "{{ '  hello  ' | strip | upcase | append: '!' }}"
-  expected: "HELLO!"
-  hint: |
-    You can chain as many filters as needed. strip removes leading/trailing
-    whitespace, then upcase converts to uppercase, then append adds '!'.
+    strip removes leading and trailing whitespace from a string. It does NOT
+    affect spaces between words.
 
 - name: filter_default_nil
   template: "{{ missing | default: 'fallback' }}"
   expected: "fallback"
+  complexity: 40
   hint: |
     The default filter returns a fallback value if the input is nil, false,
     or empty string. This is useful for providing default values for missing
@@ -381,24 +296,892 @@
 - name: filter_default_with_value
   template: "{{ 'exists' | default: 'fallback' }}"
   expected: "exists"
+  complexity: 40
   hint: |
     When the input has a truthy value, default passes it through unchanged.
 
-- name: filter_default_false
-  template: "{{ false | default: 'fallback' }}"
-  expected: "fallback"
-  hint: |
-    false is considered "falsy" by default filter, so the fallback is used.
+# =============================================================================
+# COMPLEXITY 50: Variable Assignment
+# Creating variables with assign
+# =============================================================================
 
-- name: filter_default_empty_string
-  template: "{{ '' | default: 'fallback' }}"
-  expected: "fallback"
+- name: assign_string
+  template: "{% assign foo = 'bar' %}{{ foo }}"
+  expected: "bar"
+  complexity: 50
   hint: |
-    Empty string is also considered "empty" by default filter.
+    The assign tag creates a new variable. Syntax: {% assign name = value %}
+    The variable is available for the rest of the template. Note that assign
+    itself produces NO output - only {{ foo }} outputs the value. The assigned
+    variable is stored in the template's scope and persists until the end.
+
+- name: assign_integer
+  template: "{% assign num = 42 %}{{ num }}"
+  expected: "42"
+  complexity: 50
+  hint: |
+    Variables can be assigned integer values. The value is stored as a number
+    type, then converted to string when output.
+
+- name: assign_boolean_true
+  template: "{% assign flag = true %}{{ flag }}"
+  expected: "true"
+  complexity: 50
+  hint: |
+    Variables can hold boolean values. Remember that true and false are keywords,
+    not strings - don't put them in quotes. {% assign x = true %} is correct,
+    {% assign x = 'true' %} would create a string.
+
+- name: assign_boolean_false
+  template: "{% assign flag = false %}{{ flag }}"
+  expected: "false"
+  complexity: 50
+  hint: |
+    The false keyword assigns the boolean false value.
+
+- name: assign_from_variable
+  template: "{% assign copy = original %}{{ copy }}"
+  environment:
+    original: "source"
+  expected: "source"
+  complexity: 50
+  hint: |
+    You can assign one variable to another. This copies the value. For simple
+    values like strings and numbers, this creates an independent copy.
+
+- name: assign_overwrites
+  template: "{% assign x = 'first' %}{% assign x = 'second' %}{{ x }}"
+  expected: "second"
+  complexity: 50
+  hint: |
+    Assigning to an existing variable overwrites it. There's no error or warning.
+    The last assignment wins.
+
+- name: assign_produces_no_output
+  template: "before{% assign x = 'test' %}after"
+  expected: "beforeafter"
+  complexity: 50
+  hint: |
+    The assign tag itself produces NO output, not even whitespace. The output
+    contains only "before" and "after" with nothing between them. Tags like
+    assign perform actions but don't render anything.
+
+- name: assign_with_filter
+  template: "{% assign upper = 'hello' | upcase %}{{ upper }}"
+  expected: "HELLO"
+  complexity: 50
+  hint: |
+    You can use filters in assign expressions. The filter is applied before
+    the value is stored in the variable. This is powerful for pre-processing.
+
+# =============================================================================
+# COMPLEXITY 55: Whitespace Control
+# Using hyphens to strip whitespace
+# =============================================================================
+
+- name: whitespace_control_left_strip
+  template: "  {{- 'hi' }}"
+  expected: "hi"
+  complexity: 55
+  hint: |
+    The {{- syntax (hyphen after opening braces) strips whitespace to the LEFT
+    of the tag. This removes all whitespace characters (spaces, tabs, newlines)
+    before the tag. Implementation: when you see {{-, after rendering, look
+    backwards and remove all contiguous whitespace until you hit non-whitespace.
+
+- name: whitespace_control_right_strip
+  template: "{{ 'hi' -}}  "
+  expected: "hi"
+  complexity: 55
+  hint: |
+    The -}} syntax (hyphen before closing braces) strips whitespace to the RIGHT
+    of the tag. This removes all whitespace characters after the tag.
+    Implementation: when you see -}}, look ahead and skip all whitespace.
+
+- name: whitespace_control_both_sides
+  template: "  {{- 'hi' -}}  "
+  expected: "hi"
+  complexity: 55
+  hint: |
+    Both {{- and -}} can be used together to strip whitespace on both sides.
+    This is common for producing compact output from formatted template source.
+
+- name: whitespace_control_tag_left
+  template: "  {%- assign x = 'hi' %}{{ x }}"
+  expected: "hi"
+  complexity: 55
+  hint: |
+    Whitespace control also works on tag delimiters {% %}. The {%- syntax strips
+    whitespace to the left of the tag.
+
+- name: whitespace_control_tag_right
+  template: "{% assign x = 'hi' -%}  {{ x }}"
+  expected: "hi"
+  complexity: 55
+  hint: |
+    The -%} syntax strips whitespace to the right of the tag.
+
+- name: whitespace_control_newlines
+  template: "\n{{- 'hi' -}}\n"
+  expected: "hi"
+  complexity: 55
+  hint: |
+    Whitespace stripping includes newlines. This is particularly useful for
+    keeping template source readable while producing compact output. Strip
+    ALL whitespace characters: space, tab, newline, carriage return.
+
+# =============================================================================
+# COMPLEXITY 60: Basic Conditionals
+# If/else with simple conditions
+# =============================================================================
+
+- name: if_true_literal
+  template: "{% if true %}yes{% endif %}"
+  expected: "yes"
+  complexity: 60
+  hint: |
+    The if tag executes its block if the condition is truthy. Syntax:
+    {% if condition %}content{% endif %}. The block between if and endif
+    is only rendered when condition evaluates to true.
+
+- name: if_false_literal
+  template: "{% if false %}yes{% endif %}"
+  expected: ""
+  complexity: 60
+  hint: |
+    When the condition is false, the block is skipped entirely. No output
+    is produced, not even whitespace from the tags themselves.
+
+- name: if_variable_truthy
+  template: "{% if name %}Hello {{ name }}{% endif %}"
+  environment:
+    name: "World"
+  expected: "Hello World"
+  complexity: 60
+  hint: |
+    Variables are evaluated for truthiness. In Liquid, EVERYTHING is truthy
+    EXCEPT nil and false. A string like "World" is truthy.
+
+- name: if_variable_nil
+  template: "{% if missing %}yes{% endif %}"
+  expected: ""
+  complexity: 60
+  hint: |
+    Undefined variables are nil, which is falsy. This is a common pattern to
+    check if a variable exists before using it.
+
+- name: if_else
+  template: "{% if false %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 60
+  hint: |
+    else provides an alternative block when the condition is false. Exactly
+    one block executes - either the if block or the else block, never both.
+
+- name: if_equality_string
+  template: "{% if name == 'Bob' %}yes{% endif %}"
+  environment:
+    name: "Bob"
+  expected: "yes"
+  complexity: 60
+  hint: |
+    The == operator tests equality. String comparison is case-sensitive.
+    'Bob' == 'Bob' is true, 'Bob' == 'bob' is false.
+
+- name: if_equality_integer
+  template: "{% if count == 5 %}yes{% endif %}"
+  environment:
+    count: 5
+  expected: "yes"
+  complexity: 60
+  hint: |
+    == works with numbers too. Compare values, not types.
+
+- name: if_inequality
+  template: "{% if name != 'Alice' %}not Alice{% endif %}"
+  environment:
+    name: "Bob"
+  expected: "not Alice"
+  complexity: 60
+  hint: |
+    The != operator tests inequality (not equal).
+
+- name: unless_basic
+  template: "{% unless false %}shown{% endunless %}"
+  expected: "shown"
+  complexity: 60
+  hint: |
+    unless is the opposite of if - it executes when condition is FALSE.
+    {% unless x %} is equivalent to {% if x == false or x == nil %}.
+
+- name: unless_true
+  template: "{% unless true %}hidden{% endunless %}"
+  expected: ""
+  complexity: 60
+  hint: |
+    When the condition is true, unless skips the block.
+
+# =============================================================================
+# COMPLEXITY 70: For Loops Basics
+# Iterating over arrays and ranges
+# =============================================================================
+
+- name: for_basic_array
+  template: "{% for item in items %}{{ item }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "abc"
+  complexity: 70
+  hint: |
+    The for loop iterates over each element. Syntax: {% for var in array %}
+    The loop variable (item) takes each value in turn. The block executes
+    once per element.
+
+- name: for_range_literal
+  template: "{% for i in (1..3) %}{{ i }}{% endfor %}"
+  expected: "123"
+  complexity: 70
+  hint: |
+    Ranges use (start..end) syntax. Both ends are inclusive.
+    (1..3) produces 1, 2, 3.
+
+- name: for_range_variable
+  template: "{% for i in (1..count) %}{{ i }}{% endfor %}"
+  environment:
+    count: 4
+  expected: "1234"
+  complexity: 70
+  hint: |
+    Range bounds can be variables.
+
+- name: for_else
+  template: "{% for item in items %}{{ item }}{% else %}empty{% endfor %}"
+  environment:
+    items: []
+  expected: "empty"
+  complexity: 70
+  hint: |
+    else block in for loop executes if the array is empty. Great for
+    "no results found" messages.
+
+- name: for_limit
+  template: "{% for i in (1..10) limit:3 %}{{ i }}{% endfor %}"
+  expected: "123"
+  complexity: 75
+  hint: |
+    limit stops after N iterations. Useful for "show first N items".
+
+- name: for_offset
+  template: "{% for i in (1..5) offset:2 %}{{ i }}{% endfor %}"
+  expected: "345"
+  complexity: 75
+  hint: |
+    offset skips the first N items. 0-based: offset:2 skips items 0 and 1.
+
+- name: for_reversed
+  template: "{% for i in (1..3) reversed %}{{ i }}{% endfor %}"
+  expected: "321"
+  complexity: 75
+  hint: |
+    reversed iterates in reverse order. Note: it's "reversed" not "reverse".
+
+- name: for_break
+  template: "{% for i in (1..5) %}{% if i == 3 %}{% break %}{% endif %}{{ i }}{% endfor %}"
+  expected: "12"
+  complexity: 75
+  hint: |
+    break exits the loop immediately. Here we stop when i reaches 3,
+    so only 1 and 2 are output.
+
+- name: for_continue
+  template: "{% for i in (1..5) %}{% if i == 3 %}{% continue %}{% endif %}{{ i }}{% endfor %}"
+  expected: "1245"
+  complexity: 75
+  hint: |
+    continue skips the rest of the current iteration. We skip i=3,
+    so output is 1,2,4,5 (no 3).
+
+# =============================================================================
+# COMPLEXITY 80: Filter Chains and More Operators
+# Combining filters and comparison operators
+# =============================================================================
+
+- name: filter_chain
+  template: "{{ 'hello' | upcase | append: '!' }}"
+  expected: "HELLO!"
+  complexity: 80
+  hint: |
+    Filters can be chained - the output of one becomes the input of the next.
+    They are applied left to right. Here: 'hello' -> 'HELLO' -> 'HELLO!'
+    Each pipe passes the result to the next filter.
+
+- name: filter_chain_three
+  template: "{{ '  hello  ' | strip | upcase | append: '!' }}"
+  expected: "HELLO!"
+  complexity: 80
+  hint: |
+    You can chain as many filters as needed. strip removes leading/trailing
+    whitespace, then upcase converts to uppercase, then append adds '!'.
+
+- name: if_greater_than
+  template: "{% if count > 5 %}big{% endif %}"
+  environment:
+    count: 10
+  expected: "big"
+  complexity: 80
+  hint: |
+    The > operator tests if left > right.
+
+- name: if_less_than
+  template: "{% if count < 5 %}small{% endif %}"
+  environment:
+    count: 3
+  expected: "small"
+  complexity: 80
+  hint: |
+    The < operator tests if left < right.
+
+- name: if_greater_or_equal
+  template: "{% if count >= 5 %}enough{% endif %}"
+  environment:
+    count: 5
+  expected: "enough"
+  complexity: 80
+  hint: |
+    The >= operator tests greater than or equal to.
+
+- name: if_less_or_equal
+  template: "{% if count <= 5 %}ok{% endif %}"
+  environment:
+    count: 5
+  expected: "ok"
+  complexity: 80
+  hint: |
+    The <= operator tests less than or equal to.
+
+- name: if_and_operator
+  template: "{% if a and b %}both{% endif %}"
+  environment:
+    a: true
+    b: true
+  expected: "both"
+  complexity: 80
+  hint: |
+    The 'and' operator requires BOTH conditions to be truthy.
+
+- name: if_and_short_circuit
+  template: "{% if a and b %}both{% endif %}"
+  environment:
+    a: false
+    b: true
+  expected: ""
+  complexity: 80
+  hint: |
+    If the first operand of 'and' is falsy, the whole expression is falsy.
+
+- name: if_or_operator
+  template: "{% if a or b %}either{% endif %}"
+  environment:
+    a: false
+    b: true
+  expected: "either"
+  complexity: 80
+  hint: |
+    The 'or' operator requires at least ONE condition to be truthy.
+
+- name: if_contains_string
+  template: "{% if title contains 'hello' %}found{% endif %}"
+  environment:
+    title: "say hello world"
+  expected: "found"
+  complexity: 80
+  hint: |
+    The 'contains' operator checks if a string contains a substring.
+    It's case-sensitive: 'Hello' contains 'ello' but not 'ELLO'.
+
+- name: if_contains_array
+  template: "{% if tags contains 'sale' %}on sale{% endif %}"
+  environment:
+    tags:
+      - new
+      - sale
+      - featured
+  expected: "on sale"
+  complexity: 80
+  hint: |
+    contains also checks if an array includes a specific value.
+
+# =============================================================================
+# COMPLEXITY 85: Math Filters
+# Arithmetic operations
+# =============================================================================
+
+- name: filter_plus
+  template: "{{ 4 | plus: 2 }}"
+  expected: "6"
+  complexity: 85
+  hint: |
+    The plus filter adds to a number. Liquid doesn't have arithmetic operators
+    in expressions - use filters instead. 4 + 2 is written as {{ 4 | plus: 2 }}.
+
+- name: filter_minus
+  template: "{{ 4 | minus: 2 }}"
+  expected: "2"
+  complexity: 85
+  hint: |
+    The minus filter subtracts from a number.
+
+- name: filter_times
+  template: "{{ 4 | times: 2 }}"
+  expected: "8"
+  complexity: 85
+  hint: |
+    The times filter multiplies numbers.
+
+- name: filter_divided_by_integer
+  template: "{{ 10 | divided_by: 2 }}"
+  expected: "5"
+  complexity: 85
+  hint: |
+    The divided_by filter divides numbers. When dividing integers, the result
+    is an integer (floor division).
+
+- name: filter_divided_by_truncates
+  template: "{{ 5 | divided_by: 3 }}"
+  expected: "1"
+  complexity: 85
+  hint: |
+    Integer division truncates toward zero. 5/3 = 1 (not 1.666 or 2).
+
+- name: filter_divided_by_float
+  template: "{{ 20 | divided_by: 7.0 }}"
+  expected: "2.857142857142857"
+  complexity: 85
+  hint: |
+    When the divisor is a float, the result is a float with full precision.
+
+- name: filter_modulo
+  template: "{{ 10 | modulo: 3 }}"
+  expected: "1"
+  complexity: 85
+  hint: |
+    The modulo filter returns the remainder after division. 10 mod 3 = 1.
+
+- name: filter_abs
+  template: "{{ -5 | abs }}"
+  expected: "5"
+  complexity: 85
+  hint: |
+    The abs filter returns the absolute value (removes negative sign).
+
+- name: filter_abs_positive
+  template: "{{ 5 | abs }}"
+  expected: "5"
+  complexity: 85
+  hint: |
+    abs on a positive number returns it unchanged.
+
+- name: filter_ceil
+  template: "{{ 4.3 | ceil }}"
+  expected: "5"
+  complexity: 85
+  hint: |
+    The ceil filter rounds UP to the nearest integer. 4.3 -> 5, 4.0 -> 4.
+
+- name: filter_floor
+  template: "{{ 4.9 | floor }}"
+  expected: "4"
+  complexity: 85
+  hint: |
+    The floor filter rounds DOWN to the nearest integer. 4.9 -> 4.
+
+- name: filter_round
+  template: "{{ 4.5 | round }}"
+  expected: "5"
+  complexity: 85
+  hint: |
+    The round filter rounds to the nearest integer. 4.5 rounds up to 5.
+
+- name: filter_round_precision
+  template: "{{ 183.357 | round: 2 }}"
+  expected: "183.36"
+  complexity: 85
+  hint: |
+    round can take an argument specifying decimal places to round to.
+
+- name: filter_at_least
+  template: "{{ 4 | at_least: 5 }}"
+  expected: "5"
+  complexity: 85
+  hint: |
+    at_least ensures a minimum value. If input < minimum, return minimum.
+
+- name: filter_at_least_pass
+  template: "{{ 4 | at_least: 3 }}"
+  expected: "4"
+  complexity: 85
+  hint: |
+    If input >= minimum, pass through unchanged.
+
+- name: filter_at_most
+  template: "{{ 4 | at_most: 3 }}"
+  expected: "3"
+  complexity: 85
+  hint: |
+    at_most ensures a maximum value. If input > maximum, return maximum.
+
+- name: filter_at_most_pass
+  template: "{{ 4 | at_most: 5 }}"
+  expected: "4"
+  complexity: 85
+  hint: |
+    If input <= maximum, pass through unchanged.
+
+# =============================================================================
+# COMPLEXITY 90: Forloop Object and Capture
+# Accessing loop metadata, capturing output
+# =============================================================================
+
+- name: forloop_index
+  template: "{% for item in items %}{{ forloop.index }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "123"
+  complexity: 90
+  hint: |
+    forloop.index is the 1-based iteration number. First iteration is 1.
+
+- name: forloop_index0
+  template: "{% for item in items %}{{ forloop.index0 }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "012"
+  complexity: 90
+  hint: |
+    forloop.index0 is 0-based. First iteration is 0.
+
+- name: forloop_first
+  template: "{% for item in items %}{% if forloop.first %}[{% endif %}{{ item }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "[abc"
+  complexity: 90
+  hint: |
+    forloop.first is true only on the first iteration.
+
+- name: forloop_last
+  template: "{% for item in items %}{{ item }}{% unless forloop.last %},{% endunless %}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "a,b,c"
+  complexity: 90
+  hint: |
+    forloop.last is true only on the last iteration. Standard way to
+    avoid trailing separators.
+
+- name: forloop_length
+  template: "{% for item in items %}{{ forloop.length }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "333"
+  complexity: 90
+  hint: |
+    forloop.length is the total number of iterations (constant throughout loop).
+
+- name: forloop_rindex
+  template: "{% for item in items %}{{ forloop.rindex }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "321"
+  complexity: 90
+  hint: |
+    forloop.rindex is the 1-based index counting from the end.
+    On last item, rindex is 1.
+
+- name: forloop_rindex0
+  template: "{% for item in items %}{{ forloop.rindex0 }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  expected: "210"
+  complexity: 90
+  hint: |
+    forloop.rindex0 is 0-based reverse index. Last item is 0.
+
+- name: capture_basic
+  template: "{% capture greeting %}Hello World{% endcapture %}{{ greeting }}"
+  expected: "Hello World"
+  complexity: 90
+  hint: |
+    capture collects everything between its tags and stores it as a string.
+    Unlike assign which stores a value directly, capture renders content
+    and saves the result.
+
+- name: capture_with_variables
+  template: "{% capture msg %}Hello {{ name }}!{% endcapture %}{{ msg }}"
+  environment:
+    name: "World"
+  expected: "Hello World!"
+  complexity: 90
+  hint: |
+    Content inside capture is processed normally - variables resolved,
+    filters applied. The final rendered result becomes the variable value.
+
+- name: capture_with_logic
+  template: "{% capture x %}{% if true %}yes{% endif %}{% endcapture %}{{ x }}"
+  expected: "yes"
+  complexity: 90
+  hint: |
+    Any Liquid code can appear inside capture - conditionals, loops, etc.
+    Everything renders and the output is captured.
+
+# =============================================================================
+# COMPLEXITY 100: Complex Control Flow
+# elsif, case/when, nested conditions
+# =============================================================================
+
+- name: if_elsif
+  template: "{% if a == 1 %}one{% elsif a == 2 %}two{% else %}other{% endif %}"
+  environment:
+    a: 2
+  expected: "two"
+  complexity: 100
+  hint: |
+    elsif adds additional conditions. Conditions are evaluated in order -
+    the first true condition's block executes, then we exit the whole if.
+
+- name: case_basic
+  template: "{% case x %}{% when 1 %}one{% when 2 %}two{% endcase %}"
+  environment:
+    x: 1
+  expected: "one"
+  complexity: 100
+  hint: |
+    case/when is a switch statement. case takes a value, when defines matches.
+    When x equals 1, the "one" block executes. Only one when block runs.
+
+- name: case_no_match
+  template: "{% case x %}{% when 1 %}one{% when 2 %}two{% endcase %}"
+  environment:
+    x: 3
+  expected: ""
+  complexity: 100
+  hint: |
+    If no when clause matches, nothing is output (unless there's an else).
+
+- name: case_else
+  template: "{% case x %}{% when 1 %}one{% else %}other{% endcase %}"
+  environment:
+    x: 99
+  expected: "other"
+  complexity: 100
+  hint: |
+    else in a case handles all unmatched values. It's the default case.
+
+- name: case_multiple_values
+  template: "{% case x %}{% when 1, 2, 3 %}small{% else %}big{% endcase %}"
+  environment:
+    x: 2
+  expected: "small"
+  complexity: 100
+  hint: |
+    A when clause can match multiple values separated by commas.
+    Match ANY of them triggers the block.
+
+- name: case_string
+  template: "{% case color %}{% when 'red' %}R{% when 'green' %}G{% when 'blue' %}B{% endcase %}"
+  environment:
+    color: "green"
+  expected: "G"
+  complexity: 100
+  hint: |
+    case/when works with any type including strings.
+
+- name: unless_variable
+  template: "{% unless sold_out %}available{% endunless %}"
+  environment:
+    sold_out: false
+  expected: "available"
+  complexity: 100
+  hint: |
+    Common pattern: "unless bad_condition, show good_thing".
+
+# =============================================================================
+# COMPLEXITY 105: String Filters
+# String manipulation
+# =============================================================================
+
+- name: filter_append
+  template: "{{ 'hello' | append: ' world' }}"
+  expected: "hello world"
+  complexity: 105
+  hint: |
+    append adds a string to the end of another string.
+
+- name: filter_prepend
+  template: "{{ 'world' | prepend: 'hello ' }}"
+  expected: "hello world"
+  complexity: 105
+  hint: |
+    prepend adds a string to the beginning.
+
+- name: filter_remove
+  template: "{{ 'hello world' | remove: 'world' }}"
+  expected: "hello "
+  complexity: 105
+  hint: |
+    remove deletes ALL occurrences of a substring.
+
+- name: filter_remove_first
+  template: "{{ 'hello hello' | remove_first: 'hello' }}"
+  expected: " hello"
+  complexity: 105
+  hint: |
+    remove_first deletes only the FIRST occurrence.
+
+- name: filter_remove_last
+  template: "{{ 'hello hello' | remove_last: 'hello' }}"
+  expected: "hello "
+  complexity: 105
+  hint: |
+    remove_last deletes only the LAST occurrence.
+
+- name: filter_replace
+  template: "{{ 'hello' | replace: 'e', 'a' }}"
+  expected: "hallo"
+  complexity: 105
+  hint: |
+    replace substitutes ALL occurrences of a substring with another.
+    First arg is what to find, second arg is replacement.
+
+- name: filter_replace_first
+  template: "{{ 'hello hello' | replace_first: 'hello', 'hi' }}"
+  expected: "hi hello"
+  complexity: 105
+  hint: |
+    replace_first substitutes only the FIRST occurrence.
+
+- name: filter_replace_last
+  template: "{{ 'hello hello' | replace_last: 'hello', 'hi' }}"
+  expected: "hello hi"
+  complexity: 105
+  hint: |
+    replace_last substitutes only the LAST occurrence.
+
+- name: filter_lstrip
+  template: "{{ '  hello  ' | lstrip }}"
+  expected: "hello  "
+  complexity: 105
+  hint: |
+    lstrip removes whitespace only from the LEFT (beginning) of a string.
+
+- name: filter_rstrip
+  template: "{{ '  hello  ' | rstrip }}"
+  expected: "  hello"
+  complexity: 105
+  hint: |
+    rstrip removes whitespace only from the RIGHT (end) of a string.
+
+- name: filter_split
+  template: "{% assign parts = 'a,b,c' | split: ',' %}{{ parts | size }}"
+  expected: "3"
+  complexity: 105
+  hint: |
+    split breaks a string into an array using a delimiter. This creates
+    ['a', 'b', 'c']. split is often used to create arrays since Liquid can't
+    initialize arrays directly with literal syntax.
+
+- name: filter_slice_single
+  template: "{{ 'Liquid' | slice: 0 }}"
+  expected: "L"
+  complexity: 105
+  hint: |
+    slice extracts a substring. With one argument, returns a single character
+    at that index. Indices are 0-based.
+
+- name: filter_slice_range
+  template: "{{ 'Liquid' | slice: 2, 4 }}"
+  expected: "quid"
+  complexity: 105
+  hint: |
+    With two arguments, first is start index, second is LENGTH (not end index).
+
+- name: filter_slice_negative
+  template: "{{ 'Liquid' | slice: -3, 2 }}"
+  expected: "ui"
+  complexity: 105
+  hint: |
+    Negative indices count from the end. -1 is last char, -3 is third from end.
+
+- name: filter_truncate
+  template: "{{ 'Ground control to Major Tom.' | truncate: 20 }}"
+  expected: "Ground control to..."
+  complexity: 105
+  hint: |
+    truncate shortens a string to max length INCLUDING the ellipsis.
+    Default ellipsis is "..." (3 chars). 20 - 3 = 17 chars of content.
+
+- name: filter_truncate_custom_ellipsis
+  template: "{{ 'Ground control to Major Tom.' | truncate: 25, ', and so on' }}"
+  expected: "Ground control, and so on"
+  complexity: 105
+  hint: |
+    Second argument customizes the ellipsis. The total length includes it.
+
+- name: filter_truncate_no_ellipsis
+  template: "{{ 'Ground control to Major Tom.' | truncate: 20, '' }}"
+  expected: "Ground control to Ma"
+  complexity: 105
+  hint: |
+    Empty string as ellipsis means just truncate without adding anything.
+
+- name: filter_truncatewords
+  template: "{{ 'Ground control to Major Tom.' | truncatewords: 3 }}"
+  expected: "Ground control to..."
+  complexity: 105
+  hint: |
+    truncatewords limits to N words, adding ellipsis if truncated.
+    Words are separated by spaces.
+
+- name: filter_truncatewords_custom
+  template: "{{ 'Ground control to Major Tom.' | truncatewords: 3, '--' }}"
+  expected: "Ground control to--"
+  complexity: 105
+  hint: |
+    Custom ellipsis works the same as truncate.
+
+# =============================================================================
+# COMPLEXITY 110: Special String Filters
+# HTML, URL, and newline handling
+# =============================================================================
 
 - name: filter_escape
   template: "{{ '<script>alert(1)</script>' | escape }}"
   expected: "&lt;script&gt;alert(1)&lt;/script&gt;"
+  complexity: 110
   hint: |
     escape converts HTML special characters to their entity equivalents.
     < becomes &lt;, > becomes &gt;, & becomes &amp;, " becomes &quot;,
@@ -407,254 +1190,15 @@
 - name: filter_escape_ampersand
   template: "{{ 'Tom & Jerry' | escape }}"
   expected: "Tom &amp; Jerry"
+  complexity: 110
   hint: |
     The & character is escaped to &amp; to prevent it from being interpreted
     as the start of an HTML entity.
 
-- name: filter_strip
-  template: "{{ '  hello  ' | strip }}"
-  expected: "hello"
-  hint: |
-    strip removes leading and trailing whitespace from a string. It does NOT
-    affect spaces between words.
-
-- name: filter_lstrip
-  template: "{{ '  hello  ' | lstrip }}"
-  expected: "hello  "
-  hint: |
-    lstrip removes whitespace only from the LEFT (beginning) of a string.
-
-- name: filter_rstrip
-  template: "{{ '  hello  ' | rstrip }}"
-  expected: "  hello"
-  hint: |
-    rstrip removes whitespace only from the RIGHT (end) of a string.
-
-- name: filter_split
-  template: "{% assign parts = 'a,b,c' | split: ',' %}{{ parts | size }}"
-  expected: "3"
-  hint: |
-    split breaks a string into an array using a delimiter. This creates
-    ['a', 'b', 'c']. split is often used to create arrays since Liquid can't
-    initialize arrays directly with literal syntax.
-
-# =============================================================================
-# SECTION 6: Math Filters
-# Arithmetic operations via filters
-# =============================================================================
-
-- name: filter_plus
-  template: "{{ 4 | plus: 2 }}"
-  expected: "6"
-  hint: |
-    The plus filter adds to a number. Liquid doesn't have arithmetic operators
-    in expressions - use filters instead. 4 + 2 is written as {{ 4 | plus: 2 }}.
-
-- name: filter_minus
-  template: "{{ 4 | minus: 2 }}"
-  expected: "2"
-  hint: |
-    The minus filter subtracts from a number.
-
-- name: filter_times
-  template: "{{ 4 | times: 2 }}"
-  expected: "8"
-  hint: |
-    The times filter multiplies numbers.
-
-- name: filter_divided_by_integer
-  template: "{{ 10 | divided_by: 2 }}"
-  expected: "5"
-  hint: |
-    The divided_by filter divides numbers. When dividing integers, the result
-    is an integer (floor division).
-
-- name: filter_divided_by_truncates
-  template: "{{ 5 | divided_by: 3 }}"
-  expected: "1"
-  hint: |
-    Integer division truncates toward zero. 5/3 = 1 (not 1.666 or 2).
-
-- name: filter_divided_by_float
-  template: "{{ 20 | divided_by: 7.0 }}"
-  expected: "2.857142857142857"
-  hint: |
-    When the divisor is a float, the result is a float with full precision.
-
-- name: filter_modulo
-  template: "{{ 10 | modulo: 3 }}"
-  expected: "1"
-  hint: |
-    The modulo filter returns the remainder after division. 10 mod 3 = 1.
-
-- name: filter_abs
-  template: "{{ -5 | abs }}"
-  expected: "5"
-  hint: |
-    The abs filter returns the absolute value (removes negative sign).
-
-- name: filter_abs_positive
-  template: "{{ 5 | abs }}"
-  expected: "5"
-  hint: |
-    abs on a positive number returns it unchanged.
-
-- name: filter_ceil
-  template: "{{ 4.3 | ceil }}"
-  expected: "5"
-  hint: |
-    The ceil filter rounds UP to the nearest integer. 4.3 -> 5, 4.0 -> 4.
-
-- name: filter_floor
-  template: "{{ 4.9 | floor }}"
-  expected: "4"
-  hint: |
-    The floor filter rounds DOWN to the nearest integer. 4.9 -> 4.
-
-- name: filter_round
-  template: "{{ 4.5 | round }}"
-  expected: "5"
-  hint: |
-    The round filter rounds to the nearest integer. 4.5 rounds up to 5.
-
-- name: filter_round_precision
-  template: "{{ 183.357 | round: 2 }}"
-  expected: "183.36"
-  hint: |
-    round can take an argument specifying decimal places to round to.
-
-- name: filter_at_least
-  template: "{{ 4 | at_least: 5 }}"
-  expected: "5"
-  hint: |
-    at_least ensures a minimum value. If input < minimum, return minimum.
-
-- name: filter_at_least_pass
-  template: "{{ 4 | at_least: 3 }}"
-  expected: "4"
-  hint: |
-    If input >= minimum, pass through unchanged.
-
-- name: filter_at_most
-  template: "{{ 4 | at_most: 3 }}"
-  expected: "3"
-  hint: |
-    at_most ensures a maximum value. If input > maximum, return maximum.
-
-- name: filter_at_most_pass
-  template: "{{ 4 | at_most: 5 }}"
-  expected: "4"
-  hint: |
-    If input <= maximum, pass through unchanged.
-
-# =============================================================================
-# SECTION 7: String Filters
-# Manipulating strings
-# =============================================================================
-
-- name: filter_append
-  template: "{{ 'hello' | append: ' world' }}"
-  expected: "hello world"
-  hint: |
-    append adds a string to the end of another string.
-
-- name: filter_prepend
-  template: "{{ 'world' | prepend: 'hello ' }}"
-  expected: "hello world"
-  hint: |
-    prepend adds a string to the beginning.
-
-- name: filter_remove
-  template: "{{ 'hello world' | remove: 'world' }}"
-  expected: "hello "
-  hint: |
-    remove deletes ALL occurrences of a substring.
-
-- name: filter_remove_first
-  template: "{{ 'hello hello' | remove_first: 'hello' }}"
-  expected: " hello"
-  hint: |
-    remove_first deletes only the FIRST occurrence.
-
-- name: filter_remove_last
-  template: "{{ 'hello hello' | remove_last: 'hello' }}"
-  expected: "hello "
-  hint: |
-    remove_last deletes only the LAST occurrence.
-
-- name: filter_replace
-  template: "{{ 'hello' | replace: 'e', 'a' }}"
-  expected: "hallo"
-  hint: |
-    replace substitutes ALL occurrences of a substring with another.
-    First arg is what to find, second arg is replacement.
-
-- name: filter_replace_first
-  template: "{{ 'hello hello' | replace_first: 'hello', 'hi' }}"
-  expected: "hi hello"
-  hint: |
-    replace_first substitutes only the FIRST occurrence.
-
-- name: filter_replace_last
-  template: "{{ 'hello hello' | replace_last: 'hello', 'hi' }}"
-  expected: "hello hi"
-  hint: |
-    replace_last substitutes only the LAST occurrence.
-
-- name: filter_slice_single
-  template: "{{ 'Liquid' | slice: 0 }}"
-  expected: "L"
-  hint: |
-    slice extracts a substring. With one argument, returns a single character
-    at that index. Indices are 0-based.
-
-- name: filter_slice_range
-  template: "{{ 'Liquid' | slice: 2, 4 }}"
-  expected: "quid"
-  hint: |
-    With two arguments, first is start index, second is LENGTH (not end index).
-
-- name: filter_slice_negative
-  template: "{{ 'Liquid' | slice: -3, 2 }}"
-  expected: "ui"
-  hint: |
-    Negative indices count from the end. -1 is last char, -3 is third from end.
-
-- name: filter_truncate
-  template: "{{ 'Ground control to Major Tom.' | truncate: 20 }}"
-  expected: "Ground control to..."
-  hint: |
-    truncate shortens a string to max length INCLUDING the ellipsis.
-    Default ellipsis is "..." (3 chars). 20 - 3 = 17 chars of content.
-
-- name: filter_truncate_custom_ellipsis
-  template: "{{ 'Ground control to Major Tom.' | truncate: 25, ', and so on' }}"
-  expected: "Ground control, and so on"
-  hint: |
-    Second argument customizes the ellipsis. The total length includes it.
-
-- name: filter_truncate_no_ellipsis
-  template: "{{ 'Ground control to Major Tom.' | truncate: 20, '' }}"
-  expected: "Ground control to Ma"
-  hint: |
-    Empty string as ellipsis means just truncate without adding anything.
-
-- name: filter_truncatewords
-  template: "{{ 'Ground control to Major Tom.' | truncatewords: 3 }}"
-  expected: "Ground control to..."
-  hint: |
-    truncatewords limits to N words, adding ellipsis if truncated.
-    Words are separated by spaces.
-
-- name: filter_truncatewords_custom
-  template: "{{ 'Ground control to Major Tom.' | truncatewords: 3, '--' }}"
-  expected: "Ground control to--"
-  hint: |
-    Custom ellipsis works the same as truncate.
-
 - name: filter_strip_newlines
   template: "{% capture x %}\na\nb\nc\n{% endcapture %}{{ x | strip_newlines }}"
   expected: "abc"
+  complexity: 110
   hint: |
     strip_newlines removes all newline characters from a string.
     Useful for compacting multi-line content.
@@ -662,6 +1206,7 @@
 - name: filter_newline_to_br
   template: "{% capture x %}a\nb{% endcapture %}{{ x | newline_to_br }}"
   expected: "a<br />\nb"
+  complexity: 110
   hint: |
     newline_to_br inserts <br /> BEFORE each newline (preserving the newline).
     Useful for displaying text with line breaks in HTML.
@@ -669,12 +1214,14 @@
 - name: filter_strip_html
   template: "{{ 'Have <em>you</em> read <strong>Ulysses</strong>?' | strip_html }}"
   expected: "Have you read Ulysses?"
+  complexity: 110
   hint: |
     strip_html removes all HTML tags from a string, leaving only text content.
 
 - name: filter_url_encode
   template: "{{ 'john@liquid.com' | url_encode }}"
   expected: "john%40liquid.com"
+  complexity: 110
   hint: |
     url_encode converts URL-unsafe characters to percent-encoded form.
     @ becomes %40, space becomes + or %20, etc.
@@ -682,12 +1229,190 @@
 - name: filter_url_decode
   template: "{{ '%27Stop%21%27+said+Fred' | url_decode }}"
   expected: "'Stop!' said Fred"
+  complexity: 110
   hint: |
     url_decode reverses url_encode. %27 -> ', %21 -> !, + -> space.
 
+- name: filter_default_false
+  template: "{{ false | default: 'fallback' }}"
+  expected: "fallback"
+  complexity: 110
+  hint: |
+    false is considered "falsy" by default filter, so the fallback is used.
+
+- name: filter_default_empty_string
+  template: "{{ '' | default: 'fallback' }}"
+  expected: "fallback"
+  complexity: 110
+  hint: |
+    Empty string is also considered "empty" by default filter.
+
 # =============================================================================
-# SECTION 8: Array Filters
-# Manipulating arrays
+# COMPLEXITY 115: Increment/Decrement
+# Tricky counter semantics
+# =============================================================================
+
+- name: increment_basic
+  template: "{% increment counter %}{% increment counter %}{% increment counter %}"
+  expected: "012"
+  complexity: 115
+  hint: |
+    increment creates a counter starting at 0, outputs current value,
+    then increments. First call outputs 0, second outputs 1, etc.
+    Note: increment OUTPUTS the value (unlike assign).
+
+- name: decrement_basic
+  template: "{% decrement counter %}{% decrement counter %}{% decrement counter %}"
+  expected: "-1-2-3"
+  complexity: 115
+  hint: |
+    decrement starts at -1 and decrements after each output.
+    First call outputs -1, second -2, etc.
+
+- name: increment_independent
+  template: "{% assign var = 10 %}{% increment var %}{% increment var %}{{ var }}"
+  expected: "0110"
+  complexity: 115
+  hint: |
+    CRITICAL: increment/decrement counters are INDEPENDENT from assign
+    variables, even with the same name! The assign var (10) and increment
+    var (0,1) are separate. This quirk trips up many implementers.
+
+# =============================================================================
+# COMPLEXITY 120: Comments and Raw
+# Non-rendering content
+# =============================================================================
+
+- name: comment_block
+  template: "before{% comment %}hidden{% endcomment %}after"
+  expected: "beforeafter"
+  complexity: 120
+  hint: |
+    Everything between {% comment %} and {% endcomment %} is completely
+    ignored. It produces no output. Use for documentation or temporarily
+    disabling code.
+
+- name: comment_with_liquid_code
+  template: "{% comment %}{% if true %}ignored{% endif %}{% endcomment %}shown"
+  expected: "shown"
+  complexity: 120
+  hint: |
+    Liquid code inside comments is NOT executed. The parser should skip
+    everything until {% endcomment %}.
+
+- name: comment_inline
+  template: "before{% # this is ignored %}after"
+  expected: "beforeafter"
+  complexity: 120
+  hint: |
+    Inline comments use {% # ... %}. Everything from # to %} is ignored.
+    This is more concise than block comments for single lines.
+
+- name: comment_inline_multiline
+  template: "before{%\n  # line 1\n  # line 2\n%}after"
+  expected: "beforeafter"
+  complexity: 120
+  hint: |
+    Multi-line inline comments: each line inside the tag must start with #.
+
+- name: raw_basic
+  template: "{% raw %}{{ not_processed }}{% endraw %}"
+  expected: "{{ not_processed }}"
+  complexity: 120
+  hint: |
+    The raw tag outputs its contents WITHOUT processing Liquid syntax.
+    {{ }} and {% %} are output literally. Use for showing Liquid code
+    examples or when you need literal {{ }} in output.
+
+- name: raw_with_tags
+  template: "{% raw %}{% if true %}shown{% endif %}{% endraw %}"
+  expected: "{% if true %}shown{% endif %}"
+  complexity: 120
+  hint: |
+    Tag syntax is also preserved literally inside raw blocks.
+
+# =============================================================================
+# COMPLEXITY 130: Echo and Liquid Tag
+# Alternative output syntax
+# =============================================================================
+
+- name: echo_basic
+  template: "{% echo 'hello' %}"
+  expected: "hello"
+  complexity: 130
+  hint: |
+    echo outputs a value, like {{ }}. It's useful inside {% liquid %} tags
+    where {{ }} syntax isn't allowed. {% echo x %} is equivalent to {{ x }}.
+
+- name: echo_with_filter
+  template: "{% echo 'hello' | upcase %}"
+  expected: "HELLO"
+  complexity: 130
+  hint: |
+    echo supports filters just like {{ }}.
+
+- name: echo_variable
+  template: "{% echo name %}"
+  environment:
+    name: "World"
+  expected: "World"
+  complexity: 130
+  hint: |
+    echo works with variables too.
+
+- name: liquid_tag_basic
+  template: |
+    {% liquid
+    assign x = 'hello'
+    echo x
+    %}
+  expected: "hello\n"
+  complexity: 130
+  hint: |
+    The {% liquid %} tag allows writing multiple Liquid statements without
+    repeating {% %} delimiters. Each line is a separate statement.
+    Use 'echo' to output values ({{ }} doesn't work inside liquid tags).
+
+- name: liquid_tag_with_logic
+  template: |
+    {% liquid
+    if true
+      echo 'yes'
+    endif
+    %}
+  expected: "yes\n"
+  complexity: 130
+  hint: |
+    Control structures work inside liquid tags. Don't use {% %} for
+    nested tags - just write the tag names directly.
+
+- name: liquid_tag_for_loop
+  template: |
+    {%- liquid
+    for i in (1..3)
+      echo i
+    endfor
+    -%}
+  expected: "123"
+  complexity: 130
+  hint: |
+    Loops work too. Each iteration outputs via echo.
+
+- name: liquid_tag_with_comments
+  template: |
+    {% liquid
+    # this is a comment
+    assign topic = 'hello'
+    echo topic
+    %}
+  expected: "hello\n"
+  complexity: 130
+  hint: |
+    Inside liquid tags, use # for comments (one per line).
+
+# =============================================================================
+# COMPLEXITY 140: Array Filters
+# Array manipulation
 # =============================================================================
 
 - name: filter_first
@@ -698,6 +1423,7 @@
       - b
       - c
   expected: "a"
+  complexity: 140
   hint: |
     first returns the first element of an array.
 
@@ -709,6 +1435,7 @@
       - b
       - c
   expected: "c"
+  complexity: 140
   hint: |
     last returns the last element of an array.
 
@@ -720,6 +1447,7 @@
       - b
       - c
   expected: "a, b, c"
+  complexity: 140
   hint: |
     join combines array elements into a string with a separator between them.
 
@@ -731,6 +1459,7 @@
       - b
       - c
   expected: "abc"
+  complexity: 140
   hint: |
     Empty separator concatenates elements directly.
 
@@ -742,6 +1471,7 @@
       - b
       - c
   expected: "cba"
+  complexity: 140
   hint: |
     reverse reverses the order of array elements. Note: reverse only works
     on arrays, not strings (use split, reverse, join for strings).
@@ -754,6 +1484,7 @@
       - a
       - b
   expected: "abc"
+  complexity: 140
   hint: |
     sort arranges elements in ascending order. Default sort is case-sensitive
     for strings (uppercase before lowercase in ASCII).
@@ -766,6 +1497,7 @@
       - Apple
       - banana
   expected: "Apple, banana, zebra"
+  complexity: 140
   hint: |
     sort_natural sorts case-insensitively. "Apple" and "apple" sort together.
 
@@ -779,6 +1511,7 @@
       - c
       - b
   expected: "abc"
+  complexity: 140
   hint: |
     uniq removes duplicates, keeping the first occurrence of each value.
 
@@ -792,6 +1525,7 @@
       - null
       - c
   expected: "abc"
+  complexity: 140
   hint: |
     compact removes nil/null values from an array.
 
@@ -805,6 +1539,7 @@
       - "3"
       - "4"
   expected: "1234"
+  complexity: 140
   hint: |
     concat combines two arrays into one, preserving order.
 
@@ -815,6 +1550,7 @@
       - name: Alice
       - name: Bob
   expected: "Alice, Bob"
+  complexity: 140
   hint: |
     map extracts a property from each element in an array of objects.
     Returns an array of property values.
@@ -830,581 +1566,14 @@
       - name: Carol
         active: true
   expected: "Alice, Carol"
+  complexity: 140
   hint: |
     where filters an array to only elements where a property equals a value.
     First arg is property name, second arg is value to match.
 
 # =============================================================================
-# SECTION 9: Conditionals ({% if %})
-# Control flow with if/elsif/else/endif
-# =============================================================================
-
-- name: if_true_literal
-  template: "{% if true %}yes{% endif %}"
-  expected: "yes"
-  hint: |
-    The if tag executes its block if the condition is truthy. Syntax:
-    {% if condition %}content{% endif %}. The block between if and endif
-    is only rendered when condition evaluates to true.
-
-- name: if_false_literal
-  template: "{% if false %}yes{% endif %}"
-  expected: ""
-  hint: |
-    When the condition is false, the block is skipped entirely. No output
-    is produced, not even whitespace from the tags themselves.
-
-- name: if_variable_truthy
-  template: "{% if name %}Hello {{ name }}{% endif %}"
-  environment:
-    name: "World"
-  expected: "Hello World"
-  hint: |
-    Variables are evaluated for truthiness. In Liquid, EVERYTHING is truthy
-    EXCEPT nil and false. A string like "World" is truthy.
-
-- name: if_variable_nil
-  template: "{% if missing %}yes{% endif %}"
-  expected: ""
-  hint: |
-    Undefined variables are nil, which is falsy. This is a common pattern to
-    check if a variable exists before using it.
-
-- name: if_else
-  template: "{% if false %}yes{% else %}no{% endif %}"
-  expected: "no"
-  hint: |
-    else provides an alternative block when the condition is false. Exactly
-    one block executes - either the if block or the else block, never both.
-
-- name: if_elsif
-  template: "{% if a == 1 %}one{% elsif a == 2 %}two{% else %}other{% endif %}"
-  environment:
-    a: 2
-  expected: "two"
-  hint: |
-    elsif adds additional conditions. Conditions are evaluated in order -
-    the first true condition's block executes, then we exit the whole if.
-
-- name: if_equality_string
-  template: "{% if name == 'Bob' %}yes{% endif %}"
-  environment:
-    name: "Bob"
-  expected: "yes"
-  hint: |
-    The == operator tests equality. String comparison is case-sensitive.
-    'Bob' == 'Bob' is true, 'Bob' == 'bob' is false.
-
-- name: if_equality_integer
-  template: "{% if count == 5 %}yes{% endif %}"
-  environment:
-    count: 5
-  expected: "yes"
-  hint: |
-    == works with numbers too. Compare values, not types.
-
-- name: if_inequality
-  template: "{% if name != 'Alice' %}not Alice{% endif %}"
-  environment:
-    name: "Bob"
-  expected: "not Alice"
-  hint: |
-    The != operator tests inequality (not equal).
-
-- name: if_greater_than
-  template: "{% if count > 5 %}big{% endif %}"
-  environment:
-    count: 10
-  expected: "big"
-  hint: |
-    The > operator tests if left > right.
-
-- name: if_less_than
-  template: "{% if count < 5 %}small{% endif %}"
-  environment:
-    count: 3
-  expected: "small"
-  hint: |
-    The < operator tests if left < right.
-
-- name: if_greater_or_equal
-  template: "{% if count >= 5 %}enough{% endif %}"
-  environment:
-    count: 5
-  expected: "enough"
-  hint: |
-    The >= operator tests greater than or equal to.
-
-- name: if_less_or_equal
-  template: "{% if count <= 5 %}ok{% endif %}"
-  environment:
-    count: 5
-  expected: "ok"
-  hint: |
-    The <= operator tests less than or equal to.
-
-- name: if_and_operator
-  template: "{% if a and b %}both{% endif %}"
-  environment:
-    a: true
-    b: true
-  expected: "both"
-  hint: |
-    The 'and' operator requires BOTH conditions to be truthy.
-
-- name: if_and_short_circuit
-  template: "{% if a and b %}both{% endif %}"
-  environment:
-    a: false
-    b: true
-  expected: ""
-  hint: |
-    If the first operand of 'and' is falsy, the whole expression is falsy.
-
-- name: if_or_operator
-  template: "{% if a or b %}either{% endif %}"
-  environment:
-    a: false
-    b: true
-  expected: "either"
-  hint: |
-    The 'or' operator requires at least ONE condition to be truthy.
-
-- name: if_contains_string
-  template: "{% if title contains 'hello' %}found{% endif %}"
-  environment:
-    title: "say hello world"
-  expected: "found"
-  hint: |
-    The 'contains' operator checks if a string contains a substring.
-    It's case-sensitive: 'Hello' contains 'ello' but not 'ELLO'.
-
-- name: if_contains_array
-  template: "{% if tags contains 'sale' %}on sale{% endif %}"
-  environment:
-    tags:
-      - new
-      - sale
-      - featured
-  expected: "on sale"
-  hint: |
-    contains also checks if an array includes a specific value.
-
-# =============================================================================
-# SECTION 10: Unless ({% unless %})
-# Inverted conditional
-# =============================================================================
-
-- name: unless_basic
-  template: "{% unless false %}shown{% endunless %}"
-  expected: "shown"
-  hint: |
-    unless is the opposite of if - it executes when condition is FALSE.
-    {% unless x %} is equivalent to {% if x == false or x == nil %}.
-
-- name: unless_true
-  template: "{% unless true %}hidden{% endunless %}"
-  expected: ""
-  hint: |
-    When the condition is true, unless skips the block.
-
-- name: unless_variable
-  template: "{% unless sold_out %}available{% endunless %}"
-  environment:
-    sold_out: false
-  expected: "available"
-  hint: |
-    Common pattern: "unless bad_condition, show good_thing".
-
-# =============================================================================
-# SECTION 11: Case/When
-# Switch statement
-# =============================================================================
-
-- name: case_basic
-  template: "{% case x %}{% when 1 %}one{% when 2 %}two{% endcase %}"
-  environment:
-    x: 1
-  expected: "one"
-  hint: |
-    case/when is a switch statement. case takes a value, when defines matches.
-    When x equals 1, the "one" block executes. Only one when block runs.
-
-- name: case_no_match
-  template: "{% case x %}{% when 1 %}one{% when 2 %}two{% endcase %}"
-  environment:
-    x: 3
-  expected: ""
-  hint: |
-    If no when clause matches, nothing is output (unless there's an else).
-
-- name: case_else
-  template: "{% case x %}{% when 1 %}one{% else %}other{% endcase %}"
-  environment:
-    x: 99
-  expected: "other"
-  hint: |
-    else in a case handles all unmatched values. It's the default case.
-
-- name: case_multiple_values
-  template: "{% case x %}{% when 1, 2, 3 %}small{% else %}big{% endcase %}"
-  environment:
-    x: 2
-  expected: "small"
-  hint: |
-    A when clause can match multiple values separated by commas.
-    Match ANY of them triggers the block.
-
-- name: case_string
-  template: "{% case color %}{% when 'red' %}R{% when 'green' %}G{% when 'blue' %}B{% endcase %}"
-  environment:
-    color: "green"
-  expected: "G"
-  hint: |
-    case/when works with any type including strings.
-
-# =============================================================================
-# SECTION 12: For Loops ({% for %})
-# Iterating over arrays and ranges
-# =============================================================================
-
-- name: for_basic_array
-  template: "{% for item in items %}{{ item }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "abc"
-  hint: |
-    The for loop iterates over each element. Syntax: {% for var in array %}
-    The loop variable (item) takes each value in turn. The block executes
-    once per element.
-
-- name: for_range_literal
-  template: "{% for i in (1..3) %}{{ i }}{% endfor %}"
-  expected: "123"
-  hint: |
-    Ranges use (start..end) syntax. Both ends are inclusive.
-    (1..3) produces 1, 2, 3.
-
-- name: for_range_variable
-  template: "{% for i in (1..count) %}{{ i }}{% endfor %}"
-  environment:
-    count: 4
-  expected: "1234"
-  hint: |
-    Range bounds can be variables.
-
-- name: for_limit
-  template: "{% for i in (1..10) limit:3 %}{{ i }}{% endfor %}"
-  expected: "123"
-  hint: |
-    limit stops after N iterations. Useful for "show first N items".
-
-- name: for_offset
-  template: "{% for i in (1..5) offset:2 %}{{ i }}{% endfor %}"
-  expected: "345"
-  hint: |
-    offset skips the first N items. 0-based: offset:2 skips items 0 and 1.
-
-- name: for_reversed
-  template: "{% for i in (1..3) reversed %}{{ i }}{% endfor %}"
-  expected: "321"
-  hint: |
-    reversed iterates in reverse order. Note: it's "reversed" not "reverse".
-
-- name: for_else
-  template: "{% for item in items %}{{ item }}{% else %}empty{% endfor %}"
-  environment:
-    items: []
-  expected: "empty"
-  hint: |
-    else block in for loop executes if the array is empty. Great for
-    "no results found" messages.
-
-- name: for_break
-  template: "{% for i in (1..5) %}{% if i == 3 %}{% break %}{% endif %}{{ i }}{% endfor %}"
-  expected: "12"
-  hint: |
-    break exits the loop immediately. Here we stop when i reaches 3,
-    so only 1 and 2 are output.
-
-- name: for_continue
-  template: "{% for i in (1..5) %}{% if i == 3 %}{% continue %}{% endif %}{{ i }}{% endfor %}"
-  expected: "1245"
-  hint: |
-    continue skips the rest of the current iteration. We skip i=3,
-    so output is 1,2,4,5 (no 3).
-
-- name: forloop_index
-  template: "{% for item in items %}{{ forloop.index }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "123"
-  hint: |
-    forloop.index is the 1-based iteration number. First iteration is 1.
-
-- name: forloop_index0
-  template: "{% for item in items %}{{ forloop.index0 }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "012"
-  hint: |
-    forloop.index0 is 0-based. First iteration is 0.
-
-- name: forloop_first
-  template: "{% for item in items %}{% if forloop.first %}[{% endif %}{{ item }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "[abc"
-  hint: |
-    forloop.first is true only on the first iteration.
-
-- name: forloop_last
-  template: "{% for item in items %}{{ item }}{% unless forloop.last %},{% endunless %}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "a,b,c"
-  hint: |
-    forloop.last is true only on the last iteration. Standard way to
-    avoid trailing separators.
-
-- name: forloop_length
-  template: "{% for item in items %}{{ forloop.length }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "333"
-  hint: |
-    forloop.length is the total number of iterations (constant throughout loop).
-
-- name: forloop_rindex
-  template: "{% for item in items %}{{ forloop.rindex }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "321"
-  hint: |
-    forloop.rindex is the 1-based index counting from the end.
-    On last item, rindex is 1.
-
-- name: forloop_rindex0
-  template: "{% for item in items %}{{ forloop.rindex0 }}{% endfor %}"
-  environment:
-    items:
-      - a
-      - b
-      - c
-  expected: "210"
-  hint: |
-    forloop.rindex0 is 0-based reverse index. Last item is 0.
-
-# =============================================================================
-# SECTION 13: Increment and Decrement
-# Counter variables independent of assign
-# =============================================================================
-
-- name: increment_basic
-  template: "{% increment counter %}{% increment counter %}{% increment counter %}"
-  expected: "012"
-  hint: |
-    increment creates a counter starting at 0, outputs current value,
-    then increments. First call outputs 0, second outputs 1, etc.
-    Note: increment OUTPUTS the value (unlike assign).
-
-- name: decrement_basic
-  template: "{% decrement counter %}{% decrement counter %}{% decrement counter %}"
-  expected: "-1-2-3"
-  hint: |
-    decrement starts at -1 and decrements after each output.
-    First call outputs -1, second -2, etc.
-
-- name: increment_independent
-  template: "{% assign var = 10 %}{% increment var %}{% increment var %}{{ var }}"
-  expected: "0110"
-  hint: |
-    CRITICAL: increment/decrement counters are INDEPENDENT from assign
-    variables, even with the same name! The assign var (10) and increment
-    var (0,1) are separate. This quirk trips up many implementers.
-
-# =============================================================================
-# SECTION 14: Capture
-# Capturing output into a variable
-# =============================================================================
-
-- name: capture_basic
-  template: "{% capture greeting %}Hello World{% endcapture %}{{ greeting }}"
-  expected: "Hello World"
-  hint: |
-    capture collects everything between its tags and stores it as a string.
-    Unlike assign which stores a value directly, capture renders content
-    and saves the result.
-
-- name: capture_with_variables
-  template: "{% capture msg %}Hello {{ name }}!{% endcapture %}{{ msg }}"
-  environment:
-    name: "World"
-  expected: "Hello World!"
-  hint: |
-    Content inside capture is processed normally - variables resolved,
-    filters applied. The final rendered result becomes the variable value.
-
-- name: capture_with_logic
-  template: "{% capture x %}{% if true %}yes{% endif %}{% endcapture %}{{ x }}"
-  expected: "yes"
-  hint: |
-    Any Liquid code can appear inside capture - conditionals, loops, etc.
-    Everything renders and the output is captured.
-
-# =============================================================================
-# SECTION 15: Comments
-# Hiding content from output
-# =============================================================================
-
-- name: comment_block
-  template: "before{% comment %}hidden{% endcomment %}after"
-  expected: "beforeafter"
-  hint: |
-    Everything between {% comment %} and {% endcomment %} is completely
-    ignored. It produces no output. Use for documentation or temporarily
-    disabling code.
-
-- name: comment_with_liquid_code
-  template: "{% comment %}{% if true %}ignored{% endif %}{% endcomment %}shown"
-  expected: "shown"
-  hint: |
-    Liquid code inside comments is NOT executed. The parser should skip
-    everything until {% endcomment %}.
-
-- name: comment_inline
-  template: "before{% # this is ignored %}after"
-  expected: "beforeafter"
-  hint: |
-    Inline comments use {% # ... %}. Everything from # to %} is ignored.
-    This is more concise than block comments for single lines.
-
-- name: comment_inline_multiline
-  template: "before{%\n  # line 1\n  # line 2\n%}after"
-  expected: "beforeafter"
-  hint: |
-    Multi-line inline comments: each line inside the tag must start with #.
-
-# =============================================================================
-# SECTION 16: Raw
-# Escaping Liquid syntax
-# =============================================================================
-
-- name: raw_basic
-  template: "{% raw %}{{ not_processed }}{% endraw %}"
-  expected: "{{ not_processed }}"
-  hint: |
-    The raw tag outputs its contents WITHOUT processing Liquid syntax.
-    {{ }} and {% %} are output literally. Use for showing Liquid code
-    examples or when you need literal {{ }} in output.
-
-- name: raw_with_tags
-  template: "{% raw %}{% if true %}shown{% endif %}{% endraw %}"
-  expected: "{% if true %}shown{% endif %}"
-  hint: |
-    Tag syntax is also preserved literally inside raw blocks.
-
-# =============================================================================
-# SECTION 17: Echo
-# Outputting inside liquid tags
-# =============================================================================
-
-- name: echo_basic
-  template: "{% echo 'hello' %}"
-  expected: "hello"
-  hint: |
-    echo outputs a value, like {{ }}. It's useful inside {% liquid %} tags
-    where {{ }} syntax isn't allowed. {% echo x %} is equivalent to {{ x }}.
-
-- name: echo_with_filter
-  template: "{% echo 'hello' | upcase %}"
-  expected: "HELLO"
-  hint: |
-    echo supports filters just like {{ }}.
-
-- name: echo_variable
-  template: "{% echo name %}"
-  environment:
-    name: "World"
-  expected: "World"
-  hint: |
-    echo works with variables too.
-
-# =============================================================================
-# SECTION 18: Liquid Tag
-# Multi-line Liquid code without delimiters
-# =============================================================================
-
-- name: liquid_tag_basic
-  template: |
-    {% liquid
-    assign x = 'hello'
-    echo x
-    %}
-  expected: "hello\n"
-  hint: |
-    The {% liquid %} tag allows writing multiple Liquid statements without
-    repeating {% %} delimiters. Each line is a separate statement.
-    Use 'echo' to output values ({{ }} doesn't work inside liquid tags).
-
-- name: liquid_tag_with_logic
-  template: |
-    {% liquid
-    if true
-      echo 'yes'
-    endif
-    %}
-  expected: "yes\n"
-  hint: |
-    Control structures work inside liquid tags. Don't use {% %} for
-    nested tags - just write the tag names directly.
-
-- name: liquid_tag_for_loop
-  template: |
-    {%- liquid
-    for i in (1..3)
-      echo i
-    endfor
-    -%}
-  expected: "123"
-  hint: |
-    Loops work too. Each iteration outputs via echo.
-
-- name: liquid_tag_with_comments
-  template: |
-    {% liquid
-    # this is a comment
-    assign topic = 'hello'
-    echo topic
-    %}
-  expected: "hello\n"
-  hint: |
-    Inside liquid tags, use # for comments (one per line).
-
-# =============================================================================
-# SECTION 19: Property Access
-# Accessing nested values
+# COMPLEXITY 150: Property Access
+# Dot and bracket notation
 # =============================================================================
 
 - name: property_dot_notation
@@ -1413,6 +1582,7 @@
     user:
       name: "Alice"
   expected: "Alice"
+  complexity: 150
   hint: |
     Dot notation accesses properties of objects (hashes). user.name looks up
     the 'name' key in the user hash/object.
@@ -1424,6 +1594,7 @@
       address:
         city: "Seattle"
   expected: "Seattle"
+  complexity: 150
   hint: |
     Chain dot notation for nested access: a.b.c looks up c in b in a.
 
@@ -1433,6 +1604,7 @@
     user:
       name: "Alice"
   expected: "Alice"
+  complexity: 150
   hint: |
     Bracket notation is an alternative to dot notation. Required when
     property names have special characters or spaces.
@@ -1443,6 +1615,7 @@
     user:
       name: "Alice"
   expected: "Alice"
+  complexity: 150
   hint: |
     Bracket notation allows DYNAMIC property access using a variable.
     The variable's value becomes the property name.
@@ -1455,6 +1628,7 @@
       - second
       - third
   expected: "first"
+  complexity: 150
   hint: |
     Array elements are accessed by index using brackets. Indices are 0-based.
 
@@ -1466,6 +1640,7 @@
       - second
       - third
   expected: "third"
+  complexity: 150
   hint: |
     Negative indices count from the end. -1 is last, -2 is second-to-last.
 
@@ -1475,24 +1650,27 @@
     user:
       name: "Alice"
   expected: "[]"
+  complexity: 150
   hint: |
     Accessing a non-existent property returns nil, which outputs empty string.
     No error is raised - this is intentional for template flexibility.
 
 # =============================================================================
-# SECTION 20: Truthy and Falsy
-# Understanding boolean evaluation
+# COMPLEXITY 170: Truthy/Falsy Edge Cases
+# Understanding boolean evaluation quirks
 # =============================================================================
 
 - name: truthy_string
   template: "{% if 'hello' %}yes{% endif %}"
   expected: "yes"
+  complexity: 170
   hint: |
     Strings are truthy - they evaluate to true in boolean context.
 
 - name: truthy_empty_string
   template: "{% if '' %}yes{% endif %}"
   expected: "yes"
+  complexity: 170
   hint: |
     IMPORTANT: Empty strings are TRUTHY in Liquid! This is different from
     many languages. Use {{ str | size }} > 0 to check for non-empty.
@@ -1500,6 +1678,7 @@
 - name: truthy_zero
   template: "{% if 0 %}yes{% endif %}"
   expected: "yes"
+  complexity: 170
   hint: |
     IMPORTANT: Zero is TRUTHY in Liquid! This is different from many
     languages. Use {% if num != 0 %} to check for non-zero.
@@ -1509,6 +1688,7 @@
   environment:
     items: []
   expected: "yes"
+  complexity: 170
   hint: |
     IMPORTANT: Empty arrays are TRUTHY! Use {% if items.size > 0 %}
     or {% if items != empty %} to check for non-empty arrays.
@@ -1516,12 +1696,14 @@
 - name: falsy_nil
   template: "{% if nil %}yes{% else %}no{% endif %}"
   expected: "no"
+  complexity: 170
   hint: |
     nil is FALSY - one of only two falsy values in Liquid.
 
 - name: falsy_false
   template: "{% if false %}yes{% else %}no{% endif %}"
   expected: "no"
+  complexity: 170
   hint: |
     false is FALSY - the other falsy value. Only nil and false are falsy.
     Everything else is truthy.
@@ -1529,12 +1711,14 @@
 - name: falsy_undefined
   template: "{% if undefined_var %}yes{% else %}no{% endif %}"
   expected: "no"
+  complexity: 170
   hint: |
     Undefined variables are nil, which is falsy.
 
 - name: empty_comparison_string
   template: "{% if '' == empty %}yes{% endif %}"
   expected: "yes"
+  complexity: 170
   hint: |
     The special 'empty' keyword can be compared with == to check for
     empty strings, arrays, or hashes.
@@ -1544,17 +1728,19 @@
   environment:
     items: []
   expected: "yes"
+  complexity: 170
   hint: |
     empty comparison works for arrays too.
 
 # =============================================================================
-# SECTION 21: Cycle
-# Rotating through values
+# COMPLEXITY 180: Cycle and TableRow
+# Specialized iteration helpers
 # =============================================================================
 
 - name: cycle_basic
   template: "{% for i in (1..4) %}{% cycle 'a', 'b' %}{% endfor %}"
   expected: "abab"
+  complexity: 180
   hint: |
     cycle rotates through its arguments on each call. First call returns 'a',
     second 'b', third 'a' again, etc. Commonly used for alternating row colors.
@@ -1562,20 +1748,17 @@
 - name: cycle_three_values
   template: "{% for i in (1..6) %}{% cycle 'a', 'b', 'c' %}{% endfor %}"
   expected: "abcabc"
+  complexity: 180
   hint: |
     cycle works with any number of values.
 
 - name: cycle_named
   template: "{% for i in (1..2) %}{% cycle 'a': 'x', 'y' %}{% cycle 'b': '1', '2' %}{% endfor %}"
   expected: "x1y2"
+  complexity: 180
   hint: |
     Named cycles track position independently. 'a' and 'b' are separate
     cycles that don't interfere with each other.
-
-# =============================================================================
-# SECTION 22: TableRow
-# Generating HTML tables
-# =============================================================================
 
 - name: tablerow_basic
   template: "{% tablerow item in items %}{{ item }}{% endtablerow %}"
@@ -1585,6 +1768,7 @@
       - b
       - c
   expected: "<tr class=\"row1\">\n<td class=\"col1\">a</td><td class=\"col2\">b</td><td class=\"col3\">c</td></tr>\n"
+  complexity: 180
   hint: |
     tablerow generates HTML table rows. It wraps items in <tr> and <td> tags
     with row and column classes. Note the newline after the opening <tr> tag.
@@ -1599,6 +1783,7 @@
       - c
       - d
   expected: "<tr class=\"row1\">\n<td class=\"col1\">a</td><td class=\"col2\">b</td></tr>\n<tr class=\"row2\"><td class=\"col1\">c</td><td class=\"col2\">d</td></tr>\n"
+  complexity: 180
   hint: |
     cols parameter sets how many columns per row. A new <tr> starts after
     that many <td>s.

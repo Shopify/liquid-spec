@@ -57,6 +57,7 @@ module Liquid
             hint: data["hint"],
             source_hint: effective_hint,
             source_required_options: effective_defaults,
+            complexity: data["complexity"],
           )
         end
       end

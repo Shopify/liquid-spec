@@ -202,6 +202,7 @@ module Liquid
 
             suite_specs = suite.specs
             suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+            suite_specs = sort_by_complexity(suite_specs)
 
             next if suite_specs.empty?
 
@@ -461,6 +462,14 @@ module Liquid
           specs.select do |s|
             mode = s.error_mode&.to_sym
             mode.nil? || mode == :strict
+          end
+        end
+
+        # Sort specs by complexity (lower first), specs without complexity come last
+        def self.sort_by_complexity(specs)
+          specs.sort_by do |s|
+            # Specs with complexity sort by it, specs without go to the end (infinity)
+            s.complexity || Float::INFINITY
           end
         end
       end
