@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "liquid/version"
-require "liquid/spec/adapter/liquid_ruby"
+require_relative "../lib/liquid/spec/adapter/liquid_ruby"
 
 module Helpers
   extend self

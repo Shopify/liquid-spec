@@ -4,68 +4,225 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Project Is
 
-liquid-spec is a test suite for the Liquid templating language. It captures test cases from the reference Shopify/liquid implementation and can verify that other Liquid implementations produce identical output.
+liquid-spec is a test suite and CLI for testing Liquid template implementations. It captures test cases from the reference Shopify/liquid implementation and can verify that any Liquid implementation produces correct output.
 
-## Common Commands
+## CLI Usage
 
 ```bash
-# Run all tests
-bundle exec rake test
+# Install the gem
+gem install liquid-spec
 
-# Run a single test file
-bundle exec ruby -Ilib:test test/liquid_ruby_test.rb
+# Run an example adapter
+liquid-spec examples/liquid_ruby.rb
 
-# Run a specific test method
-bundle exec ruby -Ilib:test test/liquid_ruby_test.rb -n test_method_name
+# Generate an adapter template
+liquid-spec init my_adapter.rb
 
-# Generate specs from Shopify/liquid (clones repo to tmp/, runs tests, captures output)
+# Run specs with your adapter
+liquid-spec my_adapter.rb
+
+# Filter by test name
+liquid-spec my_adapter.rb -n assign
+
+# Run specific suite
+liquid-spec my_adapter.rb -s liquid_ruby
+
+# Verbose output
+liquid-spec my_adapter.rb -v
+
+# List available specs
+liquid-spec my_adapter.rb -l
+
+# List available suites
+liquid-spec my_adapter.rb --list-suites
+
+# Show all failures (default stops at 10)
+liquid-spec my_adapter.rb --no-max-failures
+```
+
+## Writing an Adapter
+
+An adapter defines how your Liquid implementation compiles and renders templates:
+
+```ruby
+#!/usr/bin/env ruby
+require "liquid/spec/cli/adapter_dsl"
+
+LiquidSpec.setup do
+  require "my_liquid"
+end
+
+LiquidSpec.configure do |config|
+  config.suite = :liquid_ruby  # :all, :liquid_ruby, :shopify_theme_dawn
+  config.features = [
+    :core,                  # Basic Liquid parsing/rendering
+  ]
+end
+
+LiquidSpec.compile do |source, options|
+  MyLiquid::Template.parse(source, **options)
+end
+
+LiquidSpec.render do |template, ctx|
+  # ctx provides: assigns, environment, registers, file_system,
+  #               exception_renderer, template_factory
+  template.render(ctx.variables)
+end
+```
+
+Running the adapter file directly shows usage instructions:
+```bash
+ruby my_adapter.rb
+# => "This is a liquid-spec adapter. Run it with: liquid-spec my_adapter.rb"
+```
+
+## Development Commands
+
+```bash
+# Run example adapter locally
+ruby -I../liquid/lib -Ilib bin/liquid-spec examples/liquid_ruby.rb
+
+# Run with verbose output
+ruby -I../liquid/lib -Ilib bin/liquid-spec examples/liquid_ruby.rb -v
+
+# Run specific tests
+ruby -I../liquid/lib -Ilib bin/liquid-spec examples/liquid_ruby.rb -n assign
+
+# Test the CLI
+ruby -Ilib bin/liquid-spec help
+ruby -Ilib bin/liquid-spec init test.rb
+
+# Generate specs from Shopify/liquid
 bundle exec rake generate
-
-# Generate only liquid_ruby specs
-bundle exec rake generate:liquid_ruby
-
-# Generate only standard_filters specs
-bundle exec rake generate:standard_filters
 ```
 
 ## Architecture
 
-### Spec Generation Flow
+### CLI Components
 
-1. `rake generate` clones Shopify/liquid to `tmp/liquid/` at the version matching the liquid gem dependency
-2. Patches are injected into the cloned repo's test helper to capture test data during execution
-3. Tests run in the cloned repo, writing captured specs to `tmp/liquid-ruby-capture.yml`
-4. Captured data is formatted and written to `specs/liquid_ruby/*.yml`
+- **`bin/liquid-spec`** - Entry point
+- **`lib/liquid/spec/cli.rb`** - Command dispatcher  
+- **`lib/liquid/spec/cli/init.rb`** - Generates adapter templates
+- **`lib/liquid/spec/cli/runner.rb`** - Runs specs with an adapter
+- **`lib/liquid/spec/cli/adapter_dsl.rb`** - DSL for LiquidSpec.setup/configure/compile/render
 
-### Key Components
+### Spec Components
 
-- **`Liquid::Spec::Unit`** (`lib/liquid/spec/unit.rb`): Struct representing a single test case with fields: name, expected, template, environment, filesystem, error_mode, etc.
-
-- **`Liquid::Spec::Source`** (`lib/liquid/spec/source.rb`): Factory for loading specs from different formats (YAML, text, directory-based)
-
-- **`Liquid::Spec::TestGenerator`** (`lib/liquid/spec/test_generator.rb`): Dynamically generates test methods on a test class from spec sources. Groups specs by class name prefix (e.g., `AssignTest#test_foo` creates `AssignTest` subclass).
-
-- **`Liquid::Spec::Adapter`** (`lib/liquid/spec/adapter/`): Adapters render templates. `Default` returns expected values; `LiquidRuby` actually renders with the liquid gem.
-
-- **`Liquid::Spec::Assertions`** (`lib/liquid/spec/assertions.rb`): Module factory that provides `assert_parity_for_spec` comparing expected adapter output against actual adapter output.
-
-### Spec File Format (YAML)
-
-```yaml
-- name: TestClass#test_description_hash
-  template: "{{ foo | upcase }}"
-  environment:
-    foo: bar
-  expected: "BAR"
-  error_mode: :lax  # optional
-  render_errors: false
-  filesystem:       # optional, for include/render tags
-    snippet: "content"
-```
+- **`Liquid::Spec::Unit`** - Single test case struct
+- **`Liquid::Spec::Source`** - Loads specs from YAML/text/directories
+- **`Liquid::Spec::Suite`** - Suite configuration loaded from suite.yml
+- **`Liquid::Spec::TestGenerator`** - Generates Minitest methods from specs
 
 ### Directory Structure
 
-- `specs/liquid_ruby/` - Core Liquid language specs generated from Shopify/liquid tests
-- `specs/dawn/` - Shopify Dawn theme section rendering specs
-- `lib/liquid/spec/deps/` - Patches applied to Shopify/liquid during spec generation
+- `bin/` - CLI executable
+- `examples/` - Example adapters (liquid_ruby.rb, liquid_ruby_strict.rb, liquid_c.rb)
+- `lib/liquid/spec/cli/` - CLI implementation
+- `specs/liquid_ruby/` - Core Liquid specs from Shopify/liquid
+- `specs/shopify_production_recordings/` - Recorded specs from Shopify production
+- `specs/shopify_theme_dawn/` - Shopify Dawn theme specs
 - `tasks/` - Rake tasks for spec generation
+
+## Spec Format
+
+### YAML Structure
+
+YAML spec files support two formats:
+
+**Simple format** (array of specs):
+```yaml
+---
+- name: test_one
+  template: "{{ foo }}"
+  expected: "bar"
+```
+
+**Extended format** (with metadata):
+```yaml
+---
+_metadata:
+  hint: "These specs require lax mode"
+  required_options:
+    error_mode: :lax
+specs:
+- name: test_one
+  template: "{{ foo }}"
+  expected: "bar"
+```
+
+### Hints
+
+Specs can include an optional `hint` field that provides contextual information about why a spec might fail. Hints are displayed in yellow when the spec fails, helping implementers understand potential causes.
+
+```yaml
+- name: blank_with_activesupport
+  template: "{% if foo.blank? %}empty{% endif %}"
+  expected: "empty"
+  environment:
+    foo: ""
+  hint: "This spec tests blank? which requires ActiveSupport to be loaded"
+```
+
+Use hints to communicate:
+- Dependencies that must be loaded (e.g., ActiveSupport)
+- Implementation-specific behaviors being tested
+- Known edge cases or platform differences
+- Any context that helps diagnose failures
+
+### Source-Level Metadata
+
+YAML files can include a `_metadata` section for settings that apply to all specs in the file:
+
+- **`hint`**: A global hint displayed when any spec in this file fails
+- **`required_options`**: Options that are automatically applied to all specs (e.g., `error_mode: :lax`)
+
+Spec-level settings override source-level settings. For example, a spec with its own `error_mode` will use that instead of the `required_options.error_mode`.
+
+## Suite Configuration
+
+Each suite directory contains a `suite.yml` file that configures the suite:
+
+```yaml
+---
+# Human-readable name
+name: "Liquid Ruby"
+description: "Core Liquid template engine behavior"
+
+# Whether this suite runs by default (when suite: :all)
+default: true
+
+# Context hint displayed when any spec in this suite fails
+hint: |
+  These specs test core Liquid functionality.
+  Failures indicate missing or incorrect Liquid behavior.
+
+# Required features - adapter must declare these to run this suite
+required_features:
+  - core
+
+# Default options applied to all specs (can be overridden per-file or per-spec)
+defaults:
+  render_errors: false
+```
+
+### Available Suites
+
+- **`liquid_ruby`** (default: true) - Core Liquid specs from Shopify/liquid integration tests
+- **`shopify_production_recordings`** (default: false) - Specs recorded from Shopify production
+- **`shopify_theme_dawn`** (default: false) - Real-world theme specs, requires Shopify-specific tags/objects/filters
+
+### Features
+
+Adapters declare which features they support. Suites require specific features to run:
+
+```ruby
+LiquidSpec.configure do |config|
+  config.features = [:core, :shopify_tags]
+end
+```
+
+Common features:
+- `:core` - Basic Liquid parsing and rendering
+- `:shopify_tags` - Shopify-specific tags (schema, style, section)
+- `:shopify_objects` - Shopify-specific objects (section, block)
+- `:shopify_filters` - Shopify-specific filters (asset_url, image_url)

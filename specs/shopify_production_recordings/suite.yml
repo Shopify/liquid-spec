@@ -1,0 +1,16 @@
+---
+name: "Shopify Production Recordings"
+description: "Specs recorded from Shopify/liquid compiler tests and production behavior"
+
+default: true
+
+hint: |
+  These specs were recorded from Shopify's production Liquid implementation.
+  They test internal compiler behavior and may include Shopify-specific extensions.
+  Failures here may be expected if your implementation differs from Shopify's.
+
+required_features:
+  - core
+
+defaults:
+  render_errors: false

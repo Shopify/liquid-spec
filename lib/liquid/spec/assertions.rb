@@ -9,6 +9,31 @@ module Liquid
     class Assertions < Module
       TEST_TIME = Time.utc(2024, 0o1, 0o1, 0, 1, 58).freeze
 
+      # Deep duplicate an object, handling special cases
+      def self.deep_dup(obj)
+        case obj
+        when Hash
+          obj.transform_keys { |k| deep_dup(k) }.transform_values { |v| deep_dup(v) }
+        when Array
+          obj.map { |v| deep_dup(v) }
+        when String
+          obj.dup
+        when Numeric, Symbol, TrueClass, FalseClass, NilClass
+          obj
+        when Class
+          obj # Don't dup classes
+        when Proc
+          obj # Procs can't be duped
+        else
+          # Try dup, fall back to the object itself
+          begin
+            obj.dup
+          rescue TypeError
+            obj
+          end
+        end
+      end
+
       def self.render_in_forked_process(adapter, spec)
         read, write = IO.pipe
         pid = fork do
@@ -37,7 +62,7 @@ module Liquid
 
         if rendered.is_a?(Exception)
           e = rendered.is_a?(Liquid::InternalError) ? rendered.cause : rendered
-          e.message << "\n(❌ error when rendering with #{adapter.class.name})"
+          e.message << "\n(error when rendering with #{adapter.class.name})"
           raise e
         end
 
@@ -64,7 +89,8 @@ module Liquid
             spec_opts[:expected] = expected
 
             Timecop.freeze(TEST_TIME) do
-              expected_spec = Unit.new(**Marshal.load(Marshal.dump(spec_opts)))
+              # Use deep_dup instead of Marshal.dump/load to avoid class serialization issues
+              expected_spec = Unit.new(**Assertions.deep_dup(spec_opts))
 
               expected_render_result, expected_context, expected_err = begin
                 expected_adapter.render(expected_spec)
@@ -87,7 +113,7 @@ module Liquid
                 assert(expected == expected_render_result, message)
               end
 
-              actual_opts = Marshal.load(Marshal.dump(spec_opts))
+              actual_opts = Assertions.deep_dup(spec_opts)
               actual_opts[:expected] = expected_render_result
               actual_spec = Unit.new(**actual_opts)
 

@@ -4,17 +4,22 @@ source "https://rubygems.org"
 
 gemspec
 
-group :development, :test do
+# Use local liquid gem if available, otherwise use latest from rubygems
+local_liquid_path = File.expand_path("../liquid", __dir__)
+if File.exist?(local_liquid_path)
+  gem "liquid", path: local_liquid_path
+else
+  gem "liquid"
+end
+
+# Core test dependencies
+gem "minitest"
+gem "minitest-focus"
+gem "timecop"
+
+# Development only
+group :development do
   gem "rake"
-  gem "rubocop", require: false
-  gem "rubocop-shopify", require: false
 end
 
-group :test do
-  gem "minitest"
-  gem "minitest-focus", require: false
-  gem "mocha"
-  gem "pry-byebug"
-end
-
-gem "activesupport", "~> 7.1"
+gem "base64", "~> 0.3.0"

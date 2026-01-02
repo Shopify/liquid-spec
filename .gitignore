@@ -11,3 +11,4 @@
 /tmp/
 /Gemfile.lock
 .claude
+/build/

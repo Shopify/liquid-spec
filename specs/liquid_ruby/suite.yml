@@ -1,0 +1,15 @@
+---
+name: "Liquid Ruby"
+description: "Core Liquid template engine behavior from Shopify/liquid"
+
+default: true
+
+hint: |
+  These specs test core Liquid functionality from the reference implementation.
+  Failures indicate missing or incorrect Liquid behavior.
+
+required_features:
+  - core
+
+defaults:
+  render_errors: false
