@@ -185,10 +185,17 @@ module Liquid
           puts ""
 
           # Collect suites to run (basics first, then others alphabetically)
-          suites_to_run = Liquid::Spec::Suite.all
-            .select { |s| s.default? && s.runnable_with?(features) }
-            .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
-          skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
+          if config.suite == :all
+            suites_to_run = Liquid::Spec::Suite.all
+              .select { |s| s.default? && s.runnable_with?(features) }
+              .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
+            skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
+          else
+            # Specific suite selected - run just that one
+            suite = Liquid::Spec::Suite.find(config.suite)
+            suites_to_run = suite ? [suite] : []
+            skipped_suites = []
+          end
 
           total_passed = 0
           total_failed = 0
