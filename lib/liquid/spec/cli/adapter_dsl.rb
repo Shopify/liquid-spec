@@ -154,6 +154,11 @@ module LiquidSpec
       @config
     end
 
+    # Get the configured features for this adapter
+    def features
+      @config&.instance_variable_get(:@features) || [:core]
+    end
+
     # Called once before running specs - use for requiring gems, setup, etc.
     def setup(&block)
       @setup_block = block

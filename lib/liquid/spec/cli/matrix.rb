@@ -288,8 +288,9 @@ module Liquid
           # Track results per suite per adapter
           # suite_results[suite_id][adapter_name] = {
           #   total: N,     # total specs in suite
-          #   agreed: N,    # specs where all adapters agreed (success or error)
-          #   checked: N,   # specs that were checked
+          #   agreed: N,    # specs that matched reference
+          #   checked: N,   # specs that were compared (not skipped)
+          #   skipped: N,   # specs skipped (adapter doesn't support)
           # }
           suite_results = {}
           specs_by_suite.each_key do |suite_id|
@@ -299,6 +300,7 @@ module Liquid
                 total: specs_by_suite[suite_id].size,
                 agreed: 0,
                 checked: 0,
+                skipped: 0,
               }
             end
           end
@@ -322,16 +324,27 @@ module Liquid
                 spec_results = {}
                 boxes.each do |name, box|
                   spec_results[name] = if box.nil?
-                    { output: nil, error: "Adapter failed to load" }
+                    { output: nil, error: "Adapter failed to load", skipped: false }
                   else
                     box.run_spec(spec)
                   end
                 end
 
+                # Check if reference skipped this spec
+                reference_result = spec_results[reference_name]
+                if reference_result[:skipped]
+                  # Reference doesn't support this spec - track as skipped for all
+                  adapters.each do |adapter|
+                    stats = suite_results[suite_id][adapter[:name]]
+                    stats[:skipped] += 1
+                  end
+                  next
+                end
+
                 # Normalize outputs to strings for comparison
-                # NOTE: We must convert to native strings because Ruby::Box returns
-                # objects that may not compare equal across box boundaries
                 spec_results.each do |_name, result|
+                  next if result[:skipped]
+
                   if result[:output] && !result[:error]
                     result[:original_class] = result[:output].class.name.dup
                     output_str = result[:output].to_s
@@ -342,21 +355,11 @@ module Liquid
                   end
                 end
 
-                # Get expected output (normalized)
-                expected = spec.expected
-                String.new(expected.to_s, encoding: expected.to_s.encoding) if expected
-
                 # Compare each adapter against the reference
-                # Normalize outputs to comparable values
-                normalized_outputs = spec_results.transform_values do |r|
-                  r[:error] ? "ERROR:#{r[:error]}" : r[:output]
-                end
-
-                reference_output = normalized_outputs[reference_name]
-                reference_result = spec_results[reference_name]
+                reference_output = reference_result[:error] ? "ERROR:#{reference_result[:error]}" : reference_result[:output]
 
                 # Check for type mismatches among successful results
-                successful_results = spec_results.select { |_, r| r[:output] && !r[:error] }
+                successful_results = spec_results.select { |_, r| !r[:skipped] && r[:output] && !r[:error] }
                 if successful_results.size > 1
                   classes = successful_results.values.map { |r| r[:original_class] }.compact.uniq
                   if classes.size > 1
@@ -370,14 +373,20 @@ module Liquid
                 all_match_reference = true
                 adapters.each do |adapter|
                   stats = suite_results[suite_id][adapter[:name]]
-                  stats[:checked] += 1
+                  adapter_result = spec_results[adapter[:name]]
 
-                  adapter_output = normalized_outputs[adapter[:name]]
+                  if adapter_result[:skipped]
+                    # Adapter skipped this spec (doesn't have required features)
+                    stats[:skipped] += 1
+                    next
+                  end
+
+                  stats[:checked] += 1
+                  adapter_output = adapter_result[:error] ? "ERROR:#{adapter_result[:error]}" : adapter_result[:output]
                   matches_reference = adapter_output == reference_output
 
                   # Check type mismatch if both succeeded
                   if matches_reference && reference_result[:original_class]
-                    adapter_result = spec_results[adapter[:name]]
                     if adapter_result[:original_class] && adapter_result[:original_class] != reference_result[:original_class]
                       matches_reference = false
                       adapter_result[:type_mismatch] = true
@@ -536,8 +545,9 @@ module Liquid
               total = col[:total]
               checked = col[:suites].sum { |s| suite_results[s][adapter_name][:checked] }
               agreed = col[:suites].sum { |s| suite_results[s][adapter_name][:agreed] }
+              skipped = col[:suites].sum { |s| suite_results[s][adapter_name][:skipped] }
 
-              stats = { checked: checked, agreed: agreed }
+              stats = { checked: checked, agreed: agreed, skipped: skipped }
               cell_text, cell_color = format_cell(stats, total)
               padded = cell_text.center(col_width)
               row += " | #{cell_color}#{padded}\e[0m"
@@ -552,16 +562,27 @@ module Liquid
         def self.format_cell(stats, total)
           checked = stats[:checked]
           agreed = stats[:agreed]
+          skipped = stats[:skipped]
 
-          if agreed == total
-            # Green checkmark - all specs agreed across adapters
-            ["✓", "\e[32m"]
-          elsif checked < total
+          # Effective total for this adapter (excluding skipped by reference)
+          effective_total = total - skipped
+
+          if effective_total == 0
+            # All specs skipped (adapter doesn't support any)
+            ["-", "\e[2m"]
+          elsif agreed == effective_total
+            # Green checkmark - all checked specs matched reference
+            if skipped > 0
+              ["✓ (#{effective_total})", "\e[32m"]
+            else
+              ["✓", "\e[32m"]
+            end
+          elsif checked < effective_total
             # Yellow warning - didn't check all specs (stopped early)
             ["⚠ #{agreed}/#{checked}", "\e[33m"]
           else
-            # Red X - some specs disagreed between adapters
-            ["✗ #{agreed}/#{total}", "\e[31m"]
+            # Red X - some specs didn't match reference
+            ["✗ #{agreed}/#{effective_total}", "\e[31m"]
           end
         end
 
@@ -643,6 +664,9 @@ module Liquid
             @liquid_spec = @box.const_get(:LiquidSpec)
             @liquid_spec.run_setup!
 
+            # Get adapter features
+            @features = @liquid_spec.features.map(&:to_sym).to_set
+
             # Load spec support classes inside the box
             @box.require("liquid/spec/deps/liquid_ruby")
 
@@ -651,12 +675,35 @@ module Liquid
             @box_array = @box.const_get(:Array)
           end
 
+          attr_reader :features
+
+          def can_run?(spec)
+            # Check required_features from spec
+            spec_features = (spec.required_features || []).map(&:to_sym)
+            return false unless spec_features.all? { |f| @features.include?(f) }
+
+            # Check source_required_options (e.g., error_mode: :lax requires :lax_parsing)
+            required_opts = spec.source_required_options || {}
+            if required_opts[:error_mode] == :lax
+              return false unless @features.include?(:lax_parsing)
+            end
+
+            true
+          end
+
           def run_spec(spec)
+            # Check if adapter supports this spec
+            return { output: nil, error: nil, skipped: true } unless can_run?(spec)
+
             # Reset global state before each spec run to ensure drop isolation
             @box.eval("LiquidSpec::Globals.reset!")
 
             compile_options = { line_numbers: true }
             compile_options[:error_mode] = spec.error_mode.to_sym if spec.error_mode
+
+            # Apply source defaults (suite defaults)
+            source_opts = spec.source_required_options || {}
+            compile_options[:error_mode] ||= source_opts[:error_mode]
 
             template = @liquid_spec.do_compile(spec.template, compile_options)
 
@@ -665,13 +712,14 @@ module Liquid
               strict_errors: false,
             }
             render_options[:error_mode] = spec.error_mode.to_sym if spec.error_mode
+            render_options[:error_mode] ||= source_opts[:error_mode]
 
             # Deep copy environment into box-native objects
             env = deep_copy_to_box(spec.environment || {})
             output = @liquid_spec.do_render(template, env, render_options)
-            { output: output, error: nil }
+            { output: output, error: nil, skipped: false }
           rescue Exception => e
-            { output: nil, error: "#{e.class}: #{e.message}" }
+            { output: nil, error: "#{e.class}: #{e.message}", skipped: false }
           end
 
           private
