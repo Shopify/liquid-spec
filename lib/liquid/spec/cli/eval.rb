@@ -24,7 +24,7 @@ module Liquid
 
           Options:
             -s, --spec FILE.yml     Load test from a YAML spec file (or use stdin)
-            -c, --compare           Compare against reference liquid-ruby first
+            -c, --compare [MODE]    Compare against reference (default: strict, or 'lax')
             -v, --verbose           Show detailed output
             -h, --help              Show this help
 
@@ -72,8 +72,8 @@ module Liquid
             exit(1)
           end
 
-          # Default to compare mode
-          options[:compare] = true unless options.key?(:compare)
+          # Default to compare mode (strict)
+          options[:compare] = :strict unless options.key?(:compare)
 
           # Load the adapter
           LiquidSpec.reset!
@@ -94,7 +94,16 @@ module Liquid
             when /\A--spec=(.+)\z/
               options[:spec_file] = ::Regexp.last_match(1)
             when "-c", "--compare"
-              options[:compare] = true
+              # Check if next arg is a mode (lax) or another option/missing
+              if args.first && !args.first.start_with?("-")
+                mode = args.shift.downcase
+                options[:compare] = mode == "lax" ? :lax : :strict
+              else
+                options[:compare] = :strict
+              end
+            when /\A--compare=(.+)\z/
+              mode = ::Regexp.last_match(1).downcase
+              options[:compare] = mode == "lax" ? :lax : :strict
             when "-v", "--verbose"
               options[:verbose] = true
             end
@@ -155,7 +164,7 @@ module Liquid
           reference_output = nil
           reference_error = nil
           if compare_mode
-            reference_output, reference_error = run_reference_implementation(template_source, assigns, verbose)
+            reference_output, reference_error = run_reference_implementation(template_source, assigns, verbose, compare_mode)
 
             # Fill in expected/errors from reference if not provided
             if reference_error
@@ -386,17 +395,55 @@ module Liquid
 
         # --- Reference implementation ---
 
-        def self.run_reference_implementation(template_source, assigns, verbose)
-          require "liquid"
-          Liquid::C.enabled = false if defined?(Liquid::C)
+        REFERENCE_ADAPTERS = {
+          strict: File.expand_path("../../../../examples/liquid_ruby_strict.rb", __dir__),
+          lax: File.expand_path("../../../../examples/liquid_ruby.rb", __dir__),
+        }.freeze
 
-          puts "\e[2mComparing against reference liquid-ruby...\e[0m" if verbose
+        def self.run_reference_implementation(template_source, assigns, verbose, mode = :strict)
+          adapter_file = REFERENCE_ADAPTERS[mode]
+          puts "\e[2mComparing against reference (#{File.basename(adapter_file)})...\e[0m"
 
-          template = Liquid::Template.parse(template_source, line_numbers: true)
-          context = Liquid::Context.build(static_environments: assigns)
-          output = template.render(context)
+          # Fork a clean process to run the reference adapter
+          # This avoids any pollution from the user's adapter
+          reader, writer = IO.pipe
 
-          [output, nil]
+          pid = fork do
+            reader.close
+
+            begin
+              # Reset and load the reference adapter
+              LiquidSpec.reset!
+              LiquidSpec.running_from_cli!
+              load(adapter_file)
+              LiquidSpec.run_setup!
+
+              template = LiquidSpec.do_compile(template_source, { line_numbers: true })
+              render_options = { registers: {}, strict_errors: false }
+              output = LiquidSpec.do_render(template, assigns, render_options)
+
+              Marshal.dump({ output: output, error: nil }, writer)
+            rescue SystemExit, Interrupt, SignalException
+              raise
+            rescue Exception => e
+              Marshal.dump({ output: nil, error: { class: e.class.name, message: e.message } }, writer)
+            ensure
+              writer.close
+            end
+          end
+
+          writer.close
+          result = Marshal.load(reader)
+          reader.close
+          Process.wait(pid)
+
+          if result[:error]
+            error = StandardError.new(result[:error][:message])
+            error.define_singleton_method(:class_name) { result[:error][:class] }
+            [nil, error]
+          else
+            [result[:output], nil]
+          end
         rescue SystemExit, Interrupt, SignalException
           raise
         rescue Exception => e

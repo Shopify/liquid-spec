@@ -117,49 +117,98 @@ module Liquid
         end
 
         def self.inspect_single_spec(spec, config)
-          puts "SPEC: #{spec.name}"
-          puts "-" * 80
+          puts "\e[1m#{spec.name}\e[0m"
 
-          puts "\nTEMPLATE:"
-          puts spec.template
-
-          if spec.environment && !spec.environment.empty?
-            puts "\nENVIRONMENT:"
-            pp(spec.environment)
+          # Show hint if present
+          if spec.hint && !spec.hint.empty?
+            puts "\e[36m#{spec.hint.strip}\e[0m"
           end
 
-          if spec.filesystem && !spec.filesystem.empty?
-            puts "\nFILESYSTEM:"
+          # Show complexity if present
+          if spec.complexity
+            puts "\e[2mComplexity:\e[0m #{spec.complexity}"
+          end
+
+          puts ""
+          puts "-" * 80
+
+          puts "\n\e[2mTemplate:\e[0m"
+          if spec.template.include?("\n")
+            spec.template.each_line { |line| puts "  #{line}" }
+          else
+            puts "  #{spec.template}"
+          end
+
+          if spec.environment && !spec.environment.empty?
+            puts "\n\e[2mEnvironment:\e[0m"
+            spec.environment.each do |key, value|
+              puts "  #{key}: #{value.inspect}"
+            end
+          end
+
+          if spec.filesystem.is_a?(Hash) && !spec.filesystem.empty?
+            puts "\n\e[2mFilesystem:\e[0m"
             spec.filesystem.each do |name, content|
               puts "  #{name}:"
               content.each_line { |l| puts "    #{l}" }
             end
           end
 
-          puts "\nEXPECTED OUTPUT:"
-          puts spec.expected.inspect
-          puts spec.expected
+          puts "\n\e[2mExpected:\e[0m"
+          print_value(spec.expected)
 
-          puts "\nYOUR ADAPTER OUTPUT:"
+          puts "\n\e[2mActual:\e[0m"
           Timecop.freeze(TEST_TIME) do
             result = run_with_adapter(spec, config)
             if result[:error]
-              puts "ERROR: #{result[:error].class}: #{result[:error].message}"
-              puts result[:error].backtrace.first(5).join("\n")
+              puts "  \e[31mERROR:\e[0m #{result[:error].class}: #{result[:error].message}"
+              result[:error].backtrace.first(5).each { |line| puts "    #{line}" }
             else
-              puts result[:actual].inspect
-              puts result[:actual]
+              print_value(result[:actual])
             end
 
+            puts ""
             if result[:actual] == spec.expected
-              puts "\nSTATUS: PASS"
+              puts "\e[32m✓ PASS\e[0m"
             else
-              puts "\nSTATUS: FAIL"
+              puts "\e[31m✗ FAIL\e[0m"
               if result[:actual] && spec.expected
-                puts "\nDIFF:"
-                show_diff(spec.expected, result[:actual])
+                diff = string_diff(spec.expected, result[:actual])
+                puts "\n\e[2mDiff:\e[0m #{diff}" if diff
               end
             end
+          end
+        end
+
+        def self.print_value(value)
+          if value.nil?
+            puts "  \e[2m(nil)\e[0m"
+          elsif value.to_s.empty?
+            puts "  \e[2m(empty string)\e[0m"
+          elsif value.include?("\n")
+            value.each_line.with_index do |line, i|
+              puts "  #{i + 1}: #{line.chomp.inspect}"
+            end
+          else
+            puts "  #{value.inspect}"
+          end
+        end
+
+        def self.string_diff(expected, actual)
+          return "expected output, got (empty string)" if actual.to_s.empty?
+          return "expected (empty string), got output" if expected.to_s.empty?
+
+          min_len = [expected.length, actual.length].min
+          first_diff = (0...min_len).find { |i| expected[i] != actual[i] } || min_len
+
+          return if first_diff == 0 && expected.length == actual.length
+
+          if expected.length != actual.length
+            "at position #{first_diff}: length #{expected.length} vs #{actual.length}"
+          else
+            exp_char = expected[first_diff]&.inspect || "end"
+            act_char = actual[first_diff]&.inspect || "end"
+            "at position #{first_diff}: expected #{exp_char}, got #{act_char}"
           end
         end
 
@@ -198,23 +247,6 @@ module Liquid
             Liquid::BlankFileSystem.new
           else
             spec.filesystem
-          end
-        end
-
-        def self.show_diff(expected, actual)
-          exp_lines = expected.to_s.lines
-          act_lines = actual.to_s.lines
-
-          max_lines = [exp_lines.size, act_lines.size].max
-          max_lines.times do |i|
-            exp = exp_lines[i]&.chomp || "(missing)"
-            act = act_lines[i]&.chomp || "(missing)"
-            if exp == act
-              puts "  #{i + 1}: #{exp.inspect}"
-            else
-              puts "- #{i + 1}: #{exp.inspect}"
-              puts "+ #{i + 1}: #{act.inspect}"
-            end
           end
         end
 
