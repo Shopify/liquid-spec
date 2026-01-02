@@ -112,6 +112,7 @@ module Liquid
             suite: :all,
             verbose: false,
             max_failures: MAX_FAILURES_DEFAULT,
+            reference: "liquid_ruby_strict",
           }
 
           while args.any?
@@ -123,6 +124,10 @@ module Liquid
               options[:adapters] = args.shift.split(",").map(&:strip)
             when /\A--adapters=(.+)\z/
               options[:adapters] = ::Regexp.last_match(1).split(",").map(&:strip)
+            when "--reference"
+              options[:reference] = args.shift
+            when /\A--reference=(.+)\z/
+              options[:reference] = ::Regexp.last_match(1)
             when "--add-specs"
               options[:add_specs] << args.shift
             when /\A--add-specs=(.+)\z/
@@ -237,6 +242,15 @@ module Liquid
         end
 
         def self.run_matrix_comparison(adapters, options)
+          reference_name = options[:reference]
+
+          # Ensure reference adapter is in the list
+          unless adapters.any? { |a| a[:name] == reference_name }
+            $stderr.puts "Error: Reference adapter '#{reference_name}' not found in adapter list"
+            $stderr.puts "Available: #{adapters.map { |a| a[:name] }.join(", ")}"
+            exit(1)
+          end
+
           # Load specs by suite
           specs_by_suite = load_specs_by_suite(options)
           total_specs = specs_by_suite.values.map(&:size).sum
@@ -247,6 +261,7 @@ module Liquid
           end
 
           puts "Running #{total_specs} spec(s) across #{adapters.size} adapter(s)..."
+          puts "Reference: #{reference_name}"
           puts ""
 
           # Create isolated boxes for each adapter
@@ -331,44 +346,58 @@ module Liquid
                 expected = spec.expected
                 String.new(expected.to_s, encoding: expected.to_s.encoding) if expected
 
-                # Check if all adapters produced the same output (success or error)
-                # Normalize to a single comparable value per adapter
+                # Compare each adapter against the reference
+                # Normalize outputs to comparable values
                 normalized_outputs = spec_results.transform_values do |r|
                   r[:error] ? "ERROR:#{r[:error]}" : r[:output]
                 end
-                all_adapters_agree = normalized_outputs.values.uniq.size <= 1
 
-                # Also check for type mismatches among successful results
-                successful_results = spec_results.values.select { |r| r[:output] && !r[:error] }
-                if all_adapters_agree && successful_results.any?
-                  classes = successful_results.map { |r| r[:original_class] }.compact.uniq
+                reference_output = normalized_outputs[reference_name]
+                reference_result = spec_results[reference_name]
+
+                # Check for type mismatches among successful results
+                successful_results = spec_results.select { |_, r| r[:output] && !r[:error] }
+                if successful_results.size > 1
+                  classes = successful_results.values.map { |r| r[:original_class] }.compact.uniq
                   if classes.size > 1
-                    all_adapters_agree = false
                     spec_results.each do |_name, result|
                       result[:type_mismatch] = true if result[:original_class]
                     end
                   end
                 end
 
-                # Update per-adapter stats
+                # Update per-adapter stats (comparing against reference)
+                all_match_reference = true
                 adapters.each do |adapter|
                   stats = suite_results[suite_id][adapter[:name]]
                   stats[:checked] += 1
-                  stats[:agreed] += 1 if all_adapters_agree
+
+                  adapter_output = normalized_outputs[adapter[:name]]
+                  matches_reference = adapter_output == reference_output
+
+                  # Check type mismatch if both succeeded
+                  if matches_reference && reference_result[:original_class]
+                    adapter_result = spec_results[adapter[:name]]
+                    if adapter_result[:original_class] && adapter_result[:original_class] != reference_result[:original_class]
+                      matches_reference = false
+                      adapter_result[:type_mismatch] = true
+                    end
+                  end
+
+                  stats[:agreed] += 1 if matches_reference
+                  all_match_reference = false unless matches_reference
                 end
 
                 # Track differences for detailed output
-                has_difference = !all_adapters_agree
-
-                if has_difference
-                  differences << { spec: spec, results: spec_results, suite: suite_id }
+                if all_match_reference
+                  identical_count += 1
+                else
+                  differences << { spec: spec, results: spec_results, suite: suite_id, reference: reference_name }
 
                   if max_failures && differences.size >= max_failures
                     stopped_early = true
                     throw(:max_failures_reached)
                   end
-                else
-                  identical_count += 1
                 end
 
                 # Progress indicator
@@ -431,23 +460,23 @@ module Liquid
             puts "=" * 70
             puts ""
             if stopped_early
-              puts "\e[32m#{identical_count} identical\e[0m, \e[31m#{differences.size} different\e[0m (checked #{specs_checked}/#{total_specs}, stopped at max-failures)"
+              puts "\e[32m#{identical_count} matched reference\e[0m, \e[31m#{differences.size} different\e[0m (checked #{specs_checked}/#{total_specs}, stopped at max-failures)"
               puts "Run with --no-max-failures to see all differences"
             else
-              puts "\e[32m#{identical_count} identical\e[0m, \e[31m#{differences.size} different\e[0m"
+              puts "\e[32m#{identical_count} matched reference\e[0m, \e[31m#{differences.size} different\e[0m"
             end
           else
-            puts "\e[32m✓ All #{total_specs} specs produced identical output across all adapters\e[0m"
+            puts "\e[32m✓ All #{total_specs} specs matched reference (#{reference_name})\e[0m"
           end
 
           # Print summary table
           puts ""
-          print_summary_table(suite_results, adapters, specs_by_suite)
+          print_summary_table(suite_results, adapters, specs_by_suite, options[:reference])
 
           exit(1) if differences.any?
         end
 
-        def self.print_summary_table(suite_results, adapters, specs_by_suite)
+        def self.print_summary_table(suite_results, adapters, specs_by_suite, reference_name)
           puts "=" * 70
           puts "SUMMARY"
           puts "=" * 70
@@ -494,9 +523,13 @@ module Liquid
           puts header
           puts "-" * header.length
 
-          # Data rows (one per adapter)
+          # Data rows (one per adapter, reference shown in bold)
           adapter_names.each do |adapter_name|
-            row = adapter_name.ljust(adapter_col_width)
+            is_reference = adapter_name == reference_name
+            name_display = adapter_name.ljust(adapter_col_width)
+            name_display = "\e[1m#{name_display}\e[0m" if is_reference
+
+            row = name_display
 
             columns.each do |col|
               # Aggregate stats across all suites in this column
