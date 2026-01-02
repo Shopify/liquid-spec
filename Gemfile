@@ -4,10 +4,12 @@ source "https://rubygems.org"
 
 gemspec
 
-# Use local liquid gem if available, otherwise fall back to gemspec version
+# Use local liquid gem if available, otherwise use latest from rubygems
 local_liquid_path = File.expand_path("../liquid", __dir__)
 if File.exist?(local_liquid_path)
   gem "liquid", path: local_liquid_path
+else
+  gem "liquid"
 end
 
 # Core test dependencies
