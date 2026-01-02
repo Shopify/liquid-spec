@@ -233,7 +233,14 @@ module Liquid
             errors = 0
 
             suite_specs.each do |spec|
-              result = run_single_spec(spec, config)
+              begin
+                result = run_single_spec(spec, config)
+              rescue SystemExit, Interrupt, SignalException
+                raise
+              rescue Exception => e
+                # Catch all exceptions including those from Ruby::Box isolation
+                result = { status: :error, error: e }
+              end
 
               case result[:status]
               when :pass
@@ -380,7 +387,10 @@ module Liquid
             suite_specs.each do |spec|
               begin
                 result = compare_single_spec(spec, config)
-              rescue StandardError, Exception => e
+              rescue SystemExit, Interrupt, SignalException
+                raise
+              rescue Exception => e
+                # Catch all exceptions including those from Ruby::Box isolation
                 result = { status: :error, error: e }
               end
 
@@ -555,7 +565,9 @@ module Liquid
 
           ref_result = template.render(context)
           [ref_result, nil]
-        rescue => e
+        rescue SystemExit, Interrupt, SignalException
+          raise
+        rescue Exception => e
           [nil, e]
         end
 
@@ -566,7 +578,9 @@ module Liquid
             template = LiquidSpec.do_compile(spec.template, compile_options)
             template.name = spec.template_name if spec.template_name && template.respond_to?(:name=)
             adapter_result = LiquidSpec.do_render(template, assigns, render_options)
-          rescue StandardError => e
+          rescue SystemExit, Interrupt, SignalException
+            raise
+          rescue Exception => e
             adapter_error = e
           end
           [adapter_result, adapter_error]

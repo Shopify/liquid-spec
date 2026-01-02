@@ -228,7 +228,9 @@ module Liquid
             show_contribution_message(has_difference)
 
             exit(1) unless test_passed
-          rescue => e
+          rescue SystemExit, Interrupt, SignalException
+            raise
+          rescue Exception => e
             print_error(e, hint, verbose, spec_data)
 
             if compare_mode
@@ -395,7 +397,9 @@ module Liquid
           output = template.render(context)
 
           [output, nil]
-        rescue => e
+        rescue SystemExit, Interrupt, SignalException
+          raise
+        rescue Exception => e
           [nil, e]
         end
 
