@@ -183,8 +183,10 @@ module Liquid
           puts "Features: #{features.join(", ")}"
           puts ""
 
-          # Collect suites to run
-          suites_to_run = Liquid::Spec::Suite.all.select { |s| s.default? && s.runnable_with?(features) }
+          # Collect suites to run (basics first, then others alphabetically)
+          suites_to_run = Liquid::Spec::Suite.all
+            .select { |s| s.default? && s.runnable_with?(features) }
+            .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
           skipped_suites = Liquid::Spec::Suite.all.select { |s| s.default? && !s.runnable_with?(features) }
 
           total_passed = 0
