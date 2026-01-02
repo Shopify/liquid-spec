@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "cgi"
+require "liquid/spec/deps/liquid_ruby"
 
 module TestDrops
   module DropActsAsString
@@ -381,10 +382,9 @@ module TestDrops
       end
 
       class DropWithContext < FakeDrop
-        attr_reader :context, :context_history
+        attr_reader :context
 
         def initialize
-          @context_history = []
           super
         end
 
@@ -393,12 +393,19 @@ module TestDrops
         end
 
         def context=(context)
-          @context_history << context unless context_history.last.object_id == context.object_id
+          history = context_history
+          history << context unless history.last&.object_id == context.object_id
           super
         end
 
         def context_history_length
-          @context_history.length
+          context_history.length
+        end
+
+        private
+
+        def context_history
+          LiquidSpec::Globals.current.context_history(object_id)
         end
       end
 

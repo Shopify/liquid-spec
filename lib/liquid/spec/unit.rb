@@ -111,15 +111,6 @@ module Liquid
           File.exist?(alt_path) ? alt_path : nil
         end
       end
-
-      # Returns the environment as YAML string for re-parsing in isolated contexts
-      # This allows creating fresh drop instances in each Ruby::Box
-      def environment_yaml
-        return if environment.nil? || environment.empty?
-
-        require "yaml"
-        YAML.dump(environment)
-      end
     end
   end
 end

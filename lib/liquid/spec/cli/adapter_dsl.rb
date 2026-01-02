@@ -255,27 +255,30 @@ module LiquidSpec
 end
 
 # When an adapter file is run directly (not through liquid-spec CLI),
-# show a helpful message
-at_exit do
-  unless LiquidSpec.running_from_cli? || $ERROR_INFO
-    if LiquidSpec.compile_block || LiquidSpec.render_block
-      adapter_file = $PROGRAM_NAME
-      $stderr.puts <<~MSG
+# show a helpful message. Skip this when running in Ruby::Box since
+# the adapter is being loaded programmatically.
+unless defined?(Ruby::Box) && Ruby::Box.current && !Ruby::Box.current.main?
+  at_exit do
+    unless LiquidSpec.running_from_cli? || $ERROR_INFO
+      if LiquidSpec.compile_block || LiquidSpec.render_block
+        adapter_file = $PROGRAM_NAME
+        $stderr.puts <<~MSG
 
-        This is a liquid-spec adapter. Run it with:
+          This is a liquid-spec adapter. Run it with:
 
-          liquid-spec #{adapter_file}
+            liquid-spec #{adapter_file}
 
-        Options:
-          liquid-spec #{adapter_file} -n PATTERN   # filter by test name
-          liquid-spec #{adapter_file} -v           # verbose output
-          liquid-spec #{adapter_file} -l           # list available specs
+          Options:
+            liquid-spec #{adapter_file} -n PATTERN   # filter by test name
+            liquid-spec #{adapter_file} -v           # verbose output
+            liquid-spec #{adapter_file} -l           # list available specs
 
-        See all options:
-          liquid-spec --help
+          See all options:
+            liquid-spec --help
 
-      MSG
-      exit 1
+        MSG
+        exit 1
+      end
     end
   end
 end

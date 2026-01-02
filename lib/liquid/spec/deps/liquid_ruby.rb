@@ -1,17 +1,69 @@
 # frozen_string_literal: true
 
+# Global state for test drops - reset between spec runs to ensure isolation
+module LiquidSpec
+  module Globals
+    @states = {}
+
+    class << self
+      def current
+        key = current_key
+        @states[key] ||= State.new
+      end
+
+      def reset!
+        key = current_key
+        @states[key] = State.new
+      end
+
+      private
+
+      def current_key
+        # Use box object_id if in a box, otherwise :main
+        if defined?(Ruby::Box) && Ruby::Box.current
+          Ruby::Box.current.object_id
+        else
+          :main
+        end
+      end
+    end
+
+    class State
+      def initialize
+        @counters = Hash.new(0)
+        @context_histories = Hash.new { |h, k| h[k] = [] }
+      end
+
+      # Get and increment a counter (for TestThing etc)
+      def increment(key)
+        @counters[key] += 1
+      end
+
+      # Get current counter value without incrementing
+      def counter(key)
+        @counters[key]
+      end
+
+      # Get context history for a drop (keyed by object_id)
+      def context_history(drop_id)
+        @context_histories[drop_id]
+      end
+    end
+  end
+end
+
 class TestThing
-  def initialize
-    @foo = 0
+  def initialize(foo: 0)
+    @initial_foo = foo
   end
 
   def to_s
-    "woot: #{@foo}"
+    "woot: #{current_foo}"
   end
 
   def foo
     # offset the to_liquid call since these tests are not usually called from a liquid template
-    @foo - 1
+    current_foo - 1
   end
 
   def [](_whatever)
@@ -19,8 +71,14 @@ class TestThing
   end
 
   def to_liquid
-    @foo += 1
+    LiquidSpec::Globals.current.increment(:test_thing)
     self
+  end
+
+  private
+
+  def current_foo
+    @initial_foo + LiquidSpec::Globals.current.counter(:test_thing)
   end
 end
 
@@ -220,14 +278,16 @@ class SettingsDrop < Liquid::Drop
 end
 
 class StubTemplateFactory
-  attr_reader :count
-
   def initialize
-    @count = 0
+    @initial_count = LiquidSpec::Globals.current.counter(:template_factory)
+  end
+
+  def count
+    LiquidSpec::Globals.current.counter(:template_factory) - @initial_count
   end
 
   def for(template_name)
-    @count += 1
+    LiquidSpec::Globals.current.increment(:template_factory)
     template = Liquid::Template.new
     template.name = "some/path/" + template_name
     template
@@ -235,15 +295,17 @@ class StubTemplateFactory
 end
 
 class StubFileSystem
-  attr_reader :file_read_count
-
   def initialize(values)
-    @file_read_count = 0
-    @values          = values
+    @values = values
+    @initial_count = LiquidSpec::Globals.current.counter(:file_read)
+  end
+
+  def file_read_count
+    LiquidSpec::Globals.current.counter(:file_read) - @initial_count
   end
 
   def read_template_file(template_path)
-    @file_read_count += 1
+    LiquidSpec::Globals.current.increment(:file_read)
     @values.fetch(template_path) do
       raise Liquid::FileSystemError, "Could not find asset #{template_path}"
     end
