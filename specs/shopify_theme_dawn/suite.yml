@@ -1,19 +1,26 @@
 ---
 # Shopify Theme Dawn Specs
 # Real-world theme rendering from Shopify's Dawn starter theme
+#
+# NOTE: These specs were recorded from Shopify's production Liquid implementation
+# and require Shopify-internal features that are not available in the open-source
+# Liquid gem. They are provided as reference specs for Shopify's internal testing.
 
 name: "Shopify Theme Dawn"
 description: "Real-world Liquid templates from Shopify's Dawn starter theme"
 
-# Included in default runs, but skipped if adapter doesn't implement shopify features
-default: true
+# Not included in default runs - requires Shopify's internal Liquid implementation
+default: false
 
 hint: |
-  These specs require Shopify-specific Liquid tags and objects that are not part
-  of the core Liquid library (e.g., {% schema %}, {% style %}, {% section %}, 
-  section.blocks, content_for_header).
+  These specs require Shopify's internal Liquid implementation with:
+  - Shopify-specific tags: {% schema %}, {% style %}, {% section %}, {% form %}, etc.
+  - Shopify-specific objects: section, block, content_for_header, etc.
+  - Shopify-specific filters: asset_url, image_url, t (translation), etc.
+  - Dynamic {% render %} tag syntax not available in open-source Liquid
   
-  To run these specs, your Liquid implementation must support Shopify theme tags.
+  The open-source Liquid gem cannot run these specs. They are provided for
+  Shopify's internal testing infrastructure.
 
 # Required features for this suite
 required_features:
