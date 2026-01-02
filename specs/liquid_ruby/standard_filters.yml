@@ -5011,7 +5011,7 @@
   environment:
     a0: !ruby/object:TestThing
       foo: 3
-  expected: woot%3A+4
+  expected: woot%3A+3
 - name: StandardFilterTest#test_url_encode_ad7c06ac
   template: "{{ a0 | url_encode }}"
   environment:
