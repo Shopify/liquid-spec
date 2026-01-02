@@ -272,10 +272,9 @@ module Liquid
 
           # Track results per suite per adapter
           # suite_results[suite_id][adapter_name] = {
-          #   total: N,           # total specs in suite
-          #   ran: N,             # specs that executed without error
-          #   matched_expected: N, # specs where output matched expected
-          #   matched_others: N,  # specs where all adapters agreed
+          #   total: N,     # total specs in suite
+          #   agreed: N,    # specs where all adapters agreed (success or error)
+          #   checked: N,   # specs that were checked
           # }
           suite_results = {}
           specs_by_suite.each_key do |suite_id|
@@ -283,9 +282,8 @@ module Liquid
             adapters.each do |adapter|
               suite_results[suite_id][adapter[:name]] = {
                 total: specs_by_suite[suite_id].size,
-                ran: 0,
-                matched_expected: 0,
-                matched_others: 0,
+                agreed: 0,
+                checked: 0,
               }
             end
           end
@@ -331,7 +329,7 @@ module Liquid
 
                 # Get expected output (normalized)
                 expected = spec.expected
-                expected = String.new(expected.to_s, encoding: expected.to_s.encoding) if expected
+                String.new(expected.to_s, encoding: expected.to_s.encoding) if expected
 
                 # Check if all adapters produced the same output (success or error)
                 # Normalize to a single comparable value per adapter
@@ -355,22 +353,8 @@ module Liquid
                 # Update per-adapter stats
                 adapters.each do |adapter|
                   stats = suite_results[suite_id][adapter[:name]]
-                  result = spec_results[adapter[:name]]
-
-                  # Did it run without error?
-                  if result[:output] && !result[:error]
-                    stats[:ran] += 1
-
-                    # Did it match expected?
-                    if expected && result[:output] == expected
-                      stats[:matched_expected] += 1
-                    end
-
-                    # Did all adapters agree?
-                    if all_adapters_agree
-                      stats[:matched_others] += 1
-                    end
-                  end
+                  stats[:checked] += 1
+                  stats[:agreed] += 1 if all_adapters_agree
                 end
 
                 # Track differences for detailed output
@@ -517,11 +501,10 @@ module Liquid
             columns.each do |col|
               # Aggregate stats across all suites in this column
               total = col[:total]
-              ran = col[:suites].sum { |s| suite_results[s][adapter_name][:ran] }
-              matched_expected = col[:suites].sum { |s| suite_results[s][adapter_name][:matched_expected] }
-              matched_others = col[:suites].sum { |s| suite_results[s][adapter_name][:matched_others] }
+              checked = col[:suites].sum { |s| suite_results[s][adapter_name][:checked] }
+              agreed = col[:suites].sum { |s| suite_results[s][adapter_name][:agreed] }
 
-              stats = { ran: ran, matched_expected: matched_expected, matched_others: matched_others }
+              stats = { checked: checked, agreed: agreed }
               cell_text, cell_color = format_cell(stats, total)
               padded = cell_text.center(col_width)
               row += " | #{cell_color}#{padded}\e[0m"
@@ -534,27 +517,18 @@ module Liquid
         end
 
         def self.format_cell(stats, total)
-          ran = stats[:ran]
-          stats[:matched_expected]
-          matched_others = stats[:matched_others]
+          checked = stats[:checked]
+          agreed = stats[:agreed]
 
-          # Checkbox requires: a) ran, b) matched expected, c) matched all others
-          # For specs without expected, we only check ran + matched_others
-          all_ran = ran == total
-          all_matched_others = matched_others == total
-
-          if all_ran && all_matched_others
-            # Green checkmark - all ran and all agreed
+          if agreed == total
+            # Green checkmark - all specs agreed across adapters
             ["✓", "\e[32m"]
-          elsif ran == 0
-            # Red X - nothing ran
-            ["✗ 0/#{total}", "\e[31m"]
-          elsif !all_matched_others
-            # Red X - adapters disagreed
-            ["✗ #{matched_others}/#{total}", "\e[31m"]
+          elsif checked < total
+            # Yellow warning - didn't check all specs (stopped early)
+            ["⚠ #{agreed}/#{checked}", "\e[33m"]
           else
-            # Yellow warning - partial run
-            ["⚠ #{ran}/#{total}", "\e[33m"]
+            # Red X - some specs disagreed between adapters
+            ["✗ #{agreed}/#{total}", "\e[31m"]
           end
         end
 
