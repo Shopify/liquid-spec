@@ -75,11 +75,6 @@ module Liquid
           # Default to compare mode (strict)
           options[:compare] = :strict unless options.key?(:compare)
 
-          # Load the adapter
-          LiquidSpec.reset!
-          LiquidSpec.running_from_cli!
-          load(File.expand_path(adapter_file))
-
           run_eval(options, adapter_file)
         end
 
@@ -113,10 +108,8 @@ module Liquid
         end
 
         def self.run_eval(options, adapter_file)
-          # Run setup
-          LiquidSpec.run_setup!
-
           # Load from spec file, stdin, or passed spec_data
+          # Do this BEFORE loading any adapters to keep the process clean
           spec_data = nil
           if options[:spec_data]
             spec_data = options[:spec_data]
@@ -161,6 +154,7 @@ module Liquid
           end
 
           # If --compare mode, run reference implementation first
+          # IMPORTANT: Do this BEFORE loading the user's adapter to avoid state pollution
           reference_output = nil
           reference_error = nil
           if compare_mode
@@ -174,6 +168,12 @@ module Liquid
               expected ||= reference_output
             end
           end
+
+          # NOW load the user's adapter (after reference has run in isolation)
+          LiquidSpec.reset!
+          LiquidSpec.running_from_cli!
+          load(File.expand_path(adapter_file))
+          LiquidSpec.run_setup!
 
           test_passed = true
           has_difference = false

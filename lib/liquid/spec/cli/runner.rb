@@ -19,6 +19,7 @@ module Liquid
           Options:
             -n, --name PATTERN    Only run specs matching PATTERN (use /regex/ for regex)
             -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
+            --add-specs=GLOB      Add additional spec files (can be used multiple times)
             -c, --compare         Compare adapter output against reference liquid-ruby
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
@@ -33,6 +34,7 @@ module Liquid
             liquid-spec run my_adapter.rb -n "/test_.*filter/"
             liquid-spec run my_adapter.rb -s liquid_ruby -v
             liquid-spec run my_adapter.rb --compare
+            liquid-spec run my_adapter.rb --add-specs="my_specs/*.yml"
             liquid-spec run my_adapter.rb --no-max-failures
             liquid-spec run my_adapter.rb --list-suites
 
@@ -75,7 +77,7 @@ module Liquid
         end
 
         def self.parse_options(args)
-          options = { max_failures: MAX_FAILURES_DEFAULT }
+          options = { max_failures: MAX_FAILURES_DEFAULT, add_specs: [] }
 
           while args.any?
             arg = args.shift
@@ -89,6 +91,10 @@ module Liquid
               options[:suite] = args.shift.to_sym
             when /\A--suite=(.+)\z/
               options[:suite] = ::Regexp.last_match(1).to_sym
+            when "--add-specs"
+              options[:add_specs] << args.shift
+            when /\A--add-specs=(.+)\z/
+              options[:add_specs] << ::Regexp.last_match(1)
             when "--strict"
               options[:strict_only] = true
             when "-c", "--compare"
@@ -269,6 +275,60 @@ module Liquid
             total_passed += passed
             total_failed += failed
             total_errors += errors
+          end
+
+          # Run additional specs if provided
+          if options[:add_specs] && !options[:add_specs].empty? && !stopped_early
+            additional_specs = load_additional_specs(options[:add_specs])
+            additional_specs = filter_specs(additional_specs, config.filter) if config.filter
+            additional_specs = filter_by_features(additional_specs, features)
+            additional_specs = sort_by_complexity(additional_specs)
+
+            if additional_specs.any?
+              suite_name_padded = "Additional Specs ".ljust(40, ".")
+              print("#{suite_name_padded} ")
+              $stdout.flush
+
+              passed = 0
+              failed = 0
+              errors = 0
+
+              additional_specs.each do |spec|
+                begin
+                  result = run_single_spec(spec, config)
+                rescue SystemExit, Interrupt, SignalException
+                  raise
+                rescue Exception => e
+                  result = { status: :error, error: e }
+                end
+
+                case result[:status]
+                when :pass
+                  passed += 1
+                when :fail
+                  failed += 1
+                  all_failures << { spec: spec, result: result }
+                when :error
+                  errors += 1
+                  all_failures << { spec: spec, result: result }
+                end
+
+                if max_failures && (total_failed + total_errors + failed + errors) >= max_failures
+                  stopped_early = true
+                  break
+                end
+              end
+
+              if failed + errors == 0
+                puts "#{passed}/#{additional_specs.size} passed"
+              else
+                puts "#{passed}/#{additional_specs.size} passed, #{failed} failed, #{errors} errors"
+              end
+
+              total_passed += passed
+              total_failed += failed
+              total_errors += errors
+            end
           end
 
           # Show skipped suites
@@ -790,6 +850,20 @@ module Liquid
 
         def self.filter_specs(specs, pattern)
           specs.select { |s| s.name =~ pattern }
+        end
+
+        # Load additional specs from glob patterns
+        def self.load_additional_specs(globs)
+          specs = []
+          globs.each do |glob|
+            Dir[glob].each do |path|
+              source = Liquid::Spec::Source.for(path)
+              specs.concat(source.to_a)
+            rescue => e
+              $stderr.puts "Warning: Could not load #{path}: #{e.message}"
+            end
+          end
+          specs
         end
 
         # Filter specs by required features

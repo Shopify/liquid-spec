@@ -5,6 +5,7 @@ require_relative "cli/init"
 require_relative "cli/inspect"
 require_relative "cli/eval"
 require_relative "cli/test"
+require_relative "cli/matrix"
 
 module Liquid
   module Spec
@@ -18,6 +19,7 @@ module Liquid
         Commands:
           run ADAPTER         Run specs using the specified adapter file
           test                Run specs against all available example adapters
+          matrix              Run specs across multiple adapters and compare results
           inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
           eval ADAPTER        Quick test a template against your adapter
           init [FILE]         Generate an adapter template (default: liquid_adapter.rb)
@@ -95,6 +97,8 @@ module Liquid
           Runner.run(args)
         when "test"
           Test.run(args)
+        when "matrix"
+          Matrix.run(args)
         when "inspect"
           Inspect.run(args)
         when "eval"

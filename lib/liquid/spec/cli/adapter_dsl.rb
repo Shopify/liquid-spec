@@ -20,6 +20,100 @@ module LiquidSpec
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
   }.freeze
 
+  # An Adapter encapsulates compile/render operations for a Liquid implementation.
+  # Multiple adapters can be loaded and used in the same process.
+  class Adapter
+    attr_reader :name, :path, :features
+
+    def initialize(name:, path: nil, features: [:core], &block)
+      @name = name
+      @path = path
+      @features = Array(features).map(&:to_sym)
+      @features << :core unless @features.include?(:core)
+      @compile_block = nil
+      @render_block = nil
+      @setup_block = nil
+      @setup_done = false
+
+      instance_eval(&block) if block
+    end
+
+    def setup(&block)
+      @setup_block = block
+    end
+
+    def compile(&block)
+      @compile_block = block
+    end
+
+    def render(&block)
+      @render_block = block
+    end
+
+    def run_setup!
+      return if @setup_done
+
+      @setup_done = true
+      @setup_block&.call
+    end
+
+    def do_compile(source, options = {})
+      run_setup!
+      raise "No compile block defined for adapter #{@name}" unless @compile_block
+
+      @compile_block.call(source, options)
+    end
+
+    def do_render(template, assigns, options = {})
+      run_setup!
+      raise "No render block defined for adapter #{@name}" unless @render_block
+
+      @render_block.call(template, assigns, options)
+    end
+
+    # Run a single spec and return { output:, error: }
+    def run_spec(spec)
+      compile_options = {
+        line_numbers: true,
+        error_mode: spec.error_mode&.to_sym,
+      }.compact
+
+      template = do_compile(spec.template, compile_options)
+      template.name = spec.template_name if spec.template_name && template.respond_to?(:name=)
+
+      render_options = {
+        registers: {},
+        strict_errors: false,
+        exception_renderer: spec.exception_renderer,
+        error_mode: spec.error_mode&.to_sym,
+      }
+
+      output = do_render(template, spec.environment || {}, render_options)
+      { output: output, error: nil }
+    rescue Exception => e
+      { output: nil, error: "#{e.class}: #{e.message}" }
+    end
+
+    # Load an adapter from a file path
+    def self.load(path)
+      # Use a clean binding to capture the adapter definition
+      LiquidSpec.reset!
+      LiquidSpec.running_from_cli!
+      Kernel.load(File.expand_path(path))
+
+      # Convert the global DSL state to an Adapter instance
+      adapter = new(
+        name: File.basename(path, ".rb"),
+        path: path,
+        features: LiquidSpec.config&.features || [:core],
+      )
+      adapter.instance_variable_set(:@setup_block, LiquidSpec.setup_block)
+      adapter.instance_variable_set(:@compile_block, LiquidSpec.compile_block)
+      adapter.instance_variable_set(:@render_block, LiquidSpec.render_block)
+      adapter
+    end
+  end
+
   class Configuration
     # CLI-controlled options
     attr_accessor :suite, :filter, :verbose, :strict_only

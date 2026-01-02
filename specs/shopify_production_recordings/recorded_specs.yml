@@ -6997,6 +6997,8 @@
   filesystem: {}
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
+  required_features:
+    - activesupport
 - name: RecordedTest#test_escape_returns_falsey_value_when_fed_nil_00e2bf672
   expected: "\n"
   template: |-
@@ -32280,6 +32282,8 @@
   filesystem: {}
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
+  required_features:
+    - activesupport
 - name: RecordedTest#test_truncate_with_ut8_uses_char_count_not_bytesize_0e6b525e3
   expected: L'homme à la tête de lion
   template: "{{ text | truncate: 26 }}"
