@@ -78,7 +78,9 @@ class TestThing
   private
 
   def current_foo
-    @initial_foo + LiquidSpec::Globals.current.counter(:test_thing)
+    # Support both @initial_foo (from initialize) and @foo (from YAML deserialization)
+    initial = @initial_foo || @foo || 0
+    initial + LiquidSpec::Globals.current.counter(:test_thing)
   end
 end
 

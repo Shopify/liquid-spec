@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
+require "yaml"
+
 module Liquid
   module Spec
     # A lazy spec that delays drop instantiation until render time
-    # Parsed from YAML without instantiating Ruby objects
+    # Environment data may be stored as a YAML string for deferred instantiation
     class LazySpec
       attr_reader :name, :template, :expected, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :render_errors, :required_features
@@ -118,10 +120,20 @@ module Liquid
       # Returns source-level required options
       attr_reader :source_required_options
 
-      # Return environment for this spec
-      # The environment is already instantiated from the YAML load
+      # Instantiate environment for this spec
+      # If raw_environment is a String, parse it as YAML with custom object support
+      # If it's already a Hash, instantiate any deferred objects
       def instantiate_environment
-        @raw_environment || {}
+        case @raw_environment
+        when String
+          # YAML string - parse with custom object support
+          instantiate_from_yaml(@raw_environment)
+        when Hash
+          # Already a hash - deep copy and instantiate any deferred objects
+          deep_instantiate(@raw_environment)
+        else
+          {}
+        end
       end
 
       # Instantiate filesystem for this spec
@@ -129,12 +141,53 @@ module Liquid
       def instantiate_filesystem
         return if @raw_filesystem.nil? || @raw_filesystem.empty?
 
-        # The raw_filesystem is a hash of template_name => content
-        # Wrap it in a simple filesystem object
-        SimpleFileSystem.new(@raw_filesystem)
+        fs = case @raw_filesystem
+        when String
+          instantiate_from_yaml(@raw_filesystem)
+        when Hash
+          deep_instantiate(@raw_filesystem)
+        else
+          {}
+        end
+
+        SimpleFileSystem.new(fs)
       end
 
       private
+
+      # Parse YAML string and instantiate custom objects using the registry
+      def instantiate_from_yaml(yaml_str)
+        return {} if yaml_str.nil? || yaml_str.empty?
+
+        # Use unsafe_load - the classes should be defined by now
+        YAML.unsafe_load(yaml_str)
+      rescue => e
+        warn("Failed to instantiate environment: #{e.message}")
+        {}
+      end
+
+      # Deep copy a hash and instantiate any deferred objects
+      def deep_instantiate(obj, seen = {}.compare_by_identity)
+        return seen[obj] if seen.key?(obj)
+
+        case obj
+        when Hash
+          copy = {}
+          seen[obj] = copy
+          obj.each do |k, v|
+            copy[deep_instantiate(k, seen)] = deep_instantiate(v, seen)
+          end
+          copy
+        when Array
+          copy = []
+          seen[obj] = copy
+          obj.each { |v| copy << deep_instantiate(v, seen) }
+          copy
+        else
+          # Already instantiated or primitive
+          obj
+        end
+      end
 
       # Resolve the doc path relative to liquid-spec/docs
       def resolve_doc_path
@@ -156,7 +209,7 @@ module Liquid
       # Simple filesystem implementation for specs
       class SimpleFileSystem
         def initialize(templates)
-          @templates = templates.transform_keys do |key|
+          @templates = (templates || {}).transform_keys do |key|
             key = key.to_s.downcase
             key = "#{key}.liquid" unless key.end_with?(".liquid")
             key

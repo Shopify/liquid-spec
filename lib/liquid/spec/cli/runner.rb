@@ -488,9 +488,6 @@ module Liquid
                 puts "   Hint: #{effective_hint.strip.gsub("\n", "\n         ")}"
               end
 
-              # Suggest --print-actual for updating specs
-              puts ""
-              puts "   \e[33mTo update spec:\e[0m liquid-spec inspect ADAPTER -n \"#{spec.name}\" --print-actual"
               puts ""
             end
           end
