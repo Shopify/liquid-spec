@@ -16,32 +16,32 @@ Building a Liquid implementation (compiler, interpreter, or transpiler)? liquid-
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              liquid-spec                                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│   ┌─────────────┐      ┌─────────────┐      ┌─────────────────────────┐    │
-│   │  YAML Spec  │      │   Adapter   │      │  Your Implementation    │    │
-│   │   Files     │─────▶│   (Bridge)  │─────▶│  (compile + render)     │    │
-│   │             │      │             │      │                         │    │
-│   │ • template  │      │ LiquidSpec  │      │  MyLiquid.parse(src)    │    │
-│   │ • env vars  │      │   .compile  │      │  template.render(vars)  │    │
-│   │ • expected  │      │   .render   │      │                         │    │
-│   └─────────────┘      └─────────────┘      └─────────────────────────┘    │
-│          │                    │                         │                  │
-│          │                    │                         │                  │
-│          ▼                    ▼                         ▼                  │
-│   ┌─────────────────────────────────────────────────────────────────┐      │
-│   │                      Test Runner                                │      │
-│   │                                                                 │      │
-│   │   For each spec:                                                │      │
-│   │     1. Compile template via adapter                             │      │
-│   │     2. Render with environment variables                        │      │
-│   │     3. Compare output to expected                               │      │
-│   │     4. Report pass/fail                                         │      │
-│   └─────────────────────────────────────────────────────────────────┘      │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                             liquid-spec                                  │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────────────────┐    │
+│  │  YAML Spec  │     │   Adapter   │     │   Your Implementation   │    │
+│  │    Files    │────▶│   (Bridge)  │────▶│   (compile + render)    │    │
+│  │             │     │             │     │                         │    │
+│  │ • template  │     │ LiquidSpec  │     │  MyLiquid.parse(src)    │    │
+│  │ • env vars  │     │   .compile  │     │  template.render(vars)  │    │
+│  │ • expected  │     │   .render   │     │                         │    │
+│  └─────────────┘     └─────────────┘     └─────────────────────────┘    │
+│         │                   │                        │                  │
+│         └───────────────────┼────────────────────────┘                  │
+│                             ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                        Test Runner                                │  │
+│  │                                                                   │  │
+│  │  For each spec:                                                   │  │
+│  │    1. Compile template via adapter                                │  │
+│  │    2. Render with environment variables                           │  │
+│  │    3. Compare output to expected                                  │  │
+│  │    4. Report pass/fail                                            │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Installation
