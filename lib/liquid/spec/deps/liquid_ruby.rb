@@ -1,27 +1,76 @@
 # frozen_string_literal: true
 
-# Pure drop implementations for testing - no global state, no side effects
+# Pure drop implementations for testing - track state per-instance via context/instance vars
 # Each drop is self-contained and produces deterministic output
 
-class TestThing
-  # Simple drop that returns a consistent string representation
-  # foo parameter directly controls the numeric output
+class TestThing < Liquid::Drop
+  # A drop that tracks how many times to_liquid was called on itself
+  # This is used to verify that the liquid engine properly calls to_liquid
+  # on custom drops during template rendering.
+  #
+  # Usage:
+  #   TestThing with foo: 5 initialized
+  #   - to_liquid gets called during rendering
+  #   - Each call increments the internal counter
+  #   - to_s returns "woot: #{initial_foo + call_count}"
+  #   - This allows tests to verify that to_liquid was called the right number of times
+  #
+  # The trick: we store the call counter in @context.registers if available,
+  # otherwise in @call_count. This works both in templates and in direct calls.
+
   def initialize(foo: 0)
-    @foo = foo
+    @initial_foo = foo
+    @foo = foo # Also set @foo for YAML deserialization compatibility
+    @call_count = 0 # Fallback when not in a liquid context
   end
 
   def to_s
-    "woot: #{@foo}"
+    "woot: #{current_foo}"
   end
 
-  attr_reader :foo
+  def foo
+    # When accessed as a property (not via to_liquid),
+    # it's one less than the rendered value
+    # This tests the difference between property access and to_liquid behavior
+    current_foo - 1
+  end
 
   def [](_whatever)
     to_s
   end
 
   def to_liquid
+    # Increment counter - use context.registers if available, otherwise fallback
+    if @context
+      key = counter_key
+      @context.registers[key] = (@context.registers[key] ||= 0) + 1
+    else
+      @call_count += 1
+    end
     self
+  end
+
+  private
+
+  def current_foo
+    # Support both @initial_foo (from initialize) and @foo (from YAML deserialization)
+    initial = @initial_foo || @foo || 0
+    initial + get_call_count
+  end
+
+  def get_call_count
+    if @context
+      key = counter_key
+      @context.registers[key] ||= 0
+    else
+      @call_count
+    end
+  end
+
+  def counter_key
+    # Use a unique key based on this object's identity
+    # This way each TestThing instance has its own counter
+    :"test_thing_#{object_id}"
   end
 end
 
