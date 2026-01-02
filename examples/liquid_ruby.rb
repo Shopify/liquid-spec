@@ -10,7 +10,6 @@
 require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do
-  require "active_support/all"
   require "liquid"
 
   # Disable liquid-c if present
