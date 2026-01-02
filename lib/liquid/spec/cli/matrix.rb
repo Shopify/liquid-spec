@@ -636,12 +636,19 @@ module Liquid
             @liquid_spec = @box.const_get(:LiquidSpec)
             @liquid_spec.run_setup!
 
-            # Get box-native Hash and Array classes for deep_copy
-            @box_hash = @box.const_get(:Hash)
-            @box_array = @box.const_get(:Array)
+            # Load spec support classes inside the box (for fresh drop instances)
+            @box.require("liquid/spec/deps/liquid_ruby")
+            @box.require("liquid/spec/yaml_initializer")
           end
 
           def run_spec(spec)
+            # Re-parse environment YAML inside box to get fresh drop instances
+            env = if spec.environment_yaml
+              @box.eval("Liquid::Spec::YamlInitializer.load(#{spec.environment_yaml.inspect})")
+            else
+              {}
+            end
+
             compile_options = { line_numbers: true }
             compile_options[:error_mode] = spec.error_mode.to_sym if spec.error_mode
 
@@ -653,31 +660,10 @@ module Liquid
             }
             render_options[:error_mode] = spec.error_mode.to_sym if spec.error_mode
 
-            # Deep copy environment into box-native objects
-            env = deep_copy_to_box(spec.environment || {})
             output = @liquid_spec.do_render(template, env, render_options)
             { output: output, error: nil }
           rescue Exception => e
             { output: nil, error: "#{e.class}: #{e.message}" }
-          end
-
-          private
-
-          # Recursively copy a value into box-native objects
-          def deep_copy_to_box(val)
-            case val
-            when Hash
-              result = @box_hash.new
-              val.each { |k, v| result[deep_copy_to_box(k)] = deep_copy_to_box(v) }
-              result
-            when Array
-              result = @box_array.new
-              val.each { |v| result << deep_copy_to_box(v) }
-              result
-            else
-              # Primitives (String, Integer, etc.) can pass through
-              val
-            end
           end
         end
 

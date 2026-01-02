@@ -142,3 +142,13 @@ class StubFileSystem
     coder.represent_map("!stub_file_system", @values)
   end
 end
+
+module Liquid
+  module Spec
+    module YamlInitializer
+      def self.load(yaml_string)
+        YAML.unsafe_load(yaml_string, permitted_classes: [Symbol, Regexp, Date, Time])
+      end
+    end
+  end
+end
