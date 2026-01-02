@@ -1,55 +1,45 @@
 # frozen_string_literal: true
 
-require "liquid/spec/unit"
-require "liquid/spec/source"
-require "liquid/spec/yaml_source"
-require "liquid/spec/text_source"
-require "liquid/spec/liquid_source"
-require "liquid/spec/suite"
-require "liquid/spec/test_generator"
-require "liquid/spec/environment_dumper"
-require "liquid/spec/section_rendering_spec_generator"
-require "liquid/spec/test_drops"
-require "liquid/spec/yaml_initializer"
-require "liquid/spec/test_filters"
-require "liquid/spec/cli/adapter_dsl"
+# liquid-spec: Test suite for Liquid template implementations
+#
+# Main API:
+#   specs = Liquid::Spec.load_specs(suite: :basics, filter: "assign")
+#   adapter = Liquid::Spec.load_adapter("examples/liquid_ruby.rb")
+#   result = adapter.run(specs) { |r| print r.passed? ? "." : "F" }
+#   puts result.summary
+
+require_relative "spec/version"
+require_relative "spec/suite"
+require_relative "spec/lazy_spec"
+require_relative "spec/spec_loader"
+require_relative "spec/adapter_runner"
+require_relative "spec/api"
+
+# Test infrastructure (loaded lazily when needed)
+autoload :Timecop, "timecop"
 
 module Liquid
   module Spec
-    NotImplementedError = Class.new(StandardError)
+    # Spec directory constant (defined in suite.rb, but provide fallback)
+    SPEC_DIR = File.expand_path("../../specs", __dir__) unless defined?(SPEC_DIR)
 
-    # Legacy: SPEC_FILES glob for backward compatibility
-    SPEC_FILES = File.join(
-      __dir__,
-      "..",
-      "..",
-      "specs",
-      "**",
-      "*{.yml,.txt}",
-    )
+    class << self
+      # Load specs from suites
+      # @param suite [Symbol] :all, :basics, :liquid_ruby, etc.
+      # @param filter [String, Regexp] filter specs by name
+      # @return [Array<LazySpec>]
+      def load_specs(suite: :all, filter: nil)
+        SpecLoader.load_all(suite: suite, filter: filter)
+      end
 
-    DIR_SPECS = File.join(
-      __dir__,
-      "..",
-      "..",
-      "specs",
-      "**",
-      "template.liquid",
-    )
-
-    # Legacy: all_sources for backward compatibility
-    # Prefer using Suite.all for new code
-    def self.all_sources
-      Dir[SPEC_FILES]
-        .reject { |path| File.basename(path) == "environment.yml" }
-        .reject { |path| File.basename(path) == "suite.yml" }
-        .map { |path| Liquid::Spec::Source.for(path) }
-    end
-
-    def self.dir_sources
-      Dir[DIR_SPECS]
-        .map { |path| File.dirname(path, 2) }
-        .uniq
+      # Create an adapter runner and load a DSL file
+      # @param path [String] path to adapter file (with or without .rb)
+      # @return [AdapterRunner]
+      def load_adapter(path)
+        runner = AdapterRunner.new
+        runner.load_dsl(path)
+        runner
+      end
     end
   end
 end

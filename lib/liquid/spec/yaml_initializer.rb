@@ -1,21 +1,27 @@
 # frozen_string_literal: true
 
 # Simple html_safe implementation if ActiveSupport is not available
-unless defined?(ActiveSupport::SafeBuffer)
-  class SafeString < String
-    def html_safe?
-      true
-    end
-
-    def html_safe
-      self
-    end
-
-    def to_s
-      self
-    end
+# Always define SafeString so it can be deserialized even with ActiveSupport
+class SafeString < String
+  def html_safe?
+    true
   end
 
+  def html_safe
+    self
+  end
+
+  def to_s
+    self
+  end
+
+  # Serialize as !safe_buffer so both SafeString and ActiveSupport::SafeBuffer can deserialize
+  def encode_with(coder)
+    coder.represent_scalar("!safe_buffer", to_s)
+  end
+end
+
+unless defined?(ActiveSupport::SafeBuffer)
   class String
     def html_safe
       SafeString.new(self)

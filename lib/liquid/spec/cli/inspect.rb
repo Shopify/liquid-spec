@@ -2,6 +2,7 @@
 
 require_relative "adapter_dsl"
 require "timecop"
+require "yaml"
 
 module Liquid
   module Spec
@@ -11,263 +12,490 @@ module Liquid
         TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
 
         HELP = <<~HELP
-          Usage: liquid-spec inspect ADAPTER -n PATTERN
+          Usage: liquid-spec inspect ADAPTER -n PATTERN [options]
 
           Shows detailed information about matching specs including:
           - Full template source
           - Environment/assigns
-          - Expected output (from reference implementation)
-          - Your adapter's output
+          - Expected output
+          - Your adapter's actual output
           - Difference if any
 
           Options:
-            -n, --name PATTERN    Spec name pattern (required)
-            -s, --suite SUITE     Spec suite: all, liquid_ruby, dawn
-            --strict              Only inspect specs with error_mode: strict
-            -h, --help            Show this help
+            -n, --name PATTERN      Spec name pattern (required)
+            -s, --suite SUITE       Spec suite: all, liquid_ruby, basics, etc.
+            --strict                Only inspect specs with error_mode: strict
+            --print-actual          Output YAML spec matching actual behavior (for updating specs)
+            --render-errors=BOOL    Force render_errors setting (true/false) for --print-actual
+            -h, --help              Show this help
 
           Examples:
             liquid-spec inspect my_adapter.rb -n "case.*empty"
             liquid-spec inspect my_adapter.rb -n "for loop first"
+            liquid-spec inspect my_adapter.rb -n "include tag" --print-actual
+            liquid-spec inspect my_adapter.rb -n "some error" --print-actual --render-errors=false
+
+          The --print-actual flag outputs a YAML spec that matches the actual behavior,
+          using best practices like error substring matching for error specs.
 
         HELP
 
-        def self.run(args)
-          if args.empty? || args.include?("-h") || args.include?("--help")
-            puts HELP
-            return
-          end
-
-          adapter_file = args.shift
-          options = parse_options(args)
-
-          unless options[:filter]
-            $stderr.puts "Error: -n PATTERN is required for inspect"
-            $stderr.puts "Run 'liquid-spec inspect --help' for usage"
-            exit(1)
-          end
-
-          unless File.exist?(adapter_file)
-            $stderr.puts "Error: Adapter file not found: #{adapter_file}"
-            exit(1)
-          end
-
-          # Load the adapter
-          LiquidSpec.reset!
-          LiquidSpec.running_from_cli!
-          load(File.expand_path(adapter_file))
-
-          config = LiquidSpec.config || LiquidSpec.configure
-          config.suite = options[:suite] if options[:suite]
-          config.filter = options[:filter]
-          config.strict_only = options[:strict_only] if options[:strict_only]
-
-          inspect_specs(config)
-        end
-
-        def self.parse_options(args)
-          options = {}
-
-          while args.any?
-            arg = args.shift
-            case arg
-            when "-n", "--name"
-              pattern = args.shift
-              options[:filter] = Regexp.new(pattern, Regexp::IGNORECASE)
-            when /\A--name=(.+)\z/, /\A-n(.+)\z/
-              options[:filter] = Regexp.new(::Regexp.last_match(1), Regexp::IGNORECASE)
-            when "-s", "--suite"
-              options[:suite] = args.shift.to_sym
-            when /\A--suite=(.+)\z/
-              options[:suite] = ::Regexp.last_match(1).to_sym
-            when "--strict"
-              options[:strict_only] = true
+        class << self
+          def run(args)
+            if args.empty? || args.include?("-h") || args.include?("--help")
+              puts HELP
+              return
             end
-          end
 
-          options
-        end
+            adapter_file = args.shift
+            options = parse_options(args)
 
-        def self.inspect_specs(config)
-          # Run setup first
-          LiquidSpec.run_setup!
-
-          # Load spec components
-          require "liquid/spec"
-          require "liquid/spec/deps/liquid_ruby"
-          require "liquid/spec/yaml_initializer"
-
-          specs = load_specs(config.suite)
-          specs = specs.select { |s| s.name =~ config.filter }
-          specs = Runner.filter_strict_only(specs) if config.strict_only
-
-          if specs.empty?
-            puts "No specs matching pattern: #{config.filter.inspect}"
-            return
-          end
-
-          puts "Found #{specs.size} matching spec(s)"
-          puts "=" * 80
-
-          specs.each_with_index do |spec, idx|
-            puts "" if idx > 0
-            inspect_single_spec(spec, config)
-            puts "=" * 80
-          end
-        end
-
-        def self.inspect_single_spec(spec, config)
-          puts "\e[1m#{spec.name}\e[0m"
-
-          # Show hint if present
-          if spec.hint && !spec.hint.empty?
-            puts "\e[36m#{spec.hint.strip}\e[0m"
-          end
-
-          # Show complexity if present
-          if spec.complexity
-            puts "\e[2mComplexity:\e[0m #{spec.complexity}"
-          end
-
-          puts ""
-          puts "-" * 80
-
-          puts "\n\e[2mTemplate:\e[0m"
-          if spec.template.include?("\n")
-            spec.template.each_line { |line| puts "  #{line}" }
-          else
-            puts "  #{spec.template}"
-          end
-
-          if spec.environment && !spec.environment.empty?
-            puts "\n\e[2mEnvironment:\e[0m"
-            spec.environment.each do |key, value|
-              puts "  #{key}: #{value.inspect}"
+            unless options[:filter]
+              $stderr.puts "Error: -n PATTERN is required for inspect"
+              $stderr.puts "Run 'liquid-spec inspect --help' for usage"
+              exit(1)
             end
-          end
 
-          if spec.filesystem.is_a?(Hash) && !spec.filesystem.empty?
-            puts "\n\e[2mFilesystem:\e[0m"
-            spec.filesystem.each do |name, content|
-              puts "  #{name}:"
-              content.each_line { |l| puts "    #{l}" }
+            unless File.exist?(adapter_file)
+              $stderr.puts "Error: Adapter file not found: #{adapter_file}"
+              exit(1)
             end
+
+            # Load the adapter
+            LiquidSpec.reset!
+            LiquidSpec.running_from_cli!
+            load(File.expand_path(adapter_file))
+
+            config = LiquidSpec.config || LiquidSpec.configure
+            config.suite = options[:suite] if options[:suite]
+            config.filter = options[:filter]
+            config.strict_only = options[:strict_only] if options[:strict_only]
+
+            inspect_specs(config, options)
           end
 
-          puts "\n\e[2mExpected:\e[0m"
-          print_value(spec.expected)
+          def parse_options(args)
+            options = {}
 
-          puts "\n\e[2mActual:\e[0m"
-          Timecop.freeze(TEST_TIME) do
-            result = run_with_adapter(spec, config)
-            if result[:error]
-              puts "  \e[31mERROR:\e[0m #{result[:error].class}: #{result[:error].message}"
-              result[:error].backtrace.first(5).each { |line| puts "    #{line}" }
+            while args.any?
+              arg = args.shift
+              case arg
+              when "-n", "--name"
+                pattern = args.shift
+                options[:filter] = Regexp.new(pattern, Regexp::IGNORECASE)
+              when /\A--name=(.+)\z/, /\A-n(.+)\z/
+                options[:filter] = Regexp.new(::Regexp.last_match(1), Regexp::IGNORECASE)
+              when "-s", "--suite"
+                options[:suite] = args.shift.to_sym
+              when /\A--suite=(.+)\z/
+                options[:suite] = ::Regexp.last_match(1).to_sym
+              when "--strict"
+                options[:strict_only] = true
+              when "--print-actual"
+                options[:print_actual] = true
+              when /\A--render-errors=(.+)\z/
+                options[:force_render_errors] = ::Regexp.last_match(1).downcase == "true"
+              end
+            end
+
+            options
+          end
+
+          def inspect_specs(config, options)
+            # Run setup first
+            LiquidSpec.run_setup!
+
+            # Load spec components
+            require "liquid/spec"
+            require "liquid/spec/deps/liquid_ruby"
+            require "liquid/spec/yaml_initializer"
+
+            specs = load_specs(config)
+            specs = specs.select { |s| s.name =~ config.filter }
+            specs = filter_strict_only(specs) if config.strict_only
+
+            if specs.empty?
+              puts "No specs matching pattern: #{config.filter.inspect}"
+              return
+            end
+
+            if options[:print_actual]
+              print_actual_specs(specs, config, options)
             else
-              print_value(result[:actual])
-            end
+              puts "Found #{specs.size} matching spec(s)"
+              puts "=" * 80
 
-            puts ""
-            if result[:actual] == spec.expected
-              puts "\e[32m✓ PASS\e[0m"
-            else
-              puts "\e[31m✗ FAIL\e[0m"
-              if result[:actual] && spec.expected
-                diff = string_diff(spec.expected, result[:actual])
-                puts "\n\e[2mDiff:\e[0m #{diff}" if diff
+              specs.each_with_index do |spec, idx|
+                puts "" if idx > 0
+                inspect_single_spec(spec, config)
+                puts "=" * 80
               end
             end
           end
-        end
 
-        def self.print_value(value)
-          if value.nil?
-            puts "  \e[2m(nil)\e[0m"
-          elsif value.to_s.empty?
-            puts "  \e[2m(empty string)\e[0m"
-          elsif value.include?("\n")
-            value.each_line.with_index do |line, i|
-              puts "  #{i + 1}: #{line.chomp.inspect}"
+          def inspect_single_spec(spec, config)
+            # Show source location
+            puts "\e[2m#{spec.source_file}#{spec.line_number ? ":#{spec.line_number}" : ""}\e[0m"
+            puts "\e[1m#{spec.name}\e[0m"
+
+            # Show hint if present
+            if spec.hint && !spec.hint.empty?
+              puts "\e[36m#{spec.hint.strip}\e[0m"
             end
-          else
-            puts "  #{value.inspect}"
-          end
-        end
 
-        def self.string_diff(expected, actual)
-          return "expected output, got (empty string)" if actual.to_s.empty?
-          return "expected (empty string), got output" if expected.to_s.empty?
+            # Show complexity and render_errors
+            metadata = []
+            metadata << "complexity: #{spec.complexity}" if spec.complexity
+            metadata << "render_errors: #{spec.render_errors}" if spec.render_errors
+            metadata << "error_mode: #{spec.error_mode}" if spec.error_mode
+            puts "\e[2m#{metadata.join(", ")}\e[0m" unless metadata.empty?
 
-          min_len = [expected.length, actual.length].min
-          first_diff = (0...min_len).find { |i| expected[i] != actual[i] } || min_len
+            puts ""
+            puts "-" * 80
 
-          return if first_diff == 0 && expected.length == actual.length
-
-          if expected.length != actual.length
-            "at position #{first_diff}: length #{expected.length} vs #{actual.length}"
-          else
-            exp_char = expected[first_diff]&.inspect || "end"
-            act_char = actual[first_diff]&.inspect || "end"
-            "at position #{first_diff}: expected #{exp_char}, got #{act_char}"
-          end
-        end
-
-        def self.run_with_adapter(spec, config)
-          compile_options = {
-            line_numbers: true,
-            error_mode: spec.error_mode&.to_sym,
-          }.compact
-
-          template = LiquidSpec.do_compile(spec.template, compile_options)
-          template.name = spec.template_name if spec.template_name && template.respond_to?(:name=)
-
-          file_system = build_file_system(spec)
-
-          context = {
-            environment: spec.environment || {},
-            file_system: file_system,
-            template_factory: spec.template_factory,
-            exception_renderer: spec.exception_renderer,
-            error_mode: spec.error_mode&.to_sym,
-            render_errors: spec.render_errors,
-            context_klass: spec.context_klass,
-          }
-
-          actual = LiquidSpec.do_render(template, context)
-          { actual: actual }
-        rescue => e
-          { actual: nil, error: e }
-        end
-
-        def self.build_file_system(spec)
-          case spec.filesystem
-          when Hash
-            StubFileSystem.new(spec.filesystem)
-          when nil
-            Liquid::BlankFileSystem.new
-          else
-            spec.filesystem
-          end
-        end
-
-        def self.load_specs(suite)
-          case suite
-          when :all
-            Liquid::Spec.all_sources.flat_map(&:to_a)
-          when :liquid_ruby
-            liquid_ruby_path = File.join(Liquid::Spec::SPEC_FILES.sub("**/*{.yml,.txt}", ""), "liquid_ruby", "*.yml")
-            Dir[liquid_ruby_path].flat_map do |path|
-              Liquid::Spec::Source.for(path).to_a
+            puts "\n\e[2mTemplate:\e[0m"
+            if spec.template.include?("\n")
+              spec.template.each_line { |line| puts "  #{line}" }
+            else
+              puts "  #{spec.template}"
             end
-          when :dawn
-            dawn_path = File.join(Liquid::Spec::SPEC_FILES.sub("**/*{.yml,.txt}", ""), "dawn", "*")
-            Dir[dawn_path].select { |p| File.directory?(p) }.flat_map do |path|
-              Liquid::Spec::Source.for(path).to_a
-            rescue
-              []
+
+            environment = spec.instantiate_environment
+            if environment && !environment.empty?
+              puts "\n\e[2mEnvironment:\e[0m"
+              environment.each do |key, value|
+                puts "  #{key}: #{value.inspect}"
+              end
             end
-          else
-            []
+
+            filesystem = spec.raw_filesystem
+            if filesystem.is_a?(Hash) && !filesystem.empty?
+              puts "\n\e[2mFilesystem:\e[0m"
+              filesystem.each do |name, content|
+                puts "  #{name}:"
+                content.each_line { |l| puts "    #{l}" }
+              end
+            end
+
+            puts "\n\e[2mExpected:\e[0m"
+            print_value(spec.expected)
+
+            puts "\n\e[2mActual:\e[0m"
+            Timecop.freeze(TEST_TIME) do
+              result = run_with_adapter(spec, config)
+              if result[:error]
+                puts "  \e[31mERROR:\e[0m #{result[:error].class}: #{result[:error].message}"
+                result[:error].backtrace.first(5).each { |line| puts "    #{line}" }
+              else
+                print_value(result[:actual])
+              end
+
+              puts ""
+              if result[:error].nil? && result[:actual] == spec.expected
+                puts "\e[32m\u2713 PASS\e[0m"
+              elsif result[:error] && spec.errors.any?
+                # Check if error matches expected patterns
+                if error_matches_spec?(result[:error], spec)
+                  puts "\e[32m\u2713 PASS\e[0m (error matches expected pattern)"
+                else
+                  puts "\e[31m\u2717 FAIL\e[0m (error doesn't match expected pattern)"
+                  puts "\n\e[33mHint:\e[0m Run with --print-actual to generate updated spec"
+                end
+              else
+                puts "\e[31m\u2717 FAIL\e[0m"
+                if result[:actual] && spec.expected
+                  diff = string_diff(spec.expected, result[:actual])
+                  puts "\n\e[2mDiff:\e[0m #{diff}" if diff
+                end
+                puts "\n\e[33mHint:\e[0m Run with --print-actual to generate updated spec"
+              end
+            end
+          end
+
+          def print_actual_specs(specs, config, options)
+            puts "# Generated specs matching actual behavior"
+            puts "# Source: #{specs.first&.source_file}"
+            puts "#"
+            puts "# Review these specs before committing!"
+            puts "# Error specs use substring matching for flexibility."
+            if options.key?(:force_render_errors)
+              puts "# render_errors forced to: #{options[:force_render_errors]}"
+            end
+            puts ""
+
+            Timecop.freeze(TEST_TIME) do
+              specs.each_with_index do |spec, idx|
+                puts "" if idx > 0
+                result = run_with_adapter(spec, config, options)
+                print_actual_spec_yaml(spec, result, options)
+              end
+            end
+          end
+
+          def print_actual_spec_yaml(spec, result, options = {})
+            # Determine effective render_errors setting
+            render_errors = if options.key?(:force_render_errors)
+              options[:force_render_errors]
+            else
+              spec.render_errors
+            end
+
+            # Print spec as YAML with comments for errors
+            puts "- name: #{yaml_value(spec.name)}"
+
+            if spec.hint && !spec.hint.empty?
+              puts "  hint: |"
+              spec.hint.each_line { |line| puts "    #{line.rstrip}" }
+            end
+
+            puts "  complexity: #{spec.complexity}" if spec.complexity && spec.complexity < 1000
+
+            puts "  template: #{yaml_value(spec.template)}"
+
+            env = spec.raw_environment
+            if env && !env.empty?
+              puts "  environment:"
+              env.each do |key, value|
+                puts "    #{key}: #{yaml_value(value)}"
+              end
+            end
+
+            fs = spec.raw_filesystem
+            if fs && !fs.empty?
+              puts "  filesystem:"
+              fs.each do |name, content|
+                if content.include?("\n")
+                  puts "    #{name}: |"
+                  content.each_line { |line| puts "      #{line.rstrip}" }
+                else
+                  puts "    #{name}: #{yaml_value(content)}"
+                end
+              end
+            end
+
+            if result[:error]
+              # Exception was raised - use render_error or parse_error
+              error = result[:error]
+              error_info = parse_error_message(error)
+
+              # render_errors: false means strict_errors: true, which throws
+              # So if we got an exception, render_errors should be false (or omitted)
+              puts "  # Actual error: #{error.class}: #{error.message}"
+              puts "  errors:"
+              puts "    #{error_info[:type]}:"
+
+              error_info[:patterns].each do |pattern|
+                puts "      - #{yaml_value(pattern)}"
+              end
+            elsif result[:actual] =~ /\ALiquid(?: \w+)? error/i
+              # Output contains an error message - use errors.output
+              # This happens when render_errors: true (strict_errors: false)
+              error_info = parse_output_error(result[:actual])
+
+              puts "  render_errors: true"
+              puts "  # Actual output: #{result[:actual].inspect}"
+              puts "  errors:"
+              puts "    output:"
+
+              error_info[:patterns].each do |pattern|
+                puts "      - #{yaml_value(pattern)}"
+              end
+            else
+              # Normal output
+              puts "  expected: #{yaml_value(result[:actual])}"
+              puts "  render_errors: true" if render_errors
+            end
+
+            puts "  error_mode: #{spec.error_mode}" if spec.error_mode
+          end
+
+          def yaml_value(value)
+            case value
+            when nil
+              "null"
+            when true, false
+              value.to_s
+            when Integer, Float
+              value.to_s
+            when String
+              if value.include?("\n")
+                "|\n" + value.each_line.map { |l| "    #{l.rstrip}" }.join("\n")
+              elsif value.empty?
+                '""'
+              elsif value =~ /\A[\w\s.,!?-]+\z/ && !value.start_with?(" ") && !value.end_with?(" ")
+                # Simple string without special chars
+                value.inspect
+              else
+                value.inspect
+              end
+            else
+              value.inspect
+            end
+          end
+
+          def parse_error_message(error)
+            message = error.message
+
+            # Determine error type based on exception class
+            error_type = case error
+            when Liquid::SyntaxError then "parse_error"
+            else "render_error"
+            end
+
+            patterns = []
+
+            # Parse structured error: "Liquid error (line N): message" or "Liquid error (file line N): message"
+            if message =~ /\A(Liquid \w+ error|Liquid error)\s*\((?:(\S+)\s+)?line\s+(\d+)\):\s*(.+)\z/i
+              error_kind = ::Regexp.last_match(1)
+              # file_name = ::Regexp.last_match(2)  # Don't match on filename
+              line_num = ::Regexp.last_match(3)
+              details = ::Regexp.last_match(4).strip
+
+              # Match error type (e.g., "Liquid syntax error")
+              patterns << error_kind
+
+              # Match line number (keep "line N" format)
+              patterns << "line #{line_num}"
+
+              # Match core error message (strip trailing context)
+              core_message = details.sub(/\s+in\s+"[^"]*"\s*\z/i, "").strip
+              patterns << core_message unless core_message.empty?
+            else
+              # Fallback: extract key parts
+              # Remove variable line numbers for flexibility
+              cleaned = message.sub(/\s+in\s+"[^"]*"\s*\z/i, "").strip
+              patterns << cleaned unless cleaned.empty?
+            end
+
+            { type: error_type, patterns: patterns }
+          end
+
+          def parse_output_error(output)
+            patterns = []
+
+            # Parse error message from output
+            # Format: "Liquid error (line N): message" or "Liquid error (file line N): message"
+            if output =~ /\A(Liquid \w+ error|Liquid error)\s*\((?:(\S+)\s+)?line\s+(\d+)\):\s*(.+)\z/i
+              error_kind = ::Regexp.last_match(1)
+              line_num = ::Regexp.last_match(3)
+              details = ::Regexp.last_match(4).strip
+
+              patterns << error_kind
+              patterns << "line #{line_num}"
+
+              core_message = details.sub(/\s+in\s+"[^"]*"\s*\z/i, "").strip
+              patterns << core_message unless core_message.empty?
+            else
+              # Fallback
+              patterns << output.strip
+            end
+
+            { patterns: patterns }
+          end
+
+          def error_matches_spec?(error, spec)
+            return false unless spec.errors.any?
+
+            message = error.message.downcase
+
+            spec.errors.any? do |_type, patterns|
+              Array(patterns).all? do |pattern|
+                if pattern.is_a?(Regexp)
+                  pattern.match?(message)
+                else
+                  message.include?(pattern.to_s.downcase)
+                end
+              end
+            end
+          end
+
+          def print_value(value)
+            if value.nil?
+              puts "  \e[2m(nil)\e[0m"
+            elsif value.to_s.empty?
+              puts "  \e[2m(empty string)\e[0m"
+            elsif value.include?("\n")
+              value.each_line.with_index do |line, i|
+                puts "  #{i + 1}: #{line.chomp.inspect}"
+              end
+            else
+              puts "  #{value.inspect}"
+            end
+          end
+
+          def string_diff(expected, actual)
+            return "expected output, got (empty string)" if actual.to_s.empty?
+            return "expected (empty string), got output" if expected.to_s.empty?
+
+            min_len = [expected.length, actual.length].min
+            first_diff = (0...min_len).find { |i| expected[i] != actual[i] } || min_len
+
+            return if first_diff == 0 && expected.length == actual.length
+
+            if expected.length != actual.length
+              "at position #{first_diff}: length #{expected.length} vs #{actual.length}"
+            else
+              exp_char = expected[first_diff]&.inspect || "end"
+              act_char = actual[first_diff]&.inspect || "end"
+              "at position #{first_diff}: expected #{exp_char}, got #{act_char}"
+            end
+          end
+
+          def run_with_adapter(spec, _config, options = {})
+            compile_options = {
+              line_numbers: true,
+              error_mode: spec.error_mode&.to_sym,
+            }.compact
+
+            template = LiquidSpec.do_compile(spec.template, compile_options)
+
+            environment = spec.instantiate_environment
+            filesystem = spec.instantiate_filesystem
+
+            # Use forced render_errors if provided, otherwise use spec's setting
+            render_errors = if options.key?(:force_render_errors)
+              options[:force_render_errors]
+            else
+              spec.render_errors
+            end
+
+            render_options = {
+              registers: {},
+              strict_errors: !render_errors,
+              error_mode: spec.error_mode&.to_sym,
+            }.compact
+
+            render_options[:registers][:file_system] = filesystem if filesystem
+
+            actual = LiquidSpec.do_render(template, environment, render_options)
+            { actual: actual, error: nil }
+          rescue => e
+            { actual: nil, error: e }
+          end
+
+          def load_specs(config)
+            require "liquid/spec"
+
+            suite_id = config.suite || :all
+
+            case suite_id
+            when :all
+              Liquid::Spec::Suite.defaults.flat_map do |suite|
+                Liquid::Spec::SpecLoader.load_suite(suite)
+              end
+            else
+              suite = Liquid::Spec::Suite.find(suite_id)
+              return [] unless suite
+
+              Liquid::Spec::SpecLoader.load_suite(suite)
+            end
+          end
+
+          def filter_strict_only(specs)
+            specs.select do |s|
+              mode = s.error_mode&.to_sym
+              mode.nil? || mode == :strict
+            end
           end
         end
       end

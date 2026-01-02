@@ -40,16 +40,6 @@ module Liquid
         required_features.reject { |f| features_set.include?(f) }
       end
 
-      # Get all spec sources in this suite
-      def sources
-        @sources ||= load_sources
-      end
-
-      # Get all specs from this suite
-      def specs
-        sources.flat_map(&:to_a)
-      end
-
       # Suite identifier (directory name)
       def id
         @id ||= File.basename(path).to_sym
@@ -88,22 +78,6 @@ module Liquid
           YAML.safe_load_file(suite_file, permitted_classes: [Symbol]) || {}
         else
           {}
-        end
-      end
-
-      def load_sources
-        # Find all spec files/directories in this suite
-        entries = Dir[File.join(@path, "*")].reject do |entry|
-          # Skip suite.yml and _metadata files
-          basename = File.basename(entry)
-          basename == SUITE_FILE || basename.start_with?("_")
-        end
-
-        entries.map do |entry|
-          source = Source.for(entry)
-          # Inject suite-level configuration into the source
-          source.suite = self
-          source
         end
       end
     end
