@@ -19,6 +19,8 @@ module Liquid
           Run specs across multiple adapters and compare results.
           Shows differences between implementations.
 
+          Requires Ruby 4.0+ with Ruby::Box for proper isolation, or set RUBY_BOX=1.
+
           Arguments:
             ADAPTER               Local adapter file (optional)
 
@@ -64,6 +66,17 @@ module Liquid
             return
           end
 
+          # Check for Ruby::Box support
+          unless ruby_box_available?
+            $stderr.puts "Error: Matrix command requires Ruby::Box for proper adapter isolation."
+            $stderr.puts ""
+            $stderr.puts "Options:"
+            $stderr.puts "  1. Use Ruby 4.0+ (has Ruby::Box built-in)"
+            $stderr.puts "  2. Set RUBY_BOX=1 environment variable (if Ruby::Box gem is installed)"
+            $stderr.puts ""
+            exit(1)
+          end
+
           options = parse_options(args)
 
           if options[:adapters].empty? && !options[:all]
@@ -73,6 +86,20 @@ module Liquid
           end
 
           run_matrix(options)
+        end
+
+        def self.ruby_box_available?
+          # Ruby::Box requires RUBY_BOX=1 to be enabled, even on Ruby 4.0+
+          # Try to actually create a box to verify it works
+
+          Ruby::Box.new
+          true
+        rescue NameError
+          # Ruby::Box not defined (Ruby < 4.0 without gem)
+          false
+        rescue RuntimeError
+          # Ruby::Box disabled (RUBY_BOX=1 not set)
+          false
         end
 
         def self.parse_options(args)
@@ -210,52 +237,165 @@ module Liquid
         end
 
         def self.run_matrix_comparison(adapters, options)
-          # Load specs
-          specs = load_specs(options)
+          # Load specs by suite
+          specs_by_suite = load_specs_by_suite(options)
+          total_specs = specs_by_suite.values.map(&:size).sum
 
-          if specs.empty?
+          if total_specs == 0
             puts "No specs to run"
             return
           end
 
-          puts "Running #{specs.size} spec(s) across #{adapters.size} adapter(s)..."
+          puts "Running #{total_specs} spec(s) across #{adapters.size} adapter(s)..."
           puts ""
 
-          # Run ALL specs with ALL adapters in a single fork
-          # This is much faster than forking per-spec or per-adapter
-          print("  Running specs")
+          # Create isolated boxes for each adapter
+          print("  Loading adapters...")
           $stdout.flush
-          all_results = run_all_specs_all_adapters(specs, adapters)
+          boxes = create_adapter_boxes(adapters)
           puts " done"
-          puts ""
 
-          # Find differences
+          # Check that at least some adapters loaded successfully
+          loaded_count = boxes.values.count { |b| !b.nil? }
+          if loaded_count == 0
+            $stderr.puts ""
+            $stderr.puts "Error: All adapters failed to load."
+            $stderr.puts "Make sure RUBY_BOX=1 is set in your environment."
+            exit(1)
+          elsif loaded_count < boxes.size
+            failed_adapters = boxes.select { |_, b| b.nil? }.keys
+            $stderr.puts ""
+            $stderr.puts "Warning: #{failed_adapters.size} adapter(s) failed to load: #{failed_adapters.join(", ")}"
+            $stderr.puts "Results will only include: #{boxes.select { |_, b| !b.nil? }.keys.join(", ")}"
+            $stderr.puts ""
+          end
+
+          # Track results per suite per adapter
+          # suite_results[suite_id][adapter_name] = {
+          #   total: N,           # total specs in suite
+          #   ran: N,             # specs that executed without error
+          #   matched_expected: N, # specs where output matched expected
+          #   matched_others: N,  # specs where all adapters agreed
+          # }
+          suite_results = {}
+          specs_by_suite.each_key do |suite_id|
+            suite_results[suite_id] = {}
+            adapters.each do |adapter|
+              suite_results[suite_id][adapter[:name]] = {
+                total: specs_by_suite[suite_id].size,
+                ran: 0,
+                matched_expected: 0,
+                matched_others: 0,
+              }
+            end
+          end
+
+          # Run each spec across all boxes
           differences = []
           max_failures = options[:max_failures]
           stopped_early = false
           specs_checked = 0
           identical_count = 0
 
-          specs.each do |spec|
-            specs_checked += 1
-            spec_results = {}
-            adapters.each do |adapter|
-              spec_results[adapter[:name]] = all_results[adapter[:name]][spec.name]
-            end
+          print("  Running specs...")
+          $stdout.flush
 
-            # Check for differences
-            outputs = spec_results.values.map { |r| r[:output] || r[:error] }
-            if outputs.uniq.size > 1
-              differences << { spec: spec, results: spec_results }
+          catch(:max_failures_reached) do
+            specs_by_suite.each do |suite_id, specs|
+              specs.each do |spec|
+                specs_checked += 1
 
-              if max_failures && differences.size >= max_failures
-                stopped_early = true
-                break
+                # Run this spec in all boxes
+                spec_results = {}
+                boxes.each do |name, box|
+                  spec_results[name] = if box.nil?
+                    { output: nil, error: "Adapter failed to load" }
+                  else
+                    box.run_spec(spec)
+                  end
+                end
+
+                # Normalize outputs to strings for comparison
+                # NOTE: We must convert to native strings because Ruby::Box returns
+                # objects that may not compare equal across box boundaries
+                spec_results.each do |_name, result|
+                  if result[:output] && !result[:error]
+                    result[:original_class] = result[:output].class.name.dup
+                    output_str = result[:output].to_s
+                    result[:output] = String.new(output_str, encoding: output_str.encoding)
+                  elsif result[:error]
+                    error_str = result[:error].to_s
+                    result[:error] = String.new(error_str, encoding: error_str.encoding)
+                  end
+                end
+
+                # Get expected output (normalized)
+                expected = spec.expected
+                expected = String.new(expected.to_s, encoding: expected.to_s.encoding) if expected
+
+                # Check if all adapters produced the same output (success or error)
+                # Normalize to a single comparable value per adapter
+                normalized_outputs = spec_results.transform_values do |r|
+                  r[:error] ? "ERROR:#{r[:error]}" : r[:output]
+                end
+                all_adapters_agree = normalized_outputs.values.uniq.size <= 1
+
+                # Also check for type mismatches among successful results
+                successful_results = spec_results.values.select { |r| r[:output] && !r[:error] }
+                if all_adapters_agree && successful_results.any?
+                  classes = successful_results.map { |r| r[:original_class] }.compact.uniq
+                  if classes.size > 1
+                    all_adapters_agree = false
+                    spec_results.each do |_name, result|
+                      result[:type_mismatch] = true if result[:original_class]
+                    end
+                  end
+                end
+
+                # Update per-adapter stats
+                adapters.each do |adapter|
+                  stats = suite_results[suite_id][adapter[:name]]
+                  result = spec_results[adapter[:name]]
+
+                  # Did it run without error?
+                  if result[:output] && !result[:error]
+                    stats[:ran] += 1
+
+                    # Did it match expected?
+                    if expected && result[:output] == expected
+                      stats[:matched_expected] += 1
+                    end
+
+                    # Did all adapters agree?
+                    if all_adapters_agree
+                      stats[:matched_others] += 1
+                    end
+                  end
+                end
+
+                # Track differences for detailed output
+                has_difference = !all_adapters_agree
+
+                if has_difference
+                  differences << { spec: spec, results: spec_results, suite: suite_id }
+
+                  if max_failures && differences.size >= max_failures
+                    stopped_early = true
+                    throw(:max_failures_reached)
+                  end
+                else
+                  identical_count += 1
+                end
+
+                # Progress indicator
+                print(".") if specs_checked % 100 == 0
+                $stdout.flush
               end
-            else
-              identical_count += 1
             end
           end
+
+          puts " done"
+          puts ""
 
           # Summary header
           puts "=" * 70
@@ -265,9 +405,7 @@ module Liquid
           puts "Adapters: #{adapters.map { |a| a[:name] }.join(", ")}"
           puts ""
 
-          if differences.empty?
-            puts "\e[32m✓ All #{specs.size} specs produced identical output across all adapters\e[0m"
-          else
+          if differences.any?
             differences.each_with_index do |diff, idx|
               puts "-" * 70
               puts "\e[1m#{idx + 1}. #{diff[:spec].name}\e[0m"
@@ -280,18 +418,28 @@ module Liquid
               end
               puts ""
 
-              # Group adapters by output
+              # Check if this is a type-only mismatch
+              type_mismatch = diff[:results].values.any? { |r| r[:type_mismatch] }
+
+              # Group adapters by output (and type if type mismatch)
               output_groups = {}
               diff[:results].each do |adapter_name, result|
                 output = result[:error] ? "ERROR: #{result[:error]}" : result[:output]
-                output_groups[output] ||= []
-                output_groups[output] << adapter_name
+                key = type_mismatch ? [output, result[:original_class]] : [output, nil]
+                output_groups[key] ||= []
+                output_groups[key] << adapter_name
               end
 
-              output_groups.each do |output, adapter_names|
+              if type_mismatch
+                puts "\e[33m⚠ Type mismatch (same string output, different types)\e[0m"
+                puts ""
+              end
+
+              output_groups.each do |(output, type), adapter_names|
                 puts "\e[2mAdapters:\e[0m #{adapter_names.join(", ")}"
                 puts "\e[2mOutput:\e[0m"
                 print_output(output)
+                puts "\e[2mType:\e[0m #{type}" if type
                 puts ""
               end
             end
@@ -299,17 +447,126 @@ module Liquid
             puts "=" * 70
             puts ""
             if stopped_early
-              puts "\e[32m#{identical_count} identical\e[0m, \e[31m#{differences.size} different\e[0m (checked #{specs_checked}/#{specs.size}, stopped at max-failures)"
+              puts "\e[32m#{identical_count} identical\e[0m, \e[31m#{differences.size} different\e[0m (checked #{specs_checked}/#{total_specs}, stopped at max-failures)"
               puts "Run with --no-max-failures to see all differences"
             else
               puts "\e[32m#{identical_count} identical\e[0m, \e[31m#{differences.size} different\e[0m"
             end
-            exit(1)
+          else
+            puts "\e[32m✓ All #{total_specs} specs produced identical output across all adapters\e[0m"
+          end
+
+          # Print summary table
+          puts ""
+          print_summary_table(suite_results, adapters, specs_by_suite)
+
+          exit(1) if differences.any?
+        end
+
+        def self.print_summary_table(suite_results, adapters, specs_by_suite)
+          puts "=" * 70
+          puts "SUMMARY"
+          puts "=" * 70
+          puts ""
+
+          suite_ids = suite_results.keys
+          adapter_names = adapters.map { |a| a[:name] }
+
+          # Group suites into: basics, others, custom
+          basics_suites = suite_ids.select { |s| s == :basics }
+          custom_suites = suite_ids.select { |s| s == :custom }
+          other_suites = suite_ids - basics_suites - custom_suites
+
+          # Build column groups: basics, others, and custom (if present)
+          columns = []
+
+          if basics_suites.any?
+            basics_total = basics_suites.sum { |s| specs_by_suite[s].size }
+            columns << { name: "basics (#{basics_total})", suites: basics_suites, total: basics_total }
+          end
+
+          if other_suites.any?
+            others_total = other_suites.sum { |s| specs_by_suite[s].size }
+            columns << { name: "others (#{others_total})", suites: other_suites, total: others_total }
+          end
+
+          if custom_suites.any?
+            custom_total = custom_suites.sum { |s| specs_by_suite[s].size }
+            columns << { name: "custom (#{custom_total})", suites: custom_suites, total: custom_total }
+          end
+
+          # Calculate column widths
+          adapter_col_width = adapter_names.map(&:length).max
+          adapter_col_width = [adapter_col_width, 10].max
+
+          col_width = columns.map { |c| c[:name].length }.max
+          col_width = [col_width, 14].max
+
+          # Header row
+          header = "Adapter".ljust(adapter_col_width)
+          columns.each do |col|
+            header += " | " + col[:name].center(col_width)
+          end
+          puts header
+          puts "-" * header.length
+
+          # Data rows (one per adapter)
+          adapter_names.each do |adapter_name|
+            row = adapter_name.ljust(adapter_col_width)
+
+            columns.each do |col|
+              # Aggregate stats across all suites in this column
+              total = col[:total]
+              ran = col[:suites].sum { |s| suite_results[s][adapter_name][:ran] }
+              matched_expected = col[:suites].sum { |s| suite_results[s][adapter_name][:matched_expected] }
+              matched_others = col[:suites].sum { |s| suite_results[s][adapter_name][:matched_others] }
+
+              stats = { ran: ran, matched_expected: matched_expected, matched_others: matched_others }
+              cell_text, cell_color = format_cell(stats, total)
+              padded = cell_text.center(col_width)
+              row += " | #{cell_color}#{padded}\e[0m"
+            end
+
+            puts row
+          end
+
+          puts ""
+        end
+
+        def self.format_cell(stats, total)
+          ran = stats[:ran]
+          stats[:matched_expected]
+          matched_others = stats[:matched_others]
+
+          # Checkbox requires: a) ran, b) matched expected, c) matched all others
+          # For specs without expected, we only check ran + matched_others
+          all_ran = ran == total
+          all_matched_others = matched_others == total
+
+          if all_ran && all_matched_others
+            # Green checkmark - all ran and all agreed
+            ["✓", "\e[32m"]
+          elsif ran == 0
+            # Red X - nothing ran
+            ["✗ 0/#{total}", "\e[31m"]
+          elsif !all_matched_others
+            # Red X - adapters disagreed
+            ["✗ #{matched_others}/#{total}", "\e[31m"]
+          else
+            # Yellow warning - partial run
+            ["⚠ #{ran}/#{total}", "\e[33m"]
           end
         end
 
         def self.load_specs(options)
+          load_specs_by_suite(options).values.flatten
+        end
+
+        def self.load_specs_by_suite(options)
           # Load liquid first (required for yaml_initializer)
+          # IMPORTANT: Prevent liquid-c from loading in the main process
+          # because native extensions pollute Ruby::Box instances
+          ENV["LIQUID_C_DISABLE"] = "1"
           require "liquid"
 
           # Load spec components - need deps/liquid_ruby for test drops
@@ -318,98 +575,124 @@ module Liquid
           require "liquid/spec/deps/liquid_ruby"
           require "liquid/spec/yaml_initializer"
 
-          specs = []
+          specs_by_suite = {}
 
           # Load specs from suite
           case options[:suite]
           when :all
             Liquid::Spec::Suite.all.each do |suite|
-              specs.concat(suite.specs)
+              specs_by_suite[suite.id] = suite.specs
             end
           else
             suite = Liquid::Spec::Suite.find(options[:suite])
-            specs = suite ? suite.specs : []
+            if suite
+              specs_by_suite[suite.id] = suite.specs
+            end
           end
 
-          # Add custom specs
+          # Add custom specs under a special "custom" suite
+          custom_specs = []
           options[:add_specs].each do |glob|
             Dir[glob].each do |path|
               source = Liquid::Spec::Source.for(path)
-              specs.concat(source.to_a)
+              custom_specs.concat(source.to_a)
             rescue => e
               $stderr.puts "Warning: Could not load #{path}: #{e.message}"
             end
           end
+          specs_by_suite[:custom] = custom_specs if custom_specs.any?
 
           # Filter by name
           if options[:filter]
-            specs = specs.select { |s| s.name =~ options[:filter] }
+            specs_by_suite.transform_values! do |specs|
+              specs.select { |s| s.name =~ options[:filter] }
+            end
+            # Remove empty suites
+            specs_by_suite.delete_if { |_, specs| specs.empty? }
           end
 
-          specs
+          specs_by_suite
         end
 
-        def self.run_all_specs_all_adapters(specs, adapters)
-          # Fork once to run ALL specs with ALL adapters
-          # This minimizes process overhead
-          reader, writer = IO.pipe
+        # Wrapper around Ruby::Box that provides a simple interface for running specs
+        class AdapterBox
+          attr_reader :name, :path, :box
 
-          pid = fork do
-            reader.close
+          def initialize(name:, path:)
+            @name = name
+            @path = path
+            @box = Ruby::Box.new
 
-            begin
-              # Load all adapters
-              loaded_adapters = {}
-              adapters.each do |adapter_info|
-                adapter = LiquidSpec::Adapter.load(adapter_info[:path])
-                adapter.run_setup!
-                loaded_adapters[adapter_info[:name]] = adapter
-              end
+            # Add load paths so box can find gems
+            $LOAD_PATH.each { |p| @box.load_path << p }
 
-              # Run all specs with all adapters
-              results = {}
-              adapters.each do |adapter_info|
-                adapter = loaded_adapters[adapter_info[:name]]
-                results[adapter_info[:name]] = {}
+            # Load the adapter DSL in the box
+            @box.require(File.expand_path("adapter_dsl.rb", __dir__))
 
-                specs.each do |spec|
-                  results[adapter_info[:name]][spec.name] = adapter.run_spec(spec)
-                end
-              end
+            # Load the adapter file in the box
+            @box.load(path)
 
-              Marshal.dump(results, writer)
-            rescue SystemExit, Interrupt, SignalException
-              raise
-            rescue Exception => e
-              Marshal.dump({ _error: { class: e.class.name, message: e.message } }, writer)
-            ensure
-              writer.close
-            end
+            # Run setup and cache the LiquidSpec module reference
+            @liquid_spec = @box.const_get(:LiquidSpec)
+            @liquid_spec.run_setup!
+
+            # Get box-native Hash and Array classes for deep_copy
+            @box_hash = @box.const_get(:Hash)
+            @box_array = @box.const_get(:Array)
           end
 
-          writer.close
-          result = Marshal.load(reader)
-          reader.close
-          Process.wait(pid)
+          def run_spec(spec)
+            compile_options = { line_numbers: true }
+            compile_options[:error_mode] = spec.error_mode.to_sym if spec.error_mode
 
-          if result[:_error]
-            # Something failed - return error for all specs
-            error_msg = "#{result[:_error][:class]}: #{result[:_error][:message]}"
-            adapters.each_with_object({}) do |adapter_info, h|
-              h[adapter_info[:name]] = specs.each_with_object({}) do |spec, s|
-                s[spec.name] = { output: nil, error: error_msg }
-              end
-            end
-          else
-            result
+            template = @liquid_spec.do_compile(spec.template, compile_options)
+
+            render_options = {
+              registers: {},
+              strict_errors: false,
+            }
+            render_options[:error_mode] = spec.error_mode.to_sym if spec.error_mode
+
+            # Deep copy environment into box-native objects
+            env = deep_copy_to_box(spec.environment || {})
+            output = @liquid_spec.do_render(template, env, render_options)
+            { output: output, error: nil }
+          rescue Exception => e
+            { output: nil, error: "#{e.class}: #{e.message}" }
           end
-        rescue => e
-          # Fork failed - return error for all specs
-          adapters.each_with_object({}) do |adapter_info, h|
-            h[adapter_info[:name]] = specs.each_with_object({}) do |spec, s|
-              s[spec.name] = { output: nil, error: e.message }
+
+          private
+
+          # Recursively copy a value into box-native objects
+          def deep_copy_to_box(val)
+            case val
+            when Hash
+              result = @box_hash.new
+              val.each { |k, v| result[deep_copy_to_box(k)] = deep_copy_to_box(v) }
+              result
+            when Array
+              result = @box_array.new
+              val.each { |v| result << deep_copy_to_box(v) }
+              result
+            else
+              # Primitives (String, Integer, etc.) can pass through
+              val
             end
           end
+        end
+
+        def self.create_adapter_boxes(adapters)
+          boxes = {}
+          adapters.each do |adapter_info|
+            boxes[adapter_info[:name]] = AdapterBox.new(
+              name: adapter_info[:name],
+              path: adapter_info[:path],
+            )
+          rescue Exception => e
+            $stderr.puts "Warning: Failed to load adapter #{adapter_info[:name]}: #{e.message}"
+            boxes[adapter_info[:name]] = nil
+          end
+          boxes
         end
 
         def self.print_output(output)
@@ -427,34 +710,26 @@ module Liquid
         end
 
         def self.check_adapter_dependencies(adapter_name)
+          # Check if gems are available without loading them
+          # (loading liquid-c would pollute the main process and break Ruby::Box isolation)
           case adapter_name
           when /liquid_c/
-            begin
-              require "liquid"
-              require "liquid/c"
-              defined?(Liquid::C) && Liquid::C.enabled ? :available : "liquid-c not enabled"
-            rescue LoadError
-              "liquid-c gem not installed"
-            end
+            gem_available?("liquid-c") ? :available : "liquid-c gem not installed"
           when /activesupport/
-            begin
-              require "active_support"
-              require "liquid"
-              :available
-            rescue LoadError => e
-              e.message.include?("active_support") ? "activesupport gem not installed" : "liquid gem not installed"
-            end
+            gem_available?("activesupport") ? :available : "activesupport gem not installed"
           when /liquid_ruby/
-            begin
-              require "liquid"
-              :available
-            rescue LoadError
-              "liquid gem not installed"
-            end
+            gem_available?("liquid") ? :available : "liquid gem not installed"
           else
             # Unknown adapter - assume available
             :available
           end
+        end
+
+        def self.gem_available?(name)
+          Gem::Specification.find_by_name(name)
+          true
+        rescue Gem::MissingSpecError
+          false
         end
       end
     end

@@ -20,6 +20,8 @@ gem "timecop"
 # Development only
 group :development do
   gem "rake"
+  gem "activesupport", require: false
+  gem "liquid-c", require: false
 end
 
 gem "base64", "~> 0.3.0"
