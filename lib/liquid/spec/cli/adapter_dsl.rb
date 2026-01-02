@@ -18,6 +18,9 @@ module LiquidSpec
 
     # Shopify internal error handling (specific error messages, recovery behavior)
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
+
+    # ActiveSupport SafeBuffer integration (auto-escaping of unsafe strings)
+    activesupport: "ActiveSupport SafeBuffer HTML auto-escaping behavior",
   }.freeze
 
   class Configuration

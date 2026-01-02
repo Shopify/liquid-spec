@@ -5265,6 +5265,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_contains_188808998
+  required_features:
+    - activesupport
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
   environment:
@@ -5415,6 +5417,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_contains_83c205efd
+  required_features:
+    - activesupport
   expected: "y"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
   environment:
@@ -6989,6 +6993,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_escape_for_not_safe_string_buffers_is_escaped_e2521891b
+  required_features:
+    - activesupport
   expected: "&gt;"
   template: "{{ description | escape }}"
   environment:
@@ -28220,6 +28226,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_string_comparison_ef329e535
+  required_features:
+    - activesupport
   expected: |
     html1 == html1: true
     html1 != html1: false
@@ -31939,6 +31947,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_string_key_fe38efada
+  required_features:
+    - activesupport
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -32257,6 +32267,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_truncate_does_not_double_escape_suffix_fa67cd2ab
+  required_features:
+    - activesupport
   expected: 1 &gt;
   template: "{{ input | truncate: 6, suffix }}"
   environment:
@@ -32273,6 +32285,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_truncate_escapes_suffix_for_html_ed8f55c08
+  required_features:
+    - activesupport
   expected: you&#39;re doi&amp;
   template: "{{ description | truncate: 15, '&' }}"
   environment:
@@ -32289,6 +32303,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_truncatewords_for_html_6782ac38f
+  required_features:
+    - activesupport
   expected: you&#39;re doing<
   template: "{{ description | truncatewords: 2, '<' }}"
   environment:
@@ -32769,6 +32785,8 @@
   exception_renderer: !stub_exception_renderer
     raise_internal_errors:
 - name: RecordedTest#test_unknown_test_5f8db7c91
+  required_features:
+    - activesupport
   expected: |-
     Good job.
     Good job.
@@ -33928,6 +33946,8 @@
   caller_location: test/integration/scratchpad_test.rb:21
 
 - name: RecordedTest#test_strip_on_html_safe_string_with_surrounding_whitespace_with_default_2e78002d
+  required_features:
+    - activesupport
   template: "{{ foo | default: already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -33936,6 +33956,8 @@
     raise_internal_errors: false
   caller_location: test/integration/scratchpad_test.rb:18
 - name: RecordedTest#test_strip_on_html_safe_string_with_surrounding_whitespace_without_default_f7510e74
+  required_features:
+    - activesupport
   template: "{{ already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -33944,6 +33966,8 @@
     raise_internal_errors: false
   caller_location: test/integration/scratchpad_test.rb:34
 - name: RecordedTest#test_strip_on_html_safe_string_without_surrounding_whitespace_with_default_596b0e9c
+  required_features:
+    - activesupport
   template: "{{ foo | default: already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -33952,6 +33976,8 @@
     raise_internal_errors: false
   caller_location: test/integration/scratchpad_test.rb:26
 - name: RecordedTest#test_strip_on_html_safe_string_without_surrounding_whitespace_without_default_79421b6f
+  required_features:
+    - activesupport
   template: "{{ already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -35979,6 +36005,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_fuzzer_escape_once_d21b6650_4fa90377
+  required_features:
+    - activesupport
   template: "{{a0 | escape_once}}"
   expected: "{&quot;;;&quot;=&gt;&quot;;;&quot;, &quot;;t&quot;=&gt;&quot;\\&quot;&quot;,
     &quot;\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF\\xFFCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\\xFF&quot;=&gt;&quot;&quot;,
@@ -36081,6 +36109,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_fuzzer_escape_once_d1d57ed8_719f27cc
+  required_features:
+    - activesupport
   template: "{{a0 | escape_once}}"
   expected: "\0\0\0\0\0&amp;&amp;#x51;"
   environment:
@@ -36582,6 +36612,8 @@
   caller_location: test/integration/spec_helper.rb:84
 
 - name: RecordedTest#ScratchpadTest#test_url_decode_49ae1a4f_001c5c3d
+  required_features:
+    - activesupport
   template: "{{a0 | url_decode}}"
   expected: 'Liquid error (line 1): invalid byte sequence in UTF-8'
   environment:
@@ -36598,6 +36630,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_url_decode_8f456ee2_a17d308a
+  required_features:
+    - activesupport
   template: "{{a0 | url_decode}}"
   expected: "\0%+"
   environment:
@@ -36606,6 +36640,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_url_decode_ad8e5186_fd1a77ea
+  required_features:
+    - activesupport
   template: "{{a0 | url_decode}}"
   expected: "&i\0\v\v851 \0\0\0\0&&%#\0\0\0'0"
   environment:
@@ -36984,6 +37020,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_split_with_three_semicolon_c2a0447_269a1b59
+  required_features:
+    - activesupport
   template: "{{a0 | split: a1 | json}}"
   expected: '["&rep3l"]'
   environment:
@@ -36993,6 +37031,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_split_with_two_semicolon_c2a0447_269a1b59
+  required_features:
+    - activesupport
   template: "{{a0 | split: a1 | json}}"
   expected: '["&rep3l"]'
   environment:
@@ -37137,6 +37177,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_fuzzer_c9a5bebe_87e1921e
+  required_features:
+    - activesupport
   template: "{{a0 | find_index: a1 | json}}"
   expected: 'null'
   environment:
@@ -37545,6 +37587,8 @@
     raise_internal_errors: false
   caller_location: test/integration/spec_helper.rb:84
 - name: RecordedTest#ScratchpadTest#test_fuzzer_f3ff65da_24a4ff29
+  required_features:
+    - activesupport
   template: "{{a0 | replace_last: a1, a2 | json}}"
   expected: '"{nil=&gt;nil}"'
   environment:
@@ -43790,6 +43834,8 @@
   caller_location: test/integration/spec_helper.rb:84
 
 - name: RecordedTest#ScratchpadTest#test_do_not_double_escape_replaced_last_html_safe_string_when_no_replacement_is_needed_f6b1acb0
+  required_features:
+    - activesupport
   template: "{{ s | replace_last: 'foo', 'foo' | escape }}"
   expected: foo baz &amp;
   environment:
