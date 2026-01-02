@@ -1260,37 +1260,6 @@
   render_errors: false
   expected: BAR
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/echo_test.rb#L9
-- name: ExpressionTest#test_float_2c801dcf
-  template: "{% if expect == 0.....5 %}pass{% else %}got {{ 0.....5 }}{% endif %}"
-  environment:
-    expect: 0.0
-  render_errors: false
-  expected: pass
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/expression_test.rb#L188
-- name: ExpressionTest#test_float_4df3871b
-  template: "{{ 2.5 }}"
-  render_errors: false
-  expected: '2.5'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/expression_test.rb#L28
-- name: ExpressionTest#test_float_a51318b5
-  template: "{% if expect == 1.5 %}pass{% else %}got {{ 1.5 }}{% endif %}"
-  environment:
-    expect: 1.5
-  render_errors: false
-  expected: pass
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/expression_test.rb#L188
-- name: ExpressionTest#test_float_f59f1120
-  template: "{{ -17.42 }}"
-  render_errors: false
-  expected: "-17.42"
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/expression_test.rb#L27
-- name: ExpressionTest#test_float_fe5f0ea0
-  template: "{% if expect == -0..1 %}pass{% else %}got {{ -0..1 }}{% endif %}"
-  environment:
-    expect: 0.0
-  render_errors: false
-  expected: pass
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/expression_test.rb#L188
 - name: ExpressionTest#test_int_997be9e3
   template: "{% if expect == 123 %}pass{% else %}got {{ 123 }}{% endif %}"
   environment:
@@ -3639,105 +3608,6 @@
   render_errors: false
   expected: " YES "
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L132
-- name: ParsingQuirksTest#test_extra_dots_in_ranges_7fd3eb68
-  template: "{% for i in (1...5) %}{{ i }}{% endfor %}"
-  render_errors: false
-  expected: '12345'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L117
-- name: ParsingQuirksTest#test_incomplete_expression_0df26ec6
-  template: |-
-    {% liquid assign foo = false -
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L145
-- name: ParsingQuirksTest#test_incomplete_expression_2e34cd32
-  template: "{{ false a }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L143
-- name: ParsingQuirksTest#test_incomplete_expression_3bb9999b
-  template: |-
-    {% liquid assign foo = false <
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L147
-- name: ParsingQuirksTest#test_incomplete_expression_483bdf31
-  template: "{{ false < }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L139
-- name: ParsingQuirksTest#test_incomplete_expression_958fd29b
-  template: |-
-    {% liquid assign foo = false !
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L149
-- name: ParsingQuirksTest#test_incomplete_expression_964c15a8
-  template: "{{ false = }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L140
-- name: ParsingQuirksTest#test_incomplete_expression_9b821c25
-  template: "{{ false > }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L138
-- name: ParsingQuirksTest#test_incomplete_expression_a2518791
-  template: |-
-    {% liquid assign foo = false a
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L151
-- name: ParsingQuirksTest#test_incomplete_expression_a962b3d5
-  template: |-
-    {% liquid assign foo = false 1
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L150
-- name: ParsingQuirksTest#test_incomplete_expression_c86efe3e
-  template: |-
-    {% liquid assign foo = false >
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L146
-- name: ParsingQuirksTest#test_incomplete_expression_e17d48d7
-  template: "{{ false 1 }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L142
-- name: ParsingQuirksTest#test_incomplete_expression_e4cdcba5
-  template: "{{ false ! }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L141
-- name: ParsingQuirksTest#test_incomplete_expression_f519e0f7
-  template: |-
-    {% liquid assign foo = false =
-    %}{{ foo }}
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L148
-- name: ParsingQuirksTest#test_incomplete_expression_f810d354
-  template: "{{ false - }}"
-  render_errors: false
-  expected: 'false'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L137
-- name: ParsingQuirksTest#test_invalid_variables_work_3ad65c15
-  template: "{% assign 123foo = 'bar' %}{{ 123foo }}"
-  render_errors: false
-  expected: bar
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L110
-- name: ParsingQuirksTest#test_invalid_variables_work_c591fc55
-  template: "{% assign 123 = 'bar' %}{{ 123 }}"
-  render_errors: false
-  expected: '123'
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L111
 - name: ParsingQuirksTest#test_lookup_on_var_with_literal_name_1a90cb4c
   template: "{{ blank['x'] }}"
   environment:
@@ -3754,45 +3624,6 @@
   render_errors: false
   expected: result
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L127
-- name: ParsingQuirksTest#test_meaningless_parens_lax_2b178582
-  template: "{% if a == 'foo' or (b == 'bar' and c == 'baz') or false %} YES {% endif
-    %}"
-  environment:
-    b: bar
-    c: baz
-  render_errors: false
-  expected: " YES "
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L76
-- name: ParsingQuirksTest#test_unanchored_filter_arguments_5d63f826
-  template: "{{ 'hi there' | split$$$:' ' | first }}"
-  render_errors: false
-  expected: hi
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L97
-- name: ParsingQuirksTest#test_unanchored_filter_arguments_6359f918
-  template: '{{ ''hi there'' | split:"t"" | reverse | first}}'
-  render_errors: false
-  expected: here
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L103
-- name: ParsingQuirksTest#test_unanchored_filter_arguments_6a4840e2
-  template: "{{ 'X' | downcase) }}"
-  render_errors: false
-  expected: x
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L99
-- name: ParsingQuirksTest#test_unanchored_filter_arguments_cdc4e1f9
-  template: '{{ ''hi there'' | split:"t"" | remove:"i" | first}}'
-  render_errors: false
-  expected: 'hi '
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L104
-- name: ParsingQuirksTest#test_unexpected_characters_silently_eat_logic_lax_c09d88a9
-  template: "{% if false || true %} YES {% endif %}"
-  render_errors: false
-  expected: ''
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L85
-- name: ParsingQuirksTest#test_unexpected_characters_silently_eat_logic_lax_f36cba0f
-  template: "{% if true && false %} YES {% endif %}"
-  render_errors: false
-  expected: " YES "
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/parsing_quirks_test.rb#L83
 - name: RawTagTest#test_open_tag_in_raw_03444a59
   template: "{% raw %} Foobar {% foo {% bar %}{% endraw %}"
   render_errors: false
@@ -6906,11 +6737,6 @@
   render_errors: false
   expected: One
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L48
-- name: VariableTest#test_combining_trailing_comma_and_empty_args_a5567786
-  template: '{{ "test" | append: "x", | upcase: }}'
-  render_errors: false
-  expected: TESTX
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L274
 - name: VariableTest#test_double_nested_variable_lookup_b9f99226
   template: '{{ list[list[settings.zero]]["foo"] }}'
   environment:
@@ -6988,21 +6814,6 @@
   render_errors: false
   expected: 'false'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L79
-- name: VariableTest#test_filter_chain_with_colon_no_args_03bd2a06
-  template: '{{ "test" | append: "x" | upcase: }}'
-  render_errors: false
-  expected: TESTX
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L261
-- name: VariableTest#test_filter_with_colon_but_no_arguments_cc1b5865
-  template: '{{ "test" | upcase: }}'
-  render_errors: false
-  expected: TEST
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L248
-- name: VariableTest#test_filter_with_single_trailing_comma_9b8ce678
-  template: '{{ "hello" | append: "world", }}'
-  render_errors: false
-  expected: helloworld
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L222
 - name: VariableTest#test_hash_scoping_00890e5d
   template: "{{ test . test }}"
   environment:
@@ -7141,11 +6952,6 @@
   render_errors: false
   expected: worked
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L126
-- name: VariableTest#test_multiple_filters_with_trailing_commas_94aa0134
-  template: '{{ "hello" | append: "1", | append: "2", }}'
-  render_errors: false
-  expected: hello12
-  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L235
 - name: VariableTest#test_nested_array_bbc2b64b
   template: "{{ foo }}"
   environment:
