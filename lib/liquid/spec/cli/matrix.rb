@@ -12,6 +12,7 @@ module Liquid
           Shows differences between implementations.
 
           Options:
+            --all                 Run all available adapters from examples/
             --adapters=LIST       Comma-separated list of adapters to run
             --reference=NAME      Reference adapter (default: liquid_ruby)
             -n, --name PATTERN    Filter specs by name pattern
@@ -22,15 +23,15 @@ module Liquid
             -h, --help            Show this help
 
           Examples:
+            liquid-spec matrix --all
             liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax
             liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -n truncate
-            liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -s basics
 
         HELP
 
         class << self
           def run(args)
-            if args.empty? || args.include?("-h") || args.include?("--help")
+            if args.include?("-h") || args.include?("--help")
               puts HELP
               return
             end
@@ -43,6 +44,7 @@ module Liquid
 
           def parse_options(args)
             options = {
+              all: false,
               adapters: [],
               reference: "liquid_ruby",
               filter: nil,
@@ -54,6 +56,8 @@ module Liquid
             while args.any?
               arg = args.shift
               case arg
+              when "--all"
+                options[:all] = true
               when /\A--adapters=(.+)\z/
                 options[:adapters] = ::Regexp.last_match(1).split(",").map(&:strip)
               when "--reference"
@@ -83,14 +87,22 @@ module Liquid
           end
 
           def run_matrix(options)
+            # Discover all adapters if --all specified
+            if options[:all]
+              options[:adapters] = discover_all_adapters
+            end
+
             if options[:adapters].empty?
-              $stderr.puts "Error: Specify --adapters=LIST"
-              $stderr.puts "Example: --adapters=liquid_ruby,liquid_ruby_lax"
+              $stderr.puts "Error: Specify --all or --adapters=LIST"
+              $stderr.puts "Example: liquid-spec matrix --all"
+              $stderr.puts "Example: liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax"
               exit(1)
             end
 
-            # Load spec infrastructure
+            # Load liquid first, then spec infrastructure
+            require "liquid"
             require "liquid/spec"
+            require "liquid/spec/deps/liquid_ruby"
 
             # Load specs
             puts "Loading specs..."
@@ -132,6 +144,23 @@ module Liquid
             run_comparison(specs, adapters, reference_name, options)
           end
 
+          def discover_all_adapters
+            gem_root = File.expand_path("../../../../..", __FILE__)
+            examples_dir = File.join(gem_root, "examples")
+
+            adapters = Dir[File.join(examples_dir, "*.rb")].map do |path|
+              File.basename(path, ".rb")
+            end.sort
+
+            # Ensure liquid_ruby is first (reference)
+            if adapters.include?("liquid_ruby")
+              adapters.delete("liquid_ruby")
+              adapters.unshift("liquid_ruby")
+            end
+
+            adapters
+          end
+
           def load_adapters(adapter_names)
             gem_root = File.expand_path("../../../../..", __FILE__)
             examples_dir = File.join(gem_root, "examples")
@@ -171,9 +200,6 @@ module Liquid
           end
 
           def run_comparison(specs, adapters, reference_name, options)
-            reference = adapters[reference_name]
-            other_adapters = adapters.reject { |name, _| name == reference_name }
-
             differences = []
             matched = 0
             skipped = 0
@@ -186,39 +212,51 @@ module Liquid
             $stdout.flush
 
             specs.each do |spec|
-              # Run on reference
-              ref_result = reference.run_single(spec)
+              # Run on ALL adapters that can run this spec
+              outputs = {}
+              adapters.each do |name, adapter|
+                begin
+                  result = adapter.run_single(spec)
+                rescue SystemExit, Interrupt, SignalException
+                  raise
+                rescue Exception => e
+                  result = Liquid::Spec::SpecResult.new(
+                    spec: spec,
+                    status: :error,
+                    output: "#{e.class}: #{e.message}",
+                  )
+                end
 
-              if ref_result.skipped?
+                if result.skipped?
+                  outputs[name] = { skipped: true }
+                else
+                  outputs[name] = { output: normalize_output(result) }
+                end
+              end
+
+              # Check if any adapter actually ran this spec
+              ran_outputs = outputs.reject { |_, v| v[:skipped] }
+              if ran_outputs.empty?
                 skipped += 1
                 print("s") if verbose
                 next
               end
 
               checked += 1
-              ref_output = normalize_output(ref_result)
 
-              # Compare with other adapters
-              spec_diffs = {}
-              other_adapters.each do |name, adapter|
-                result = adapter.run_single(spec)
-
-                if result.skipped?
-                  spec_diffs[name] = { skipped: true }
-                  next
-                end
-
-                output = normalize_output(result)
-                unless outputs_match?(ref_output, output)
-                  spec_diffs[name] = { output: output, ref_output: ref_output }
-                end
-              end
-
-              if spec_diffs.empty? || spec_diffs.values.all? { |d| d[:skipped] }
+              # Check if all outputs match
+              unique_outputs = ran_outputs.values.map { |v| v[:output] }.uniq
+              if unique_outputs.size == 1
                 matched += 1
                 print(".") if verbose
               else
-                differences << { spec: spec, ref_output: ref_output, diffs: spec_diffs }
+                # Build diff info - group adapters by their output
+                first_output = ran_outputs.values.first[:output]
+                differences << {
+                  spec: spec,
+                  outputs: outputs,
+                  first_output: first_output,
+                }
                 print("F") if verbose
 
                 if max_failures && differences.size >= max_failures
@@ -232,7 +270,7 @@ module Liquid
             puts
 
             # Print results
-            print_results(differences, reference_name, adapters, options)
+            print_results_v2(differences, adapters, options)
             print_summary(matched, differences.size, skipped, checked, specs.size, adapters)
 
             exit(1) if differences.any?
@@ -266,7 +304,7 @@ module Liquid
             false
           end
 
-          def print_results(differences, reference_name, adapters, options)
+          def print_results_v2(differences, adapters, options)
             return if differences.empty?
 
             puts "=" * 70
@@ -287,18 +325,10 @@ module Liquid
               end
               puts
 
-              # Group outputs
-              outputs = { reference_name => diff[:ref_output] }
-              diff[:diffs].each do |name, d|
-                outputs[name] = d[:skipped] ? "(skipped)" : d[:output]
-              end
-
-              # Find adapters not in diffs (they matched reference)
-              adapters.keys.each do |name|
-                next if name == reference_name
-                next if diff[:diffs].key?(name)
-
-                outputs[name] = diff[:ref_output] # matched
+              # Collect outputs, marking skipped adapters
+              outputs = {}
+              diff[:outputs].each do |name, data|
+                outputs[name] = data[:skipped] ? "(skipped)" : data[:output]
               end
 
               # Group by output value
@@ -345,7 +375,7 @@ module Liquid
             end
 
             puts "  Checked: #{checked}/#{total} specs"
-            puts "  Skipped: #{skipped} (reference doesn't support)" if skipped > 0
+            puts "  Skipped: #{skipped} (no adapter supports)" if skipped > 0
             puts
           end
         end
