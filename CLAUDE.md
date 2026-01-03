@@ -372,3 +372,69 @@ YAML
 4. **Use --compare first** - Let the reference fill in `expected` before asserting
 5. **Test edge cases** - Empty arrays, nil values, unusual inputs
 6. **Save interesting failures** - Differences reveal implementation gaps worth documenting
+
+## Object Instantiation in Specs
+
+Specs can include custom Ruby objects (drops, file systems, etc.) in their environment. We use a simple `instantiate:ClassName` format - **no YAML tags like `!ruby/object`**.
+
+### Format
+
+Any string value starting with `instantiate:` triggers object creation:
+
+```yaml
+environment:
+  # Simple: no arguments
+  my_drop: "instantiate:CountingDrop"
+  
+  # With arguments: value after the key becomes constructor args
+  user:
+    instantiate: StringDrop
+    value: "hello"
+  
+  # Hash arguments passed to constructor
+  renderer:
+    instantiate: StubExceptionRenderer
+    raise_internal_errors: false
+  
+  # Nested in filesystem
+  filesystem:
+    instantiate: ShopifyFileSystem
+    child.liquid: "hello world"
+    snippet.liquid: "{% assign x = 1 %}"
+```
+
+### How It Works
+
+1. Spec loader detects `instantiate:ClassName` pattern
+2. Looks up `ClassName` in `Liquid::Spec::ClassRegistry`
+3. Calls `registry[klass].call(remaining_hash)` to create instance
+4. If class not found in registry, raises hard error
+
+### ClassRegistry
+
+Classes must be registered before use:
+
+```ruby
+# In lib/liquid/spec/deps/liquid_ruby.rb
+Liquid::Spec::ClassRegistry.register("CountingDrop") { |p| CountingDrop.new(p) }
+Liquid::Spec::ClassRegistry.register("StringDrop") { |p| StringDrop.new(p) }
+Liquid::Spec::ClassRegistry.register("ShopifyFileSystem") { |p| ShopifyFileSystem.new(p) }
+```
+
+The lambda receives whatever hash/value was alongside `instantiate:` and must return the instance.
+
+### Available Classes
+
+See `lib/liquid/spec/deps/liquid_ruby.rb` for all registered classes:
+- `CountingDrop`, `ToSDrop`, `TestDrop` - Test drops
+- `StringDrop`, `IntegerDrop`, `BooleanDrop` - Value drops  
+- `StubFileSystem`, `ShopifyFileSystem`, `BlankFileSystem` - File systems
+- `StubExceptionRenderer` - Exception handling
+- `StubTemplateFactory` - Template factories
+- `SafeBuffer` - HTML-safe strings (requires ActiveSupport)
+
+### Adding New Classes
+
+1. Define the class in `lib/liquid/spec/deps/liquid_ruby.rb` or `lib/liquid/spec/test_drops.rb`
+2. Register it: `Liquid::Spec::ClassRegistry.register("MyClass") { |p| MyClass.new(p) }`
+3. Use in specs: `my_var: { instantiate: MyClass, arg1: value1 }`
