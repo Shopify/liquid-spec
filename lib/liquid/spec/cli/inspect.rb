@@ -108,7 +108,6 @@ module Liquid
             # Load spec components
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
-            require "liquid/spec/yaml_initializer"
 
             specs = load_specs(config)
             specs = specs.select { |s| s.name =~ config.filter }

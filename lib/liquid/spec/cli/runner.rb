@@ -182,7 +182,6 @@ module Liquid
             # Load spec infrastructure
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
-            require "liquid/spec/yaml_initializer"
 
             specs = load_specs(config)
             specs = filter_specs(specs, config.filter) if config.filter
@@ -286,7 +285,6 @@ module Liquid
             LiquidSpec.run_setup!
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
-            require "liquid/spec/yaml_initializer"
 
             specs = load_specs(config)
             specs = filter_specs(specs, config.filter) if config.filter
