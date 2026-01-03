@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../spec_loader"
+require_relative "../yaml_initializer"
 
 # Pure drop implementations for testing - track state per-instance
 # Each drop is self-contained and produces deterministic output
@@ -358,6 +359,10 @@ class StubFileSystem
   def to_h
     @values.transform_keys(&:to_s)
   end
+
+  def encode_with(coder)
+    coder.represent_map("!stub_file_system", @values)
+  end
 end
 
 class StubExceptionRenderer
@@ -376,6 +381,10 @@ class StubExceptionRenderer
     end
 
     exception
+  end
+
+  def encode_with(coder)
+    coder.represent_map("!stub_exception_renderer", { "raise_internal_errors" => @raise_internal_errors })
   end
 end
 
@@ -397,8 +406,11 @@ Liquid::Spec::ClassRegistry.register("CustomToLiquidDrop") { |p| CustomToLiquidD
 Liquid::Spec::ClassRegistry.register("HashWithCustomToS") { |p| HashWithCustomToS.new(p) }
 Liquid::Spec::ClassRegistry.register("HashWithoutCustomToS") { |p| HashWithoutCustomToS.new(p) }
 Liquid::Spec::ClassRegistry.register("StubFileSystem") { |p| StubFileSystem.new(p) }
+Liquid::Spec::ClassRegistry.register("ShopifyFileSystem") { |p| ShopifyFileSystem.new(p) }
+Liquid::Spec::ClassRegistry.register("BlankFileSystem") { |p| BlankFileSystem.new(p) }
 Liquid::Spec::ClassRegistry.register("StubTemplateFactory") { |p| StubTemplateFactory.new(p) }
 Liquid::Spec::ClassRegistry.register("StubExceptionRenderer") { |p| StubExceptionRenderer.new(p) }
+Liquid::Spec::ClassRegistry.register("SafeBuffer") { |p| (p["value"] || p[:value] || "").to_s.html_safe }
 Liquid::Spec::ClassRegistry.register("LoaderDrop") { |p| LoaderDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("ArrayDrop") { |p| ArrayDrop.new(p) }
 
@@ -407,3 +419,14 @@ Liquid::Spec::ClassRegistry.register("Range") { |p| Range.new(p[0], p[1]) }
 
 # Returns the Liquid::Drop class itself (for edge case tests)
 Liquid::Spec::ClassRegistry.register("LiquidDropClass") { |_p| Liquid::Drop }
+
+# ContextWithRaisingSubcontext - for testing subcontext errors
+class ContextWithRaisingSubcontext < Liquid::Context
+  def new_isolated_subcontext(*)
+    raise "boom"
+  end
+end
+
+# Load test drops and filters after base classes are defined
+require_relative "../test_drops"
+require_relative "../test_filters"

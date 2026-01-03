@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "cgi"
-require "liquid/spec/deps/liquid_ruby"
 
 module TestDrops
   module DropActsAsString
