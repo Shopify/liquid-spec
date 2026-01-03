@@ -154,6 +154,7 @@ module Liquid
           # Suite defaults
           suite_defaults = suite&.defaults || {}
           default_render_errors = suite_defaults[:render_errors]
+          default_error_mode = suite_defaults[:error_mode]&.to_sym
 
           # Convert each spec hash to LazySpec
           spec_list.each_with_index do |spec_data, idx|
@@ -166,6 +167,15 @@ module Liquid
               metadata["render_errors"]
             else
               default_render_errors
+            end
+
+            # Determine error_mode: spec > metadata > suite default
+            spec_error_mode = if spec_data.key?("error_mode")
+              spec_data["error_mode"]&.to_sym
+            elsif source_required_options.key?(:error_mode)
+              source_required_options[:error_mode]
+            else
+              default_error_mode
             end
 
             # Keep environment as-is (may contain tagged objects or plain data)
@@ -185,7 +195,7 @@ module Liquid
               hint: spec_data["hint"],
               doc: spec_data["doc"] || source_doc,
               complexity: spec_data["complexity"] || minimum_complexity,
-              error_mode: spec_data["error_mode"]&.to_sym,
+              error_mode: spec_error_mode,
               render_errors: spec_render_errors || false,
               required_features: spec_data["required_features"] || [],
               source_file: path,
@@ -348,7 +358,7 @@ module Liquid
             aliases: true,
           )
         rescue ArgumentError
-          # Ruby 4.0 changed the API
+          # Ruby version compatibility
           YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range])
         end
 

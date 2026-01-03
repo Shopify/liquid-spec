@@ -70,9 +70,11 @@ module Liquid
         @source_hint = source_hint
         @source_required_options = source_required_options || {}
 
-        # Add lax_parsing requirement if error_mode is lax
+        # Add parsing mode requirement based on error_mode
         if @error_mode == :lax && !@required_features.include?(:lax_parsing)
           @required_features << :lax_parsing
+        elsif @error_mode == :strict && !@required_features.include?(:strict_parsing)
+          @required_features << :strict_parsing
         end
       end
 
