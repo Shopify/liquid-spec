@@ -24,7 +24,8 @@ LiquidSpec.configure do |config|
 end
 
 LiquidSpec.compile do |source, options|
-  Liquid::Template.parse(source, **options)
+  # Force lax mode regardless of spec (override comes after splat)
+  Liquid::Template.parse(source, **options, error_mode: :lax)
 end
 
 LiquidSpec.render do |template, assigns, options|

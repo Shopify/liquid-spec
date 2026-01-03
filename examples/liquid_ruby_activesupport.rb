@@ -20,7 +20,7 @@ LiquidSpec.setup do
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :activesupport]
+  config.features = [:core, :activesupport, :strict_parsing]
 end
 
 LiquidSpec.compile do |source, options|
