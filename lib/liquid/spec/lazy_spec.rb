@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "yaml"
+require_relative "spec_loader"
 
 module Liquid
   module Spec
@@ -30,7 +31,7 @@ module Liquid
       attr_reader :name, :template, :expected, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :render_errors, :required_features
       attr_reader :source_file, :line_number
-      attr_reader :raw_environment, :raw_filesystem
+      attr_reader :raw_environment, :raw_filesystem, :raw_template_factory
 
       def initialize(
         name:,
@@ -47,6 +48,7 @@ module Liquid
         line_number: nil,
         raw_environment: {},
         raw_filesystem: {},
+        raw_template_factory: nil,
         source_hint: nil,
         source_required_options: {}
       )
@@ -64,6 +66,7 @@ module Liquid
         @line_number = line_number
         @raw_environment = raw_environment || {}
         @raw_filesystem = raw_filesystem || {}
+        @raw_template_factory = raw_template_factory
         @source_hint = source_hint
         @source_required_options = source_required_options || {}
 
@@ -238,7 +241,7 @@ module Liquid
       # Instantiate filesystem for this spec
       # Returns an object that responds to read_template_file
       def instantiate_filesystem
-        return if @raw_filesystem.nil? || @raw_filesystem.empty?
+        return if @raw_filesystem.nil?
 
         fs = case @raw_filesystem
         when String
@@ -250,6 +253,13 @@ module Liquid
         end
 
         SimpleFileSystem.new(fs)
+      end
+
+      # Instantiate template_factory for this spec
+      def instantiate_template_factory
+        return if @raw_template_factory.nil?
+
+        deep_instantiate(@raw_template_factory)
       end
 
       private
@@ -271,6 +281,21 @@ module Liquid
 
         case obj
         when Hash
+          # Check if this is an instantiate definition (single key starting with "instantiate:")
+          if obj.size == 1
+            key = obj.keys.first
+            value = obj.values.first
+            if key.is_a?(String) && key.start_with?("instantiate:")
+              class_name = key.sub("instantiate:", "")
+              # Deep instantiate the parameters first
+              params = deep_instantiate(value, seen)
+              # Create a fresh instance via the registry
+              instance = ClassRegistry.instantiate(class_name, params)
+              return instance if instance
+            end
+          end
+
+          # Otherwise, do a deep copy
           copy = {}
           seen[obj] = copy
           obj.each do |k, v|
@@ -282,6 +307,23 @@ module Liquid
           seen[obj] = copy
           obj.each { |v| copy << deep_instantiate(v, seen) }
           copy
+        when String
+          # Handle string format: "instantiate:ClassName.new(arg)"
+          if obj.start_with?("instantiate:")
+            if obj =~ /\Ainstantiate:(\w+)\.new\((.+)\)\z/
+              class_name = ::Regexp.last_match(1)
+              arg_str = ::Regexp.last_match(2)
+              # Parse the argument (handles integers, strings, etc.)
+              arg = begin
+                Integer(arg_str)
+              rescue ArgumentError
+                arg_str # Keep as string if not an integer
+              end
+              instance = ClassRegistry.instantiate(class_name, arg)
+              return instance if instance
+            end
+          end
+          obj
         else
           # Already instantiated or primitive
           obj
@@ -316,10 +358,11 @@ module Liquid
         end
 
         def read_template_file(template_path)
-          path = template_path.to_s
-          path = "#{path}.liquid" unless path.downcase.end_with?(".liquid")
+          original_path = template_path.to_s
+          path = original_path.downcase
+          path = "#{path}.liquid" unless path.end_with?(".liquid")
           @templates.find { |name, _| name.casecmp?(path) }&.last or
-            raise Liquid::FileSystemError, "Could not find asset #{path}"
+            raise Liquid::FileSystemError, "Could not find asset #{original_path}"
         end
       end
     end

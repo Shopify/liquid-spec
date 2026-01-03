@@ -56,7 +56,7 @@ module Liquid
         @setup_block&.call
         @setup_done = true
 
-        # Load drop support after setup (liquid gem must be loaded)
+        # Load drop support after setup (liquid gem must be loaded first)
         require_relative "deps/liquid_ruby"
         require_relative "yaml_initializer"
       end
@@ -128,6 +128,7 @@ module Liquid
           # Instantiate environment (drops) for this spec
           environment = spec.instantiate_environment
           filesystem = spec.instantiate_filesystem
+          template_factory = spec.instantiate_template_factory
 
           # Compile
           compile_options = { line_numbers: true }
@@ -138,6 +139,7 @@ module Liquid
           # Render
           registers = {}
           registers[:file_system] = filesystem if filesystem
+          registers[:template_factory] = template_factory if template_factory
 
           render_options = {
             registers: registers,

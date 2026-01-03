@@ -5,30 +5,41 @@ require_relative "lazy_spec"
 
 module Liquid
   module Spec
-    # Registry for custom YAML classes used in specs
-    # Maps class name strings to actual Class objects
+    # Registry for instantiating custom objects used in specs
+    # Maps "instantiate:ClassName" strings to lambdas that create instances
     module ClassRegistry
-      @classes = {}
+      @factories = {}
 
       class << self
-        def register(name, klass)
-          @classes[name] = klass
+        # Register a factory lambda for a class name
+        # The lambda receives params hash and returns an instance
+        def register(name, klass = nil, &block)
+          if block_given?
+            @factories[name] = block
+          elsif klass
+            # Default factory: call klass.new(params)
+            @factories[name] = ->(params) { klass.new(params) }
+          end
         end
 
-        def lookup(name)
-          @classes[name]
+        # Instantiate an object by name with given params
+        def instantiate(name, params)
+          factory = @factories[name]
+          return unless factory
+
+          factory.call(params)
         end
 
         def registered?(name)
-          @classes.key?(name)
+          @factories.key?(name)
         end
 
         def all
-          @classes.dup
+          @factories.dup
         end
 
         def clear!
-          @classes.clear
+          @factories.clear
         end
       end
     end
@@ -36,45 +47,6 @@ module Liquid
     # Loads specs from YAML files without instantiating drop objects
     module SpecLoader
       class << self
-        # Ensure test infrastructure is loaded
-        def ensure_test_infrastructure!
-          return if @infrastructure_loaded
-
-          # Load test drops and register them
-          if defined?(Liquid::Template)
-            require_relative "deps/liquid_ruby"
-            register_test_classes!
-          end
-
-          @infrastructure_loaded = true
-        end
-
-        # Register all test classes in the registry
-        def register_test_classes!
-          # Core test classes
-          ClassRegistry.register("TestThing", TestThing) if defined?(TestThing)
-          ClassRegistry.register("TestDrop", TestDrop) if defined?(TestDrop)
-          ClassRegistry.register("TestEnumerable", TestEnumerable) if defined?(TestEnumerable)
-          ClassRegistry.register("NumberLikeThing", NumberLikeThing) if defined?(NumberLikeThing)
-          ClassRegistry.register("ThingWithToLiquid", ThingWithToLiquid) if defined?(ThingWithToLiquid)
-          ClassRegistry.register("ThingWithValue", ThingWithValue) if defined?(ThingWithValue)
-          ClassRegistry.register("BooleanDrop", BooleanDrop) if defined?(BooleanDrop)
-          ClassRegistry.register("IntegerDrop", IntegerDrop) if defined?(IntegerDrop)
-          ClassRegistry.register("StringDrop", StringDrop) if defined?(StringDrop)
-          ClassRegistry.register("ErrorDrop", ErrorDrop) if defined?(ErrorDrop)
-          ClassRegistry.register("SettingsDrop", SettingsDrop) if defined?(SettingsDrop)
-          ClassRegistry.register("CustomToLiquidDrop", CustomToLiquidDrop) if defined?(CustomToLiquidDrop)
-          ClassRegistry.register("HashWithCustomToS", HashWithCustomToS) if defined?(HashWithCustomToS)
-          ClassRegistry.register("HashWithoutCustomToS", HashWithoutCustomToS) if defined?(HashWithoutCustomToS)
-          ClassRegistry.register("StubFileSystem", StubFileSystem) if defined?(StubFileSystem)
-          ClassRegistry.register("StubTemplateFactory", StubTemplateFactory) if defined?(StubTemplateFactory)
-          ClassRegistry.register("StubExceptionRenderer", StubExceptionRenderer) if defined?(StubExceptionRenderer)
-
-          # Nested classes
-          ClassRegistry.register("ForTagTest::LoaderDrop", ForTagTest::LoaderDrop) if defined?(ForTagTest::LoaderDrop)
-          ClassRegistry.register("TableRowTest::ArrayDrop", TableRowTest::ArrayDrop) if defined?(TableRowTest::ArrayDrop)
-        end
-
         # Load all specs from the default suites
         def load_all(suite: :all, filter: nil)
           require_relative "suite"
@@ -139,22 +111,25 @@ module Liquid
           content = File.read(path)
           specs = []
 
+          # Fail fast if file contains !ruby/ tags - these must be converted to instantiate format
+          if content.include?("!ruby/")
+            # Find the line numbers with !ruby/ tags
+            bad_lines = []
+            content.each_line.with_index do |line, idx|
+              bad_lines << (idx + 1) if line.include?("!ruby/")
+            end
+            raise "YAML file contains !ruby/ tags which are not allowed. " \
+              "Convert to instantiate format.\n" \
+              "File: #{path}\n" \
+              "Lines: #{bad_lines.first(10).join(", ")}#{bad_lines.size > 10 ? "..." : ""}"
+          end
+
           # Parse YAML AST to extract line numbers
           doc = Psych.parse(content)
           line_numbers = extract_line_numbers_from_ast(doc) if doc
 
-          # Check if file contains custom Ruby objects
-          has_custom_objects = content.include?("!ruby/")
-
-          if has_custom_objects
-            # Ensure test classes are loaded before parsing
-            ensure_test_infrastructure!
-            # Use unsafe_load to instantiate custom objects
-            data = YAML.unsafe_load(content)
-          else
-            # No custom objects - safe to load normally
-            data = safe_load_with_permitted_classes(content)
-          end
+          # Safe to load - no custom objects
+          data = safe_load_with_permitted_classes(content)
           return specs unless data
 
           # Extract metadata if present
@@ -217,6 +192,7 @@ module Liquid
               line_number: spec_line_number,
               raw_environment: raw_env,
               raw_filesystem: spec_data["filesystem"] || {},
+              raw_template_factory: spec_data["template_factory"],
               source_hint: source_hint,
               source_required_options: source_required_options,
             )
@@ -291,6 +267,7 @@ module Liquid
               line_number: spec_node.start_line,
               raw_environment: env_yaml, # Store as YAML string
               raw_filesystem: spec_data[:filesystem] || {},
+              raw_template_factory: spec_data[:template_factory],
               source_hint: nil,
               source_required_options: {},
             )
@@ -491,99 +468,9 @@ module Liquid
           end
         end
 
-        # Process instantiate strings in spec data
-        # Pattern: "instantiate:ClassName.new(arg1, arg2)"
+        # Placeholder - no instantiate processing needed yet
         def process_instantiate_strings(data)
-          case data
-          when Hash
-            data.transform_values { |v| process_instantiate_strings(v) }
-          when Array
-            data.map { |v| process_instantiate_strings(v) }
-          when String
-            if data.start_with?("instantiate:")
-              instantiate_object(data)
-            else
-              data
-            end
-          else
-            data
-          end
-        end
-
-        # Parse and execute an instantiate string
-        # Format: "instantiate:ClassName.new(arg1, arg2, ...)"
-        def instantiate_object(instantiate_string)
-          # Extract class name and arguments
-          match = instantiate_string.match(/^instantiate:(\w+)\.new\((.*)\)$/)
-          return instantiate_string unless match
-
-          class_name = match[1]
-          args_str = match[2]
-
-          # Look up the class in the registry
-          klass = ClassRegistry.lookup(class_name)
-          return instantiate_string unless klass
-
-          # Parse arguments - handle simple cases: numbers and strings
-          args = parse_arguments(args_str)
-
-          # Instantiate with arguments
-          begin
-            klass.new(*args)
-          rescue => e
-            warn("Failed to instantiate #{class_name}: #{e.message}")
-            instantiate_string
-          end
-        end
-
-        # Parse argument string like "3" or "5, 'hello'"
-        def parse_arguments(args_str)
-          return [] if args_str.empty? || args_str.strip.empty?
-
-          # Split by comma, but respect quoted strings
-          args = []
-          current = +"" # Use + to create unfrozen string in Ruby 4.0
-          in_quotes = false
-          args_str.each_char do |c|
-            case c
-            when "'"
-              in_quotes = !in_quotes
-              current << c
-            when ","
-              if in_quotes
-                current << c
-              else
-                args << parse_single_argument(current.strip)
-                current = +"" # Reset to unfrozen string
-              end
-            else
-              current << c
-            end
-          end
-          args << parse_single_argument(current.strip) unless current.empty?
-
-          args
-        end
-
-        # Parse a single argument value
-        def parse_single_argument(arg_str)
-          arg_str = arg_str.strip
-
-          # Try to parse as integer
-          return Integer(arg_str) if arg_str =~ /^\d+$/
-          return Integer(arg_str) if arg_str =~ /^-\d+$/
-
-          # Try to parse as float
-          return Float(arg_str) if arg_str =~ /^\d+\.\d+$/
-          return Float(arg_str) if arg_str =~ /^-\d+\.\d+$/
-
-          # Remove quotes if it's a quoted string
-          if arg_str.start_with?("'") && arg_str.end_with?("'")
-            return arg_str[1..-2]
-          end
-
-          # Return as-is (might be a symbol or other value)
-          arg_str
+          data
         end
       end
     end

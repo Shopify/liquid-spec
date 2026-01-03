@@ -389,7 +389,8 @@
     join(set): Liquid error (foo line 3): internal
     join(arr): c, d, e
   environment:
-    some_set: instantiate:Set.new()
+    some_set:
+      "instantiate:Set": {}
         a: true
         b: true
         c: true

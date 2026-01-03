@@ -705,6 +705,8 @@ module Liquid
             registers = {}
             filesystem = spec.instantiate_filesystem
             registers[:file_system] = filesystem if filesystem
+            template_factory = spec.instantiate_template_factory
+            registers[:template_factory] = template_factory if template_factory
             registers
           end
 
