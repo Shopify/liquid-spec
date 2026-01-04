@@ -1,0 +1,335 @@
+# Liquid Error Handling and Edge Cases
+# Progressive difficulty: 200-350
+# Focus: Error modes (lax/strict), division by zero, invalid filters, unknown tags, malformed syntax
+
+- name: "division_by_zero_lax"
+  template: "{{ 10 | divided_by: 0 }}"
+  expected: ""
+  complexity: 200
+  error_mode: lax
+  hint: |
+    In lax mode, division by zero should return nil (empty string output).
+    The divided_by filter must detect when divisor is 0 and handle it gracefully.
+    Most Liquid implementations follow Ruby Liquid's behavior of returning nil
+    rather than raising an exception. This prevents template crashes from
+    math errors in production.
+
+- name: "division_by_zero_with_float_lax"
+  template: "{{ 10.0 | divided_by: 0.0 }}"
+  expected: ""
+  complexity: 210
+  error_mode: lax
+  hint: |
+    Float division by zero follows the same lax mode behavior as integer division.
+    Even though some languages return Infinity for float division by zero,
+    Liquid returns nil to maintain consistent error handling. The filter
+    should check for both integer 0 and float 0.0 divisors.
+
+- name: "modulo_by_zero_lax"
+  template: "{{ 10 | modulo: 0 }}"
+  expected: ""
+  complexity: 215
+  error_mode: lax
+  hint: |
+    The modulo filter should handle division by zero the same as divided_by.
+    In lax mode, return nil when attempting to calculate remainder with
+    zero divisor. This prevents ZeroDivisionError from propagating to
+    the template output.
+
+- name: "undefined_variable_lax"
+  template: "{{ missing_var }}"
+  data: {}
+  expected: ""
+  complexity: 205
+  error_mode: lax
+  hint: |
+    In lax mode, undefined variables render as empty strings (nil output).
+    The variable lookup system should return nil for variables not found
+    in the context. This is fundamental to Liquid's forgiving error handling.
+    Do not throw errors or warnings for missing variables in lax mode.
+
+- name: "undefined_variable_strict"
+  template: "{{ missing_var }}"
+  data: {}
+  expected: "Liquid error: undefined variable 'missing_var'"
+  complexity: 230
+  error_mode: strict
+  render_errors: true
+  hint: |
+    In strict mode, accessing undefined variables should raise an error.
+    The error should be caught and rendered inline as "Liquid error: [message]".
+    Strict mode helps catch typos and missing data during development.
+    Implement error handling that captures the variable name and context
+    for helpful error messages.
+
+- name: "property_access_on_nil_lax"
+  template: "{{ missing.property }}"
+  data: {}
+  expected: ""
+  complexity: 220
+  error_mode: lax
+  hint: |
+    Accessing properties on nil/undefined values should fail gracefully in lax mode.
+    When 'missing' resolves to nil, .property access should also return nil
+    (empty string output). This is nil-safe navigation - each property access
+    checks if the base is nil before attempting to access. Prevents null
+    pointer exceptions in templates.
+
+- name: "property_access_on_nil_strict"
+  template: "{{ missing.property }}"
+  data: {}
+  expected: "Liquid error: undefined variable 'missing'"
+  complexity: 245
+  error_mode: strict
+  render_errors: true
+  hint: |
+    In strict mode, the error should occur at the variable lookup level.
+    Since 'missing' is undefined, the error is raised before attempting
+    property access. Strict mode validates each step of the lookup chain.
+    The error message should identify which variable is undefined for
+    easier debugging.
+
+- name: "property_access_on_non_object_lax"
+  template: "{{ number.property }}"
+  data: { number: 42 }
+  expected: ""
+  complexity: 235
+  error_mode: lax
+  hint: |
+    Attempting to access properties on primitive types (numbers, strings)
+    should return nil in lax mode. The number 42 doesn't have a 'property'
+    attribute, so gracefully return nil. Some implementations may have
+    special handling for string methods (like .size), but unknown properties
+    should always return nil on primitives.
+
+- name: "array_access_on_non_array_lax"
+  template: "{{ string[0] }}"
+  data: { string: "hello" }
+  expected: ""
+  complexity: 240
+  error_mode: lax
+  hint: |
+    Bracket notation on non-indexable types should return nil in lax mode.
+    While strings might support indexing in some implementations, attempting
+    to index a string as an array should fail gracefully. Only proper arrays
+    and hashes should support bracket notation. Return nil for incompatible
+    type access.
+
+- name: "unknown_filter_lax"
+  template: "{{ 'hello' | nonexistent_filter }}"
+  expected: "hello"
+  complexity: 250
+  error_mode: lax
+  hint: |
+    In lax mode, unknown filters should be silently ignored, passing through
+    the input value unchanged. This allows templates to degrade gracefully
+    when filters are removed or unavailable. The filter chain continues with
+    the original value as if the unknown filter wasn't there. This is critical
+    for backward compatibility.
+
+- name: "unknown_filter_strict"
+  template: "{{ 'hello' | nonexistent_filter }}"
+  expected: "Liquid error: unknown filter 'nonexistent_filter'"
+  complexity: 270
+  error_mode: strict
+  render_errors: true
+  hint: |
+    In strict mode, unknown filters should raise an error that gets rendered
+    inline. This helps catch typos in filter names during development. The
+    filter lookup system should check if the filter exists before attempting
+    to invoke it. Provide the filter name in the error message for debugging.
+
+- name: "filter_with_invalid_argument_lax"
+  template: "{{ 'hello' | slice: 'not a number' }}"
+  expected: ""
+  complexity: 255
+  error_mode: lax
+  hint: |
+    Filters that expect numeric arguments but receive invalid input should
+    return nil in lax mode. The slice filter expects an integer index but
+    gets a string. Rather than raising a type error, return nil. Filters
+    should validate their arguments and handle type mismatches gracefully
+    in lax mode.
+
+- name: "chained_filter_error_propagation_lax"
+  template: "{{ 'test' | nonexistent | upcase }}"
+  expected: "TEST"
+  complexity: 265
+  error_mode: lax
+  hint: |
+    When an unknown filter appears in a chain in lax mode, it passes through
+    its input unchanged, and the chain continues. Here 'nonexistent' passes
+    'test' through unchanged, then upcase converts it to 'TEST'. Error
+    propagation in filter chains should not break subsequent filters in
+    lax mode. Each filter processes what it receives.
+
+- name: "unknown_tag_lax"
+  template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
+  expected: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
+  complexity: 280
+  error_mode: lax
+  hint: |
+    In lax mode, unknown tags should be rendered as raw text, outputting the
+    tag syntax literally. This allows templates with custom tags to render
+    in implementations that don't support those tags. The lexer should
+    recognize the tag syntax but the parser treats unknown tags as raw output.
+    Include both opening and closing tags in the raw output.
+
+- name: "unknown_tag_strict"
+  template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
+  expected: "Liquid error: unknown tag 'nonexistent_tag'"
+  complexity: 300
+  error_mode: strict
+  render_errors: true
+  hint: |
+    In strict mode, unknown tags should raise an error immediately during
+    parsing or rendering. The tag registry lookup fails and an error is raised.
+    This prevents templates with typos from silently failing. The error should
+    identify the unknown tag name and ideally the line number where it appears.
+
+- name: "malformed_syntax_unclosed_tag_lax"
+  template: "{% if true %}hello"
+  expected: "Liquid syntax error: 'if' tag was never closed"
+  complexity: 320
+  error_mode: lax
+  render_errors: true
+  hint: |
+    Syntax errors should always raise errors even in lax mode, because the
+    template cannot be parsed correctly. An unclosed 'if' tag makes the
+    template structure ambiguous. The parser should detect when block tags
+    (if, for, case, etc.) are not properly closed before end-of-template.
+    Render syntax errors inline with descriptive messages.
+
+- name: "malformed_syntax_invalid_filter_separator"
+  template: "{{ 'hello' || upcase }}"
+  expected: "Liquid syntax error: unexpected token '|' in filter chain"
+  complexity: 330
+  error_mode: lax
+  render_errors: true
+  hint: |
+    Double pipes (||) are not valid Liquid syntax. The lexer/parser should
+    detect malformed filter chains. While '|' separates filters, '||' is
+    invalid. Syntax errors should be detected during parsing and rendered
+    as error messages. Even in lax mode, syntactically invalid templates
+    cannot be processed and must report errors.
+
+- name: "very_long_string_filter"
+  template: "{{ long_string | size }}"
+  data: { long_string: "{{ 'x' * 100000 }}" }
+  expected: "100000"
+  complexity: 290
+  error_mode: lax
+  hint: |
+    Filters should handle very long strings without crashing. The size filter
+    should work on strings of any length. While there may be practical limits
+    (memory, timeout), the filter logic itself should not have hardcoded
+    length restrictions. This tests that filters properly handle edge cases
+    in input size. The data field here uses Ruby syntax to generate a long
+    string; adapt based on your spec processing system.
+
+- name: "deeply_nested_property_access_lax"
+  template: "{{ a.b.c.d.e.f.g.h.i.j }}"
+  data: { a: { b: { c: { d: { e: { f: { g: { h: { i: {} } } } } } } } } }
+  expected: ""
+  complexity: 310
+  error_mode: lax
+  hint: |
+    Deep property access chains should work up to the point where a property
+    doesn't exist. Here the chain reaches 'i' (an empty object), then accessing
+    .j returns nil. The system should handle arbitrary nesting depth without
+    stack overflow or recursion limits. Each property access should be
+    nil-safe, returning nil as soon as any intermediate value is nil or
+    doesn't have the requested property.
+
+- name: "filter_on_nil_value_lax"
+  template: "{{ missing | upcase }}"
+  data: {}
+  expected: ""
+  complexity: 225
+  error_mode: lax
+  hint: |
+    Filters applied to nil/undefined variables should handle nil input gracefully.
+    The upcase filter receives nil as input (since 'missing' is undefined).
+    Filters should check for nil input and either return nil or handle it
+    appropriately. Most filters return nil when given nil input. This prevents
+    errors when applying filters in filter chains where earlier values might
+    be nil.
+
+- name: "negative_array_index_out_of_bounds_lax"
+  template: "{{ items[-10] }}"
+  data: { items: ["a", "b", "c"] }
+  expected: ""
+  complexity: 260
+  error_mode: lax
+  hint: |
+    Negative array indices that go beyond the array bounds should return nil.
+    The array has 3 elements, so [-10] would be index -7 when adjusted,
+    which is out of bounds. Array access should validate indices (both positive
+    and negative) and return nil for out-of-bounds access in lax mode. Never
+    throw exceptions for array index errors in lax mode.
+
+- name: "undefined_variable_in_filter_argument_lax"
+  template: "{{ 'hello' | slice: missing_index }}"
+  data: {}
+  expected: ""
+  complexity: 275
+  error_mode: lax
+  hint: |
+    When a filter argument references an undefined variable, the filter receives
+    nil as the argument. The slice filter gets nil instead of a number. Filters
+    should validate their arguments and handle nil gracefully. If required
+    arguments are nil, return nil. This prevents cascading errors in filter
+    chains where argument variables might be undefined.
+
+- name: "error_in_nested_block_lax"
+  template: "{% for item in items %}{{ item.missing }}{% endfor %}"
+  data: { items: [{ name: "a" }, { name: "b" }] }
+  expected: ""
+  complexity: 285
+  error_mode: lax
+  hint: |
+    Errors inside loops or other block structures should be handled per-iteration
+    in lax mode. Each iteration tries to access .missing on an item, which
+    doesn't exist. Each access returns nil (empty string). The loop continues
+    normally. Errors inside blocks should not break the block execution in
+    lax mode. Each iteration is independent in terms of error handling.
+
+- name: "strict_mode_with_nil_safe_access"
+  template: "{{ user.profile.name | default: 'Anonymous' }}"
+  data: { user: { profile: nil } }
+  expected: "Anonymous"
+  complexity: 295
+  error_mode: strict
+  hint: |
+    Even in strict mode, nil-safe property access should work when the value
+    is explicitly nil (not undefined). Here 'profile' exists but is nil, so
+    .name returns nil, which is passed to the default filter. Strict mode
+    errors on undefined variables, but explicit nil values should be handled
+    gracefully. The default filter provides a fallback for nil values.
+
+- name: "empty_filter_chain_lax"
+  template: "{{ 'hello' | }}"
+  expected: "Liquid syntax error: unexpected end of filter chain"
+  complexity: 340
+  error_mode: lax
+  render_errors: true
+  hint: |
+    A filter pipe with no filter name is a syntax error. Even in lax mode,
+    this cannot be parsed correctly. The parser should detect the incomplete
+    filter chain syntax - a '|' must be followed by a filter name. Render
+    a syntax error message. This is different from unknown filters (which
+    pass through in lax mode); this is malformed syntax that cannot be parsed.
+
+- name: "recursive_variable_reference"
+  template: "{{ a }}"
+  data: { a: "{{ b }}", b: "{{ a }}" }
+  expected: "{{ b }}"
+  complexity: 350
+  error_mode: lax
+  hint: |
+    Variable values should not be recursively parsed as Liquid templates.
+    When 'a' contains "{{ b }}", it should be output literally, not parsed
+    as a nested template. Liquid does not support recursive template expansion
+    in variable values. The string "{{ b }}" is just text data. This prevents
+    infinite recursion and keeps the parser simple. Only the original template
+    is parsed, not variable contents.

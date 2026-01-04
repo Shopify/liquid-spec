@@ -1,0 +1,396 @@
+# Liquid Type Coercion Specs
+# Progressive difficulty: 110-170
+# Focus: Type coercion in filters, comparisons, and output contexts
+
+- name: "string_to_number_in_plus"
+  template: "{{ '5' | plus: 3 }}"
+  expected: "8"
+  complexity: 110
+  hint: |
+    The plus filter should coerce its input to a number before adding.
+    Parse the string '5', recognize it as numeric content, convert to
+    integer 5, then add 3. The result is 8. This tests implicit string-to-number
+    coercion in mathematical operations.
+
+- name: "string_to_float_in_plus"
+  template: "{{ '3.5' | plus: 1.5 }}"
+  expected: "5.0"
+  complexity: 115
+  hint: |
+    Coerce string '3.5' to float 3.5 in the plus filter. Add 1.5
+    to get 5.0. The filter should parse the string as a floating-point
+    number, not truncate to integer. Result formatting should preserve
+    the decimal point when both operands are floats.
+
+- name: "non_numeric_string_in_math"
+  template: "{{ 'hello' | plus: 5 }}"
+  expected: "5"
+  complexity: 120
+  hint: |
+    When a string cannot be coerced to a number, treat it as 0.
+    'hello' is not numeric, so it becomes 0. Then 0 + 5 = 5.
+    This is Liquid's graceful handling of invalid numeric strings
+    in math operations - no errors, just sensible defaults.
+
+- name: "number_to_string_in_output"
+  template: "{{ 42 }}"
+  expected: "42"
+  complexity: 110
+  hint: |
+    When outputting a number in {{ }}, convert it to string automatically.
+    The integer 42 becomes the string "42". This is implicit coercion
+    that happens during rendering. All output contexts expect strings,
+    so numbers are converted using their string representation.
+
+- name: "float_to_string_output"
+  template: "{{ 3.14159 }}"
+  expected: "3.14159"
+  complexity: 110
+  hint: |
+    Convert floating-point numbers to strings during output.
+    Preserve the decimal precision as stored. Don't add extra
+    zeros or round unless explicitly requested. The float 3.14159
+    becomes the string "3.14159" directly.
+
+- name: "boolean_true_is_truthy"
+  template: "{% if true %}yes{% endif %}"
+  expected: "yes"
+  complexity: 115
+  hint: |
+    The boolean true is truthy in conditional contexts. In {% if %}
+    tags, evaluate the condition. When the expression is the literal
+    true, the condition passes and the block content renders.
+    This is the most basic truthy test.
+
+- name: "boolean_false_is_falsy"
+  template: "{% if false %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 115
+  hint: |
+    The boolean false is falsy in conditional contexts. When the
+    {% if %} condition evaluates to false, skip the main block and
+    execute the {% else %} block instead. This demonstrates that
+    false fails the truthiness test.
+
+- name: "nil_is_falsy"
+  template: "{% if nil %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 120
+  hint: |
+    Treat nil as falsy in conditionals. When the condition is nil
+    (or an undefined variable that returns nil), the if block should
+    not execute. Instead, execute the else block. Nil is one of only
+    two falsy values in Liquid (along with false).
+
+- name: "empty_string_is_falsy"
+  template: "{% if '' %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 125
+  hint: |
+    In Liquid, empty strings are falsy. Even though it's a string object,
+    the empty string '' fails the truthiness test. Check the string
+    length: if zero, treat as falsy. This differs from some languages
+    where only nil/null/false are falsy.
+
+- name: "string_zero_is_truthy"
+  template: "{% if '0' %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 130
+  hint: |
+    The string '0' is truthy, not falsy. This is crucial: Liquid does
+    not coerce strings to numbers for truthiness tests. '0' is a non-empty
+    string, so it's truthy. Only false, nil, and empty string are falsy.
+    This differs from JavaScript where '0' would be truthy but 0 is falsy.
+
+- name: "number_zero_is_truthy"
+  template: "{% if 0 %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 130
+  hint: |
+    The number 0 is truthy in Liquid. Unlike many languages where 0
+    is falsy, Liquid only treats false and nil (and empty string) as
+    falsy. The integer 0 is a valid value and passes truthiness tests.
+    This is consistent with Ruby's truthiness rules.
+
+- name: "non_empty_string_is_truthy"
+  template: "{% if 'hello' %}yes{% endif %}"
+  expected: "yes"
+  complexity: 120
+  hint: |
+    Any non-empty string is truthy. The string 'hello' has content,
+    so it passes the truthiness test. In conditional evaluation, check
+    that the value is not false, not nil, and (for strings) not empty.
+    All other values are truthy.
+
+- name: "array_is_truthy"
+  template: "{% if items %}yes{% endif %}"
+  data: { items: [] }
+  expected: "yes"
+  complexity: 135
+  hint: |
+    Empty arrays are truthy in Liquid. Even though the array has no
+    elements, it's not nil or false, so it passes the truthiness test.
+    Check the type, not the length. An array object, regardless of size,
+    is truthy. This differs from languages where empty collections are falsy.
+
+- name: "string_in_minus_filter"
+  template: "{{ '10' | minus: '3' }}"
+  expected: "7"
+  complexity: 125
+  hint: |
+    Coerce both string operands to numbers in the minus filter.
+    Parse '10' as 10 and '3' as 3, then perform 10 - 3 = 7.
+    Both the input and the filter argument can be strings that
+    require numeric coercion.
+
+- name: "times_with_string_operands"
+  template: "{{ '4' | times: '5' }}"
+  expected: "20"
+  complexity: 125
+  hint: |
+    The times filter coerces string operands to numbers. Convert
+    '4' to 4 and '5' to 5, then multiply: 4 * 5 = 20. String-to-number
+    coercion is standard for all mathematical filters (plus, minus,
+    times, divided_by, modulo).
+
+- name: "divided_by_with_integers"
+  template: "{{ 7 | divided_by: 2 }}"
+  expected: "3"
+  complexity: 130
+  hint: |
+    Integer division in Liquid truncates toward zero. When both
+    operands are integers, perform integer division: 7 / 2 = 3
+    (not 3.5). The result is an integer. This matches Ruby's
+    integer division behavior. No implicit conversion to float.
+
+- name: "divided_by_with_float"
+  template: "{{ 7.0 | divided_by: 2 }}"
+  expected: "3.5"
+  complexity: 135
+  hint: |
+    When at least one operand is a float, perform float division.
+    7.0 / 2 = 3.5. The presence of a decimal point in 7.0 signals
+    float arithmetic. The result is a float. This shows that type
+    of operands determines the result type.
+
+- name: "comparison_no_coercion"
+  template: "{% if '5' == 5 %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 140
+  hint: |
+    Liquid does NOT coerce types in equality comparisons. The string
+    '5' is not equal to the number 5 - they are different types.
+    Implement strict equality checks that compare both value and type.
+    This prevents unexpected matches between strings and numbers.
+
+- name: "string_comparison"
+  template: "{% if 'hello' == 'hello' %}yes{% endif %}"
+  expected: "yes"
+  complexity: 120
+  hint: |
+    String equality compares the string contents. Two strings with
+    the same characters are equal. No coercion needed - both operands
+    are already strings. Perform a straightforward string comparison
+    checking each character.
+
+- name: "append_filter_string_concat"
+  template: "{{ 'hello' | append: 'world' }}"
+  expected: "helloworld"
+  complexity: 130
+  hint: |
+    The append filter concatenates strings. Take the input 'hello'
+    and append 'world' to get 'helloworld'. No separator is added.
+    This is pure string concatenation without type coercion concerns.
+
+- name: "append_number_to_string"
+  template: "{{ 'value: ' | append: 42 }}"
+  expected: "value: 42"
+  complexity: 140
+  hint: |
+    When appending a number to a string, coerce the number to string
+    first. Convert 42 to '42', then concatenate: 'value: ' + '42' =
+    'value: 42'. The append filter accepts any type and converts to
+    string before concatenation.
+
+- name: "prepend_with_number"
+  template: "{{ 'items' | prepend: 5 }}"
+  expected: "5items"
+  complexity: 140
+  hint: |
+    The prepend filter adds content before the input, coercing to string.
+    Convert 5 to '5', then prepend to 'items': '5' + 'items' = '5items'.
+    Like append, prepend handles type coercion to ensure string concatenation.
+
+- name: "size_of_string"
+  template: "{{ 'hello' | size }}"
+  expected: "5"
+  complexity: 125
+  hint: |
+    The size filter returns the length of a string as a number.
+    Count the characters in 'hello' to get 5. Then coerce the
+    numeric result to string for output: '5'. This demonstrates
+    that filter results (numbers) are coerced to strings for rendering.
+
+- name: "size_of_array"
+  template: "{{ items | size }}"
+  data: { items: [1, 2, 3] }
+  expected: "3"
+  complexity: 130
+  hint: |
+    The size filter works on arrays too. Count the array elements
+    to get 3. Return as a number, which gets coerced to string '3'
+    during output. The filter handles both strings and arrays,
+    determining which length to compute based on input type.
+
+- name: "default_filter_with_falsy"
+  template: "{{ '' | default: 'fallback' }}"
+  expected: "fallback"
+  complexity: 145
+  hint: |
+    The default filter replaces falsy values with a fallback.
+    Since empty string is falsy, use the default value 'fallback'.
+    Check if the input is false, nil, or empty string. If so,
+    return the default argument instead of the input.
+
+- name: "default_filter_with_zero"
+  template: "{{ 0 | default: 'fallback' }}"
+  expected: "0"
+  complexity: 150
+  hint: |
+    Since 0 is truthy in Liquid, the default filter should NOT
+    replace it. The input 0 is valid (not falsy), so output '0'
+    instead of the fallback. This demonstrates that default only
+    triggers for false/nil/empty-string, not zero.
+
+- name: "at_least_with_string_numbers"
+  template: "{{ '5' | at_least: '10' }}"
+  expected: "10"
+  complexity: 145
+  hint: |
+    The at_least filter returns the maximum of input and argument.
+    Coerce both '5' and '10' to numbers (5 and 10). Since 5 < 10,
+    return 10. Then coerce result back to string '10' for output.
+    This involves bidirectional coercion: string→number→string.
+
+- name: "at_most_with_string_numbers"
+  template: "{{ '15' | at_most: '10' }}"
+  expected: "10"
+  complexity: 145
+  hint: |
+    The at_most filter returns the minimum of input and argument.
+    Coerce '15' to 15 and '10' to 10. Since 15 > 10, return 10.
+    Convert result to string '10'. These filters demonstrate clamping
+    operations with automatic string-to-number coercion.
+
+- name: "modulo_with_string"
+  template: "{{ '17' | modulo: 5 }}"
+  expected: "2"
+  complexity: 135
+  hint: |
+    The modulo filter computes remainder after division. Coerce '17'
+    to 17, then compute 17 % 5 = 2. The modulo operator works with
+    numeric types, so strings must be coerced first. Result is an
+    integer converted to string for output.
+
+- name: "abs_with_negative_string"
+  template: "{{ '-42' | abs }}"
+  expected: "42"
+  complexity: 140
+  hint: |
+    The abs filter computes absolute value, coercing string input
+    to number. Parse '-42' as integer -42, compute absolute value
+    to get 42, return as string '42'. This tests coercion with
+    negative numeric strings.
+
+- name: "round_with_string_float"
+  template: "{{ '3.7' | round }}"
+  expected: "4"
+  complexity: 150
+  hint: |
+    The round filter coerces string to float before rounding.
+    Parse '3.7' as 3.7, round to nearest integer (4), return as
+    string '4'. String-to-float coercion must handle decimal parsing
+    correctly before applying mathematical rounding.
+
+- name: "floor_with_string"
+  template: "{{ '5.9' | floor }}"
+  expected: "5"
+  complexity: 150
+  hint: |
+    The floor filter rounds down to nearest integer. Coerce '5.9'
+    to float 5.9, apply floor operation to get 5, convert to string '5'.
+    Tests string-to-float coercion followed by floor mathematical operation.
+
+- name: "ceil_with_string"
+  template: "{{ '5.1' | ceil }}"
+  expected: "6"
+  complexity: 150
+  hint: |
+    The ceil filter rounds up to nearest integer. Coerce '5.1' to
+    float 5.1, apply ceiling operation to get 6, convert to string '6'.
+    Tests string-to-float coercion followed by ceil mathematical operation.
+
+- name: "truthiness_in_unless"
+  template: "{% unless '0' %}no{% else %}yes{% endunless %}"
+  expected: "yes"
+  complexity: 155
+  hint: |
+    The unless tag inverts truthiness: it executes when condition is falsy.
+    Since '0' is truthy (non-empty string), the unless block does NOT execute.
+    The else block runs instead, outputting 'yes'. This tests that string '0'
+    remains truthy even in inverted conditional logic.
+
+- name: "contains_no_type_coercion"
+  template: "{% if items contains 2 %}yes{% else %}no{% endif %}"
+  data: { items: ['1', '2', '3'] }
+  expected: "no"
+  complexity: 160
+  hint: |
+    The contains operator does NOT coerce types. The array contains
+    string '2', but we're checking for integer 2. These are different
+    types, so contains returns false. Implement contains with strict
+    type checking, iterating through array and using strict equality.
+
+- name: "join_coerces_to_string"
+  template: "{{ numbers | join: ',' }}"
+  data: { numbers: [1, 2, 3] }
+  expected: "1,2,3"
+  complexity: 155
+  hint: |
+    The join filter converts array elements to strings before joining.
+    Take array [1, 2, 3], convert each number to string ('1', '2', '3'),
+    then join with separator ',' to get '1,2,3'. This demonstrates
+    implicit coercion of array elements to strings during joining.
+
+- name: "split_produces_string_array"
+  template: "{{ '1,2,3' | split: ',' | first }}"
+  expected: "1"
+  complexity: 160
+  hint: |
+    The split filter produces an array of strings, not numbers.
+    Split '1,2,3' by ',' to get ['1', '2', '3']. The first filter
+    returns '1' (a string). Even though the content looks numeric,
+    split doesn't coerce - it produces strings. Tests that split
+    preserves string type.
+
+- name: "concat_arrays_no_coercion"
+  template: "{{ a | concat: b | size }}"
+  data: { a: [1, 2], b: ['3', '4'] }
+  expected: "4"
+  complexity: 165
+  hint: |
+    The concat filter combines arrays without coercing element types.
+    Merge [1, 2] and ['3', '4'] to get [1, 2, '3', '4'] - a mixed-type
+    array. Call size to get 4. This shows that concat preserves types;
+    it doesn't unify number and string elements.
+
+- name: "plus_with_nil_input"
+  template: "{{ missing | plus: 10 }}"
+  data: {}
+  expected: "10"
+  complexity: 170
+  hint: |
+    When the input to a math filter is nil (from undefined variable),
+    coerce it to 0. The undefined 'missing' returns nil, which becomes 0.
+    Then 0 + 10 = 10. This demonstrates that nil coerces to 0 in numeric
+    contexts, enabling graceful handling of missing data.

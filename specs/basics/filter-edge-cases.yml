@@ -1,0 +1,403 @@
+# Liquid Filter Edge Cases Specs
+# Progressive difficulty: 40-150
+# Focus: Filter behavior with empty inputs, boundary conditions, and edge cases
+
+- name: "upcase_empty_string"
+  template: "{{ text | upcase }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 40
+  hint: |
+    The upcase filter should handle empty strings gracefully. When the
+    input is an empty string, return an empty string. Implement upcase
+    by converting the input to a string (if needed) and calling the
+    uppercase transformation. Empty strings remain empty after transformation.
+
+- name: "downcase_empty_string"
+  template: "{{ text | downcase }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 40
+  hint: |
+    The downcase filter should handle empty strings gracefully. Similar
+    to upcase, when the input is empty, return empty. String filters
+    should not fail or produce unexpected output on empty inputs - they
+    should transform the empty input into an empty output.
+
+- name: "capitalize_empty_string"
+  template: "{{ text | capitalize }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 45
+  hint: |
+    The capitalize filter capitalizes the first character of a string.
+    When given an empty string, there's no first character to capitalize,
+    so return the empty string unchanged. Check if the string has length > 0
+    before attempting to capitalize the first character.
+
+- name: "first_empty_array"
+  template: "{{ items | first }}"
+  data: { items: [] }
+  expected: ""
+  complexity: 50
+  hint: |
+    The first filter returns the first element of an array. When given
+    an empty array, there is no first element, so return nil (which
+    renders as empty string). Check array length before accessing
+    element at index 0. Empty arrays should not cause errors.
+
+- name: "last_empty_array"
+  template: "{{ items | last }}"
+  data: { items: [] }
+  expected: ""
+  complexity: 50
+  hint: |
+    The last filter returns the final element of an array. For empty
+    arrays, there is no last element, so return nil. Access the element
+    at index (length - 1), but first verify length > 0. Handle the
+    empty array case by returning nil.
+
+- name: "size_empty_string"
+  template: "{{ text | size }}"
+  data: { text: "" }
+  expected: "0"
+  complexity: 45
+  hint: |
+    The size filter returns the length of strings or arrays. An empty
+    string has size 0. Implement size by checking the input type: for
+    strings, return the character count; for arrays, return the element
+    count. Empty inputs always have size 0.
+
+- name: "size_empty_array"
+  template: "{{ items | size }}"
+  data: { items: [] }
+  expected: "0"
+  complexity: 45
+  hint: |
+    The size filter on an empty array should return 0. Similar to empty
+    strings, empty arrays have zero elements. The size filter must
+    handle both strings and arrays, checking the appropriate length
+    property for each type.
+
+- name: "join_empty_array"
+  template: "{{ items | join: ', ' }}"
+  data: { items: [] }
+  expected: ""
+  complexity: 55
+  hint: |
+    The join filter concatenates array elements with a separator. When
+    the array is empty, there are no elements to join, so return an
+    empty string. Don't include the separator when there are no elements.
+    Check if array length is 0 before processing.
+
+- name: "chained_filters_empty_string"
+  template: "{{ text | upcase | downcase | capitalize }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 60
+  hint: |
+    Filters can be chained - the output of one becomes the input of the next.
+    With an empty string input, each filter in the chain receives empty and
+    produces empty. Implement filter chaining by piping the result of each
+    filter to the next. The empty string propagates through the entire chain.
+
+- name: "split_empty_string"
+  template: "{{ text | split: ',' | size }}"
+  data: { text: "" }
+  expected: "1"
+  complexity: 65
+  hint: |
+    Split on an empty string produces an array with one empty element [""].
+    This is different from an empty array []. When you split "", you get
+    one piece (the empty string itself). Then size returns 1. This is a
+    quirky but standard behavior across implementations.
+
+- name: "split_with_empty_delimiter"
+  template: "{{ text | split: '' | join: '-' }}"
+  data: { text: "hi" }
+  expected: "h-i"
+  complexity: 70
+  hint: |
+    Split with an empty delimiter splits the string into individual characters.
+    When the delimiter is "", each character becomes a separate array element.
+    "hi" becomes ["h", "i"]. Then join with "-" produces "h-i". Handle the
+    empty delimiter case specially to split into characters.
+
+- name: "slice_negative_index"
+  template: "{{ text | slice: -1 }}"
+  data: { text: "hello" }
+  expected: "o"
+  complexity: 75
+  hint: |
+    Slice supports negative indices which count from the end. Index -1
+    refers to the last character. Implement negative index support by
+    converting negative indices to positive ones: -1 becomes length - 1.
+    Then extract the character at that position.
+
+- name: "slice_out_of_bounds"
+  template: "{{ text | slice: 10 }}"
+  data: { text: "hi" }
+  expected: ""
+  complexity: 80
+  hint: |
+    When slice index is beyond the string length, return nil (empty string).
+    The string "hi" has indices 0-1, so index 10 is out of bounds. Check
+    if the index is >= length before attempting to slice. Out-of-bounds
+    access should not error, just return nil.
+
+- name: "slice_with_negative_length"
+  template: "{{ text | slice: 0, -1 }}"
+  data: { text: "hello" }
+  expected: ""
+  complexity: 85
+  hint: |
+    Slice with a negative length should return nil (empty string). The
+    second argument to slice is the length of the substring to extract.
+    A negative length doesn't make semantic sense, so treat it as invalid
+    and return nil. Check if length < 0 before slicing.
+
+- name: "slice_length_exceeds_string"
+  template: "{{ text | slice: 0, 100 }}"
+  data: { text: "hi" }
+  expected: "hi"
+  complexity: 80
+  hint: |
+    When slice length exceeds remaining string, return what's available.
+    Starting at index 0 with length 100 on "hi" should return "hi" (all
+    available characters). Don't error when length is too large - just
+    slice to the end of the string. Clamp the length to what remains.
+
+- name: "sort_empty_array"
+  template: "{{ items | sort | join: ',' }}"
+  data: { items: [] }
+  expected: ""
+  complexity: 55
+  hint: |
+    Sorting an empty array returns an empty array. There are no elements
+    to sort, so the result is empty. Join on an empty array produces an
+    empty string. This tests that sort handles the trivial case without
+    errors.
+
+- name: "sort_non_comparable_items"
+  template: "{{ items | sort | join: ',' }}"
+  data: { items: [1, "a", true] }
+  expected: "1,a,true"
+  complexity: 90
+  hint: |
+    When sorting arrays with mixed types (numbers, strings, booleans),
+    maintain the original order for non-comparable items. Standard sort
+    algorithms fail when items can't be compared (e.g., 1 < "a" is undefined).
+    Implement a stable sort that gracefully handles mixed types by treating
+    them as incomparable and preserving their relative order.
+
+- name: "map_empty_array"
+  template: "{{ items | map: 'name' | join: ',' }}"
+  data: { items: [] }
+  expected: ""
+  complexity: 60
+  hint: |
+    Map on an empty array returns an empty array. The map filter extracts
+    a property from each element, but with no elements, there's nothing
+    to map. Return an empty array, which join converts to empty string.
+    Check array length before mapping.
+
+- name: "map_missing_property"
+  template: "{{ items | map: 'missing' | join: ',' }}"
+  data: { items: [{name: "a"}, {name: "b"}] }
+  expected: ","
+  complexity: 95
+  hint: |
+    When map targets a property that doesn't exist, return nil for each item.
+    The items have "name" but not "missing", so map produces [nil, nil].
+    Joining nils produces empty strings, so the result is "," (empty, separator,
+    empty). Access each object's property and handle missing properties as nil.
+
+- name: "where_empty_array"
+  template: "{{ items | where: 'active', true | size }}"
+  data: { items: [] }
+  expected: "0"
+  complexity: 65
+  hint: |
+    Where filters an array by a property value. On an empty array, there
+    are no items to filter, so return empty array. The size of empty is 0.
+    Where should iterate through items, but handle the empty case by
+    returning empty immediately.
+
+- name: "where_no_matches"
+  template: "{{ items | where: 'active', true | size }}"
+  data: { items: [{active: false}, {active: false}] }
+  expected: "0"
+  complexity: 70
+  hint: |
+    When where finds no matching items, return an empty array. Filter
+    through all items, checking if item.active == true. Neither item
+    matches, so the result is []. The size of this empty result is 0.
+    This tests that where can return empty when the filter condition
+    matches nothing.
+
+- name: "replace_empty_string"
+  template: "{{ text | replace: 'x', 'y' }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 50
+  hint: |
+    Replace on an empty string returns empty. There are no characters
+    to search for or replace, so the empty string passes through unchanged.
+    Handle the empty input case before attempting string search and
+    replacement operations.
+
+- name: "replace_with_empty_search"
+  template: "{{ text | replace: '', 'x' }}"
+  data: { text: "hi" }
+  expected: "hi"
+  complexity: 85
+  hint: |
+    Replace with an empty search string should return the original string
+    unchanged. Searching for "" in a string is ambiguous (it matches
+    everywhere), so the standard behavior is to not perform replacement.
+    Check if the search string is empty and return input unchanged.
+
+- name: "replace_with_empty_replacement"
+  template: "{{ text | replace: 'l', '' }}"
+  data: { text: "hello" }
+  expected: "heo"
+  complexity: 55
+  hint: |
+    Replace can use an empty replacement string to delete occurrences.
+    Replacing "l" with "" in "hello" removes both "l"s, producing "heo".
+    This is effectively a delete operation. Allow empty replacement strings
+    and handle them as deletion of the search string.
+
+- name: "truncate_zero_length"
+  template: "{{ text | truncate: 0 }}"
+  data: { text: "hello" }
+  expected: "..."
+  complexity: 90
+  hint: |
+    Truncate with length 0 should return just the ellipsis "...". The
+    truncate filter shortens strings to a maximum length, adding "..." if
+    truncated. With length 0, no characters remain, so only the ellipsis
+    is shown. This is an edge case where the ellipsis itself exceeds the
+    length limit.
+
+- name: "truncate_length_less_than_ellipsis"
+  template: "{{ text | truncate: 2 }}"
+  data: { text: "hello" }
+  expected: "..."
+  complexity: 95
+  hint: |
+    When truncate length is less than the ellipsis length (3), return
+    just the ellipsis. Truncate to 2 characters on "hello" should show
+    "..." because we can't fit any characters plus the ellipsis in 2
+    characters. The ellipsis takes priority in this edge case.
+
+- name: "truncate_length_exceeds_string"
+  template: "{{ text | truncate: 100 }}"
+  data: { text: "hi" }
+  expected: "hi"
+  complexity: 75
+  hint: |
+    When truncate length exceeds the string length, return the original
+    string without ellipsis. "hi" is only 2 characters, so truncating to
+    100 leaves it unchanged. No truncation is needed when the string fits
+    within the limit. Don't add ellipsis for strings that fit.
+
+- name: "reverse_empty_array"
+  template: "{{ items | reverse | join: ',' }}"
+  data: { items: [] }
+  expected: ""
+  complexity: 50
+  hint: |
+    Reverse on an empty array returns an empty array. There are no elements
+    to reverse, so the result is empty. Handle the empty case by returning
+    empty immediately. Join on the empty result produces an empty string.
+
+- name: "uniq_empty_array"
+  template: "{{ items | uniq | size }}"
+  data: { items: [] }
+  expected: "0"
+  complexity: 55
+  hint: |
+    Uniq removes duplicate values from an array. On an empty array, there
+    are no duplicates to remove, so return empty. The size of empty is 0.
+    Handle the empty input case before attempting deduplication.
+
+- name: "compact_empty_array"
+  template: "{{ items | compact | size }}"
+  data: { items: [] }
+  expected: "0"
+  complexity: 60
+  hint: |
+    Compact removes nil values from an array. On an empty array, there
+    are no nils to remove, so return empty. This is similar to other
+    array filters - empty input produces empty output. Size of empty is 0.
+
+- name: "compact_removes_nils"
+  template: "{{ items | compact | join: ',' }}"
+  data: { items: [1, nil, 2, nil, 3] }
+  expected: "1,2,3"
+  complexity: 70
+  hint: |
+    Compact filters out nil values from arrays. Iterate through the array
+    and keep only non-nil values. [1, nil, 2, nil, 3] becomes [1, 2, 3].
+    Join produces "1,2,3". Implement by filtering where item != nil.
+
+- name: "concat_empty_arrays"
+  template: "{{ a | concat: b | size }}"
+  data: { a: [], b: [] }
+  expected: "0"
+  complexity: 65
+  hint: |
+    Concat combines two arrays. When both are empty, the result is empty.
+    Concatenating [] + [] produces []. The size of empty is 0. Handle
+    empty arrays by returning a new empty array (don't assume non-empty).
+
+- name: "prepend_to_empty_string"
+  template: "{{ text | prepend: 'start' }}"
+  data: { text: "" }
+  expected: "start"
+  complexity: 55
+  hint: |
+    Prepend adds a string to the beginning. Prepending to an empty string
+    just produces the prepended value. "" with "start" prepended becomes
+    "start". Implement by concatenating the argument before the input string.
+
+- name: "append_to_empty_string"
+  template: "{{ text | append: 'end' }}"
+  data: { text: "" }
+  expected: "end"
+  complexity: 55
+  hint: |
+    Append adds a string to the end. Appending to an empty string produces
+    the appended value. "" with "end" appended becomes "end". Implement
+    by concatenating the input string before the argument.
+
+- name: "strip_empty_string"
+  template: "{{ text | strip }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 45
+  hint: |
+    Strip removes leading and trailing whitespace. An empty string has
+    no whitespace to remove, so return empty unchanged. This tests that
+    string manipulation filters handle empty inputs gracefully.
+
+- name: "lstrip_empty_string"
+  template: "{{ text | lstrip }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 45
+  hint: |
+    Lstrip removes leading whitespace only. Empty strings have no leading
+    whitespace, so return empty unchanged. Similar to strip, this should
+    handle empty inputs without errors.
+
+- name: "rstrip_empty_string"
+  template: "{{ text | rstrip }}"
+  data: { text: "" }
+  expected: ""
+  complexity: 45
+  hint: |
+    Rstrip removes trailing whitespace only. Empty strings have no trailing
+    whitespace, so return empty unchanged. All whitespace filters should
+    gracefully handle empty inputs.

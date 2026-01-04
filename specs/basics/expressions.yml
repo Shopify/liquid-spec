@@ -1,0 +1,336 @@
+# Liquid Expression Parsing Specs
+# Progressive difficulty: 25-160
+# Focus: Expression evaluation, variable lookups, bracket notation, ranges
+
+- name: "literal_string"
+  template: "{{ 'hello' }}"
+  expected: "hello"
+  complexity: 25
+  hint: |
+    Parse a simple string literal enclosed in single quotes.
+    The lexer should recognize the string token and the parser
+    should create a StringLiteral node. During evaluation,
+    return the string value without the quotes.
+
+- name: "literal_number"
+  template: "{{ 42 }}"
+  expected: "42"
+  complexity: 25
+  hint: |
+    Parse a numeric literal and output it as a string.
+    The lexer should recognize integer tokens. The parser
+    creates a NumberLiteral node. During rendering, convert
+    the number to its string representation.
+
+- name: "literal_float"
+  template: "{{ 3.14 }}"
+  expected: "3.14"
+  complexity: 30
+  hint: |
+    Parse a floating-point literal. The lexer needs to handle
+    the decimal point as part of the number token. Create a
+    NumberLiteral node that stores the float value. Convert
+    to string during output.
+
+- name: "literal_boolean_true"
+  template: "{{ true }}"
+  expected: "true"
+  complexity: 30
+  hint: |
+    Recognize 'true' as a keyword token, not an identifier.
+    Create a BooleanLiteral node. During evaluation, return
+    the boolean value and convert it to the string "true"
+    when rendering.
+
+- name: "literal_boolean_false"
+  template: "{{ false }}"
+  expected: "false"
+  complexity: 30
+  hint: |
+    Similar to true, recognize 'false' as a keyword token.
+    Create a BooleanLiteral node with false value. Output
+    the string "false" during rendering.
+
+- name: "literal_nil"
+  template: "{{ nil }}"
+  expected: ""
+  complexity: 35
+  hint: |
+    Recognize 'nil' as a keyword representing null/nothing.
+    Create a NilLiteral node. Important: nil renders as an
+    empty string, not the word "nil". This matches Ruby
+    Liquid behavior.
+
+- name: "simple_variable"
+  template: "{{ name }}"
+  data: { name: "Alice" }
+  expected: "Alice"
+  complexity: 40
+  hint: |
+    Parse an identifier as a variable reference. Create a
+    VariableLookup node. During evaluation, look up the
+    identifier in the current context/scope and return its
+    value. If undefined, return nil (empty string).
+
+- name: "undefined_variable"
+  template: "{{ missing }}"
+  data: {}
+  expected: ""
+  complexity: 45
+  hint: |
+    Handle variables that don't exist in the context.
+    When a variable is undefined, Liquid returns nil,
+    which renders as empty string. Don't throw errors
+    for missing variables - fail gracefully.
+
+- name: "dot_property_access"
+  template: "{{ user.name }}"
+  data: { user: { name: "Bob" } }
+  expected: "Bob"
+  complexity: 55
+  hint: |
+    Parse dot notation for property access. Create a
+    PropertyAccess node with base (user) and property (name).
+    During evaluation, first resolve 'user', then access its
+    'name' property. Handle nested object lookup.
+
+- name: "chained_property_access"
+  template: "{{ user.address.city }}"
+  data: { user: { address: { city: "Vancouver" } } }
+  expected: "Vancouver"
+  complexity: 65
+  hint: |
+    Parse multiple chained dot accesses. Build a nested
+    PropertyAccess structure (user -> address -> city).
+    Evaluate left-to-right: resolve user, then access address,
+    then access city. Each step returns an object for the next.
+
+- name: "bracket_notation_string_literal"
+  template: "{{ user['name'] }}"
+  data: { user: { name: "Charlie" } }
+  expected: "Charlie"
+  complexity: 70
+  hint: |
+    Parse bracket notation with a string literal key.
+    Create a BracketAccess node with base (user) and key ('name').
+    The key is evaluated as a literal string. This is equivalent
+    to dot notation but allows keys with special characters.
+
+- name: "bracket_notation_variable_key"
+  template: "{{ user[prop] }}"
+  data: { user: { name: "Diana", age: 30 }, prop: "name" }
+  expected: "Diana"
+  complexity: 80
+  hint: |
+    Parse bracket notation with a variable as the key.
+    First evaluate 'prop' to get "name", then use that
+    value to access user["name"]. This enables dynamic
+    property access where the key is determined at runtime.
+
+- name: "mixed_dot_and_bracket"
+  template: "{{ data.users[0].name }}"
+  data: { data: { users: [{ name: "Eve" }] } }
+  expected: "Eve"
+  complexity: 90
+  hint: |
+    Combine dot notation and bracket notation in one expression.
+    Parse as: data.users -> [0] -> .name. The bracket access
+    with numeric literal 0 retrieves the first array element.
+    Then access the name property on that object.
+
+- name: "array_index_access"
+  template: "{{ colors[1] }}"
+  data: { colors: ["red", "green", "blue"] }
+  expected: "green"
+  complexity: 75
+  hint: |
+    Access array elements using bracket notation with numeric
+    index. Arrays are zero-indexed, so [1] returns the second
+    element. Evaluate the base (colors) to get the array, then
+    use the index to retrieve the element.
+
+- name: "negative_array_index"
+  template: "{{ colors[-1] }}"
+  data: { colors: ["red", "green", "blue"] }
+  expected: "blue"
+  complexity: 85
+  hint: |
+    Support negative indexing like Ruby/Python. Negative indices
+    count from the end: -1 is the last element, -2 is second-to-last.
+    Implement by converting negative index: array[length + index].
+    colors[-1] with length 3 becomes colors[2].
+
+- name: "nested_bracket_access"
+  template: "{{ matrix[0][1] }}"
+  data: { matrix: [[1, 2, 3], [4, 5, 6]] }
+  expected: "5"
+  complexity: 95
+  hint: |
+    Parse chained bracket notation. First access matrix[0] to
+    get [4, 5, 6], then access [1] on that result to get 5.
+    Build nested BracketAccess nodes. Evaluate inside-out or
+    left-to-right, passing results forward.
+
+- name: "simple_range"
+  template: "{{ (1..5) }}"
+  expected: "12345"
+  complexity: 100
+  hint: |
+    Parse range syntax (start..end) with integer literals.
+    Create a Range node with start=1, end=5. During evaluation,
+    generate array [1, 2, 3, 4, 5]. When rendering a range directly,
+    output array elements concatenated (no separators in base Liquid).
+
+- name: "variable_range"
+  template: "{{ (start..finish) }}"
+  data: { start: 3, finish: 7 }
+  expected: "34567"
+  complexity: 110
+  hint: |
+    Parse range with variable expressions instead of literals.
+    The Range node contains two expression nodes (start, finish).
+    During evaluation, first evaluate both expressions to get
+    numeric values, then generate the range array.
+
+- name: "range_with_negative_numbers"
+  template: "{{ (-2..2) }}"
+  expected: "-2-1012"
+  complexity: 115
+  hint: |
+    Handle negative numbers in range expressions. Parse the
+    minus sign as part of the number literal, not a separate
+    operator. Generate array [-2, -1, 0, 1, 2]. When concatenating
+    for output, negative numbers appear without spaces.
+
+- name: "property_on_array_element"
+  template: "{{ products[0].title }}"
+  data: { products: [{ title: "Widget", price: 9.99 }] }
+  expected: "Widget"
+  complexity: 100
+  hint: |
+    Chain bracket access with dot notation. Parse as:
+    products -> [0] -> .title. First get the array, then
+    get element at index 0 (an object), then access the
+    title property of that object.
+
+- name: "deep_nested_access"
+  template: "{{ site.data.users[1].profile.bio }}"
+  data: { site: { data: { users: [{ profile: { bio: "A" } }, { profile: { bio: "B" } }] } } }
+  expected: "B"
+  complexity: 130
+  hint: |
+    Parse deeply nested mixed access patterns. Build the
+    access chain: site.data.users[1].profile.bio. Evaluate
+    step by step, ensuring each intermediate result is valid
+    before accessing the next level. Handle the mixed notation.
+
+- name: "variable_as_array_index"
+  template: "{{ items[idx] }}"
+  data: { items: ["a", "b", "c"], idx: 2 }
+  expected: "c"
+  complexity: 90
+  hint: |
+    Use a variable to determine the array index dynamically.
+    First evaluate 'idx' to get the number 2, then use that
+    value to access items[2]. The bracket expression can be
+    any expression that evaluates to a number or string.
+
+- name: "string_key_from_variable"
+  template: "{{ person[field] }}"
+  data: { person: { first: "John", last: "Doe" }, field: "last" }
+  expected: "Doe"
+  complexity: 95
+  hint: |
+    Dynamically access object properties using a variable key.
+    Evaluate 'field' to get "last", then use that string to
+    access person["last"]. This is the dynamic equivalent of
+    person.last, enabling programmatic property access.
+
+- name: "complex_nested_expression"
+  template: "{{ data[key].items[0].value }}"
+  data: { data: { prod: { items: [{ value: 42 }] } }, key: "prod" }
+  expected: "42"
+  complexity: 140
+  hint: |
+    Parse a complex expression combining variable keys, array
+    access, and property access. Evaluate left-to-right: resolve
+    'key' to "prod", access data["prod"], access .items property,
+    get [0] element, access .value property. Each step feeds the next.
+
+- name: "bracket_access_with_spaces"
+  template: "{{ user[ 'full name' ] }}"
+  data: { user: { "full name": "Alice Smith" } }
+  expected: "Alice Smith"
+  complexity: 85
+  hint: |
+    Handle whitespace inside bracket notation. The lexer should
+    skip spaces around the key expression. Keys with spaces or
+    special characters require bracket notation (can't use dots).
+    Parse [ 'full name' ] as a single bracket access.
+
+- name: "range_in_bracket"
+  template: "{{ numbers[(1..3)] }}"
+  data: { numbers: { "1..3": "range" } }
+  expected: "range"
+  complexity: 150
+  hint: |
+    Distinguish between range creation and range as a key.
+    Without parentheses around the range, this is tricky.
+    In this case, (1..3) in brackets evaluates to a range object,
+    which becomes a string key "1..3" for hash access. This tests
+    expression evaluation contexts.
+
+- name: "nil_safe_navigation"
+  template: "{{ missing.property }}"
+  data: {}
+  expected: ""
+  complexity: 105
+  hint: |
+    Handle property access on nil values gracefully. When 'missing'
+    evaluates to nil, accessing .property should not error. Instead,
+    return nil (empty string). Implement nil-safe navigation where
+    any property access on nil returns nil.
+
+- name: "zero_index_vs_first"
+  template: "{{ list[0] }}"
+  data: { list: ["first", "second"] }
+  expected: "first"
+  complexity: 60
+  hint: |
+    Ensure arrays are zero-indexed. The [0] index accesses the
+    first element, not the second. This is consistent with most
+    programming languages. Liquid follows Ruby conventions where
+    arrays start at index 0.
+
+- name: "negative_index_out_of_bounds"
+  template: "{{ items[-10] }}"
+  data: { items: ["a", "b"] }
+  expected: ""
+  complexity: 120
+  hint: |
+    Handle negative indices that exceed array bounds. When
+    -10 is used on a 2-element array, the calculated index
+    would be negative. Return nil (empty string) for out-of-bounds
+    access instead of throwing an error.
+
+- name: "range_with_expression_bounds"
+  template: "{{ (x..y) }}"
+  data: { x: 2, y: 4 }
+  expected: "234"
+  complexity: 120
+  hint: |
+    Create ranges using variable expressions for both bounds.
+    Parse (x..y) where x and y are identifiers. During evaluation,
+    resolve both to numbers (2 and 4), then generate the range
+    [2, 3, 4]. This enables dynamic range creation.
+
+- name: "multiple_bracket_lookups"
+  template: "{{ a[b][c] }}"
+  data: { a: { key1: { key2: "found" } }, b: "key1", c: "key2" }
+  expected: "found"
+  complexity: 160
+  hint: |
+    Chain multiple dynamic bracket lookups. First evaluate 'b'
+    to get "key1", access a["key1"] to get an object. Then evaluate
+    'c' to get "key2", access that object["key2"]. This demonstrates
+    fully dynamic nested access where all keys are runtime values.

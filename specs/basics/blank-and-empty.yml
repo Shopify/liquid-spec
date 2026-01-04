@@ -1,0 +1,297 @@
+# Liquid Blank and Empty Handling Specs
+# Progressive difficulty: 100-180
+# Focus: Empty vs blank semantics, nil handling, whitespace, type checking
+
+- name: "empty_string_is_empty"
+  template: "{% if x == empty %}empty{% else %}not{% endif %}"
+  data: { x: "" }
+  expected: "empty"
+  complexity: 100
+  hint: |
+    Recognize 'empty' as a keyword representing the empty state.
+    An empty string "" should equal the 'empty' keyword. Create
+    an EmptyLiteral node during parsing. During evaluation, compare
+    the variable's value against emptiness: empty strings, empty
+    arrays, and empty hashes all equal 'empty'.
+
+- name: "empty_array_is_empty"
+  template: "{% if items == empty %}empty{% else %}not{% endif %}"
+  data: { items: [] }
+  expected: "empty"
+  complexity: 105
+  hint: |
+    Arrays with no elements should equal 'empty'. When evaluating
+    the comparison, check if the array's length is zero. An empty
+    array [] is considered empty. This is distinct from an array
+    containing empty strings, which would not be empty.
+
+- name: "empty_hash_is_empty"
+  template: "{% if obj == empty %}empty{% else %}not{% endif %}"
+  data: { obj: {} }
+  expected: "empty"
+  complexity: 105
+  hint: |
+    Objects/hashes with no properties should equal 'empty'. Check
+    if the object has zero keys. An empty hash {} is considered
+    empty. This tests that your empty check works across different
+    collection types (arrays and objects).
+
+- name: "nil_is_empty"
+  template: "{% if missing == empty %}empty{% else %}not{% endif %}"
+  data: {}
+  expected: "empty"
+  complexity: 110
+  hint: |
+    Nil/undefined values should equal 'empty'. When a variable
+    doesn't exist in the context, it evaluates to nil, and nil
+    should be considered empty. This is a key Liquid semantic:
+    nil is a subset of empty - all nil values are empty.
+
+- name: "nil_is_also_nil"
+  template: "{% if missing == nil %}nil{% else %}not{% endif %}"
+  data: {}
+  expected: "nil"
+  complexity: 110
+  hint: |
+    Distinguish nil from empty conceptually, even though nil is
+    empty. A missing variable should equal the 'nil' keyword.
+    Create a NilLiteral node. Nil has a dual nature: it equals
+    both nil and empty, but they're different keywords for checks.
+
+- name: "non_empty_string_not_empty"
+  template: "{% if text == empty %}empty{% else %}not{% endif %}"
+  data: { text: "hello" }
+  expected: "not"
+  complexity: 100
+  hint: |
+    Strings with content are not empty. Check the string's length
+    during the empty comparison. Any string with one or more
+    characters should not equal 'empty'. This is the base case
+    for non-empty values.
+
+- name: "whitespace_string_not_empty"
+  template: "{% if text == empty %}empty{% else %}not{% endif %}"
+  data: { text: "   " }
+  expected: "not"
+  complexity: 115
+  hint: |
+    Whitespace-only strings are NOT empty. The 'empty' keyword
+    checks for zero length, not meaningful content. A string
+    with spaces, tabs, or newlines has length > 0, so it's not
+    empty. This distinguishes 'empty' from 'blank'.
+
+- name: "whitespace_string_is_blank"
+  template: "{% if text == blank %}blank{% else %}not{% endif %}"
+  data: { text: "   " }
+  expected: "blank"
+  complexity: 120
+  hint: |
+    The 'blank' keyword is stricter than 'empty'. Recognize 'blank'
+    as a keyword. A value is blank if it's empty OR contains only
+    whitespace. Implement blank checking: trim the string and check
+    if the result is empty. Whitespace-only strings are blank.
+
+- name: "empty_string_is_blank"
+  template: "{% if x == blank %}blank{% else %}not{% endif %}"
+  data: { x: "" }
+  expected: "blank"
+  complexity: 120
+  hint: |
+    Empty strings are also blank. The 'blank' condition is a
+    superset of 'empty' for strings. All empty strings are blank,
+    but not all blank strings are empty (whitespace-only strings
+    are blank but not empty in the length sense).
+
+- name: "nil_is_blank"
+  template: "{% if missing == blank %}blank{% else %}not{% endif %}"
+  data: {}
+  expected: "blank"
+  complexity: 120
+  hint: |
+    Nil values are considered blank. The hierarchy is: nil ⊂ empty ⊂ blank.
+    All nil values are empty, and all empty values are blank (for most
+    types). When checking for blank, nil should return true, just as
+    it does for empty.
+
+- name: "false_is_not_empty"
+  template: "{% if flag == empty %}empty{% else %}not{% endif %}"
+  data: { flag: false }
+  expected: "not"
+  complexity: 125
+  hint: |
+    The boolean false is NOT empty. This is a critical distinction:
+    false is a value (boolean false), while empty represents absence
+    or zero-length collections. When checking == empty, false should
+    not match. Only nil, "", [], and {} are empty.
+
+- name: "false_is_blank"
+  template: "{% if flag == blank %}blank{% else %}not{% endif %}"
+  data: { flag: false }
+  expected: "blank"
+  complexity: 130
+  hint: |
+    The boolean false IS blank. This is a Liquid quirk: false and
+    nil are considered blank, even though false is not empty. The
+    blank check is more about "falsiness" than just empty collections.
+    Implement: nil, false, "", whitespace-only, [], {} are all blank.
+
+- name: "zero_is_not_empty"
+  template: "{% if num == empty %}empty{% else %}not{% endif %}"
+  data: { num: 0 }
+  expected: "not"
+  complexity: 125
+  hint: |
+    The number zero is NOT empty. Zero is a valid numeric value,
+    not an empty collection or nil. When checking for empty, only
+    collection types (strings, arrays, objects) and nil should
+    match. Numbers, including zero, have values.
+
+- name: "zero_is_not_blank"
+  template: "{% if num == blank %}blank{% else %}not{% endif %}"
+  data: { num: 0 }
+  expected: "not"
+  complexity: 130
+  hint: |
+    The number zero is NOT blank. Unlike false, zero is not
+    considered blank in Liquid. Only nil, false, empty strings,
+    whitespace-only strings, and empty collections are blank.
+    This shows false is special-cased in blank checks.
+
+- name: "array_with_empty_string_not_empty"
+  template: "{% if items == empty %}empty{% else %}not{% endif %}"
+  data: { items: [""] }
+  expected: "not"
+  complexity: 135
+  hint: |
+    An array containing an empty string is NOT empty. The array
+    has one element (length = 1), so the array itself is not empty.
+    Empty checks look at the collection's size, not the emptiness
+    of its contents. The array [""] has length 1, therefore not empty.
+
+- name: "nested_empty_check"
+  template: "{% if user.name == empty %}empty{% else %}not{% endif %}"
+  data: { user: { name: "" } }
+  expected: "empty"
+  complexity: 140
+  hint: |
+    Check emptiness of nested properties. First navigate to user.name,
+    which evaluates to "". Then compare that string against empty.
+    The property access happens first, then the empty check. This
+    tests that empty works with any expression, not just top-level vars.
+
+- name: "nil_property_is_empty"
+  template: "{% if user.missing == empty %}empty{% else %}not{% endif %}"
+  data: { user: {} }
+  expected: "empty"
+  complexity: 140
+  hint: |
+    Accessing a missing property returns nil, which is empty.
+    When user.missing is evaluated, the property doesn't exist,
+    so it returns nil. Then nil == empty evaluates to true.
+    This combines property access with empty checking.
+
+- name: "default_with_empty_check"
+  template: "{{ text | default: 'N/A' }}"
+  data: { text: "" }
+  expected: "N/A"
+  complexity: 145
+  hint: |
+    The 'default' filter provides fallback values for empty inputs.
+    When the input is empty (including empty strings), use the
+    default value instead. Implement the default filter to check
+    if input == empty, and if so, return the filter argument.
+    Empty strings should trigger the default.
+
+- name: "default_with_whitespace"
+  template: "{{ text | default: 'N/A' }}"
+  data: { text: "   " }
+  expected: "   "
+  complexity: 150
+  hint: |
+    The 'default' filter uses empty semantics, not blank. A
+    whitespace-only string is not empty (length > 0), so it
+    doesn't trigger the default. The original value "   " is
+    returned. This shows the difference between empty and blank
+    in practical filter usage.
+
+- name: "unless_empty_guard"
+  template: "{% unless items == empty %}{{ items.size }}{% endunless %}"
+  data: { items: [1, 2, 3] }
+  expected: "3"
+  complexity: 150
+  hint: |
+    Use 'unless' with empty checks as a guard clause. The unless
+    tag is the opposite of if: it executes when the condition is
+    false. Here, unless items == empty means "if items is not empty".
+    Parse unless as a negated if, then check emptiness.
+
+- name: "unless_empty_guard_blocks_output"
+  template: "{% unless items == empty %}{{ items.size }}{% endunless %}"
+  data: { items: [] }
+  expected: ""
+  complexity: 150
+  hint: |
+    When the unless condition is true (items IS empty), the block
+    doesn't execute. An empty array triggers the guard, so the
+    body (items.size) is skipped. Output is empty string. This
+    tests the guard pattern for preventing errors on empty collections.
+
+- name: "checking_for_content_pattern"
+  template: "{% if text != empty %}{{ text }}{% else %}No content{% endif %}"
+  data: { text: "" }
+  expected: "No content"
+  complexity: 155
+  hint: |
+    Use != empty to check for presence of content. The != operator
+    with empty checks if something is NOT empty. Parse != as a
+    NotEquals comparison. Empty string != empty is false, so the
+    else branch executes. This is the idiomatic way to check for content.
+
+- name: "complex_empty_guard"
+  template: "{% if user != empty and user.name != empty %}{{ user.name }}{% else %}Anonymous{% endif %}"
+  data: { user: { name: "" } }
+  expected: "Anonymous"
+  complexity: 165
+  hint: |
+    Combine multiple empty checks with logical AND. First check if
+    user exists (not empty/nil), then check if user.name has content.
+    Here, user exists (object is not empty), but user.name is an
+    empty string. The AND requires both conditions true, so this
+    evaluates false, outputting "Anonymous". Guard against nested empties.
+
+- name: "empty_vs_blank_comparison"
+  template: "{% if text == empty %}E{% elsif text == blank %}B{% else %}N{% endif %}"
+  data: { text: "  \n  " }
+  expected: "B"
+  complexity: 170
+  hint: |
+    Show the distinction between empty and blank with cascading checks.
+    A whitespace-with-newlines string is not empty (has characters)
+    but is blank (only whitespace). Check empty first (false), then
+    blank (true). This demonstrates the semantic hierarchy where
+    blank is more permissive than empty for strings.
+
+- name: "array_size_vs_empty"
+  template: "{% if items.size == 0 %}size zero{% elsif items == empty %}empty{% else %}has items{% endif %}"
+  data: { items: [] }
+  expected: "size zero"
+  complexity: 175
+  hint: |
+    Show that empty arrays have size 0. The .size property returns
+    the array length. When size == 0, that's checked first. An empty
+    array satisfies both conditions (size 0 and == empty), but the
+    first condition wins due to if/elsif ordering. Both checks are
+    valid ways to detect empty arrays.
+
+- name: "presence_chain_with_empty"
+  template: "{{ user.profile.bio | default: user.name | default: 'Guest' }}"
+  data: { user: { profile: {}, name: "" } }
+  expected: "Guest"
+  complexity: 180
+  hint: |
+    Chain multiple default filters to create a presence chain.
+    First try user.profile.bio (missing property = nil = empty),
+    so use the default which is user.name. That's "" (empty string),
+    so use the next default "Guest". This implements a fallback
+    cascade: try bio, then name, then fallback to Guest. Each
+    default checks for emptiness.

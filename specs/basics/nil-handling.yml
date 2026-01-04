@@ -1,0 +1,378 @@
+---
+# =============================================================================
+# COMPLEXITY 30-170: Nil and Null Handling in Liquid
+# =============================================================================
+#
+# These specs cover how Liquid handles nil values, which is fundamental to
+# understanding Liquid's type system and truthiness model. Nil in Liquid
+# represents missing or undefined values, and has specific behaviors in
+# different contexts.
+#
+# Complexity levels:
+#   30-40: Basic nil output and undefined variables
+#   50-60: Nil in comparisons and logical operators
+#   70-90: Nil property access, filters, and type coercion
+#   100-120: Nil in arrays, iteration, and collection operations
+#   140-170: Edge cases with array filters and size operations
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/nil-handling.md
+
+specs:
+# =============================================================================
+# Basic Nil Output (Complexity 30-40)
+# =============================================================================
+
+- name: nil_literal_outputs_nothing
+  template: "{{ nil }}"
+  expected: ""
+  complexity: 30
+  hint: |
+    The nil literal outputs nothing (empty string). This is a fundamental
+    behavior of Liquid - nil is rendered as an empty string, not the word "nil".
+
+- name: undefined_variable_outputs_nothing
+  template: "{{ undefined_var }}"
+  expected: ""
+  complexity: 30
+  hint: |
+    Accessing an undefined variable returns nil, which outputs nothing.
+    This is different from errors - Liquid treats missing variables as nil.
+
+- name: nil_between_text
+  template: "before{{ nil }}after"
+  expected: "beforeafter"
+  complexity: 30
+  hint: |
+    Nil produces no output even when surrounded by text.
+
+- name: undefined_variable_between_text
+  template: "start{{ missing }}end"
+  expected: "startend"
+  complexity: 30
+  hint: |
+    Undefined variables produce no output, just like the nil literal.
+
+# =============================================================================
+# Nil in Comparisons (Complexity 50-60)
+# =============================================================================
+
+- name: nil_equals_nil
+  template: "{% if nil == nil %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 50
+  hint: |
+    Nil equals nil. This is standard equality comparison.
+
+- name: nil_equals_undefined
+  template: "{% if nil == undefined_var %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 50
+  hint: |
+    Undefined variables are nil, so nil == undefined_var is true.
+
+- name: undefined_equals_undefined
+  template: "{% if missing_a == missing_b %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 50
+  hint: |
+    Two undefined variables both evaluate to nil, so they're equal.
+
+- name: nil_not_equals_string
+  template: "{% if nil != 'hello' %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 50
+  hint: |
+    Nil is not equal to any non-nil value, including strings.
+
+- name: nil_not_equals_number
+  template: "{% if nil != 42 %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 50
+  hint: |
+    Nil is not equal to numbers.
+
+- name: nil_not_equals_false
+  template: "{% if nil != false %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 60
+  hint: |
+    Nil and false are different values. This is important for truthiness:
+    both are falsy, but they're not equal to each other.
+
+- name: nil_not_equals_empty_string
+  template: "{% if nil != '' %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 60
+  hint: |
+    Nil is not equal to empty string. Empty strings are truthy in Liquid,
+    while nil is falsy.
+
+# =============================================================================
+# Nil in Logical Operators (Complexity 60)
+# =============================================================================
+
+- name: nil_is_falsy
+  template: "{% if nil %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 60
+  hint: |
+    Nil is falsy in Liquid. Only nil and false are falsy; everything else
+    (including 0, empty strings, and empty arrays) is truthy.
+
+- name: undefined_is_falsy
+  template: "{% if undefined_var %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 60
+  hint: |
+    Undefined variables are nil, so they're falsy.
+
+- name: nil_with_or_operator
+  template: "{% if nil or true %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 60
+  hint: |
+    Nil is falsy, so 'nil or true' returns true (second operand).
+
+- name: nil_with_and_operator
+  template: "{% if nil and true %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 60
+  hint: |
+    Nil is falsy, so 'nil and true' short-circuits and returns false.
+
+- name: nil_unless
+  template: "{% unless nil %}yes{% else %}no{% endunless %}"
+  expected: "yes"
+  complexity: 60
+  hint: |
+    Unless is the opposite of if. Since nil is falsy, 'unless nil' passes.
+
+# =============================================================================
+# Nil Property Access (Complexity 70)
+# =============================================================================
+
+- name: nil_dot_property
+  template: "{{ nil.foo }}"
+  expected: ""
+  complexity: 70
+  hint: |
+    Accessing a property on nil returns nil (which outputs nothing).
+    Liquid doesn't raise errors for nil property access.
+
+- name: undefined_dot_property
+  template: "{{ undefined_var.name }}"
+  expected: ""
+  complexity: 70
+  hint: |
+    Undefined variables are nil, so accessing properties returns nil.
+
+- name: nil_bracket_property
+  template: "{{ nil['key'] }}"
+  expected: ""
+  complexity: 70
+  hint: |
+    Bracket notation on nil also returns nil.
+
+- name: nil_nested_property
+  template: "{{ nil.foo.bar.baz }}"
+  expected: ""
+  complexity: 70
+  hint: |
+    Chained property access on nil continues to return nil.
+    nil.foo returns nil, nil.bar returns nil, etc.
+
+# =============================================================================
+# Nil with Filters (Complexity 70-90)
+# =============================================================================
+
+- name: nil_with_default_filter
+  template: "{{ nil | default: 'fallback' }}"
+  expected: "fallback"
+  complexity: 70
+  hint: |
+    The default filter returns its argument when the input is nil or false.
+    This is the primary way to handle nil values in templates.
+
+- name: undefined_with_default_filter
+  template: "{{ missing | default: 'value' }}"
+  expected: "value"
+  complexity: 70
+  hint: |
+    Default filter works with undefined variables (which are nil).
+
+- name: nil_with_upcase_filter
+  template: "{{ nil | upcase }}"
+  expected: ""
+  complexity: 80
+  hint: |
+    Most filters that expect strings return empty string when given nil.
+    The upcase filter returns nil (outputs nothing) for nil input.
+
+- name: nil_with_size_filter
+  template: "{{ nil | size }}"
+  expected: "0"
+  complexity: 80
+  hint: |
+    The size filter returns 0 for nil. This is consistent with treating
+    nil as an empty collection or string.
+
+- name: nil_with_plus_filter
+  template: "{{ nil | plus: 5 }}"
+  expected: "5"
+  complexity: 90
+  hint: |
+    Math filters treat nil as 0. nil + 5 = 5.
+
+- name: nil_with_minus_filter
+  template: "{{ nil | minus: 3 }}"
+  expected: "-3"
+  complexity: 90
+  hint: |
+    Nil is treated as 0 in math operations. nil - 3 = -3.
+
+- name: nil_with_times_filter
+  template: "{{ nil | times: 10 }}"
+  expected: "0"
+  complexity: 90
+  hint: |
+    Nil * 10 = 0 (nil is treated as 0).
+
+# =============================================================================
+# Nil in Arrays and Iteration (Complexity 100-120)
+# =============================================================================
+
+- name: nil_in_for_loop
+  template: "{% for item in nil %}{{ item }}{% endfor %}done"
+  expected: "done"
+  complexity: 100
+  hint: |
+    Iterating over nil produces no iterations. The loop body never executes.
+
+- name: undefined_in_for_loop
+  template: "{% for item in missing %}{{ item }}{% endfor %}empty"
+  expected: "empty"
+  complexity: 100
+  hint: |
+    Iterating over an undefined variable (nil) produces no iterations.
+
+- name: nil_for_loop_else
+  template: "{% for item in nil %}{{ item }}{% else %}empty{% endfor %}"
+  expected: "empty"
+  complexity: 100
+  hint: |
+    The else block executes when iterating over nil (empty collection).
+
+- name: array_with_nil_elements
+  template: "{% for item in items %}[{{ item }}]{% endfor %}"
+  environment:
+    items: [1, nil, 3]
+  expected: "[1][][3]"
+  complexity: 110
+  hint: |
+    Arrays can contain nil elements. When output, nil produces nothing.
+
+- name: nil_in_array_iteration_with_if
+  template: "{% for item in items %}{% if item %}{{ item }}{% else %}X{% endif %}{% endfor %}"
+  environment:
+    items: [1, nil, 3]
+  expected: "1X3"
+  complexity: 110
+  hint: |
+    Nil elements can be detected in conditionals. Nil is falsy.
+
+- name: nil_in_contains_check
+  template: "{% if items contains nil %}yes{% else %}no{% endif %}"
+  environment:
+    items: [1, nil, 3]
+  expected: "yes"
+  complexity: 120
+  hint: |
+    The contains operator can find nil values in arrays.
+
+- name: nil_contains_check_on_undefined
+  template: "{% if nil contains 'x' %}yes{% else %}no{% endif %}"
+  expected: "no"
+  complexity: 120
+  hint: |
+    Checking if nil contains something returns false.
+    Nil is not a collection.
+
+# =============================================================================
+# Array Filters on Nil (Complexity 140-150)
+# =============================================================================
+
+- name: first_filter_on_nil
+  template: "{{ nil | first }}"
+  expected: ""
+  complexity: 140
+  hint: |
+    The first filter returns nil when applied to nil.
+
+- name: last_filter_on_nil
+  template: "{{ nil | last }}"
+  expected: ""
+  complexity: 140
+  hint: |
+    The last filter returns nil when applied to nil.
+
+- name: join_filter_on_nil
+  template: "{{ nil | join: ',' }}"
+  expected: ""
+  complexity: 140
+  hint: |
+    The join filter returns empty string for nil input.
+
+- name: sort_filter_on_nil
+  template: "{{ nil | sort }}"
+  expected: ""
+  complexity: 140
+  hint: |
+    The sort filter returns nil (outputs nothing) for nil input.
+
+- name: map_filter_on_nil
+  template: "{{ nil | map: 'name' }}"
+  expected: ""
+  complexity: 150
+  hint: |
+    The map filter returns empty array/nil for nil input.
+
+- name: where_filter_on_nil
+  template: "{{ nil | where: 'active', true }}"
+  expected: ""
+  complexity: 150
+  hint: |
+    The where filter returns empty array for nil input.
+
+# =============================================================================
+# Edge Cases (Complexity 170)
+# =============================================================================
+
+- name: nil_size_vs_empty_array_size
+  template: "{{ nil | size }} vs {{ empty_array | size }}"
+  environment:
+    empty_array: []
+  expected: "0 vs 0"
+  complexity: 170
+  hint: |
+    Both nil and empty arrays have size 0. They're treated identically
+    by the size filter, though they're not equal (nil != []).
+
+- name: nil_first_vs_empty_array_first
+  template: "[{{ nil | first }}] vs [{{ empty_array | first }}]"
+  environment:
+    empty_array: []
+  expected: "[] vs []"
+  complexity: 170
+  hint: |
+    Both nil and empty arrays return nil for first/last filters.
+
+- name: nil_assignment_vs_undefined
+  template: "{% assign x = nil %}{% if x == undefined %}yes{% else %}no{% endif %}"
+  expected: "yes"
+  complexity: 170
+  hint: |
+    Assigning nil to a variable makes it equal to undefined variables.
+    Both are nil values.
