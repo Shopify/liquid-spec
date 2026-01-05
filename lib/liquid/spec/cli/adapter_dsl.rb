@@ -53,8 +53,16 @@ module LiquidSpec
     end
   end
 
+  # Exception raised when an adapter should be skipped
+  class SkipAdapter < StandardError; end
+
   class << self
     attr_reader :compile_block, :render_block, :config, :setup_block
+
+    # Skip this adapter with a reason
+    def skip!(reason)
+      raise SkipAdapter, reason
+    end
 
     def configure
       @config ||= Configuration.new

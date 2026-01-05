@@ -133,6 +133,7 @@ module Liquid
           # Compile
           compile_options = { line_numbers: true }
           compile_options[:error_mode] = spec.error_mode if spec.error_mode
+          compile_options[:file_system] = filesystem if filesystem
 
           template = @compile_block.call(spec.template, compile_options)
 

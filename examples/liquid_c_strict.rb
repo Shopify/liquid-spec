@@ -13,10 +13,14 @@ require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do
   require "liquid"
-  require "liquid/c"
+  begin
+    require "liquid/c"
+  rescue LoadError
+    LiquidSpec.skip!("liquid-c not installed")
+  end
 
-  raise "liquid-c is not available. Install with: gem install liquid-c" unless defined?(Liquid::C)
-  raise "liquid-c is not enabled" unless Liquid::C.enabled
+  LiquidSpec.skip!("liquid-c not available") unless defined?(Liquid::C)
+  LiquidSpec.skip!("liquid-c not enabled") unless Liquid::C.enabled
 end
 
 LiquidSpec.configure do |config|

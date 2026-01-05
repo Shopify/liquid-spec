@@ -34,7 +34,6 @@ module Liquid
             liquid-spec run my_adapter.rb -s liquid_ruby -v
             liquid-spec run my_adapter.rb --compare
             liquid-spec run my_adapter.rb --add-specs="my_specs/*.yml"
-            liquid-spec run my_adapter.rb --no-max-failures
             liquid-spec run my_adapter.rb --list-suites
 
         HELP
@@ -270,9 +269,9 @@ module Liquid
             puts ""
 
             if stopped_early
-              puts "Stopped after #{max_failures} failures (#{total_passed} passed so far)"
-              puts "Run with --no-max-failures to see all failures"
-              puts ""
+              total_run = total_passed + total_failed + total_errors
+              skipped = specs.size - total_run
+              puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors, #{skipped} skipped"
             else
               puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors"
             end
@@ -367,9 +366,9 @@ module Liquid
             puts ""
 
             if stopped_early
-              puts "Stopped after #{max_failures} differences (#{total_same} matching so far)"
-              puts "Run with --no-max-failures to see all differences"
-              puts ""
+              total_run = total_same + total_different + total_errors
+              skipped = specs.size - total_run
+              puts "Total: #{total_same} match, \e[33m#{total_different} different\e[0m, #{total_errors} errors, #{skipped} skipped"
             elsif total_different == 0 && total_errors == 0
               puts "\e[32mTotal: #{total_same} specs match reference implementation\e[0m"
             else
@@ -518,8 +517,9 @@ module Liquid
               else
                 puts "   Adapter:   #{d[:result][:adapter].inspect[0..80]}"
               end
-              if d[:spec].hint
-                puts "   Hint: #{d[:spec].hint.strip.tr("\n", " ")[0..80]}"
+              hint = d[:spec].effective_hint
+              if hint
+                puts "   Hint: #{hint.strip.tr("\n", " ")[0..80]}"
               end
               puts ""
             end
@@ -603,9 +603,13 @@ module Liquid
             required_opts = spec.source_required_options || {}
             render_errors = spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
 
+            # Build filesystem first so it can be passed to compile
+            filesystem = spec.instantiate_filesystem
+
             compile_options = {
               line_numbers: true,
               error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+              file_system: filesystem,
             }.compact
 
             begin
@@ -631,7 +635,7 @@ module Liquid
 
             assigns = deep_copy(spec.instantiate_environment)
             render_options = {
-              registers: build_registers(spec),
+              registers: build_registers(spec, filesystem),
               strict_errors: !render_errors,
             }.compact
 
@@ -699,9 +703,9 @@ module Liquid
             end
           end
 
-          def build_registers(spec)
+          def build_registers(spec, filesystem = nil)
             registers = {}
-            filesystem = spec.instantiate_filesystem
+            filesystem ||= spec.instantiate_filesystem
             registers[:file_system] = filesystem if filesystem
             template_factory = spec.instantiate_template_factory
             registers[:template_factory] = template_factory if template_factory

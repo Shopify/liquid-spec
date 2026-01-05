@@ -18,7 +18,7 @@ module Liquid
             -n, --name PATTERN    Filter specs by name pattern
             -s, --suite SUITE     Spec suite: all, basics, liquid_ruby, etc.
             --max-failures N      Stop after N differences (default: 10)
-            --no-max-failures     Show all differences
+            --no-max-failures     Show all differences (not recommended)
             -v, --verbose         Show detailed output
             -h, --help            Show this help
 
@@ -167,7 +167,18 @@ module Liquid
 
             adapters = {}
             adapter_names.each do |name|
-              path = File.join(examples_dir, "#{name}.rb")
+              # Support both short names (from examples/) and full paths
+              if File.exist?(name)
+                path = name
+                adapter_name = File.basename(name, ".rb")
+              elsif File.exist?(name + ".rb")
+                path = name + ".rb"
+                adapter_name = File.basename(name)
+              else
+                path = File.join(examples_dir, "#{name}.rb")
+                adapter_name = name
+              end
+
               unless File.exist?(path)
                 $stderr.puts "Warning: Adapter not found: #{name}"
                 next
@@ -177,12 +188,14 @@ module Liquid
                 # Reset LiquidSpec state before loading each adapter
                 reset_liquid_spec!
 
-                adapter = Liquid::Spec::AdapterRunner.new(name: name)
+                adapter = Liquid::Spec::AdapterRunner.new(name: adapter_name)
                 adapter.load_dsl(path)
                 adapter.ensure_setup!
-                adapters[name] = adapter
+                adapters[adapter_name] = adapter
+              rescue LiquidSpec::SkipAdapter => e
+                $stderr.puts "Skipping #{adapter_name}: #{e.message}"
               rescue => e
-                $stderr.puts "Warning: Failed to load #{name}: #{e.message}"
+                $stderr.puts "Warning: Failed to load #{adapter_name}: #{e.message}"
               end
             end
 
@@ -227,10 +240,10 @@ module Liquid
                   )
                 end
 
-                if result.skipped?
-                  outputs[name] = { skipped: true }
+                outputs[name] = if result.skipped?
+                  { skipped: true }
                 else
-                  outputs[name] = { output: normalize_output(result) }
+                  { output: normalize_output(result) }
                 end
               end
 

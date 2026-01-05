@@ -138,8 +138,9 @@ module Liquid
             puts "\e[1m#{spec.name}\e[0m"
 
             # Show hint if present
-            if spec.hint && !spec.hint.empty?
-              puts "\e[36m#{spec.hint.strip}\e[0m"
+            hint = spec.effective_hint
+            if hint && !hint.empty?
+              puts "\e[36m#{hint.strip}\e[0m"
             end
 
             # Show complexity and render_errors
@@ -198,7 +199,7 @@ module Liquid
                   puts "\e[32m\u2713 PASS\e[0m (error matches expected pattern)"
                 else
                   puts "\e[31m\u2717 FAIL\e[0m (error doesn't match expected pattern)"
-                  puts "\n\e[33mHint:\e[0m Run with --print-actual to generate updated spec"
+                  print_failure_hints(spec)
                 end
               else
                 puts "\e[31m\u2717 FAIL\e[0m"
@@ -206,22 +207,20 @@ module Liquid
                   diff = string_diff(spec.expected, result[:actual])
                   puts "\n\e[2mDiff:\e[0m #{diff}" if diff
                 end
-                puts "\n\e[33mHint:\e[0m Run with --print-actual to generate updated spec"
+                print_failure_hints(spec)
               end
             end
           end
 
-          def print_actual_specs(specs, config, options)
-            puts "# Generated specs matching actual behavior"
-            puts "# Source: #{specs.first&.source_file}"
-            puts "#"
-            puts "# Review these specs before committing!"
-            puts "# Error specs use substring matching for flexibility."
-            if options.key?(:force_render_errors)
-              puts "# render_errors forced to: #{options[:force_render_errors]}"
+          def print_failure_hints(spec)
+            hint = spec.effective_hint
+            if hint && !hint.empty?
+              puts "\n\e[33mHint:\e[0m #{hint.strip.gsub("\n", "\n      ")}"
             end
-            puts ""
+            puts "\nRun with --print-actual to generate updated spec"
+          end
 
+          def print_actual_specs(specs, config, options)
             Timecop.freeze(TEST_TIME) do
               specs.each_with_index do |spec, idx|
                 puts "" if idx > 0
@@ -242,9 +241,10 @@ module Liquid
             # Print spec as YAML with comments for errors
             puts "- name: #{yaml_value(spec.name)}"
 
-            if spec.hint && !spec.hint.empty?
+            hint = spec.effective_hint
+            if hint && !hint.empty?
               puts "  hint: |"
-              spec.hint.each_line { |line| puts "    #{line.rstrip}" }
+              hint.each_line { |line| puts "    #{line.rstrip}" }
             end
 
             puts "  complexity: #{spec.complexity}" if spec.complexity && spec.complexity < 1000
@@ -441,15 +441,16 @@ module Liquid
           end
 
           def run_with_adapter(spec, _config, options = {})
+            environment = spec.instantiate_environment
+            filesystem = spec.instantiate_filesystem
+
             compile_options = {
               line_numbers: true,
               error_mode: spec.error_mode&.to_sym,
+              file_system: filesystem,
             }.compact
 
             template = LiquidSpec.do_compile(spec.template, compile_options)
-
-            environment = spec.instantiate_environment
-            filesystem = spec.instantiate_filesystem
 
             # Use forced render_errors if provided, otherwise use spec's setting
             render_errors = if options.key?(:force_render_errors)
