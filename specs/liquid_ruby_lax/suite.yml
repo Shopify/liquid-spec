@@ -10,7 +10,6 @@ hint: |
   It exists for legacy Shopify templates but can be safely ignored by new implementations.
 
 required_features:
-  - core
   - lax_parsing
 
 defaults:

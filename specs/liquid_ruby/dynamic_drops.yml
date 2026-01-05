@@ -1,0 +1,234 @@
+# Specs that require runtime drop callbacks (bidirectional JSON-RPC)
+# These drops cannot be pre-materialized as they track state during rendering
+---
+_metadata:
+  hint: |
+    These specs require runtime drop callbacks - the Liquid implementation must
+    support bidirectional communication to access drop methods during rendering.
+    The drops track state (access counts, method calls) that cannot be pre-computed.
+  minimum_complexity: 300
+
+specs:
+# LoaderDrop - tracks each_called and load_slice_called state
+- name: ForTagTest#test_iterate_with_each_when_no_limit_applied_4b504dbf
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% for item in items %}{{item}}{% endfor %}"
+  environment:
+    items:
+      instantiate:LoaderDrop:
+        data: [1, 2, 3, 4, 5]
+  render_errors: false
+  expected: '12345'
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/for_tag_test.rb#L424
+
+- name: ForTagTest#test_iterate_with_load_slice_returns_same_results_as_without_e99b5d3d
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
+  environment:
+    items:
+      instantiate:LoaderDrop:
+        data: [1, 2, 3, 4, 5]
+  render_errors: false
+  expected: '34'
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/for_tag_test.rb#L455
+
+- name: ForTagTest#test_iterate_with_load_slice_when_limit_and_offset_applied_e99b5d3d
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
+  environment:
+    items:
+      instantiate:LoaderDrop:
+        data: [1, 2, 3, 4, 5]
+  render_errors: false
+  expected: '34'
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/for_tag_test.rb#L444
+
+- name: ForTagTest#test_iterate_with_load_slice_when_limit_applied_fd17a528
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% for item in items limit:1 %}{{item}}{% endfor %}"
+  environment:
+    items:
+      instantiate:LoaderDrop:
+        data: [1, 2, 3, 4, 5]
+  render_errors: false
+  expected: '1'
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/for_tag_test.rb#L434
+
+# ErrorDrop - raises exceptions on method access (tests error handling)
+- name: IncludeTagTest#test_render_tag_renders_error_with_template_name_c34cdb86
+  complexity: 310
+  required_features: [runtime_drops]
+  template: "{% include 'foo' with errors %}"
+  environment:
+    errors:
+      instantiate:ErrorDrop: {}
+  render_errors: true
+  expected: 'Liquid error (foo line 1): standard error'
+  filesystem:
+    foo: "{{ foo.standard_error }}"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L384
+
+- name: IncludeTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_c92c1757
+  complexity: 320
+  required_features: [runtime_drops]
+  template: "{% include 'foo' with errors %}"
+  environment:
+    errors:
+      instantiate:ErrorDrop: {}
+  render_errors: true
+  expected: 'Liquid error (some/path/foo line 1): standard error'
+  template_factory:
+    instantiate:StubTemplateFactory:
+      count: 1
+  filesystem:
+    foo: "{{ foo.standard_error }}"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L394
+
+- name: RenderTagTest#test_render_tag_renders_error_with_template_name_79f1a430
+  complexity: 310
+  required_features: [runtime_drops]
+  template: "{% render 'foo' with errors %}"
+  environment:
+    errors:
+      instantiate:ErrorDrop: {}
+  render_errors: true
+  expected: 'Liquid error (foo line 1): standard error'
+  filesystem:
+    foo: "{{ foo.standard_error }}"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L298
+
+- name: RenderTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_8dab9308
+  complexity: 320
+  required_features: [runtime_drops]
+  template: "{% render 'foo' with errors %}"
+  environment:
+    errors:
+      instantiate:ErrorDrop: {}
+  render_errors: true
+  expected: 'Liquid error (some/path/foo line 1): standard error'
+  template_factory:
+    instantiate:StubTemplateFactory:
+      count: 1
+  filesystem:
+    foo: "{{ foo.standard_error }}"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L308
+
+# CountingDrop - tracks access count (state changes during rendering)
+- name: StandardFiltersTest#test_map_calls_to_liquid_ac8bb77d
+  complexity: 300
+  required_features: [runtime_drops]
+  template: '{{ foo | map: "whatever" }}'
+  environment:
+    foo:
+    - instantiate:CountingDrop: {}
+  render_errors: false
+  expected: '1 accesses'
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L487
+
+# TestEnumerable - yields items dynamically at runtime
+- name: RenderTagTest#test_render_tag_for_drop_cf2ab489
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% render 'loop' for loop as value %}"
+  environment:
+    loop:
+      instantiate:TestEnumerable: {}
+  render_errors: false
+  expected: '123'
+  filesystem:
+    loop: "{{ value.foo }}"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L276
+
+- name: RenderTagTest#test_render_tag_with_drop_e577945d
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% render 'loop' with loop as value %}"
+  environment:
+    loop:
+      instantiate:TestEnumerable: {}
+  render_errors: false
+  expected: TestEnumerable
+  filesystem:
+    loop: "{{ value }}"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L287
+
+- name: StandardFiltersTest#test_sort_works_on_enumerables_83b00155
+  complexity: 300
+  required_features: [runtime_drops]
+  template: '{{ foo | sort: "bar" | map: "foo" }}'
+  environment:
+    foo:
+      instantiate:TestEnumerable: {}
+  render_errors: false
+  expected: '213'
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L580
+
+# SettingsDrop - dynamic property access via liquid_method_missing
+- name: VariableTest#test_double_nested_variable_lookup_b9f99226
+  complexity: 300
+  required_features: [runtime_drops]
+  template: '{{ list[list[settings.zero]]["foo"] }}'
+  environment:
+    list:
+    - 1
+    - foo: bar
+    settings:
+      instantiate:SettingsDrop:
+        settings:
+          zero: 0
+    bar: foo
+  render_errors: false
+  expected: bar
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L168
+
+- name: VariableTest#test_dynamic_find_var_with_drop_4ca2f954
+  complexity: 300
+  required_features: [runtime_drops]
+  template: '{{ [list[settings.zero]["foo"]] }}'
+  environment:
+    list:
+    - foo: bar
+    settings:
+      instantiate:SettingsDrop:
+        settings:
+          zero: 0
+    bar: foo
+  render_errors: false
+  expected: foo
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L156
+
+- name: VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{{ [list[settings.zero]] }}"
+  environment:
+    list:
+    - foo
+    settings:
+      instantiate:SettingsDrop:
+        settings:
+          zero: 0
+    foo: bar
+  render_errors: false
+  expected: bar
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L146
+
+# ArrayDrop - Enumerable drop with lazy iteration
+- name: TableRowTest#test_enumerable_drop_549595e3
+  complexity: 300
+  required_features: [runtime_drops]
+  template: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
+  environment:
+    numbers:
+      instantiate:ArrayDrop:
+        array: [1, 2, 3, 4, 5, 6]
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
+    <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L64

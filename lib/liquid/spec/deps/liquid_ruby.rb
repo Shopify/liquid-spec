@@ -6,6 +6,40 @@ require_relative "../yaml_initializer"
 # Pure drop implementations for testing - track state per-instance
 # Each drop is self-contained and produces deterministic output
 
+# ValueDrop - A strict generic drop that wraps any value
+# Used to test that filters correctly handle drops with to_s/to_liquid_value
+# Raises errors on any unexpected property access (strict mode)
+#
+# Example YAML:
+#   {"instantiate:ValueDrop" => "hello"}
+#   # to_s returns "hello", to_liquid_value returns "hello"
+#
+#   {"instantiate:ValueDrop" => 42}
+#   # to_s returns "42", to_liquid_value returns 42
+class ValueDrop < Liquid::Drop
+  def initialize(value)
+    @value = value
+  end
+
+  def to_s
+    @value.to_s
+  end
+
+  def to_liquid_value
+    @value
+  end
+
+  # Strict: raise on any unexpected property access
+  def liquid_method_missing(method)
+    raise Liquid::UndefinedDropMethod, "ValueDrop does not support method '#{method}'"
+  end
+
+  # Strict: raise on bracket access
+  def [](key)
+    raise Liquid::UndefinedDropMethod, "ValueDrop does not support key access '#{key}'"
+  end
+end
+
 class CountingDrop < Liquid::Drop
   # A drop that counts how many times [] is accessed.
   # to_s returns "N accesses" where N is the count.
@@ -390,6 +424,7 @@ end
 
 # Register all test classes with the ClassRegistry
 # Each lambda creates a fresh instance for every test
+Liquid::Spec::ClassRegistry.register("ValueDrop") { |p| ValueDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("CountingDrop") { |p| CountingDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("ToSDrop") { |p| ToSDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("TestDrop") { |p| TestDrop.new(p) }
