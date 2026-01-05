@@ -124,7 +124,7 @@
 
 - name: "array_is_truthy"
   template: "{% if items %}yes{% endif %}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "yes"
   complexity: 135
   hint: |
@@ -233,7 +233,7 @@
 
 - name: "size_of_array"
   template: "{{ items | size }}"
-  data: { items: [1, 2, 3] }
+  environment: { items: [1, 2, 3] }
   expected: "3"
   complexity: 130
   hint: |
@@ -342,7 +342,7 @@
 
 - name: "contains_no_type_coercion"
   template: "{% if items contains 2 %}yes{% else %}no{% endif %}"
-  data: { items: ['1', '2', '3'] }
+  environment: { items: ['1', '2', '3'] }
   expected: "no"
   complexity: 160
   hint: |
@@ -353,7 +353,7 @@
 
 - name: "join_coerces_to_string"
   template: "{{ numbers | join: ',' }}"
-  data: { numbers: [1, 2, 3] }
+  environment: { numbers: [1, 2, 3] }
   expected: "1,2,3"
   complexity: 155
   hint: |
@@ -375,7 +375,7 @@
 
 - name: "concat_arrays_no_coercion"
   template: "{{ a | concat: b | size }}"
-  data: { a: [1, 2], b: ['3', '4'] }
+  environment: { a: [1, 2], b: ['3', '4'] }
   expected: "4"
   complexity: 165
   hint: |
@@ -386,7 +386,7 @@
 
 - name: "plus_with_nil_input"
   template: "{{ missing | plus: 10 }}"
-  data: {}
+  environment: {}
   expected: "10"
   complexity: 170
   hint: |

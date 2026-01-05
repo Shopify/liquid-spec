@@ -63,7 +63,7 @@
 
 - name: "simple_variable"
   template: "{{ name }}"
-  data: { name: "Alice" }
+  environment: { name: "Alice" }
   expected: "Alice"
   complexity: 40
   hint: |
@@ -74,7 +74,7 @@
 
 - name: "undefined_variable"
   template: "{{ missing }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 45
   hint: |
@@ -85,7 +85,7 @@
 
 - name: "dot_property_access"
   template: "{{ user.name }}"
-  data: { user: { name: "Bob" } }
+  environment: { user: { name: "Bob" } }
   expected: "Bob"
   complexity: 55
   hint: |
@@ -96,7 +96,7 @@
 
 - name: "chained_property_access"
   template: "{{ user.address.city }}"
-  data: { user: { address: { city: "Vancouver" } } }
+  environment: { user: { address: { city: "Vancouver" } } }
   expected: "Vancouver"
   complexity: 65
   hint: |
@@ -107,7 +107,7 @@
 
 - name: "bracket_notation_string_literal"
   template: "{{ user['name'] }}"
-  data: { user: { name: "Charlie" } }
+  environment: { user: { name: "Charlie" } }
   expected: "Charlie"
   complexity: 70
   hint: |
@@ -118,7 +118,7 @@
 
 - name: "bracket_notation_variable_key"
   template: "{{ user[prop] }}"
-  data: { user: { name: "Diana", age: 30 }, prop: "name" }
+  environment: { user: { name: "Diana", age: 30 }, prop: "name" }
   expected: "Diana"
   complexity: 80
   hint: |
@@ -129,7 +129,7 @@
 
 - name: "mixed_dot_and_bracket"
   template: "{{ data.users[0].name }}"
-  data: { data: { users: [{ name: "Eve" }] } }
+  environment: { data: { users: [{ name: "Eve" }] } }
   expected: "Eve"
   complexity: 90
   hint: |
@@ -140,7 +140,7 @@
 
 - name: "array_index_access"
   template: "{{ colors[1] }}"
-  data: { colors: ["red", "green", "blue"] }
+  environment: { colors: ["red", "green", "blue"] }
   expected: "green"
   complexity: 75
   hint: |
@@ -151,7 +151,7 @@
 
 - name: "negative_array_index"
   template: "{{ colors[-1] }}"
-  data: { colors: ["red", "green", "blue"] }
+  environment: { colors: ["red", "green", "blue"] }
   expected: "blue"
   complexity: 85
   hint: |
@@ -162,7 +162,7 @@
 
 - name: "nested_bracket_access"
   template: "{{ matrix[0][1] }}"
-  data: { matrix: [[1, 2, 3], [4, 5, 6]] }
+  environment: { matrix: [[1, 2, 3], [4, 5, 6]] }
   expected: "5"
   complexity: 95
   hint: |
@@ -183,7 +183,7 @@
 
 - name: "variable_range"
   template: "{{ (start..finish) }}"
-  data: { start: 3, finish: 7 }
+  environment: { start: 3, finish: 7 }
   expected: "34567"
   complexity: 110
   hint: |
@@ -204,7 +204,7 @@
 
 - name: "property_on_array_element"
   template: "{{ products[0].title }}"
-  data: { products: [{ title: "Widget", price: 9.99 }] }
+  environment: { products: [{ title: "Widget", price: 9.99 }] }
   expected: "Widget"
   complexity: 100
   hint: |
@@ -215,7 +215,7 @@
 
 - name: "deep_nested_access"
   template: "{{ site.data.users[1].profile.bio }}"
-  data: { site: { data: { users: [{ profile: { bio: "A" } }, { profile: { bio: "B" } }] } } }
+  environment: { site: { data: { users: [{ profile: { bio: "A" } }, { profile: { bio: "B" } }] } } }
   expected: "B"
   complexity: 130
   hint: |
@@ -226,7 +226,7 @@
 
 - name: "variable_as_array_index"
   template: "{{ items[idx] }}"
-  data: { items: ["a", "b", "c"], idx: 2 }
+  environment: { items: ["a", "b", "c"], idx: 2 }
   expected: "c"
   complexity: 90
   hint: |
@@ -237,7 +237,7 @@
 
 - name: "string_key_from_variable"
   template: "{{ person[field] }}"
-  data: { person: { first: "John", last: "Doe" }, field: "last" }
+  environment: { person: { first: "John", last: "Doe" }, field: "last" }
   expected: "Doe"
   complexity: 95
   hint: |
@@ -248,7 +248,7 @@
 
 - name: "complex_nested_expression"
   template: "{{ data[key].items[0].value }}"
-  data: { data: { prod: { items: [{ value: 42 }] } }, key: "prod" }
+  environment: { data: { prod: { items: [{ value: 42 }] } }, key: "prod" }
   expected: "42"
   complexity: 140
   hint: |
@@ -259,7 +259,7 @@
 
 - name: "bracket_access_with_spaces"
   template: "{{ user[ 'full name' ] }}"
-  data: { user: { "full name": "Alice Smith" } }
+  environment: { user: { "full name": "Alice Smith" } }
   expected: "Alice Smith"
   complexity: 85
   hint: |
@@ -270,7 +270,7 @@
 
 - name: "range_in_bracket"
   template: "{{ numbers[(1..3)] }}"
-  data: { numbers: { "1..3": "range" } }
+  environment: { numbers: { "1..3": "range" } }
   expected: "range"
   complexity: 150
   hint: |
@@ -282,7 +282,7 @@
 
 - name: "nil_safe_navigation"
   template: "{{ missing.property }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 105
   hint: |
@@ -293,7 +293,7 @@
 
 - name: "zero_index_vs_first"
   template: "{{ list[0] }}"
-  data: { list: ["first", "second"] }
+  environment: { list: ["first", "second"] }
   expected: "first"
   complexity: 60
   hint: |
@@ -304,7 +304,7 @@
 
 - name: "negative_index_out_of_bounds"
   template: "{{ items[-10] }}"
-  data: { items: ["a", "b"] }
+  environment: { items: ["a", "b"] }
   expected: ""
   complexity: 120
   hint: |
@@ -315,7 +315,7 @@
 
 - name: "range_with_expression_bounds"
   template: "{{ (x..y) }}"
-  data: { x: 2, y: 4 }
+  environment: { x: 2, y: 4 }
   expected: "234"
   complexity: 120
   hint: |
@@ -326,7 +326,7 @@
 
 - name: "multiple_bracket_lookups"
   template: "{{ a[b][c] }}"
-  data: { a: { key1: { key2: "found" } }, b: "key1", c: "key2" }
+  environment: { a: { key1: { key2: "found" } }, b: "key1", c: "key2" }
   expected: "found"
   complexity: 160
   hint: |

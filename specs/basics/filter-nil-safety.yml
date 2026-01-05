@@ -4,7 +4,7 @@
 
 - name: "upcase_on_nil"
   template: "{{ missing | upcase }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 40
   hint: |
@@ -16,7 +16,7 @@
 
 - name: "downcase_on_nil"
   template: "{{ missing | downcase }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 40
   hint: |
@@ -27,7 +27,7 @@
 
 - name: "strip_on_nil"
   template: "{{ missing | strip }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 45
   hint: |
@@ -38,7 +38,7 @@
 
 - name: "capitalize_on_nil"
   template: "{{ missing | capitalize }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 45
   hint: |
@@ -49,7 +49,7 @@
 
 - name: "first_on_nil"
   template: "{{ missing | first }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 50
   hint: |
@@ -60,7 +60,7 @@
 
 - name: "last_on_nil"
   template: "{{ missing | last }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 50
   hint: |
@@ -71,7 +71,7 @@
 
 - name: "size_on_nil"
   template: "{{ missing | size }}"
-  data: {}
+  environment: {}
   expected: "0"
   complexity: 55
   hint: |
@@ -82,7 +82,7 @@
 
 - name: "sort_on_nil"
   template: "{{ missing | sort }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 60
   hint: |
@@ -93,7 +93,7 @@
 
 - name: "reverse_on_nil"
   template: "{{ missing | reverse }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 60
   hint: |
@@ -104,7 +104,7 @@
 
 - name: "join_on_nil"
   template: "{{ missing | join: ',' }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 65
   hint: |
@@ -115,7 +115,7 @@
 
 - name: "plus_on_nil"
   template: "{{ missing | plus: 5 }}"
-  data: {}
+  environment: {}
   expected: "5"
   complexity: 70
   hint: |
@@ -126,7 +126,7 @@
 
 - name: "minus_on_nil"
   template: "{{ missing | minus: 3 }}"
-  data: {}
+  environment: {}
   expected: "-3"
   complexity: 70
   hint: |
@@ -137,7 +137,7 @@
 
 - name: "times_on_nil"
   template: "{{ missing | times: 4 }}"
-  data: {}
+  environment: {}
   expected: "0"
   complexity: 75
   hint: |
@@ -148,7 +148,7 @@
 
 - name: "divided_by_on_nil"
   template: "{{ missing | divided_by: 2 }}"
-  data: {}
+  environment: {}
   expected: "0"
   complexity: 75
   hint: |
@@ -158,7 +158,7 @@
 
 - name: "date_filter_on_nil"
   template: "{{ missing | date: '%Y-%m-%d' }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 80
   hint: |
@@ -169,7 +169,7 @@
 
 - name: "default_filter_nil_escape"
   template: "{{ missing | default: 'N/A' }}"
-  data: {}
+  environment: {}
   expected: "N/A"
   complexity: 85
   hint: |
@@ -180,7 +180,7 @@
 
 - name: "chained_filters_intermediate_nil"
   template: "{{ user.name | upcase | append: '!' }}"
-  data: { user: {} }
+  environment: { user: {} }
   expected: "!"
   complexity: 90
   hint: |
@@ -191,7 +191,7 @@
 
 - name: "map_with_nil_property"
   template: "{{ users | map: 'email' | first }}"
-  data: { users: [{name: 'Alice'}, {name: 'Bob'}] }
+  environment: { users: [{name: 'Alice'}, {name: 'Bob'}] }
   expected: ""
   complexity: 95
   hint: |
@@ -203,7 +203,7 @@
 
 - name: "compact_filter_removes_nils"
   template: "{{ items | compact | join: ',' }}"
-  data: { items: ['a', null, 'b', null, 'c'] }
+  environment: { items: ['a', null, 'b', null, 'c'] }
   expected: "a,b,c"
   complexity: 100
   hint: |
@@ -214,7 +214,7 @@
 
 - name: "append_with_nil_argument"
   template: "{{ 'hello' | append: missing }}"
-  data: {}
+  environment: {}
   expected: "hello"
   complexity: 105
   hint: |
@@ -226,7 +226,7 @@
 
 - name: "split_then_compact"
   template: "{{ text | split: ',' | compact | size }}"
-  data: { text: "a,,b,c" }
+  environment: { text: "a,,b,c" }
   expected: "3"
   complexity: 110
   hint: |
@@ -242,7 +242,7 @@
 
 - name: "where_filter_with_nil_values"
   template: "{{ products | where: 'available' | size }}"
-  data: { products: [{available: true}, {available: null}, {available: true}] }
+  environment: { products: [{available: true}, {available: null}, {available: true}] }
   expected: "2"
   complexity: 115
   hint: |
@@ -254,7 +254,7 @@
 
 - name: "default_with_chained_filters"
   template: "{{ missing | upcase | default: 'NONE' }}"
-  data: {}
+  environment: {}
   expected: "NONE"
   complexity: 120
   hint: |
@@ -265,7 +265,7 @@
 
 - name: "replace_with_nil_in_string"
   template: "{{ 'hello' | replace: 'l', missing }}"
-  data: {}
+  environment: {}
   expected: "heo"
   complexity: 125
   hint: |
@@ -276,7 +276,7 @@
 
 - name: "slice_on_nil"
   template: "{{ missing | slice: 0, 3 }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 130
   hint: |
@@ -287,7 +287,7 @@
 
 - name: "uniq_with_nils"
   template: "{{ items | uniq | size }}"
-  data: { items: [1, null, 2, null, 3] }
+  environment: { items: [1, null, 2, null, 3] }
   expected: "4"
   complexity: 135
   hint: |
@@ -298,7 +298,7 @@
 
 - name: "complex_nil_chain"
   template: "{{ users | map: 'profile.bio' | compact | first | upcase | default: 'NO BIO' }}"
-  data: { users: [{profile: {}}, {profile: {bio: 'hello'}}] }
+  environment: { users: [{profile: {}}, {profile: {bio: 'hello'}}] }
   expected: "HELLO"
   complexity: 145
   hint: |
@@ -310,7 +310,7 @@
 
 - name: "nil_in_comparison_filters"
   template: "{{ missing | at_least: 10 }}"
-  data: {}
+  environment: {}
   expected: "10"
   complexity: 140
   hint: |
@@ -321,7 +321,7 @@
 
 - name: "truncate_on_nil"
   template: "{{ missing | truncate: 10 }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 130
   hint: |
@@ -333,7 +333,7 @@
 
 - name: "url_encode_on_nil"
   template: "{{ missing | url_encode }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 135
   hint: |
@@ -344,7 +344,7 @@
 
 - name: "abs_on_nil"
   template: "{{ missing | abs }}"
-  data: {}
+  environment: {}
   expected: "0"
   complexity: 140
   hint: |
@@ -355,7 +355,7 @@
 
 - name: "strip_html_on_nil"
   template: "{{ missing | strip_html }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 145
   hint: |
@@ -366,7 +366,7 @@
 
 - name: "map_compact_size_pattern"
   template: "{{ users | map: 'age' | compact | size }}"
-  data: { users: [{name: 'Alice', age: 30}, {name: 'Bob'}] }
+  environment: { users: [{name: 'Alice', age: 30}, {name: 'Bob'}] }
   expected: "1"
   complexity: 150
   hint: |

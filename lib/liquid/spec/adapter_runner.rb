@@ -10,7 +10,7 @@ module Liquid
       TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
       TEST_TZ = "America/New_York"
 
-      attr_reader :name, :features
+      attr_reader :name, :features, :ctx
 
       def initialize(name: nil)
         @name = name
@@ -19,6 +19,7 @@ module Liquid
         @compile_block = nil
         @render_block = nil
         @setup_done = false
+        @ctx = {}
       end
 
       # Load adapter DSL from a file
@@ -53,7 +54,7 @@ module Liquid
       def ensure_setup!
         return if @setup_done
 
-        @setup_block&.call
+        @setup_block&.call(@ctx)
         @setup_done = true
 
         # Load drop support after setup (liquid gem must be loaded first)
@@ -130,12 +131,15 @@ module Liquid
           filesystem = spec.instantiate_filesystem
           template_factory = spec.instantiate_template_factory
 
+          # Make current spec available in ctx
+          @ctx[:spec] = spec
+
           # Compile
           compile_options = { line_numbers: true }
           compile_options[:error_mode] = spec.error_mode if spec.error_mode
           compile_options[:file_system] = filesystem if filesystem
 
-          template = @compile_block.call(spec.template, compile_options)
+          template = @compile_block.call(@ctx, spec.template, compile_options)
 
           # Render
           registers = {}
@@ -148,7 +152,7 @@ module Liquid
           }
           render_options[:error_mode] = spec.error_mode if spec.error_mode
 
-          output = @render_block.call(template, environment, render_options)
+          output = @render_block.call(@ctx, template, environment, render_options)
 
           # Compare
           check_result(spec, output: output.to_s)

@@ -3,8 +3,10 @@
 # LiquidSpec DSL for defining adapters
 #
 # Usage in adapter files:
-#   LiquidSpec.setup do
+#   LiquidSpec.setup do |ctx|
 #     require "my_liquid"
+#     # ctx is a hash you can store adapter state in
+#     ctx[:environment] = MyLiquid::Environment.new
 #   end
 #
 #   LiquidSpec.configure do |config|
@@ -12,11 +14,11 @@
 #     config.features = [:core, :lax_parsing]
 #   end
 #
-#   LiquidSpec.compile do |source, options|
-#     MyLiquid::Template.parse(source, **options)
+#   LiquidSpec.compile do |ctx, source, options|
+#     MyLiquid::Template.parse(source, environment: ctx[:environment], **options)
 #   end
 #
-#   LiquidSpec.render do |template, assigns, options|
+#   LiquidSpec.render do |ctx, template, assigns, options|
 #     template.render(assigns, **options)
 #   end
 
@@ -57,7 +59,7 @@ module LiquidSpec
   class SkipAdapter < StandardError; end
 
   class << self
-    attr_reader :compile_block, :render_block, :config, :setup_block
+    attr_reader :compile_block, :render_block, :config, :setup_block, :ctx
     attr_accessor :cli_options
 
     # Skip this adapter with a reason
@@ -76,16 +78,19 @@ module LiquidSpec
     end
 
     # Called once before running specs
+    # Block receives ctx hash for storing adapter state
     def setup(&block)
       @setup_block = block
     end
 
     # Define how to compile/parse a template
+    # Block receives: ctx, source, options
     def compile(&block)
       @compile_block = block
     end
 
     # Define how to render a compiled template
+    # Block receives: ctx, template, assigns, options
     def render(&block)
       @render_block = block
     end
@@ -95,6 +100,7 @@ module LiquidSpec
       @render_block = nil
       @setup_block = nil
       @config = nil
+      @ctx = {}
       @cli_options = {}
       @running_from_cli = false
       @setup_done = false
@@ -104,21 +110,22 @@ module LiquidSpec
       return if @setup_done
 
       @setup_done = true
-      @setup_block&.call
+      @ctx ||= {}
+      @setup_block&.call(@ctx)
     end
 
     def do_compile(source, options = {})
       run_setup!
-      raise "No compile block defined. Use LiquidSpec.compile { |source, options| ... }" unless @compile_block
+      raise "No compile block defined. Use LiquidSpec.compile { |ctx, source, options| ... }" unless @compile_block
 
-      @compile_block.call(source, options)
+      @compile_block.call(@ctx, source, options)
     end
 
     def do_render(template, assigns, options = {})
       run_setup!
-      raise "No render block defined. Use LiquidSpec.render { |template, assigns, options| ... }" unless @render_block
+      raise "No render block defined. Use LiquidSpec.render { |ctx, template, assigns, options| ... }" unless @render_block
 
-      @render_block.call(template, assigns, options)
+      @render_block.call(@ctx, template, assigns, options)
     end
 
     def running_from_cli!

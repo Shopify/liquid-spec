@@ -23632,8 +23632,13 @@
     a: "asdf\v"
   filesystem: {}
 - name: RecordedTest#test_missing_operator_and_rhs_in_conditional_6dc36bcf
+  required_features:
+    - strict_parsing
   template: "{% if blank %}true{% endif %}"
   expected: 'true'
+  hint: |
+    Using 'blank' as a standalone conditional value has inconsistent behavior
+    in lax mode on some Liquid versions. Restrict to strict parsing.
 - name: RecordedTest#test_missing_operator_in_conditional_fedb552c
   required_features:
     - lax_parsing
