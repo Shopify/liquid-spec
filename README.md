@@ -151,6 +151,7 @@ liquid-spec [command] [options]
 
 Commands:
   liquid-spec run ADAPTER          Run specs with adapter
+  liquid-spec matrix               Compare multiple adapters side-by-side
   liquid-spec test                 Run specs against all bundled example adapters
   liquid-spec eval ADAPTER         Quick test a template (YAML via stdin)
   liquid-spec inspect ADAPTER      Inspect specific specs (use with -n)
@@ -158,7 +159,8 @@ Commands:
 
 Run Options:
   -n, --name PATTERN       Only run specs matching PATTERN
-  -s, --suite SUITE        Run specific suite (liquid_ruby, shopify_production_recordings, etc.)
+  -s, --suite SUITE        Run specific suite (liquid_ruby, benchmarks, etc.)
+  -b, --bench              Run timing suites as benchmarks (measure compile/render times)
   -c, --compare            Compare output against reference liquid-ruby
   -v, --verbose            Show detailed output
   -l, --list               List available specs
@@ -173,9 +175,151 @@ Examples:
   liquid-spec run my_adapter.rb -s liquid_ruby     # Run only liquid_ruby suite
   liquid-spec run my_adapter.rb --compare          # Compare against reference
   liquid-spec run my_adapter.rb --no-max-failures  # See all failures
+  liquid-spec run my_adapter.rb -s benchmarks --bench  # Run benchmarks
   liquid-spec test                                 # Test all bundled adapters
   liquid-spec inspect my_adapter.rb -n "case"      # Debug specific specs
 ```
+
+### Matrix Command
+
+The `matrix` command runs specs across multiple adapters simultaneously and shows differences between implementations. This is useful for comparing behavior across different Liquid implementations or configurations.
+
+```bash
+liquid-spec matrix [options]
+
+Options:
+  --all                    Run all available adapters from examples/
+  --adapters=LIST          Comma-separated list of adapters
+  --reference=NAME         Reference adapter (default: liquid_ruby)
+  -n, --name PATTERN       Filter specs by name pattern
+  -s, --suite SUITE        Spec suite to run
+  -b, --bench              Run timing suites as benchmarks, compare performance
+  --max-failures N         Stop after N differences (default: 10)
+  --no-max-failures        Show all differences
+  -v, --verbose            Show detailed output
+
+Examples:
+  # Compare all bundled adapters
+  liquid-spec matrix --all
+
+  # Compare specific adapters
+  liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax
+
+  # Compare adapters on specific tests
+  liquid-spec matrix --adapters=liquid_ruby,liquid_c -n truncate
+
+  # Benchmark performance across implementations
+  liquid-spec matrix --adapters=liquid_ruby,liquid_c -s benchmarks --bench
+```
+
+Output shows which adapters produce different results for each spec:
+
+```
+Running 100 specs: ....F....F.. done
+
+======================================================================
+DIFFERENCES
+======================================================================
+----------------------------------------------------------------------
+1. TruncateTest#test_truncate_with_custom_ellipsis
+
+Template:
+  {{ text | truncate: 10, "..." }}
+
+Adapters: liquid_ruby
+Output:
+  "Hello w..."
+
+Adapters: liquid_c
+Output:
+  "Hello wo..."
+======================================================================
+```
+
+### Benchmarking
+
+liquid-spec includes a benchmark suite for measuring and comparing implementation performance. Benchmarks measure **compile** and **render** times separately, with statistical analysis including mean, standard deviation, and min/max ranges.
+
+#### Single Adapter Benchmarks
+
+Run benchmarks against a single adapter to measure its performance:
+
+```bash
+liquid-spec run examples/liquid_ruby.rb -s benchmarks --bench
+```
+
+Output:
+```
+Benchmark: Benchmarks
+Duration: 5s per spec
+
+  ✓ bench_product_listing
+    Compile: 92.305 µs ± 2.399 µs    (89.906 µs … 94.704 µs)
+    Render:  82.574 µs ± 2.437 µs    (80.137 µs … 85.011 µs)
+    Total:   174.879 µs    10245 runs
+
+  ✓ bench_shopping_cart
+    Compile: 262.659 µs ± 2.528 µs
+    Render:  144.638 µs ± 1.081 µs
+    Total:   407.296 µs    8892 runs
+```
+
+#### Multi-Adapter Performance Comparison
+
+Compare performance across different implementations using `matrix --bench`:
+
+```bash
+liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -s benchmarks --bench
+```
+
+Each benchmark runs against all adapters, then a summary shows relative performance:
+
+```
+======================================================================
+SUMMARY
+======================================================================
+
+bench_product_listing
+  Compile: liquid_ruby_lax ran
+    1.08 ± 0.03 times faster than liquid_ruby
+  Render: liquid_ruby_lax ran
+    1.01 ± 0.03 times faster than liquid_ruby
+
+bench_shopping_cart
+  Compile: liquid_ruby_lax ran
+    1.03 ± 0.02 times faster than liquid_ruby
+  Render: liquid_ruby ran
+    1.02 ± 0.01 times faster than liquid_ruby_lax
+
+----------------------------------------------------------------------
+Overall
+  Compile:
+    liquid_ruby_lax ran 1.05x faster than liquid_ruby (geometric mean)
+  Render:
+    liquid_ruby ran 1.00x faster than liquid_ruby_lax (geometric mean)
+```
+
+The "Overall" section shows the geometric mean of ratios across all benchmarks, giving a single summary statistic for compile and render performance.
+
+#### Benchmark Specs
+
+The benchmark suite includes 11 realistic templates:
+
+| Benchmark | Description |
+|-----------|-------------|
+| `bench_product_listing` | E-commerce product grid with variants |
+| `bench_navigation_menu` | Nested navigation with dropdowns |
+| `bench_data_table` | Dynamic table rendering |
+| `bench_comment_thread` | Comment thread with nested replies |
+| `bench_multiplication_table` | 12×12 nested loops with forloop object |
+| `bench_sorted_list_with_pagination` | Sort, limit/offset, cycle, tablerow |
+| `bench_invoice_template` | Invoice with line items, discounts, tax |
+| `bench_blog_listing` | Blog posts with pagination, tags |
+| `bench_shopping_cart` | Cart with discounts, shipping logic |
+| `bench_user_directory` | Team directory grouped by department |
+| `bench_email_template` | Email with conditional sections |
+
+Without `--bench`, benchmark specs run as regular tests to verify correctness.
 
 ### Quick Testing with `eval`
 
