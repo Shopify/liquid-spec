@@ -19,6 +19,7 @@ module Liquid
             -n, --name PATTERN    Only run specs matching PATTERN (use /regex/ for regex)
             -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
             --add-specs=GLOB      Add additional spec files (can be used multiple times)
+            --command=CMD         Command to run subprocess (for JSON-RPC adapters)
             -c, --compare         Compare adapter output against reference liquid-ruby
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
@@ -56,6 +57,12 @@ module Liquid
             # Load the adapter
             LiquidSpec.reset!
             LiquidSpec.running_from_cli!
+
+            # Pass CLI options to adapter (for JSON-RPC --command flag, etc.)
+            LiquidSpec.cli_options = {
+              command: options[:command],
+            }.compact
+
             load(File.expand_path(adapter_file))
 
             config = LiquidSpec.config || LiquidSpec.configure
@@ -110,6 +117,10 @@ module Liquid
                 options[:max_failures] = ::Regexp.last_match(1).to_i
               when "--no-max-failures"
                 options[:max_failures] = nil
+              when "--command"
+                options[:command] = args.shift
+              when /\A--command=(.+)\z/
+                options[:command] = ::Regexp.last_match(1)
               end
             end
 

@@ -58,6 +58,7 @@ module LiquidSpec
 
   class << self
     attr_reader :compile_block, :render_block, :config, :setup_block
+    attr_accessor :cli_options
 
     # Skip this adapter with a reason
     def skip!(reason)
@@ -94,6 +95,7 @@ module LiquidSpec
       @render_block = nil
       @setup_block = nil
       @config = nil
+      @cli_options = {}
       @running_from_cli = false
       @setup_done = false
     end
