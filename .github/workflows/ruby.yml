@@ -14,6 +14,7 @@ jobs:
     - name: Ruby
       uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
       with:
+        ruby-version: '3.3'
         bundler-cache: true
     - name: Run tests
       run: bundle exec rake
