@@ -13,7 +13,7 @@ LiquidSpec.setup do
   require "liquid"
 
   # Disable liquid-c if present
-  if defined?(Liquid::C)
+  if defined?(Liquid::C) && Liquid::C.respond_to?(:enabled=)
     Liquid::C.enabled = false
   end
 end
