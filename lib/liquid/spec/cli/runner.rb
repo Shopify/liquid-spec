@@ -21,6 +21,7 @@ module Liquid
             --add-specs=GLOB      Add additional spec files (can be used multiple times)
             --command=CMD         Command to run subprocess (for JSON-RPC adapters)
             -c, --compare         Compare adapter output against reference liquid-ruby
+            -b, --bench           Run timing suites as benchmarks (measure iterations/second)
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
             --list-suites         List available suites
@@ -36,6 +37,7 @@ module Liquid
             liquid-spec run my_adapter.rb --compare
             liquid-spec run my_adapter.rb --add-specs="my_specs/*.yml"
             liquid-spec run my_adapter.rb --list-suites
+            liquid-spec run my_adapter.rb -s benchmarks --bench
 
         HELP
 
@@ -105,6 +107,8 @@ module Liquid
                 options[:strict_only] = true
               when "-c", "--compare"
                 options[:compare] = true
+              when "-b", "--bench"
+                options[:bench] = true
               when "-v", "--verbose"
                 options[:verbose] = true
               when "-l", "--list"
@@ -208,6 +212,16 @@ module Liquid
 
             # Group specs by suite
             suites_to_run = determine_suites(config, features)
+
+            # Check if --bench flag is provided and any suite has timings enabled
+            if options[:bench]
+              benchmark_suites = suites_to_run.select(&:timings?)
+              if benchmark_suites.any?
+                run_benchmark_suites(benchmark_suites, config, options)
+                suites_to_run = suites_to_run.reject(&:timings?)
+                return if suites_to_run.empty?
+              end
+            end
 
             total_passed = 0
             total_failed = 0
@@ -391,6 +405,181 @@ module Liquid
           end
 
           private
+
+          def run_benchmark_suites(suites, config, options)
+            features = config.features
+
+            suites.each do |suite|
+              suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
+              suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+              suite_specs = filter_by_features(suite_specs, features)
+
+              next if suite_specs.empty?
+
+              puts "Benchmark: #{suite.name}"
+              puts "Duration: #{suite.default_iteration_seconds}s per spec"
+              puts ""
+
+              results = []
+
+              suite_specs.each do |spec|
+                result = run_benchmark_spec(spec, config, suite.default_iteration_seconds)
+                results << result
+
+                # Print progress in hyperfine style
+                if result[:error]
+                  puts "  \e[31m✗\e[0m #{spec.name}"
+                  puts "    Error: #{result[:error].message}"
+                else
+                  compile_ms = result[:compile_mean] * 1000
+                  render_ms = result[:render_mean] * 1000
+                  total_ms = compile_ms + render_ms
+
+                  puts "  \e[32m✓\e[0m #{spec.name}"
+                  puts "    Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}    \e[2m(#{format_time(result[:compile_min] * 1000)} … #{format_time(result[:compile_max] * 1000)})\e[0m"
+                  puts "    Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}    \e[2m(#{format_time(result[:render_min] * 1000)} … #{format_time(result[:render_max] * 1000)})\e[0m"
+                  puts "    Total:   #{format_time(total_ms)}    \e[2m#{result[:iterations]} runs\e[0m"
+                end
+                puts ""
+              end
+
+              print_benchmark_summary(results)
+            end
+          end
+
+          def run_benchmark_spec(spec, _config, duration_seconds)
+            # Pre-compile the template
+            filesystem = spec.instantiate_filesystem
+            compile_options = {
+              line_numbers: true,
+              error_mode: :strict,
+              file_system: filesystem,
+            }.compact
+
+            template = LiquidSpec.do_compile(spec.template, compile_options)
+            assigns = deep_copy(spec.instantiate_environment)
+            render_options = {
+              registers: build_registers(spec, filesystem),
+              strict_errors: false,
+            }.compact
+
+            # Verify expected output first (warm up + validation)
+            actual = LiquidSpec.do_render(template, deep_copy(assigns), render_options)
+            if spec.expected && actual != spec.expected
+              return {
+                name: spec.name,
+                iterations: 0,
+                error: RuntimeError.new("Output mismatch:\n  Expected: #{spec.expected.inspect[0..100]}\n  Got: #{actual.inspect[0..100]}"),
+              }
+            end
+
+            # Warm up
+            3.times do
+              t = LiquidSpec.do_compile(spec.template, compile_options)
+              LiquidSpec.do_render(t, deep_copy(assigns), render_options)
+            end
+
+            # Benchmark compile (half the duration)
+            compile_times = benchmark_operation(duration_seconds / 2.0) do
+              LiquidSpec.do_compile(spec.template, compile_options)
+            end
+
+            # Benchmark render (half the duration)
+            render_times = benchmark_operation(duration_seconds / 2.0) do
+              LiquidSpec.do_render(template, deep_copy(assigns), render_options)
+            end
+
+            {
+              name: spec.name,
+              iterations: compile_times[:iterations] + render_times[:iterations],
+              compile_mean: compile_times[:mean],
+              compile_stddev: compile_times[:stddev],
+              compile_min: compile_times[:min],
+              compile_max: compile_times[:max],
+              render_mean: render_times[:mean],
+              render_stddev: render_times[:stddev],
+              render_min: render_times[:min],
+              render_max: render_times[:max],
+              # Legacy fields for compatibility
+              mean_time: render_times[:mean],
+              stddev: render_times[:stddev],
+              min_time: render_times[:min],
+              max_time: render_times[:max],
+              error: nil,
+            }
+          rescue => e
+            {
+              name: spec.name,
+              iterations: 0,
+              error: e,
+            }
+          end
+
+          def benchmark_operation(duration_seconds)
+            times = []
+            max_iterations = 5000
+            iterations = 0
+
+            start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+            end_time = start_time + duration_seconds
+
+            # Initial timing to determine batch size
+            t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+            yield
+            single_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
+
+            # Target ~50ms per batch
+            batch_size = [(0.05 / [single_time, 0.0001].max).to_i, 1].max
+            batch_size = [batch_size, 500].min
+
+            while iterations < max_iterations && Process.clock_gettime(Process::CLOCK_MONOTONIC) < end_time
+              batch_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+              batch_size.times { yield }
+              batch_elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - batch_start
+              times << batch_elapsed / batch_size
+              iterations += batch_size
+            end
+
+            mean = times.sum / times.size
+            variance = times.map { |t| (t - mean) ** 2 }.sum / times.size
+
+            {
+              mean: mean,
+              stddev: Math.sqrt(variance),
+              min: times.min,
+              max: times.max,
+              iterations: iterations,
+            }
+          end
+
+          def format_number(num)
+            return "0" if num.zero?
+
+            if num >= 1_000_000
+              "%.2fM" % (num / 1_000_000.0)
+            elsif num >= 1_000
+              "%.2fk" % (num / 1_000.0)
+            else
+              "%.2f" % num
+            end
+          end
+
+          def format_time(ms)
+            if ms >= 1000
+              "%.3f s" % (ms / 1000.0)
+            elsif ms >= 1
+              "%.3f ms" % ms
+            else
+              "%.3f µs" % (ms * 1000)
+            end
+          end
+
+          def print_benchmark_summary(results)
+            # No summary for single-adapter benchmarks - each benchmark measures
+            # a different template, so comparing them doesn't make sense.
+            # Comparisons are only meaningful in matrix mode where we compare
+            # the same benchmark across different implementations.
+          end
 
           def determine_suites(config, features)
             specific_suite = config.suite != :all ? Liquid::Spec::Suite.find(config.suite) : nil

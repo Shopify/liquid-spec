@@ -1,0 +1,530 @@
+---
+_metadata:
+  hint: Realistic template benchmarks combining multiple features
+specs:
+- name: bench_invoice_template
+  template: |
+    INVOICE #{{ invoice.number }}
+    Date: {{ invoice.date }}
+
+    Bill To:
+    {{ customer.name }}
+    {{ customer.address | newline_to_br }}
+
+    {% for item in items %}
+    {{ item.name | truncate: 30 }} x{{ item.quantity }} @ ${{ item.price }} = ${{ item.quantity | times: item.price }}
+    {% endfor %}
+
+    {% assign subtotal = 0 %}
+    {% for item in items %}
+      {% assign line_total = item.quantity | times: item.price %}
+      {% assign subtotal = subtotal | plus: line_total %}
+    {% endfor %}
+
+    Subtotal: ${{ subtotal }}
+    {% if discount > 0 %}
+    Discount: -${{ discount }}
+    {% assign subtotal = subtotal | minus: discount %}
+    {% endif %}
+    Tax ({{ tax_rate }}%): ${{ subtotal | times: tax_rate | divided_by: 100 }}
+    {% assign tax = subtotal | times: tax_rate | divided_by: 100 %}
+    TOTAL: ${{ subtotal | plus: tax }}
+  environment:
+    invoice:
+      number: INV-2024-001
+      date: '2024-01-15'
+    customer:
+      name: Acme Corporation
+      address: |-
+        123 Main Street
+        Suite 456
+        New York, NY 10001
+    items:
+    - name: Widget Pro Extended Edition
+      quantity: 5
+      price: 99
+    - name: Gadget Basic
+      quantity: 10
+      price: 49
+    - name: Service Package Premium
+      quantity: 1
+      price: 299
+    - name: Accessory Bundle
+      quantity: 3
+      price: 29
+    discount: 50
+    tax_rate: 8
+  expected: |
+    INVOICE #INV-2024-001
+    Date: 2024-01-15
+
+    Bill To:
+    Acme Corporation
+    123 Main Street<br />
+    Suite 456<br />
+    New York, NY 10001
+
+
+    Widget Pro Extended Edition x5 @ $99 = $495
+
+    Gadget Basic x10 @ $49 = $490
+
+    Service Package Premium x1 @ $299 = $299
+
+    Accessory Bundle x3 @ $29 = $87
+
+
+
+
+
+    Subtotal: $1371
+
+    Discount: -$50
+
+
+    Tax (8%): $105
+
+    TOTAL: $1426
+- name: bench_blog_listing
+  template: |
+    <div class="blog">
+      <h1>{{ blog.title | upcase }}</h1>
+      <p>{{ blog.description | truncate: 200 }}</p>
+
+      {% for post in posts %}
+        <article class="post {% if forloop.first %}featured{% endif %}">
+          <h2>{{ post.title | escape }}</h2>
+          <div class="meta">
+            By {{ post.author }} | {{ post.date }}
+            {% if post.tags.size > 0 %}
+              | Tags: {{ post.tags | join: ", " }}
+            {% endif %}
+          </div>
+          <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
+          {% if post.featured %}
+            <span class="badge">Featured</span>
+          {% endif %}
+          {% unless forloop.last %}
+            <hr>
+          {% endunless %}
+        </article>
+      {% endfor %}
+
+      <nav class="pagination">
+        {% if page > 1 %}
+          <a href="?page={{ page | minus: 1 }}">Previous</a>
+        {% endif %}
+        Page {{ page }} of {{ total_pages }}
+        {% if page < total_pages %}
+          <a href="?page={{ page | plus: 1 }}">Next</a>
+        {% endif %}
+      </nav>
+    </div>
+  environment:
+    blog:
+      title: Tech Insights
+      description: A blog about the latest technology trends and innovations in software
+        development
+    posts:
+    - title: Getting Started with Liquid Templates
+      author: Jane Smith
+      date: '2024-01-10'
+      excerpt: "<p>Learn the basics of Liquid templating and start building dynamic
+        content today.</p>"
+      tags:
+      - liquid
+      - templates
+      - beginner
+      featured: true
+    - title: Advanced Filter Techniques
+      author: Bob Wilson
+      date: '2024-01-08'
+      excerpt: "<p>Discover powerful filter combinations for complex data transformations.</p>"
+      tags:
+      - filters
+      - advanced
+      featured: false
+    - title: Performance Optimization Tips
+      author: Jane Smith
+      date: '2024-01-05'
+      excerpt: "<p>Make your templates faster with these proven optimization strategies.</p>"
+      tags:
+      - performance
+      - optimization
+      featured: true
+    - title: Template Design Patterns
+      author: Alice Chen
+      date: '2024-01-03'
+      excerpt: "<p>Common patterns for organizing and structuring your Liquid templates.</p>"
+      tags:
+      - patterns
+      - architecture
+      featured: false
+    page: 2
+    total_pages: 5
+  expected: "<div class=\"blog\">\n  <h1>TECH INSIGHTS</h1>\n  <p>A blog about the
+    latest technology trends and innovations in software development</p>\n\n  \n    <article
+    class=\"post featured\">\n      <h2>Getting Started with Liquid Templates</h2>\n
+    \     <div class=\"meta\">\n        By Jane Smith | 2024-01-10\n        \n          |
+    Tags: liquid, templates, beginner\n        \n      </div>\n      <p>Learn the
+    basics of Liquid templating and start building dynamic content today.</p>\n      \n
+    \       <span class=\"badge\">Featured</span>\n      \n      \n        <hr>\n
+    \     \n    </article>\n  \n    <article class=\"post \">\n      <h2>Advanced
+    Filter Techniques</h2>\n      <div class=\"meta\">\n        By Bob Wilson | 2024-01-08\n
+    \       \n          | Tags: filters, advanced\n        \n      </div>\n      <p>Discover
+    powerful filter combinations for complex data transformations.</p>\n      \n      \n
+    \       <hr>\n      \n    </article>\n  \n    <article class=\"post \">\n      <h2>Performance
+    Optimization Tips</h2>\n      <div class=\"meta\">\n        By Jane Smith | 2024-01-05\n
+    \       \n          | Tags: performance, optimization\n        \n      </div>\n
+    \     <p>Make your templates faster with these proven optimization strategies.</p>\n
+    \     \n        <span class=\"badge\">Featured</span>\n      \n      \n        <hr>\n
+    \     \n    </article>\n  \n    <article class=\"post \">\n      <h2>Template
+    Design Patterns</h2>\n      <div class=\"meta\">\n        By Alice Chen | 2024-01-03\n
+    \       \n          | Tags: patterns, architecture\n        \n      </div>\n      <p>Common
+    patterns for organizing and structuring your Liquid templates.</p>\n      \n      \n
+    \   </article>\n  \n\n  <nav class=\"pagination\">\n    \n      <a href=\"?page=1\">Previous</a>\n
+    \   \n    Page 2 of 5\n    \n      <a href=\"?page=3\">Next</a>\n    \n  </nav>\n</div>\n"
+- name: bench_shopping_cart
+  template: |
+    {% assign item_count = 0 %}
+    {% assign cart_total = 0 %}
+    {% for item in cart.items %}
+      {% assign item_count = item_count | plus: item.quantity %}
+      {% assign line_total = item.price | times: item.quantity %}
+      {% assign cart_total = cart_total | plus: line_total %}
+    {% endfor %}
+
+    <div class="cart">
+      <h2>Shopping Cart ({{ item_count }} items)</h2>
+
+      {% if cart.items.size == 0 %}
+        <p>Your cart is empty</p>
+      {% else %}
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Qty</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for item in cart.items %}
+            <tr>
+              <td>
+                {{ item.name }}
+                {% if item.variant %}
+                  <small>({{ item.variant }})</small>
+                {% endif %}
+                {% if item.on_sale %}
+                  <span class="sale">SALE</span>
+                {% endif %}
+              </td>
+              <td>${{ item.price }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ item.price | times: item.quantity }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <p>Subtotal: ${{ cart_total }}</p>
+          {% if cart.discount_code %}
+            {% assign discount_amount = cart_total | times: cart.discount_percent | divided_by: 100 %}
+            <p>Discount ({{ cart.discount_code }}): -${{ discount_amount }}</p>
+            {% assign cart_total = cart_total | minus: discount_amount %}
+          {% endif %}
+          {% assign shipping = 0 %}
+          {% if cart_total < 50 %}
+            {% assign shipping = 10 %}
+          {% endif %}
+          <p>Shipping: {% if shipping == 0 %}FREE{% else %}${{ shipping }}{% endif %}</p>
+          <p><strong>Total: ${{ cart_total | plus: shipping }}</strong></p>
+        </div>
+      {% endif %}
+    </div>
+  environment:
+    cart:
+      discount_code: SAVE20
+      discount_percent: 20
+      items:
+      - name: Wireless Headphones
+        price: 79
+        quantity: 1
+        variant: Black
+        on_sale: false
+      - name: USB-C Cable
+        price: 15
+        quantity: 3
+        variant:
+        on_sale: true
+      - name: Phone Case
+        price: 25
+        quantity: 2
+        variant: Clear
+        on_sale: false
+      - name: Screen Protector
+        price: 12
+        quantity: 2
+        variant:
+        on_sale: true
+  expected: "\n\n\n\n<div class=\"cart\">\n  <h2>Shopping Cart (8 items)</h2>\n\n
+    \ \n    <table>\n      <thead>\n        <tr>\n          <th>Product</th>\n          <th>Price</th>\n
+    \         <th>Qty</th>\n          <th>Total</th>\n        </tr>\n      </thead>\n
+    \     <tbody>\n      \n        <tr>\n          <td>\n            Wireless Headphones\n
+    \           \n              <small>(Black)</small>\n            \n            \n
+    \         </td>\n          <td>$79</td>\n          <td>1</td>\n          <td>$79</td>\n
+    \       </tr>\n      \n        <tr>\n          <td>\n            USB-C Cable\n
+    \           \n            \n              <span class=\"sale\">SALE</span>\n            \n
+    \         </td>\n          <td>$15</td>\n          <td>3</td>\n          <td>$45</td>\n
+    \       </tr>\n      \n        <tr>\n          <td>\n            Phone Case\n
+    \           \n              <small>(Clear)</small>\n            \n            \n
+    \         </td>\n          <td>$25</td>\n          <td>2</td>\n          <td>$50</td>\n
+    \       </tr>\n      \n        <tr>\n          <td>\n            Screen Protector\n
+    \           \n            \n              <span class=\"sale\">SALE</span>\n            \n
+    \         </td>\n          <td>$12</td>\n          <td>2</td>\n          <td>$24</td>\n
+    \       </tr>\n      \n      </tbody>\n    </table>\n\n    <div class=\"totals\">\n
+    \     <p>Subtotal: $198</p>\n      \n        \n        <p>Discount (SAVE20): -$39</p>\n
+    \       \n      \n      \n      \n      <p>Shipping: FREE</p>\n      <p><strong>Total:
+    $159</strong></p>\n    </div>\n  \n</div>\n"
+- name: bench_user_directory
+  template: |
+    <div class="directory">
+      <h1>Team Directory</h1>
+
+      {% assign sorted_users = users | sort: "name" %}
+      {% assign departments = sorted_users | map: "department" | uniq %}
+
+      {% for dept in departments %}
+        <section class="department">
+          <h2>{{ dept | capitalize }}</h2>
+          {% assign dept_users = sorted_users | where: "department", dept %}
+          <ul>
+          {% for user in dept_users %}
+            <li class="{% if user.status == 'active' %}active{% else %}inactive{% endif %}">
+              <strong>{{ user.name }}</strong>
+              {% if user.title %} - {{ user.title }}{% endif %}
+              <br>
+              <a href="mailto:{{ user.email | downcase }}">{{ user.email | downcase }}</a>
+              {% if user.phone %}
+                | {{ user.phone }}
+              {% endif %}
+              {% if user.skills.size > 0 %}
+                <br>
+                <small>Skills: {{ user.skills | join: ", " | truncate: 50 }}</small>
+              {% endif %}
+            </li>
+          {% endfor %}
+          </ul>
+          <p class="count">{{ dept_users.size }} member{% if dept_users.size != 1 %}s{% endif %}</p>
+        </section>
+      {% endfor %}
+
+      <footer>
+        <p>Total: {{ users.size }} team members across {{ departments.size }} departments</p>
+      </footer>
+    </div>
+  environment:
+    users:
+    - name: Alice Johnson
+      email: Alice@Example.com
+      department: engineering
+      title: Senior Engineer
+      status: active
+      phone: 555-0101
+      skills:
+      - Python
+      - JavaScript
+      - Docker
+      - Kubernetes
+    - name: Bob Smith
+      email: Bob@Example.com
+      department: engineering
+      title: Tech Lead
+      status: active
+      phone: 555-0102
+      skills:
+      - Ruby
+      - Go
+      - AWS
+    - name: Carol White
+      email: Carol@Example.com
+      department: design
+      title: UX Designer
+      status: active
+      phone:
+      skills:
+      - Figma
+      - CSS
+      - User Research
+    - name: David Brown
+      email: David@Example.com
+      department: engineering
+      title: Junior Developer
+      status: inactive
+      phone: 555-0104
+      skills:
+      - JavaScript
+      - React
+    - name: Eve Davis
+      email: Eve@Example.com
+      department: design
+      title: Design Lead
+      status: active
+      phone: 555-0105
+      skills:
+      - Sketch
+      - Illustrator
+      - Branding
+      - Typography
+      - Motion Design
+    - name: Frank Miller
+      email: Frank@Example.com
+      department: marketing
+      title: Marketing Manager
+      status: active
+      phone: 555-0106
+      skills:
+      - SEO
+      - Content Strategy
+      - Analytics
+  expected: "<div class=\"directory\">\n  <h1>Team Directory</h1>\n\n  \n  \n\n  \n
+    \   <section class=\"department\">\n      <h2>Engineering</h2>\n      \n      <ul>\n
+    \     \n        <li class=\"active\">\n          <strong>Alice Johnson</strong>\n
+    \          - Senior Engineer\n          <br>\n          <a href=\"mailto:alice@example.com\">alice@example.com</a>\n
+    \         \n            | 555-0101\n          \n          \n            <br>\n
+    \           <small>Skills: Python, JavaScript, Docker, Kubernetes</small>\n          \n
+    \       </li>\n      \n        <li class=\"active\">\n          <strong>Bob Smith</strong>\n
+    \          - Tech Lead\n          <br>\n          <a href=\"mailto:bob@example.com\">bob@example.com</a>\n
+    \         \n            | 555-0102\n          \n          \n            <br>\n
+    \           <small>Skills: Ruby, Go, AWS</small>\n          \n        </li>\n
+    \     \n        <li class=\"inactive\">\n          <strong>David Brown</strong>\n
+    \          - Junior Developer\n          <br>\n          <a href=\"mailto:david@example.com\">david@example.com</a>\n
+    \         \n            | 555-0104\n          \n          \n            <br>\n
+    \           <small>Skills: JavaScript, React</small>\n          \n        </li>\n
+    \     \n      </ul>\n      <p class=\"count\">3 members</p>\n    </section>\n
+    \ \n    <section class=\"department\">\n      <h2>Design</h2>\n      \n      <ul>\n
+    \     \n        <li class=\"active\">\n          <strong>Carol White</strong>\n
+    \          - UX Designer\n          <br>\n          <a href=\"mailto:carol@example.com\">carol@example.com</a>\n
+    \         \n          \n            <br>\n            <small>Skills: Figma, CSS,
+    User Research</small>\n          \n        </li>\n      \n        <li class=\"active\">\n
+    \         <strong>Eve Davis</strong>\n           - Design Lead\n          <br>\n
+    \         <a href=\"mailto:eve@example.com\">eve@example.com</a>\n          \n
+    \           | 555-0105\n          \n          \n            <br>\n            <small>Skills:
+    Sketch, Illustrator, Branding, Typography, Moti...</small>\n          \n        </li>\n
+    \     \n      </ul>\n      <p class=\"count\">2 members</p>\n    </section>\n
+    \ \n    <section class=\"department\">\n      <h2>Marketing</h2>\n      \n      <ul>\n
+    \     \n        <li class=\"active\">\n          <strong>Frank Miller</strong>\n
+    \          - Marketing Manager\n          <br>\n          <a href=\"mailto:frank@example.com\">frank@example.com</a>\n
+    \         \n            | 555-0106\n          \n          \n            <br>\n
+    \           <small>Skills: SEO, Content Strategy, Analytics</small>\n          \n
+    \       </li>\n      \n      </ul>\n      <p class=\"count\">1 member</p>\n    </section>\n
+    \ \n\n  <footer>\n    <p>Total: 6 team members across 3 departments</p>\n  </footer>\n</div>\n"
+- name: bench_email_template
+  template: |
+    {% capture greeting %}
+    {% case time_of_day %}
+      {% when 'morning' %}Good morning{% when 'afternoon' %}Good afternoon{% when 'evening' %}Good evening{% else %}Hello{% endcase %}
+    {% endcapture %}
+    {{ greeting | strip }}, {{ recipient.name | split: ' ' | first }}!
+
+    {% if order %}
+    Your order #{{ order.id }} has been {{ order.status | downcase }}.
+
+    Order Summary:
+    {% for item in order.items %}
+    - {{ item.name }} (x{{ item.qty }}): ${{ item.price | times: item.qty }}
+    {% endfor %}
+
+    {% assign order_total = 0 %}
+    {% for item in order.items %}{% assign line = item.price | times: item.qty %}{% assign order_total = order_total | plus: line %}{% endfor %}
+    Total: ${{ order_total }}
+
+    {% if order.status == 'shipped' %}
+    Tracking: {{ order.tracking_number }}
+    Expected delivery: {{ order.delivery_date }}
+    {% endif %}
+    {% endif %}
+
+    {% if promotions.size > 0 %}
+    Special Offers for You:
+    {% for promo in promotions %}
+    * {{ promo.title | upcase }}: {{ promo.description | truncate: 60 }}
+      Use code: {{ promo.code }} (expires {{ promo.expires }})
+    {% endfor %}
+    {% endif %}
+
+    Best regards,
+    {{ sender.name }}
+    {{ sender.title }}
+  environment:
+    time_of_day: morning
+    recipient:
+      name: John Doe
+      email: john@example.com
+    order:
+      id: ORD-12345
+      status: Shipped
+      tracking_number: 1Z999AA10123456784
+      delivery_date: January 20, 2024
+      items:
+      - name: Wireless Mouse
+        qty: 1
+        price: 45
+      - name: Keyboard
+        qty: 1
+        price: 89
+      - name: Mouse Pad
+        qty: 2
+        price: 15
+    promotions:
+    - title: Winter Sale
+      description: Get 25% off all accessories this week only - limited time offer!
+      code: WINTER25
+      expires: Jan 31
+    - title: Free Shipping
+      description: Free shipping on orders over $50 for loyalty members
+      code: FREESHIP
+      expires: Feb 15
+    sender:
+      name: Customer Service Team
+      title: TechStore Inc.
+  expected: |2
+
+    Good morning, John!
+
+
+    Your order #ORD-12345 has been shipped.
+
+    Order Summary:
+
+    - Wireless Mouse (x1): $45
+
+    - Keyboard (x1): $89
+
+    - Mouse Pad (x2): $30
+
+
+
+
+    Total: $164
+
+
+
+
+
+    Special Offers for You:
+
+    * WINTER SALE: Get 25% off all accessories this week only - limited time...
+      Use code: WINTER25 (expires Jan 31)
+
+    * FREE SHIPPING: Free shipping on orders over $50 for loyalty members
+      Use code: FREESHIP (expires Feb 15)
+
+
+
+    Best regards,
+    Customer Service Team
+    TechStore Inc.
