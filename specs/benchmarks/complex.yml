@@ -1,0 +1,224 @@
+---
+_metadata:
+  hint: Complex template performance benchmarks
+specs:
+- name: bench_product_listing
+  template: |
+    <div class="products">
+    {% for product in products %}
+      <div class="product">
+        <h2>{{ product.title }}</h2>
+        <p>{{ product.description | truncate: 100 }}</p>
+        <span class="price">${{ product.price }}</span>
+        {% if product.on_sale %}
+          <span class="sale">SALE!</span>
+        {% endif %}
+        {% if product.variants.size > 1 %}
+          <select>
+          {% for variant in product.variants %}
+            <option>{{ variant.name }} - ${{ variant.price }}</option>
+          {% endfor %}
+          </select>
+        {% endif %}
+      </div>
+    {% endfor %}
+    </div>
+  environment:
+    products:
+    - title: Widget A
+      description: A fantastic widget that does amazing things for your home and office
+      price: 19.99
+      on_sale: true
+      variants:
+      - name: Small
+        price: 14.99
+      - name: Medium
+        price: 19.99
+      - name: Large
+        price: 24.99
+    - title: Widget B
+      description: Another great widget with premium features
+      price: 29.99
+      on_sale: false
+      variants:
+      - name: Standard
+        price: 29.99
+    - title: Widget C
+      description: Budget-friendly widget for everyday use
+      price: 9.99
+      on_sale: true
+      variants:
+      - name: Single
+        price: 9.99
+      - name: Pack of 3
+        price: 24.99
+  expected: "<div class=\"products\">\n\n  <div class=\"product\">\n    <h2>Widget
+    A</h2>\n    <p>A fantastic widget that does amazing things for your home and office</p>\n
+    \   <span class=\"price\">$19.99</span>\n    \n      <span class=\"sale\">SALE!</span>\n
+    \   \n    \n      <select>\n      \n        <option>Small - $14.99</option>\n
+    \     \n        <option>Medium - $19.99</option>\n      \n        <option>Large
+    - $24.99</option>\n      \n      </select>\n    \n  </div>\n\n  <div class=\"product\">\n
+    \   <h2>Widget B</h2>\n    <p>Another great widget with premium features</p>\n
+    \   <span class=\"price\">$29.99</span>\n    \n    \n  </div>\n\n  <div class=\"product\">\n
+    \   <h2>Widget C</h2>\n    <p>Budget-friendly widget for everyday use</p>\n    <span
+    class=\"price\">$9.99</span>\n    \n      <span class=\"sale\">SALE!</span>\n
+    \   \n    \n      <select>\n      \n        <option>Single - $9.99</option>\n
+    \     \n        <option>Pack of 3 - $24.99</option>\n      \n      </select>\n
+    \   \n  </div>\n\n</div>\n"
+- name: bench_navigation_menu
+  template: |
+    <nav>
+      <ul>
+      {% for item in menu %}
+        <li>
+          <a href="{{ item.url }}">{{ item.title }}</a>
+          {% if item.children.size > 0 %}
+            <ul>
+            {% for child in item.children %}
+              <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+    </nav>
+  environment:
+    menu:
+    - title: Home
+      url: "/"
+      children: []
+    - title: Products
+      url: "/products"
+      children:
+      - title: Widgets
+        url: "/products/widgets"
+      - title: Gadgets
+        url: "/products/gadgets"
+      - title: Tools
+        url: "/products/tools"
+    - title: About
+      url: "/about"
+      children:
+      - title: Team
+        url: "/about/team"
+      - title: History
+        url: "/about/history"
+  expected: "<nav>\n  <ul>\n  \n    <li>\n      <a href=\"/\">Home</a>\n      \n    </li>\n
+    \ \n    <li>\n      <a href=\"/products\">Products</a>\n      \n        <ul>\n
+    \       \n          <li><a href=\"/products/widgets\">Widgets</a></li>\n        \n
+    \         <li><a href=\"/products/gadgets\">Gadgets</a></li>\n        \n          <li><a
+    href=\"/products/tools\">Tools</a></li>\n        \n        </ul>\n      \n    </li>\n
+    \ \n    <li>\n      <a href=\"/about\">About</a>\n      \n        <ul>\n        \n
+    \         <li><a href=\"/about/team\">Team</a></li>\n        \n          <li><a
+    href=\"/about/history\">History</a></li>\n        \n        </ul>\n      \n    </li>\n
+    \ \n  </ul>\n</nav>\n"
+- name: bench_data_table
+  template: |
+    <table>
+      <thead>
+        <tr>
+        {% for header in headers %}
+          <th>{{ header | capitalize }}</th>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+        {% for header in headers %}
+          <td>{{ row[header] }}</td>
+        {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  environment:
+    headers:
+    - name
+    - email
+    - role
+    - status
+    rows:
+    - name: Alice
+      email: alice@example.com
+      role: Admin
+      status: Active
+    - name: Bob
+      email: bob@example.com
+      role: User
+      status: Active
+    - name: Charlie
+      email: charlie@example.com
+      role: User
+      status: Inactive
+    - name: Diana
+      email: diana@example.com
+      role: Editor
+      status: Active
+    - name: Eve
+      email: eve@example.com
+      role: User
+      status: Pending
+  expected: "<table>\n  <thead>\n    <tr>\n    \n      <th>Name</th>\n    \n      <th>Email</th>\n
+    \   \n      <th>Role</th>\n    \n      <th>Status</th>\n    \n    </tr>\n  </thead>\n
+    \ <tbody>\n  \n    <tr>\n    \n      <td>Alice</td>\n    \n      <td>alice@example.com</td>\n
+    \   \n      <td>Admin</td>\n    \n      <td>Active</td>\n    \n    </tr>\n  \n
+    \   <tr>\n    \n      <td>Bob</td>\n    \n      <td>bob@example.com</td>\n    \n
+    \     <td>User</td>\n    \n      <td>Active</td>\n    \n    </tr>\n  \n    <tr>\n
+    \   \n      <td>Charlie</td>\n    \n      <td>charlie@example.com</td>\n    \n
+    \     <td>User</td>\n    \n      <td>Inactive</td>\n    \n    </tr>\n  \n    <tr>\n
+    \   \n      <td>Diana</td>\n    \n      <td>diana@example.com</td>\n    \n      <td>Editor</td>\n
+    \   \n      <td>Active</td>\n    \n    </tr>\n  \n    <tr>\n    \n      <td>Eve</td>\n
+    \   \n      <td>eve@example.com</td>\n    \n      <td>User</td>\n    \n      <td>Pending</td>\n
+    \   \n    </tr>\n  \n  </tbody>\n</table>\n"
+- name: bench_comment_thread
+  template: |
+    {% for comment in comments %}
+    <div class="comment">
+      <strong>{{ comment.author }}</strong>
+      <span class="date">{{ comment.date }}</span>
+      <p>{{ comment.body | newline_to_br }}</p>
+      {% if comment.replies.size > 0 %}
+        <div class="replies">
+        {% for reply in comment.replies %}
+          <div class="reply">
+            <strong>{{ reply.author }}</strong>: {{ reply.body }}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  environment:
+    comments:
+    - author: User1
+      date: '2024-01-01'
+      body: |-
+        This is a great post!
+        Really enjoyed reading it.
+      replies:
+      - author: Author
+        body: Thanks!
+      - author: User2
+        body: I agree!
+    - author: User3
+      date: '2024-01-02'
+      body: Interesting perspective.
+      replies: []
+    - author: User4
+      date: '2024-01-03'
+      body: Could you expand on point 2?
+      replies:
+      - author: Author
+        body: Sure, I'll write a follow-up post.
+  expected: "\n<div class=\"comment\">\n  <strong>User1</strong>\n  <span class=\"date\">2024-01-01</span>\n
+    \ <p>This is a great post!<br />\nReally enjoyed reading it.</p>\n  \n    <div
+    class=\"replies\">\n    \n      <div class=\"reply\">\n        <strong>Author</strong>:
+    Thanks!\n      </div>\n    \n      <div class=\"reply\">\n        <strong>User2</strong>:
+    I agree!\n      </div>\n    \n    </div>\n  \n</div>\n\n<div class=\"comment\">\n
+    \ <strong>User3</strong>\n  <span class=\"date\">2024-01-02</span>\n  <p>Interesting
+    perspective.</p>\n  \n</div>\n\n<div class=\"comment\">\n  <strong>User4</strong>\n
+    \ <span class=\"date\">2024-01-03</span>\n  <p>Could you expand on point 2?</p>\n
+    \ \n    <div class=\"replies\">\n    \n      <div class=\"reply\">\n        <strong>Author</strong>:
+    Sure, I'll write a follow-up post.\n      </div>\n    \n    </div>\n  \n</div>\n\n"

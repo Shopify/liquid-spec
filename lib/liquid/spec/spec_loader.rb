@@ -155,6 +155,8 @@ module Liquid
           suite_defaults = suite&.defaults || {}
           default_render_errors = suite_defaults[:render_errors]
           default_error_mode = suite_defaults[:error_mode]&.to_sym
+          default_expected = suite_defaults[:expected]
+          skip_validation = suite&.timings?
 
           # Convert each spec hash to LazySpec
           spec_list.each_with_index do |spec_data, idx|
@@ -187,10 +189,13 @@ module Liquid
             # Get line number for this spec from AST
             spec_line_number = line_numbers ? line_numbers[idx] : nil
 
+            # Determine expected: spec > suite default
+            spec_expected = spec_data.key?("expected") ? spec_data["expected"] : default_expected
+
             spec = LazySpec.new(
               name: spec_data["name"],
               template: spec_data["template"],
-              expected: spec_data["expected"],
+              expected: spec_expected,
               errors: spec_data["errors"] || {},
               hint: spec_data["hint"],
               doc: spec_data["doc"] || source_doc,
@@ -208,7 +213,8 @@ module Liquid
             )
 
             # Validate spec - raises SpecValidationError if invalid
-            spec.validate!
+            # Skip validation for timing/benchmark suites
+            spec.validate! unless skip_validation
 
             specs << spec
           end

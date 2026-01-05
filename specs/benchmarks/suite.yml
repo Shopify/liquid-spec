@@ -1,0 +1,18 @@
+---
+name: "Benchmarks"
+description: "Performance benchmarks for Liquid implementations"
+
+default: false
+
+timings: true
+default_iteration_seconds: 5
+
+hint: |
+  These specs are designed for performance measurement.
+  Run with: liquid-spec my_adapter.rb -s benchmarks --bench
+
+required_features:
+  - core
+
+defaults:
+  render_errors: false

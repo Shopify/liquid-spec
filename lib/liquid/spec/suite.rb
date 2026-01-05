@@ -8,7 +8,8 @@ module Liquid
     class Suite
       SUITE_FILE = "suite.yml"
 
-      attr_reader :path, :name, :description, :hint, :required_features, :defaults, :minimum_complexity
+      attr_reader :path, :name, :description, :hint, :required_features, :defaults, :minimum_complexity,
+        :default_iteration_seconds
 
       def initialize(path)
         @path = path
@@ -19,6 +20,13 @@ module Liquid
         @required_features = (@config["required_features"] || []).map(&:to_sym)
         @defaults = (@config["defaults"] || {}).transform_keys(&:to_sym)
         @minimum_complexity = @config["minimum_complexity"]
+        @timings = @config["timings"] || false
+        @default_iteration_seconds = @config["default_iteration_seconds"] || 5
+      end
+
+      # Whether this suite should collect timing information
+      def timings?
+        @timings
       end
 
       # Whether this suite should be included in default runs
