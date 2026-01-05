@@ -4,7 +4,7 @@
 
 - name: "upcase_empty_string"
   template: "{{ text | upcase }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 40
   hint: |
@@ -15,7 +15,7 @@
 
 - name: "downcase_empty_string"
   template: "{{ text | downcase }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 40
   hint: |
@@ -26,7 +26,7 @@
 
 - name: "capitalize_empty_string"
   template: "{{ text | capitalize }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 45
   hint: |
@@ -37,7 +37,7 @@
 
 - name: "first_empty_array"
   template: "{{ items | first }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 50
   hint: |
@@ -48,7 +48,7 @@
 
 - name: "last_empty_array"
   template: "{{ items | last }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 50
   hint: |
@@ -59,7 +59,7 @@
 
 - name: "size_empty_string"
   template: "{{ text | size }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: "0"
   complexity: 45
   hint: |
@@ -70,7 +70,7 @@
 
 - name: "size_empty_array"
   template: "{{ items | size }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "0"
   complexity: 45
   hint: |
@@ -81,7 +81,7 @@
 
 - name: "join_empty_array"
   template: "{{ items | join: ', ' }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 55
   hint: |
@@ -92,7 +92,7 @@
 
 - name: "chained_filters_empty_string"
   template: "{{ text | upcase | downcase | capitalize }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 60
   hint: |
@@ -103,7 +103,7 @@
 
 - name: "split_empty_string"
   template: "{{ text | split: ',' | size }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: "1"
   complexity: 65
   hint: |
@@ -114,7 +114,7 @@
 
 - name: "split_with_empty_delimiter"
   template: "{{ text | split: '' | join: '-' }}"
-  data: { text: "hi" }
+  environment: { text: "hi" }
   expected: "h-i"
   complexity: 70
   hint: |
@@ -125,7 +125,7 @@
 
 - name: "slice_negative_index"
   template: "{{ text | slice: -1 }}"
-  data: { text: "hello" }
+  environment: { text: "hello" }
   expected: "o"
   complexity: 75
   hint: |
@@ -136,7 +136,7 @@
 
 - name: "slice_out_of_bounds"
   template: "{{ text | slice: 10 }}"
-  data: { text: "hi" }
+  environment: { text: "hi" }
   expected: ""
   complexity: 80
   hint: |
@@ -147,7 +147,7 @@
 
 - name: "slice_with_negative_length"
   template: "{{ text | slice: 0, -1 }}"
-  data: { text: "hello" }
+  environment: { text: "hello" }
   expected: ""
   complexity: 85
   hint: |
@@ -158,7 +158,7 @@
 
 - name: "slice_length_exceeds_string"
   template: "{{ text | slice: 0, 100 }}"
-  data: { text: "hi" }
+  environment: { text: "hi" }
   expected: "hi"
   complexity: 80
   hint: |
@@ -169,7 +169,7 @@
 
 - name: "sort_empty_array"
   template: "{{ items | sort | join: ',' }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 55
   hint: |
@@ -180,7 +180,7 @@
 
 - name: "sort_non_comparable_items"
   template: "{{ items | sort | join: ',' }}"
-  data: { items: [1, "a", true] }
+  environment: { items: [1, "a", true] }
   expected: "1,a,true"
   complexity: 90
   hint: |
@@ -192,7 +192,7 @@
 
 - name: "map_empty_array"
   template: "{{ items | map: 'name' | join: ',' }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 60
   hint: |
@@ -203,7 +203,7 @@
 
 - name: "map_missing_property"
   template: "{{ items | map: 'missing' | join: ',' }}"
-  data: { items: [{name: "a"}, {name: "b"}] }
+  environment: { items: [{name: "a"}, {name: "b"}] }
   expected: ","
   complexity: 95
   hint: |
@@ -214,7 +214,7 @@
 
 - name: "where_empty_array"
   template: "{{ items | where: 'active', true | size }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "0"
   complexity: 65
   hint: |
@@ -225,7 +225,7 @@
 
 - name: "where_no_matches"
   template: "{{ items | where: 'active', true | size }}"
-  data: { items: [{active: false}, {active: false}] }
+  environment: { items: [{active: false}, {active: false}] }
   expected: "0"
   complexity: 70
   hint: |
@@ -237,7 +237,7 @@
 
 - name: "replace_empty_string"
   template: "{{ text | replace: 'x', 'y' }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 50
   hint: |
@@ -248,7 +248,7 @@
 
 - name: "replace_with_empty_search"
   template: "{{ text | replace: '', 'x' }}"
-  data: { text: "hi" }
+  environment: { text: "hi" }
   expected: "hi"
   complexity: 85
   hint: |
@@ -259,7 +259,7 @@
 
 - name: "replace_with_empty_replacement"
   template: "{{ text | replace: 'l', '' }}"
-  data: { text: "hello" }
+  environment: { text: "hello" }
   expected: "heo"
   complexity: 55
   hint: |
@@ -270,7 +270,7 @@
 
 - name: "truncate_zero_length"
   template: "{{ text | truncate: 0 }}"
-  data: { text: "hello" }
+  environment: { text: "hello" }
   expected: "..."
   complexity: 90
   hint: |
@@ -282,7 +282,7 @@
 
 - name: "truncate_length_less_than_ellipsis"
   template: "{{ text | truncate: 2 }}"
-  data: { text: "hello" }
+  environment: { text: "hello" }
   expected: "..."
   complexity: 95
   hint: |
@@ -293,7 +293,7 @@
 
 - name: "truncate_length_exceeds_string"
   template: "{{ text | truncate: 100 }}"
-  data: { text: "hi" }
+  environment: { text: "hi" }
   expected: "hi"
   complexity: 75
   hint: |
@@ -304,7 +304,7 @@
 
 - name: "reverse_empty_array"
   template: "{{ items | reverse | join: ',' }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 50
   hint: |
@@ -314,7 +314,7 @@
 
 - name: "uniq_empty_array"
   template: "{{ items | uniq | size }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "0"
   complexity: 55
   hint: |
@@ -324,7 +324,7 @@
 
 - name: "compact_empty_array"
   template: "{{ items | compact | size }}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "0"
   complexity: 60
   hint: |
@@ -334,7 +334,7 @@
 
 - name: "compact_removes_nils"
   template: "{{ items | compact | join: ',' }}"
-  data: { items: [1, nil, 2, nil, 3] }
+  environment: { items: [1, nil, 2, nil, 3] }
   expected: "1,2,3"
   complexity: 70
   hint: |
@@ -344,7 +344,7 @@
 
 - name: "concat_empty_arrays"
   template: "{{ a | concat: b | size }}"
-  data: { a: [], b: [] }
+  environment: { a: [], b: [] }
   expected: "0"
   complexity: 65
   hint: |
@@ -354,7 +354,7 @@
 
 - name: "prepend_to_empty_string"
   template: "{{ text | prepend: 'start' }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: "start"
   complexity: 55
   hint: |
@@ -364,7 +364,7 @@
 
 - name: "append_to_empty_string"
   template: "{{ text | append: 'end' }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: "end"
   complexity: 55
   hint: |
@@ -374,7 +374,7 @@
 
 - name: "strip_empty_string"
   template: "{{ text | strip }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 45
   hint: |
@@ -384,7 +384,7 @@
 
 - name: "lstrip_empty_string"
   template: "{{ text | lstrip }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 45
   hint: |
@@ -394,7 +394,7 @@
 
 - name: "rstrip_empty_string"
   template: "{{ text | rstrip }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: ""
   complexity: 45
   hint: |

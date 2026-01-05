@@ -4,7 +4,7 @@
 
 - name: "empty_string_is_empty"
   template: "{% if x == empty %}empty{% else %}not{% endif %}"
-  data: { x: "" }
+  environment: { x: "" }
   expected: "empty"
   complexity: 100
   hint: |
@@ -16,7 +16,7 @@
 
 - name: "empty_array_is_empty"
   template: "{% if items == empty %}empty{% else %}not{% endif %}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "empty"
   complexity: 105
   hint: |
@@ -27,7 +27,7 @@
 
 - name: "empty_hash_is_empty"
   template: "{% if obj == empty %}empty{% else %}not{% endif %}"
-  data: { obj: {} }
+  environment: { obj: {} }
   expected: "empty"
   complexity: 105
   hint: |
@@ -38,7 +38,7 @@
 
 - name: "nil_is_empty"
   template: "{% if missing == empty %}empty{% else %}not{% endif %}"
-  data: {}
+  environment: {}
   expected: "empty"
   complexity: 110
   hint: |
@@ -49,7 +49,7 @@
 
 - name: "nil_is_also_nil"
   template: "{% if missing == nil %}nil{% else %}not{% endif %}"
-  data: {}
+  environment: {}
   expected: "nil"
   complexity: 110
   hint: |
@@ -60,7 +60,7 @@
 
 - name: "non_empty_string_not_empty"
   template: "{% if text == empty %}empty{% else %}not{% endif %}"
-  data: { text: "hello" }
+  environment: { text: "hello" }
   expected: "not"
   complexity: 100
   hint: |
@@ -71,7 +71,7 @@
 
 - name: "whitespace_string_not_empty"
   template: "{% if text == empty %}empty{% else %}not{% endif %}"
-  data: { text: "   " }
+  environment: { text: "   " }
   expected: "not"
   complexity: 115
   hint: |
@@ -82,7 +82,7 @@
 
 - name: "whitespace_string_is_blank"
   template: "{% if text == blank %}blank{% else %}not{% endif %}"
-  data: { text: "   " }
+  environment: { text: "   " }
   expected: "blank"
   complexity: 120
   hint: |
@@ -93,7 +93,7 @@
 
 - name: "empty_string_is_blank"
   template: "{% if x == blank %}blank{% else %}not{% endif %}"
-  data: { x: "" }
+  environment: { x: "" }
   expected: "blank"
   complexity: 120
   hint: |
@@ -104,7 +104,7 @@
 
 - name: "nil_is_blank"
   template: "{% if missing == blank %}blank{% else %}not{% endif %}"
-  data: {}
+  environment: {}
   expected: "blank"
   complexity: 120
   hint: |
@@ -115,7 +115,7 @@
 
 - name: "false_is_not_empty"
   template: "{% if flag == empty %}empty{% else %}not{% endif %}"
-  data: { flag: false }
+  environment: { flag: false }
   expected: "not"
   complexity: 125
   hint: |
@@ -126,7 +126,7 @@
 
 - name: "false_is_blank"
   template: "{% if flag == blank %}blank{% else %}not{% endif %}"
-  data: { flag: false }
+  environment: { flag: false }
   expected: "blank"
   complexity: 130
   hint: |
@@ -137,7 +137,7 @@
 
 - name: "zero_is_not_empty"
   template: "{% if num == empty %}empty{% else %}not{% endif %}"
-  data: { num: 0 }
+  environment: { num: 0 }
   expected: "not"
   complexity: 125
   hint: |
@@ -148,7 +148,7 @@
 
 - name: "zero_is_not_blank"
   template: "{% if num == blank %}blank{% else %}not{% endif %}"
-  data: { num: 0 }
+  environment: { num: 0 }
   expected: "not"
   complexity: 130
   hint: |
@@ -159,7 +159,7 @@
 
 - name: "array_with_empty_string_not_empty"
   template: "{% if items == empty %}empty{% else %}not{% endif %}"
-  data: { items: [""] }
+  environment: { items: [""] }
   expected: "not"
   complexity: 135
   hint: |
@@ -170,7 +170,7 @@
 
 - name: "nested_empty_check"
   template: "{% if user.name == empty %}empty{% else %}not{% endif %}"
-  data: { user: { name: "" } }
+  environment: { user: { name: "" } }
   expected: "empty"
   complexity: 140
   hint: |
@@ -181,7 +181,7 @@
 
 - name: "nil_property_is_empty"
   template: "{% if user.missing == empty %}empty{% else %}not{% endif %}"
-  data: { user: {} }
+  environment: { user: {} }
   expected: "empty"
   complexity: 140
   hint: |
@@ -192,7 +192,7 @@
 
 - name: "default_with_empty_check"
   template: "{{ text | default: 'N/A' }}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: "N/A"
   complexity: 145
   hint: |
@@ -204,7 +204,7 @@
 
 - name: "default_with_whitespace"
   template: "{{ text | default: 'N/A' }}"
-  data: { text: "   " }
+  environment: { text: "   " }
   expected: "   "
   complexity: 150
   hint: |
@@ -216,7 +216,7 @@
 
 - name: "unless_empty_guard"
   template: "{% unless items == empty %}{{ items.size }}{% endunless %}"
-  data: { items: [1, 2, 3] }
+  environment: { items: [1, 2, 3] }
   expected: "3"
   complexity: 150
   hint: |
@@ -227,7 +227,7 @@
 
 - name: "unless_empty_guard_blocks_output"
   template: "{% unless items == empty %}{{ items.size }}{% endunless %}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: ""
   complexity: 150
   hint: |
@@ -238,7 +238,7 @@
 
 - name: "checking_for_content_pattern"
   template: "{% if text != empty %}{{ text }}{% else %}No content{% endif %}"
-  data: { text: "" }
+  environment: { text: "" }
   expected: "No content"
   complexity: 155
   hint: |
@@ -249,7 +249,7 @@
 
 - name: "complex_empty_guard"
   template: "{% if user != empty and user.name != empty %}{{ user.name }}{% else %}Anonymous{% endif %}"
-  data: { user: { name: "" } }
+  environment: { user: { name: "" } }
   expected: "Anonymous"
   complexity: 165
   hint: |
@@ -261,7 +261,7 @@
 
 - name: "empty_vs_blank_comparison"
   template: "{% if text == empty %}E{% elsif text == blank %}B{% else %}N{% endif %}"
-  data: { text: "  \n  " }
+  environment: { text: "  \n  " }
   expected: "B"
   complexity: 170
   hint: |
@@ -273,7 +273,7 @@
 
 - name: "array_size_vs_empty"
   template: "{% if items.size == 0 %}size zero{% elsif items == empty %}empty{% else %}has items{% endif %}"
-  data: { items: [] }
+  environment: { items: [] }
   expected: "size zero"
   complexity: 175
   hint: |
@@ -285,7 +285,7 @@
 
 - name: "presence_chain_with_empty"
   template: "{{ user.profile.bio | default: user.name | default: 'Guest' }}"
-  data: { user: { profile: {}, name: "" } }
+  environment: { user: { profile: {}, name: "" } }
   expected: "Guest"
   complexity: 180
   hint: |

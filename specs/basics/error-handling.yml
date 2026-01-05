@@ -38,7 +38,7 @@
 
 - name: "undefined_variable_lax"
   template: "{{ missing_var }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 205
   error_mode: lax
@@ -50,7 +50,7 @@
 
 - name: "undefined_variable_strict"
   template: "{{ missing_var }}"
-  data: {}
+  environment: {}
   expected: "Liquid error: undefined variable 'missing_var'"
   complexity: 230
   error_mode: strict
@@ -64,7 +64,7 @@
 
 - name: "property_access_on_nil_lax"
   template: "{{ missing.property }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 220
   error_mode: lax
@@ -77,7 +77,7 @@
 
 - name: "property_access_on_nil_strict"
   template: "{{ missing.property }}"
-  data: {}
+  environment: {}
   expected: "Liquid error: undefined variable 'missing'"
   complexity: 245
   error_mode: strict
@@ -91,7 +91,7 @@
 
 - name: "property_access_on_non_object_lax"
   template: "{{ number.property }}"
-  data: { number: 42 }
+  environment: { number: 42 }
   expected: ""
   complexity: 235
   error_mode: lax
@@ -104,7 +104,7 @@
 
 - name: "array_access_on_non_array_lax"
   template: "{{ string[0] }}"
-  data: { string: "hello" }
+  environment: { string: "hello" }
   expected: ""
   complexity: 240
   error_mode: lax
@@ -215,7 +215,7 @@
 
 - name: "very_long_string_filter"
   template: "{{ long_string | size }}"
-  data: { long_string: "{{ 'x' * 100000 }}" }
+  environment: { long_string: "{{ 'x' * 100000 }}" }
   expected: "100000"
   complexity: 290
   error_mode: lax
@@ -229,7 +229,7 @@
 
 - name: "deeply_nested_property_access_lax"
   template: "{{ a.b.c.d.e.f.g.h.i.j }}"
-  data: { a: { b: { c: { d: { e: { f: { g: { h: { i: {} } } } } } } } } }
+  environment: { a: { b: { c: { d: { e: { f: { g: { h: { i: {} } } } } } } } } }
   expected: ""
   complexity: 310
   error_mode: lax
@@ -243,7 +243,7 @@
 
 - name: "filter_on_nil_value_lax"
   template: "{{ missing | upcase }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 225
   error_mode: lax
@@ -257,7 +257,7 @@
 
 - name: "negative_array_index_out_of_bounds_lax"
   template: "{{ items[-10] }}"
-  data: { items: ["a", "b", "c"] }
+  environment: { items: ["a", "b", "c"] }
   expected: ""
   complexity: 260
   error_mode: lax
@@ -270,7 +270,7 @@
 
 - name: "undefined_variable_in_filter_argument_lax"
   template: "{{ 'hello' | slice: missing_index }}"
-  data: {}
+  environment: {}
   expected: ""
   complexity: 275
   error_mode: lax
@@ -283,7 +283,7 @@
 
 - name: "error_in_nested_block_lax"
   template: "{% for item in items %}{{ item.missing }}{% endfor %}"
-  data: { items: [{ name: "a" }, { name: "b" }] }
+  environment: { items: [{ name: "a" }, { name: "b" }] }
   expected: ""
   complexity: 285
   error_mode: lax
@@ -296,7 +296,7 @@
 
 - name: "strict_mode_with_nil_safe_access"
   template: "{{ user.profile.name | default: 'Anonymous' }}"
-  data: { user: { profile: nil } }
+  environment: { user: { profile: nil } }
   expected: "Anonymous"
   complexity: 295
   error_mode: strict
@@ -322,7 +322,7 @@
 
 - name: "recursive_variable_reference"
   template: "{{ a }}"
-  data: { a: "{{ b }}", b: "{{ a }}" }
+  environment: { a: "{{ b }}", b: "{{ a }}" }
   expected: "{{ b }}"
   complexity: 350
   error_mode: lax
