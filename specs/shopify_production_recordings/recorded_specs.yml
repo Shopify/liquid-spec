@@ -22,14 +22,12 @@
   expected: ""
   environment: {}
   filesystem:
-    instantiate: ShopifyFileSystem
     break.liquid: "{% break %}"
 - name: RecordedTest#test_can_continue_loop_from_inside_included_snippet_21cc0acf
   template: "{% for i in (1..10) %}{% include 'continue' %}{{ i }}{% endfor %}"
   expected: "1234678910"
   environment: {}
   filesystem:
-    instantiate: ShopifyFileSystem
     continue.liquid: "{% if i == 5 %}{% continue %}{% endif %}"
 - name: RecordedTest#test_capture_320f6a73
   template: "{% capture foo %}hello{% endcapture %}{{ foo }}"
@@ -207,14 +205,12 @@
   expected: hello world
   environment: {}
   filesystem:
-    instantiate: ShopifyFileSystem
     child.liquid: hello world
 - name: RecordedTest#test_include_tag_is_not_isolated_0c665e44
   template: "{% include 'snippet' %}{{ inner }}"
   expected: "1"
   environment: {}
   filesystem:
-    instantiate: ShopifyFileSystem
     snippet.liquid: "{% assign inner = 1 %}"
 - name: RecordedTest#test_include_tag_with_disallowed_includes_and_no_line_number_93c59f75
   required_features:
@@ -222,7 +218,6 @@
   template: "{% render 'missing.liquid' %}"
   expected: "Liquid error (line 1): This liquid context does not allow includes."
   filesystem:
-    instantiate: BlankFileSystem
   environment: {}
 - name: RecordedTest#test_increment_112144f3
   template:
@@ -241,14 +236,12 @@
   expected: hello world
   environment: {}
   filesystem:
-    instantiate: ShopifyFileSystem
     child.liquid: hello world
 - name: RecordedTest#test_render_tag_is_isolated_de09494c
   template: "{% render 'snippet' %}{{ inner }}"
   expected: ""
   environment: {}
   filesystem:
-    instantiate: ShopifyFileSystem
     snippet.liquid: "{% assign inner = 1 %}"
 - name: RecordedTest#test_unless_b438ba57
   template: "{% unless false %}then{% endunless %}"

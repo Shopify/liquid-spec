@@ -373,9 +373,32 @@ YAML
 5. **Test edge cases** - Empty arrays, nil values, unusual inputs
 6. **Save interesting failures** - Differences reveal implementation gaps worth documenting
 
+## Filesystem in Specs
+
+Specs that use `{% include %}` or `{% render %}` need a `filesystem:` field. This is always a simple hash mapping filenames to their content:
+
+```yaml
+- name: test_render_partial
+  template: "{% render 'greeting' %}"
+  expected: "Hello!"
+  filesystem:
+    greeting.liquid: "Hello!"
+
+- name: test_include_with_variable
+  template: "{% include 'card' %}"
+  expected: "Product: $99"
+  environment:
+    title: "Product"
+    price: 99
+  filesystem:
+    card.liquid: "{{ title }}: ${{ price }}"
+```
+
+The `.liquid` extension is optional - both `greeting` and `greeting.liquid` work as keys.
+
 ## Object Instantiation in Specs
 
-Specs can include custom Ruby objects (drops, file systems, etc.) in their environment. We use a simple `instantiate:ClassName` format - **no YAML tags like `!ruby/object`**.
+Specs can include custom Ruby objects (drops, etc.) in their environment. We use a simple `instantiate:ClassName` format - **no YAML tags like `!ruby/object`**.
 
 ### Format
 
@@ -385,22 +408,16 @@ Any string value starting with `instantiate:` triggers object creation:
 environment:
   # Simple: no arguments
   my_drop: "instantiate:CountingDrop"
-  
+
   # With arguments: value after the key becomes constructor args
   user:
     instantiate: StringDrop
     value: "hello"
-  
+
   # Hash arguments passed to constructor
   renderer:
     instantiate: StubExceptionRenderer
     raise_internal_errors: false
-  
-  # Nested in filesystem
-  filesystem:
-    instantiate: ShopifyFileSystem
-    child.liquid: "hello world"
-    snippet.liquid: "{% assign x = 1 %}"
 ```
 
 ### How It Works
@@ -418,7 +435,6 @@ Classes must be registered before use:
 # In lib/liquid/spec/deps/liquid_ruby.rb
 Liquid::Spec::ClassRegistry.register("CountingDrop") { |p| CountingDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("StringDrop") { |p| StringDrop.new(p) }
-Liquid::Spec::ClassRegistry.register("ShopifyFileSystem") { |p| ShopifyFileSystem.new(p) }
 ```
 
 The lambda receives whatever hash/value was alongside `instantiate:` and must return the instance.
@@ -427,8 +443,7 @@ The lambda receives whatever hash/value was alongside `instantiate:` and must re
 
 See `lib/liquid/spec/deps/liquid_ruby.rb` for all registered classes:
 - `CountingDrop`, `ToSDrop`, `TestDrop` - Test drops
-- `StringDrop`, `IntegerDrop`, `BooleanDrop` - Value drops  
-- `StubFileSystem`, `ShopifyFileSystem`, `BlankFileSystem` - File systems
+- `StringDrop`, `IntegerDrop`, `BooleanDrop` - Value drops
 - `StubExceptionRenderer` - Exception handling
 - `StubTemplateFactory` - Template factories
 - `SafeBuffer` - HTML-safe strings (requires ActiveSupport)

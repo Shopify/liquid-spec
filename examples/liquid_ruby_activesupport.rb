@@ -10,7 +10,11 @@
 require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do
-  require "active_support/all"
+  begin
+    require "active_support/all"
+  rescue LoadError
+    LiquidSpec.skip!("active_support not installed")
+  end
   require "liquid"
 
   # Disable liquid-c if present

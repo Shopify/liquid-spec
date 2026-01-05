@@ -242,19 +242,23 @@ module Liquid
 
       # Instantiate filesystem for this spec
       # Returns an object that responds to read_template_file
+      # Filesystem is always a simple hash of filename => content
       def instantiate_filesystem
         return if @raw_filesystem.nil?
 
-        fs = case @raw_filesystem
-        when String
-          instantiate_from_yaml(@raw_filesystem)
+        # Filesystem is always a plain hash - no instantiate: patterns
+        # Just filename keys mapping to template content strings
+        # An empty hash {} means "filesystem exists but has no files" (returns not found errors)
+        # nil means "no filesystem" (includes not allowed)
+        files = case @raw_filesystem
         when Hash
-          deep_instantiate(@raw_filesystem)
+          # Filter out any non-string values (legacy instantiate: patterns)
+          @raw_filesystem.reject { |k, _| k.to_s == "instantiate" }
         else
           {}
         end
 
-        SimpleFileSystem.new(fs)
+        SimpleFileSystem.new(files)
       end
 
       # Instantiate template_factory for this spec
