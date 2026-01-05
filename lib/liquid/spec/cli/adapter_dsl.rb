@@ -25,13 +25,24 @@
 module LiquidSpec
   # Standard features that can be declared by adapters
   FEATURES = {
-    core: "Basic Liquid template parsing and rendering",
+    core: "Full Liquid implementation with runtime drop support",
+    runtime_drops: "Supports bidirectional communication for drop callbacks",
     lax_parsing: "Supports error_mode: :lax for lenient parsing",
     shopify_tags: "Shopify-specific tags (schema, style, section, etc.)",
     shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
     shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
   }.freeze
+
+  # Feature expansions - declaring a feature automatically includes these
+  # :core is the "full implementation" feature that includes runtime drop support
+  # JSON-RPC adapters that can't support runtime drops should not declare :core
+  FEATURE_EXPANSIONS = {
+    core: [:runtime_drops],
+  }.freeze
+
+  # Default features when no config is set (matches Configuration defaults after expansion)
+  DEFAULT_FEATURES = [:core, :runtime_drops].freeze
 
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
@@ -43,15 +54,26 @@ module LiquidSpec
       @verbose = false
       @strict_only = false
       @features = [:core]
+      expand_features!
     end
 
     def features=(list)
       @features = Array(list).map(&:to_sym)
-      @features << :core unless @features.include?(:core)
+      expand_features!
     end
 
     def feature?(name)
       @features.include?(name.to_sym)
+    end
+
+    private
+
+    def expand_features!
+      FEATURE_EXPANSIONS.each do |feature, includes|
+        if @features.include?(feature)
+          @features |= includes
+        end
+      end
     end
   end
 
@@ -74,7 +96,7 @@ module LiquidSpec
     end
 
     def features
-      @config&.instance_variable_get(:@features) || [:core]
+      @config&.instance_variable_get(:@features) || DEFAULT_FEATURES
     end
 
     # Called once before running specs

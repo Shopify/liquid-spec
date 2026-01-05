@@ -8,8 +8,12 @@ hint: |
   These specs test core Liquid functionality from the reference implementation.
   Failures indicate missing or incorrect Liquid behavior.
 
-required_features:
-  - core
+# No required_features at suite level - allows JSON-RPC adapters to run
+# Individual specs that need runtime drops declare required_features: [runtime_drops]
+
+# Feature documentation:
+# - :core includes :runtime_drops (full implementation)
+# - JSON-RPC adapters that can't support runtime drops should declare features = []
 
 defaults:
   render_errors: false

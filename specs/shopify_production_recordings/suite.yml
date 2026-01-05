@@ -9,8 +9,7 @@ hint: |
   They test internal compiler behavior and may include Shopify-specific extensions.
   Failures here may be expected if your implementation differs from Shopify's.
 
-required_features:
-  - core
+# No required_features - allows JSON-RPC adapters to run
 
 # Default complexity for unscored specs in this suite (see COMPLEXITY.md)
 minimum_complexity: 1000

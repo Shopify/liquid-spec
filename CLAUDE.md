@@ -240,7 +240,7 @@ See [COMPLEXITY.md](COMPLEXITY.md) for the full guide with examples.
 
 ### Features
 
-Adapters declare which features they support. Suites require specific features to run:
+Adapters declare which features they support. Suites and individual specs can require specific features:
 
 ```ruby
 LiquidSpec.configure do |config|
@@ -248,8 +248,14 @@ LiquidSpec.configure do |config|
 end
 ```
 
+**Feature expansion:** `:core` automatically expands to include `:runtime_drops`. This means full Liquid implementations that declare `:core` get all features needed for runtime drop callbacks.
+
+**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should declare `features = []` to opt out of `:core` and `:runtime_drops`. They will still run all specs except those requiring `:runtime_drops`.
+
 Common features:
-- `:core` - Basic Liquid parsing and rendering
+- `:core` - Full Liquid implementation (includes `:runtime_drops`)
+- `:runtime_drops` - Supports bidirectional communication for drop callbacks
+- `:lax_parsing` - Supports error_mode: :lax for lenient parsing
 - `:shopify_tags` - Shopify-specific tags (schema, style, section)
 - `:shopify_objects` - Shopify-specific objects (section, block)
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
