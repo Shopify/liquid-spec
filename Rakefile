@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rake"
+require "rake/testtask"
 require "fileutils"
 
 require_relative "lib/liquid/spec/version"
@@ -8,6 +9,14 @@ require_relative "lib/liquid/spec/version"
 task default: :test
 
 BUILD_DIR = "build"
+
+# Unit tests for liquid-spec itself
+Rake::TestTask.new(:unit_test) do |t|
+  t.libs << "test"
+  t.libs << "lib"
+  t.test_files = FileList["test/**/*_test.rb"]
+  t.warning = false
+end
 
 desc "Build the gem into the #{BUILD_DIR} directory"
 task :build do
@@ -21,8 +30,11 @@ task install: :build do
   system("gem", "install", File.join(BUILD_DIR, "liquid-spec-#{Liquid::Spec::VERSION}.gem")) || abort
 end
 
-desc "Run liquid-spec tests using the CLI runner"
-task :test do
+desc "Run all tests (unit tests + integration tests)"
+task test: [:unit_test, :integration_test]
+
+desc "Run integration tests using the CLI runner"
+task :integration_test do
   ruby("bin/liquid-spec", "examples/liquid_ruby.rb") || abort
 end
 

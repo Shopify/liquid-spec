@@ -355,6 +355,8 @@ module Liquid
 
       # Simple filesystem implementation for specs
       class SimpleFileSystem
+        attr_reader :templates
+
         def initialize(templates)
           @templates = (templates || {}).transform_keys do |key|
             key = key.to_s.downcase
@@ -368,7 +370,11 @@ module Liquid
           path = original_path.downcase
           path = "#{path}.liquid" unless path.end_with?(".liquid")
           @templates.find { |name, _| name.casecmp?(path) }&.last or
-            raise Liquid::FileSystemError, "Could not find asset #{original_path}"
+            raise "Could not find template: #{original_path}"
+        end
+
+        def to_h
+          @templates.dup
         end
       end
     end
