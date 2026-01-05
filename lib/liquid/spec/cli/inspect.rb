@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
-require "timecop"
+require_relative "../time_freezer"
 require "yaml"
 
 module Liquid
@@ -181,7 +181,7 @@ module Liquid
             print_value(spec.expected)
 
             puts "\n\e[2mActual:\e[0m"
-            Timecop.freeze(TEST_TIME) do
+            TimeFreezer.freeze(TEST_TIME) do
               result = run_with_adapter(spec, config)
               if result[:error]
                 puts "  \e[31mERROR:\e[0m #{result[:error].class}: #{result[:error].message}"
@@ -221,7 +221,7 @@ module Liquid
           end
 
           def print_actual_specs(specs, config, options)
-            Timecop.freeze(TEST_TIME) do
+            TimeFreezer.freeze(TEST_TIME) do
               specs.each_with_index do |spec, idx|
                 puts "" if idx > 0
                 result = run_with_adapter(spec, config, options)

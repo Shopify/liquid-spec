@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "stringio"
-require "timecop"
+require_relative "time_freezer"
 
 module Liquid
   module Spec
@@ -101,7 +101,7 @@ module Liquid
         ENV["TZ"] = TEST_TZ
 
         begin
-          Timecop.freeze(TEST_TIME) do
+          TimeFreezer.freeze(TEST_TIME) do
             specs.each do |spec|
               spec_result = run_single(spec)
               result.add(spec_result)

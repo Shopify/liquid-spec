@@ -507,7 +507,7 @@ module Liquid
 
             existing_specs = []
             if File.exist?(daily_file) && File.size?(daily_file).to_i > 0
-              existing_specs = YAML.safe_load_file(daily_file, permitted_classes: [Symbol]) || []
+              existing_specs = YAML.safe_load(File.read(daily_file), permitted_classes: [Symbol]) || []
               existing_specs = [] unless existing_specs.is_a?(Array)
             end
 
