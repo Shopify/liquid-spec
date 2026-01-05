@@ -48,8 +48,10 @@ An adapter defines how your Liquid implementation compiles and renders templates
 #!/usr/bin/env ruby
 require "liquid/spec/cli/adapter_dsl"
 
-LiquidSpec.setup do
+LiquidSpec.setup do |ctx|
   require "my_liquid"
+  # ctx is a hash for storing adapter state (environment, file_system, etc.)
+  # ctx[:environment] = MyLiquid::Environment.new
 end
 
 LiquidSpec.configure do |config|
@@ -59,16 +61,18 @@ LiquidSpec.configure do |config|
   ]
 end
 
-LiquidSpec.compile do |source, options|
+LiquidSpec.compile do |ctx, source, options|
   MyLiquid::Template.parse(source, **options)
 end
 
-LiquidSpec.render do |template, ctx|
-  # ctx provides: assigns, environment, registers, file_system,
-  #               exception_renderer, template_factory
-  template.render(ctx.variables)
+LiquidSpec.render do |ctx, template, assigns, options|
+  # assigns: the environment variables for the template
+  # options: { registers:, strict_errors:, error_mode: }
+  template.render(assigns)
 end
 ```
+
+The `ctx` hash is passed to all blocks and can store adapter state like custom environments, file systems, or translations. This enables adapters that need isolated Liquid environments with custom tags/filters.
 
 Running the adapter file directly shows usage instructions:
 ```bash

@@ -11,7 +11,7 @@
 
 require "liquid/spec/cli/adapter_dsl"
 
-LiquidSpec.setup do
+LiquidSpec.setup do |ctx|
   require "liquid"
   begin
     require "liquid/c"
@@ -27,12 +27,12 @@ LiquidSpec.configure do |config|
   config.features = [:core, :strict_parsing]
 end
 
-LiquidSpec.compile do |source, options|
+LiquidSpec.compile do |ctx, source, options|
   # Force strict mode regardless of spec (override comes after splat)
   Liquid::Template.parse(source, **options, error_mode: :strict)
 end
 
-LiquidSpec.render do |template, assigns, options|
+LiquidSpec.render do |ctx, template, assigns, options|
   context = Liquid::Context.build(
     static_environments: assigns,
     registers: Liquid::Registers.new(options[:registers] || {}),

@@ -10,9 +10,14 @@ module Liquid
           # Liquid Spec Adapter
           #
           # This file defines how your Liquid implementation compiles and renders templates.
-          # Implement the two methods below to test your implementation against the spec.
+          # Implement the methods below to test your implementation against the spec.
           #
           # Run with: liquid-spec run %<filename>s
+
+          LiquidSpec.setup do |ctx|
+            # ctx is a hash for storing adapter state (environment, file_system, etc.)
+            # Example: ctx[:environment] = MyLiquid::Environment.new
+          end
 
           LiquidSpec.configure do |config|
             # Which spec suites to run: :all, :liquid_ruby, :dawn
@@ -23,13 +28,13 @@ module Liquid
           end
 
           # Called to compile a template string into your implementation's template object.
-          # This is optional - if not defined, the template string is passed directly to render.
           #
+          # @param ctx [Hash] Adapter context (from setup block)
           # @param source [String] The Liquid template source code
           # @param options [Hash] Parse options (e.g., :error_mode, :line_numbers)
           # @return [Object] Your compiled template object (passed to render)
           #
-          LiquidSpec.compile do |source, options|
+          LiquidSpec.compile do |ctx, source, options|
             # Example for Shopify/liquid:
             #   Liquid::Template.parse(source, options)
             #
@@ -41,24 +46,22 @@ module Liquid
 
           # Called to render a compiled template with the given context.
           #
-          # @param template [Object] The compiled template (from compile block, or source string)
-          # @param context [Hash] The render context with :assigns, :registers, :environment
-          #   - :assigns [Hash] Variables available as {{ var }}
-          #   - :registers [Hash] Internal registers (file_system, etc.)
-          #   - :environment [Hash] Static environment variables
+          # @param ctx [Hash] Adapter context (from setup block)
+          # @param template [Object] The compiled template (from compile block)
+          # @param assigns [Hash] Variables available as {{ var }}
+          # @param options [Hash] Render options (:registers, :strict_errors, :error_mode)
           # @return [String] The rendered output
           #
-          LiquidSpec.render do |template, context|
+          LiquidSpec.render do |ctx, template, assigns, options|
             # Example for Shopify/liquid:
-            #   liquid_context = Liquid::Context.build(
-            #     environments: [context[:environment]],
-            #     registers: context[:registers]
+            #   context = Liquid::Context.build(
+            #     static_environments: assigns,
+            #     registers: Liquid::Registers.new(options[:registers] || {})
             #   )
-            #   liquid_context.merge(context[:assigns])
-            #   template.render(liquid_context)
+            #   template.render(context)
             #
             # Example for a custom implementation:
-            #   template.render(context[:assigns].merge(context[:environment]))
+            #   template.render(assigns)
             #
             raise NotImplementedError, "Implement LiquidSpec.render to render templates"
           end
@@ -202,28 +205,28 @@ module Liquid
 
           DEFAULT_COMMAND = "path/to/your/liquid-server"
 
-          LiquidSpec.setup do
+          LiquidSpec.setup do |ctx|
             require "liquid/spec/json_rpc/adapter"
 
             # CLI --command flag overrides DEFAULT_COMMAND
             command = LiquidSpec.cli_options[:command] || DEFAULT_COMMAND
-            @adapter = Liquid::Spec::JsonRpc::Adapter.new(command)
-            @adapter.start
+            ctx[:adapter] = Liquid::Spec::JsonRpc::Adapter.new(command)
+            ctx[:adapter].start
+
+            at_exit { ctx[:adapter]&.shutdown }
           end
 
           LiquidSpec.configure do |config|
             config.features = [:core]  # Adjust based on your implementation's capabilities
           end
 
-          LiquidSpec.compile do |source, options|
-            @adapter.compile(source, options)
+          LiquidSpec.compile do |ctx, source, options|
+            ctx[:adapter].compile(source, options)
           end
 
-          LiquidSpec.render do |template_id, assigns, options|
-            @adapter.render(template_id, assigns, options)
+          LiquidSpec.render do |ctx, template_id, assigns, options|
+            ctx[:adapter].render(template_id, assigns, options)
           end
-
-          at_exit { @adapter&.shutdown }
         RUBY
 
         def self.agents_md_content(filename, json_rpc: false)
@@ -365,28 +368,42 @@ module Liquid
 
             ## The Adapter Pattern (Ruby)
 
-            Your adapter has two main blocks:
+            Your adapter has three main blocks. All receive `ctx` (a hash) as the first parameter for storing adapter state.
 
-            ### compile(source, options) → template
+            ### setup(ctx) - Initialize once
+
+            Set up your Liquid environment, register custom tags/filters.
+
+            ```ruby
+            LiquidSpec.setup do |ctx|
+              require "my_liquid"
+              ctx[:environment] = MyLiquid::Environment.build do |env|
+                env.register_tag("custom", CustomTag)
+                env.register_filter(CustomFilters)
+              end
+            end
+            ```
+
+            ### compile(ctx, source, options) → template
 
             Parse the source string into your template representation. Called once per template.
 
             ```ruby
-            LiquidSpec.compile do |source, options|
+            LiquidSpec.compile do |ctx, source, options|
               # options may include:
               #   :error_mode - :strict or :lax
               #   :line_numbers - true/false
               #   :file_system - for include/render tags
-              MyLiquid::Template.parse(source)
+              MyLiquid::Template.parse(source, environment: ctx[:environment])
             end
             ```
 
-            ### render(template, assigns, options) → string
+            ### render(ctx, template, assigns, options) → string
 
             Render a compiled template with variables. Called for each test.
 
             ```ruby
-            LiquidSpec.render do |template, assigns, options|
+            LiquidSpec.render do |ctx, template, assigns, options|
               # assigns: Hash of variables available as {{ var }}
               # options may include:
               #   :registers - internal state (file_system, etc.)
@@ -519,21 +536,24 @@ module Liquid
 
           require "liquid"
 
+          LiquidSpec.setup do |ctx|
+            # ctx can store adapter state like custom environments
+          end
+
           LiquidSpec.configure do |config|
             config.suite = :liquid_ruby
           end
 
-          LiquidSpec.compile do |source, options|
+          LiquidSpec.compile do |ctx, source, options|
             Liquid::Template.parse(source, **options)
           end
 
-          LiquidSpec.render do |template, context|
-            liquid_context = Liquid::Context.build(
-              environments: [context[:environment] || {}],
-              registers: Liquid::Registers.new(context[:registers] || {})
+          LiquidSpec.render do |ctx, template, assigns, options|
+            context = Liquid::Context.build(
+              static_environments: assigns,
+              registers: Liquid::Registers.new(options[:registers] || {})
             )
-            liquid_context.merge(context[:assigns] || {})
-            template.render(liquid_context)
+            template.render(context)
           end
         RUBY
 

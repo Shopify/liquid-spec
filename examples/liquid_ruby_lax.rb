@@ -9,7 +9,7 @@
 
 require "liquid/spec/cli/adapter_dsl"
 
-LiquidSpec.setup do
+LiquidSpec.setup do |ctx|
   require "liquid"
 
   # Disable liquid-c if present
@@ -22,12 +22,12 @@ LiquidSpec.configure do |config|
   config.features = [:core, :lax_parsing]
 end
 
-LiquidSpec.compile do |source, options|
+LiquidSpec.compile do |ctx, source, options|
   # Force lax mode regardless of spec (override comes after splat)
   Liquid::Template.parse(source, **options, error_mode: :lax)
 end
 
-LiquidSpec.render do |template, assigns, options|
+LiquidSpec.render do |ctx, template, assigns, options|
   # Build context with static_environments (read-only assigns that can be shadowed)
   context = Liquid::Context.build(
     static_environments: assigns,
