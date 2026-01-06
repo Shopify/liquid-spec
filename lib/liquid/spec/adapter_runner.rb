@@ -236,10 +236,27 @@ module Liquid
         end
       end
 
+      # Extract core message from Liquid error formats:
+      #   "Liquid::ArgumentError (templates/foo line 1): invalid integer"
+      #   "Liquid::SyntaxError (line 5): unexpected token"
+      # Returns just "invalid integer", "unexpected token", etc.
+      def extract_core_message(text)
+        return text unless text
+        if text =~ /\):\s*(.+)$/m
+          $1.strip
+        elsif text =~ /:\s*(.+)$/m
+          $1.strip
+        else
+          text
+        end
+      end
+
       def matches_patterns?(text, patterns)
+        return false unless text
+        core = extract_core_message(text)
         Array(patterns).all? do |pattern|
           regex = pattern.is_a?(Regexp) ? pattern : /#{Regexp.escape(pattern)}/i
-          text&.match?(regex)
+          text.match?(regex) || core.match?(regex)
         end
       end
     end

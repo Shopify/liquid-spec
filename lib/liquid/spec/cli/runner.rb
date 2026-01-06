@@ -905,9 +905,26 @@ module Liquid
             { status: :error, expected: spec.expected, actual: nil, error: e }
           end
 
+          # Extract core message from Liquid error formats:
+          #   "Liquid::ArgumentError (templates/foo line 1): invalid integer"
+          #   "Liquid::SyntaxError (line 5): unexpected token"
+          #   "Liquid::Error: something went wrong"
+          # Returns just "invalid integer", "unexpected token", etc.
+          def extract_core_message(text)
+            if text =~ /\):\s*(.+)$/m
+              $1.strip
+            elsif text =~ /:\s*(.+)$/m
+              $1.strip
+            else
+              text
+            end
+          end
+
           def check_error_patterns(error, patterns, error_type)
             message = error.message
-            failed_patterns = patterns.reject { |pattern| pattern.match?(message) }
+            core_message = extract_core_message(message)
+            # Match against both full message and core message for flexibility
+            failed_patterns = patterns.reject { |pattern| pattern.match?(message) || pattern.match?(core_message) }
 
             if failed_patterns.empty?
               { status: :pass }
