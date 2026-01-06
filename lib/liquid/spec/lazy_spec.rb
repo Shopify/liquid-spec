@@ -340,6 +340,9 @@ module Liquid
       # Simple filesystem implementation for specs
       # Supports a custom error_message for missing files via _error-message key
       class SimpleFileSystem
+        # Use Liquid::FileSystemError if available, otherwise RuntimeError
+        FILE_SYSTEM_ERROR = defined?(Liquid::FileSystemError) ? Liquid::FileSystemError : RuntimeError
+
         attr_reader :templates
 
         def initialize(templates, error_message: nil)
@@ -356,7 +359,7 @@ module Liquid
           path = original_path.downcase
           path = "#{path}.liquid" unless path.end_with?(".liquid")
           @templates.find { |name, _| name.casecmp?(path) }&.last or
-            raise Liquid::FileSystemError, @error_message || "Could not find asset #{original_path}"
+            raise FILE_SYSTEM_ERROR, @error_message || "Could not find asset #{original_path}"
         end
 
         def to_h
