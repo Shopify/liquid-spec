@@ -1,0 +1,589 @@
+# Tests for first, last, size filters on various variable types (LAX MODE)
+# Each type is tested at global scope and inside a hash
+# This file mirrors liquid_ruby/variable_type_filters.yml but runs in lax parsing mode
+---
+_metadata:
+  hint: |
+    These specs test that first, last, and size filters/methods behave correctly
+    across all primitive and compound types in lax parsing mode.
+    The expected outputs should be identical to strict mode.
+  minimum_complexity: 150
+
+specs:
+# =============================================================================
+# GLOBAL SCOPE - Each variable type with first, last, size
+# =============================================================================
+
+# --- Float ---
+- name: lax_filter_float_global_first_last_size
+  complexity: 150
+  template: |
+    float, first:{{- f | first }}
+    float, last:{{- f | last }}
+    float, size:{{- f | size }}
+  environment:
+    f: 3.14
+  expected: |
+    float, first:
+    float, last:
+    float, size:0
+
+# --- Integer ---
+- name: lax_filter_int_global_first_last_size
+  complexity: 150
+  hint: |
+    int | size returns 8 because Ruby's Integer#size returns the byte representation
+    size (8 bytes on 64-bit systems), NOT the number of digits. This is inherited Ruby
+    behavior - all integers return 8 regardless of their actual value.
+  template: |
+    int, first:{{- i | first }}
+    int, last:{{- i | last }}
+    int, size:{{- i | size }}
+  environment:
+    i: 42
+  expected: |
+    int, first:
+    int, last:
+    int, size:8
+
+# --- Boolean (true) ---
+- name: lax_filter_bool_true_global_first_last_size
+  complexity: 150
+  template: |
+    bool, first:{{- b | first }}
+    bool, last:{{- b | last }}
+    bool, size:{{- b | size }}
+  environment:
+    b: true
+  expected: |
+    bool, first:
+    bool, last:
+    bool, size:0
+
+# --- Boolean (false) ---
+- name: lax_filter_bool_false_global_first_last_size
+  complexity: 150
+  template: |
+    bool, first:{{- b | first }}
+    bool, last:{{- b | last }}
+    bool, size:{{- b | size }}
+  environment:
+    b: false
+  expected: |
+    bool, first:
+    bool, last:
+    bool, size:0
+
+# --- String ---
+- name: lax_filter_string_global_first_last_size
+  complexity: 150
+  hint: "Strings only respond to size, not first/last as filters"
+  template: |
+    string, first:{{- s | first }}
+    string, last:{{- s | last }}
+    string, size:{{- s | size }}
+  environment:
+    s: "hello"
+  expected: |
+    string, first:
+    string, last:
+    string, size:5
+
+# --- Nil ---
+- name: lax_filter_nil_global_first_last_size
+  complexity: 150
+  template: |
+    nil, first:{{- n | first }}
+    nil, last:{{- n | last }}
+    nil, size:{{- n | size }}
+  environment:
+    n: null
+  expected: |
+    nil, first:
+    nil, last:
+    nil, size:0
+
+# --- Array ---
+- name: lax_filter_array_global_first_last_size
+  complexity: 150
+  template: |
+    array, first:{{- arr | first }}
+    array, last:{{- arr | last }}
+    array, size:{{- arr | size }}
+  environment:
+    arr: [1, 2, 3, 4, 5]
+  expected: |
+    array, first:1
+    array, last:5
+    array, size:5
+
+# --- Empty Array ---
+- name: lax_filter_empty_array_global_first_last_size
+  complexity: 150
+  template: |
+    empty_array, first:{{- arr | first }}
+    empty_array, last:{{- arr | last }}
+    empty_array, size:{{- arr | size }}
+  environment:
+    arr: []
+  expected: |
+    empty_array, first:
+    empty_array, last:
+    empty_array, size:0
+
+# --- Hash ---
+- name: lax_filter_hash_global_first_last_size
+  complexity: 150
+  hint: "hash | first returns first key+value concatenated, hash | last returns empty"
+  template: |
+    hash, first:{{- h | first }}
+    hash, last:{{- h | last }}
+    hash, size:{{- h | size }}
+  environment:
+    h:
+      a: 1
+      b: 2
+  expected: |
+    hash, first:a1
+    hash, last:
+    hash, size:2
+
+# --- Empty Hash ---
+- name: lax_filter_empty_hash_global_first_last_size
+  complexity: 150
+  template: |
+    empty_hash, first:{{- h | first }}
+    empty_hash, last:{{- h | last }}
+    empty_hash, size:{{- h | size }}
+  environment:
+    h: {}
+  expected: |
+    empty_hash, first:
+    empty_hash, last:
+    empty_hash, size:0
+
+# --- Drop (using IntegerDrop) ---
+- name: lax_filter_drop_global_first_last_size
+  complexity: 160
+  template: |
+    drop, first:{{- d | first }}
+    drop, last:{{- d | last }}
+    drop, size:{{- d | size }}
+  environment:
+    d:
+      instantiate:IntegerDrop:
+        value: 42
+  expected: |
+    drop, first:
+    drop, last:
+    drop, size:0
+
+# =============================================================================
+# HASH PROPERTY ACCESS - Types inside a hash with first, last, size filters
+# =============================================================================
+
+- name: lax_filter_hash_properties_first_last_size
+  complexity: 160
+  hint: "Tests accessing various types as hash properties and applying filters"
+  template: |
+    hash.f, first:{{- hash.f | first }}
+    hash.f, last:{{- hash.f | last }}
+    hash.f, size:{{- hash.f | size }}
+    hash.i, first:{{- hash.i | first }}
+    hash.i, last:{{- hash.i | last }}
+    hash.i, size:{{- hash.i | size }}
+    hash.b, first:{{- hash.b | first }}
+    hash.b, last:{{- hash.b | last }}
+    hash.b, size:{{- hash.b | size }}
+    hash.s, first:{{- hash.s | first }}
+    hash.s, last:{{- hash.s | last }}
+    hash.s, size:{{- hash.s | size }}
+    hash.arr, first:{{- hash.arr | first }}
+    hash.arr, last:{{- hash.arr | last }}
+    hash.arr, size:{{- hash.arr | size }}
+    hash.nested, first:{{- hash.nested | first }}
+    hash.nested, last:{{- hash.nested | last }}
+    hash.nested, size:{{- hash.nested | size }}
+  environment:
+    hash:
+      f: 3.14
+      i: 42
+      b: true
+      s: "hello"
+      arr: [1, 2, 3]
+      nested:
+        x: 10
+  expected: |
+    hash.f, first:
+    hash.f, last:
+    hash.f, size:0
+    hash.i, first:
+    hash.i, last:
+    hash.i, size:8
+    hash.b, first:
+    hash.b, last:
+    hash.b, size:0
+    hash.s, first:
+    hash.s, last:
+    hash.s, size:5
+    hash.arr, first:1
+    hash.arr, last:3
+    hash.arr, size:3
+    hash.nested, first:x10
+    hash.nested, last:
+    hash.nested, size:1
+
+# =============================================================================
+# ARRAYS CONTAINING EACH TYPE - Test first/last retrieval
+# =============================================================================
+
+- name: lax_filter_array_containing_types_first
+  complexity: 160
+  hint: "Array containing float, int, bool, string, array, hash - test first"
+  template: "{{ arr | first }}"
+  environment:
+    arr:
+      - 3.14
+      - 42
+      - true
+      - "hello"
+      - [1, 2]
+      - {a: 1}
+  expected: "3.14"
+
+- name: lax_filter_array_containing_types_last
+  complexity: 160
+  hint: "Array containing various types - last returns hash's inspect string"
+  template: "{{ arr | last }}"
+  environment:
+    arr:
+      - 3.14
+      - 42
+      - true
+      - "hello"
+      - [1, 2]
+      - {a: 1}
+  expected: '{"a"=>1}'
+
+- name: lax_filter_array_containing_types_size
+  complexity: 160
+  template: "{{ arr | size }}"
+  environment:
+    arr:
+      - 3.14
+      - 42
+      - true
+      - "hello"
+      - [1, 2]
+      - {a: 1}
+  expected: "6"
+
+# =============================================================================
+# HASH CONTAINING EACH TYPE AS VALUES
+# =============================================================================
+
+- name: lax_filter_hash_containing_types_first_last_size
+  complexity: 160
+  hint: "Hash containing all types as values"
+  template: |
+    hash, first:{{- hash | first }}
+    hash, size:{{- hash | size }}
+  environment:
+    hash:
+      float_val: 3.14
+      int_val: 42
+      bool_val: true
+      string_val: "hello"
+      array_val: [1, 2]
+      hash_val: {nested: true}
+  expected: |
+    hash, first:float_val3.14
+    hash, size:6
+
+# =============================================================================
+# PROPERTY ACCESS STYLE (dot notation for first/last/size)
+# =============================================================================
+
+- name: lax_property_access_array_first_last_size
+  complexity: 160
+  hint: "Using .first, .last, .size property access on arrays"
+  template: |
+    arr.first:{{- arr.first }}
+    arr.last:{{- arr.last }}
+    arr.size:{{- arr.size }}
+  environment:
+    arr: [10, 20, 30]
+  expected: |
+    arr.first:10
+    arr.last:30
+    arr.size:3
+
+- name: lax_property_access_hash_first_last_size
+  complexity: 160
+  hint: "Using .first, .last, .size property access on hashes"
+  template: |
+    h.first:{{- h.first }}
+    h.last:{{- h.last }}
+    h.size:{{- h.size }}
+  environment:
+    h:
+      a: 1
+      b: 2
+  expected: |
+    h.first:a1
+    h.last:
+    h.size:2
+
+- name: lax_property_access_string_size
+  complexity: 160
+  hint: "Strings support .size property access"
+  template: "{{ s.size }}"
+  environment:
+    s: "hello"
+  expected: "5"
+
+# =============================================================================
+# RANGE TESTS
+# =============================================================================
+
+- name: lax_filter_range_first_last_size
+  complexity: 160
+  template: |
+    {%- assign r = (1..5) -%}
+    range, first:{{- r | first }}
+    range, last:{{- r | last }}
+    range, size:{{- r | size }}
+  expected: |
+    range, first:1
+    range, last:5
+    range, size:5
+
+- name: lax_property_access_range_first_last_size
+  complexity: 160
+  template: |
+    {%- assign r = (1..5) -%}
+    range.first:{{- r.first }}
+    range.last:{{- r.last }}
+    range.size:{{- r.size }}
+  expected: |
+    range.first:1
+    range.last:5
+    range.size:5
+
+# =============================================================================
+# UNDEFINED VARIABLE TESTS
+# =============================================================================
+
+- name: lax_filter_undefined_first_last_size
+  complexity: 150
+  template: |
+    undefined, first:{{- undefined | first }}
+    undefined, last:{{- undefined | last }}
+    undefined, size:{{- undefined | size }}
+  environment: {}
+  expected: |
+    undefined, first:
+    undefined, last:
+    undefined, size:0
+
+# =============================================================================
+# NEGATIVE INTEGER SIZE (same byte size)
+# =============================================================================
+
+- name: lax_filter_negative_int_size
+  complexity: 150
+  hint: |
+    int | size returns Ruby's Integer#size (8 bytes on 64-bit systems).
+    Negative integers return the same byte size as positive integers.
+  template: "{{ i | size }}"
+  environment:
+    i: -999999
+  expected: "8"
+
+# =============================================================================
+# ZERO VALUES
+# =============================================================================
+
+- name: lax_filter_zero_values_first_last_size
+  complexity: 150
+  hint: |
+    Zero integer still returns size 8 (Ruby Integer#size = byte representation).
+    Zero float returns size 0 (Float doesn't respond to size the same way).
+  template: |
+    zero_int, first:{{- i | first }}
+    zero_int, size:{{- i | size }}
+    zero_float, first:{{- f | first }}
+    zero_float, size:{{- f | size }}
+    empty_string, size:{{- s | size }}
+  environment:
+    i: 0
+    f: 0.0
+    s: ""
+  expected: |
+    zero_int, first:
+    zero_int, size:8
+    zero_float, first:
+    zero_float, size:0
+    empty_string, size:0
+
+# =============================================================================
+# FILTER VS PROPERTY ACCESS EQUIVALENCE
+# Verifies that .first/.last/.size property access produces same results as filters
+# =============================================================================
+
+- name: lax_filter_vs_property_array_equivalence
+  complexity: 160
+  hint: "Verify filter and property access return identical results for arrays"
+  template: |
+    filter first:{{- arr | first }}, property first:{{- arr.first }}
+    filter last:{{- arr | last }}, property last:{{- arr.last }}
+    filter size:{{- arr | size }}, property size:{{- arr.size }}
+  environment:
+    arr: [10, 20, 30]
+  expected: |
+    filter first:10, property first:10
+    filter last:30, property last:30
+    filter size:3, property size:3
+
+- name: lax_filter_vs_property_hash_equivalence
+  complexity: 160
+  hint: "Verify filter and property access return identical results for hashes"
+  template: |
+    filter first:{{- h | first }}, property first:{{- h.first }}
+    filter last:{{- h | last }}, property last:{{- h.last }}
+    filter size:{{- h | size }}, property size:{{- h.size }}
+  environment:
+    h:
+      a: 1
+      b: 2
+  expected: |
+    filter first:a1, property first:a1
+    filter last:, property last:
+    filter size:2, property size:2
+
+- name: lax_filter_vs_property_string_equivalence
+  complexity: 160
+  hint: "Verify filter and property access return identical results for strings"
+  template: |
+    filter first:{{- s | first }}, property first:{{- s.first }}
+    filter last:{{- s | last }}, property last:{{- s.last }}
+    filter size:{{- s | size }}, property size:{{- s.size }}
+  environment:
+    s: "hello"
+  expected: |
+    filter first:, property first:
+    filter last:, property last:
+    filter size:5, property size:5
+
+- name: lax_filter_vs_property_int_equivalence
+  complexity: 160
+  hint: "int | size returns Ruby Integer#size (byte size = 8 on 64-bit), not digit count"
+  template: |
+    filter first:{{- i | first }}, property first:{{- i.first }}
+    filter last:{{- i | last }}, property last:{{- i.last }}
+    filter size:{{- i | size }}, property size:{{- i.size }}
+  environment:
+    i: 42
+  expected: |
+    filter first:, property first:
+    filter last:, property last:
+    filter size:8, property size:8
+
+- name: lax_filter_vs_property_float_equivalence
+  complexity: 160
+  hint: |
+    Float.size differs between filter and property access:
+    - filter: f | size returns 0 (filter handles missing .size method)
+    - property: f.size returns empty (Float doesn't have .size in Ruby)
+  template: |
+    filter first:{{- f | first }}, property first:{{- f.first }}
+    filter last:{{- f | last }}, property last:{{- f.last }}
+    filter size:{{- f | size }}, property size:{{- f.size }}
+  environment:
+    f: 3.14
+  expected: |
+    filter first:, property first:
+    filter last:, property last:
+    filter size:0, property size:
+
+- name: lax_filter_vs_property_range_equivalence
+  complexity: 160
+  template: |
+    {%- assign r = (1..5) -%}
+    filter first:{{- r | first }}, property first:{{- r.first }}
+    filter last:{{- r | last }}, property last:{{- r.last }}
+    filter size:{{- r | size }}, property size:{{- r.size }}
+  expected: |
+    filter first:1, property first:1
+    filter last:5, property last:5
+    filter size:5, property size:5
+
+# =============================================================================
+# INTEGER SIZE EDGE CASES
+# Ruby Integer#size returns byte representation size (8 on 64-bit), not digit count
+# =============================================================================
+
+- name: lax_filter_int_size_is_byte_size
+  complexity: 160
+  hint: |
+    IMPORTANT: int | size returns Ruby's Integer#size which is the byte representation
+    size (8 bytes on 64-bit systems), NOT the number of digits. This is Ruby behavior
+    inherited by Liquid. All integers return 8 regardless of value.
+  template: |
+    size of 0:{{- i0 | size }}
+    size of 1:{{- i1 | size }}
+    size of 42:{{- i42 | size }}
+    size of 999999999:{{- i_big | size }}
+    size of -1:{{- i_neg | size }}
+  environment:
+    i0: 0
+    i1: 1
+    i42: 42
+    i_big: 999999999
+    i_neg: -1
+  expected: |
+    size of 0:8
+    size of 1:8
+    size of 42:8
+    size of 999999999:8
+    size of -1:8
+
+# =============================================================================
+# DROP WITH to_liquid_value
+# =============================================================================
+
+- name: lax_filter_integerdrop_first_last_size
+  complexity: 170
+  hint: "IntegerDrop wraps an integer value via to_liquid_value"
+  template: |
+    drop value:{{- d }}
+    drop, first:{{- d | first }}
+    drop, last:{{- d | last }}
+    drop, size:{{- d | size }}
+  environment:
+    d:
+      instantiate:IntegerDrop:
+        value: 99
+  expected: |
+    drop value:99
+    drop, first:
+    drop, last:
+    drop, size:0
+
+- name: lax_filter_booleandrop_first_last_size
+  complexity: 170
+  hint: "BooleanDrop wraps a boolean value, to_s returns Yay/Nay"
+  template: |
+    drop value:{{- d }}
+    drop, first:{{- d | first }}
+    drop, last:{{- d | last }}
+    drop, size:{{- d | size }}
+  environment:
+    d:
+      instantiate:BooleanDrop:
+        value: true
+  expected: |
+    drop value:Yay
+    drop, first:
+    drop, last:
+    drop, size:0
