@@ -133,6 +133,10 @@ module LiquidSpec
 
       @setup_done = true
       @ctx ||= {}
+
+      # Autoload Liquid so adapters can require it without full path
+      Object.autoload(:Liquid, "liquid") unless defined?(::Liquid)
+
       @setup_block&.call(@ctx)
     end
 
