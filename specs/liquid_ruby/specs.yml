@@ -3292,6 +3292,7 @@
   filesystem:
     snippet: hello {{ arg1 }} {{ arg2 }}
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L209
+  required_features: [lax_parsing]
 - name: IncrementTagTest#test_dec_3697a816
   template: "{{port}} {%decrement port %} {%decrement port%} {{port}}"
   render_errors: false
@@ -3836,6 +3837,7 @@
   filesystem:
     snippet: hello {{ arg1 }} {{ arg2 }}
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L110
+  required_features: [lax_parsing]
 - name: StandardFiltersTest#test_abs_258f584d
   template: "{{ -17.42 | abs }}"
   render_errors: false
