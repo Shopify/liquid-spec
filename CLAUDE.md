@@ -42,10 +42,17 @@ liquid-spec my_adapter.rb --no-max-failures
 
 ### Result Logging
 
-By default, each test run appends a JSONL line to a log file with the format:
+Each test run appends results to `/tmp/liquid-spec-results.jsonl` with the format:
 ```json
-[filename, test_name, complexity, "success|fail|error"]
+[run_id, version, source_file, test_name, complexity, "success|fail|error"]
 ```
+
+- `run_id`: Unique timestamp for this run (e.g., "20260106_124439")
+- `version`: liquid-spec version (e.g., "0.9.0")
+- `source_file`: Path to the spec YAML file
+- `test_name`: Name of the individual spec
+- `complexity`: Complexity score (default 1000 if not set)
+- `status`: "success", "fail", or "error"
 
 This data can be analyzed later to:
 - Identify specs that consistently pass early (suggesting lower complexity)
