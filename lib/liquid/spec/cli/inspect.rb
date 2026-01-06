@@ -335,11 +335,8 @@ module Liquid
           def parse_error_message(error)
             message = error.message
 
-            # Determine error type based on exception class
-            error_type = case error
-            when Liquid::SyntaxError then "parse_error"
-            else "render_error"
-            end
+            # Determine error type based on exception class name containing "SyntaxError"
+            error_type = error.class.name.include?("SyntaxError") ? "parse_error" : "render_error"
 
             patterns = []
 

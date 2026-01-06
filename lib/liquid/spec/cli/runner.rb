@@ -853,12 +853,17 @@ module Liquid
 
             begin
               template = LiquidSpec.do_compile(spec.template, compile_options)
-            rescue Liquid::SyntaxError => e
-              if spec.expects_parse_error?
-                return check_error_patterns(e, spec.error_patterns(:parse_error), "parse_error")
-              end
-              if render_errors
-                return compare_result(e.message, spec.expected)
+            rescue => e
+              # Check if error class name contains "SyntaxError" (parse error)
+              if e.class.name.include?("SyntaxError")
+                if spec.expects_parse_error?
+                  return check_error_patterns(e, spec.error_patterns(:parse_error), "parse_error")
+                end
+                if render_errors
+                  return compare_result(e.message, spec.expected)
+                else
+                  raise
+                end
               else
                 raise
               end

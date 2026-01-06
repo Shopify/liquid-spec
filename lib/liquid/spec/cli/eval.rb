@@ -464,10 +464,8 @@ module Liquid
             spec["environment"] = assigns if assigns && !assigns.empty?
 
             if error
-              error_type = case error
-              when defined?(Liquid::SyntaxError) && Liquid::SyntaxError then "parse_error"
-              else "render_error"
-              end
+              # Check if error class name contains "SyntaxError"
+              error_type = error.class.name.include?("SyntaxError") ? "parse_error" : "render_error"
               spec["errors"] = { error_type => parse_error_patterns(error.message) }
             end
 
