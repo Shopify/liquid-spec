@@ -40,6 +40,19 @@ liquid-spec my_adapter.rb --list-suites
 liquid-spec my_adapter.rb --no-max-failures
 ```
 
+### Result Logging
+
+By default, each test run appends a JSONL line to a log file with the format:
+```json
+[filename, test_name, complexity, "success|fail|error"]
+```
+
+This data can be analyzed later to:
+- Identify specs that consistently pass early (suggesting lower complexity)
+- Find specs that frequently fail (may need better hints or higher complexity)
+- Track implementation progress over time
+- Tune complexity scores based on real-world implementation order
+
 ## Writing an Adapter
 
 An adapter defines how your Liquid implementation compiles and renders templates:
@@ -156,22 +169,50 @@ specs:
 
 ### Hints
 
-Specs can include an optional `hint` field that provides contextual information about why a spec might fail. Hints are displayed in yellow when the spec fails, helping implementers understand potential causes.
+**IMPORTANT:** Hints are critical for helping implementers understand what they need to do to make a spec succeed. Every non-trivial spec should have a hint that explains either:
+
+1. **What to implement** - Concrete steps or logic needed to pass the spec
+2. **Why the behavior exists** - The higher-order reason for unexpected or quirky behavior
+3. **Common pitfalls** - What implementers typically get wrong
+
+Hints are displayed in yellow when the spec fails, making them the first thing implementers see when debugging.
 
 ```yaml
-- name: blank_with_activesupport
-  template: "{% if foo.blank? %}empty{% endif %}"
+- name: empty_string_is_empty
+  template: "{% if x == empty %}empty{% else %}not{% endif %}"
+  environment: { x: "" }
   expected: "empty"
-  environment:
-    foo: ""
-  hint: "This spec tests blank? which requires ActiveSupport to be loaded"
+  complexity: 100
+  hint: |
+    Recognize 'empty' as a keyword representing the empty state.
+    An empty string "" should equal the 'empty' keyword. Create
+    an EmptyLiteral node during parsing. During evaluation, compare
+    the variable's value against emptiness: empty strings, empty
+    arrays, and empty hashes all equal 'empty'.
+
+- name: int_size_returns_byte_size
+  template: "{{ num | size }}"
+  environment: { num: 42 }
+  expected: "8"
+  complexity: 150
+  hint: |
+    WART: int | size returns 8 because Ruby's Integer#size returns
+    the byte representation size (8 bytes on 64-bit systems), NOT
+    the number of digits. This is surprising but matches liquid-ruby.
 ```
+
+**What makes a good hint:**
+- **Actionable** - Tells implementers what code to write or what behavior to implement
+- **Explains "why"** - For quirky behavior, explains why Liquid works this way
+- **Flags warts** - Marks surprising behavior with "WART:" prefix so implementers know it's intentional
+- **Progressive** - For complex features, hints guide through the implementation steps
 
 Use hints to communicate:
 - Dependencies that must be loaded (e.g., ActiveSupport)
 - Implementation-specific behaviors being tested
-- Known edge cases or platform differences
-- Any context that helps diagnose failures
+- Known edge cases or platform differences (mark with "WART:")
+- Step-by-step guidance for implementing the feature
+- Why a spec exists and what behavior it validates
 
 ### Source-Level Metadata
 

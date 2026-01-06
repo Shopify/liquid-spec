@@ -77,7 +77,7 @@ specs:
 # --- String ---
 - name: lax_filter_string_global_first_last_size
   complexity: 150
-  hint: "Strings only respond to size, not first/last as filters"
+  hint: "String first/last return the first/last character of the string"
   template: |
     string, first:{{- s | first }}
     string, last:{{- s | last }}
@@ -85,8 +85,8 @@ specs:
   environment:
     s: "hello"
   expected: |
-    string, first:
-    string, last:
+    string, first:h
+    string, last:o
     string, size:5
 
 # --- Nil ---
@@ -223,8 +223,8 @@ specs:
     hash.b, first:
     hash.b, last:
     hash.b, size:0
-    hash.s, first:
-    hash.s, last:
+    hash.s, first:h
+    hash.s, last:o
     hash.s, size:5
     hash.arr, first:1
     hash.arr, last:3
@@ -471,8 +471,8 @@ specs:
   environment:
     s: "hello"
   expected: |
-    filter first:, property first:
-    filter last:, property last:
+    filter first:h, property first:h
+    filter last:o, property last:o
     filter size:5, property size:5
 
 - name: lax_filter_vs_property_int_equivalence
