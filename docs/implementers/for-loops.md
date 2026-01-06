@@ -1,3 +1,13 @@
+---
+title: For Loops
+description: >
+  How to implement Liquid's for loop correctly, including the forloop object, offset:continue
+  for pagination, parentloop for nested loops, and the else block. Essential reading for any
+  implementation that needs iteration.
+optional: false
+order: 2
+---
+
 # The `for` Loop
 
 This document explains Liquid's `for` loop, including `offset: continue`, `forloop` object, and `parentloop` tracking.
@@ -69,13 +79,17 @@ Output: `1.1 1.2 1.3 2.1 2.2 2.3` (for 2x3 arrays)
 The implementation maintains a **stack** of forloop objects in registers:
 
 ```
-registers[:for_stack] = [
+registers["for_stack"] = [
   outer_forloop,   # bottom
   inner_forloop    # top (current)
 ]
 ```
 
 When creating a new forloop, the previous top becomes its `parentloop`.
+
+**Implementation gotcha:** `parentloop` only works if you push/pop a forloop stack around every nested loop render. If you skip the stack (or forget to pop on errors), `forloop.parentloop` will be wrong or `nil`.
+
+**Partial interaction:** `render` creates an isolated context, so `forloop.parentloop` is always `nil` inside a rendered partial. `include` shares the execution state, so `parentloop` remains available (but note `include for` still does not create a `forloop` object).
 
 ## The `offset: continue` Feature
 
@@ -92,10 +106,10 @@ Given `items = [1,2,3,4,5,6,7,8,9,0]`, outputs: `123 next: 456 next: 789`
 
 ### How offset:continue Works
 
-Position is tracked in `registers[:for]` using the loop's **name** as key:
+Position is tracked in `registers["for"]` using the loop's **name** as key:
 
 ```
-registers[:for] = {
+registers["for"] = {
   "i-items" => 3,    # "variable_name-collection_expression"
   "j-other" => 5,
   # ...
@@ -111,9 +125,9 @@ The loop name is constructed as `"#{variable_name}-#{collection_expression}"`.
 ```
 ForTag:
   variable_name: String           # e.g., "item"
-  collection_expr: Expression     # e.g., VariableLookup("items")
+  collection_expr: Expression     # e.g., variable reference "items"
   limit_expr: Expression | nil
-  offset_expr: Expression | :continue | nil
+  offset_expr: Expression | CONTINUE | nil
   reversed: Boolean
   body: BlockBody
   else_body: BlockBody | nil
@@ -144,7 +158,10 @@ function render_for(tag, state, output):
     segment = segment.reverse()
   
   # Update continue offset for next time
-  offsets = state.registers[:for] ||= {}
+  offsets = state.registers["for"]
+  if offsets is nil:
+    offsets = {}
+    state.registers["for"] = offsets
   offsets[tag.name] = from + segment.length
   
   # Handle empty collection
@@ -154,7 +171,10 @@ function render_for(tag, state, output):
     return
   
   # Get forloop stack for parentloop tracking
-  for_stack = state.registers[:for_stack] ||= []
+  for_stack = state.registers["for_stack"]
+  if for_stack is nil:
+    for_stack = []
+    state.registers["for_stack"] = for_stack
   
   # Create forloop drop
   parent = for_stack.last()  # nil if not nested
@@ -175,17 +195,20 @@ function render_for(tag, state, output):
         # Handle interrupts
         if state.interrupts.not_empty():
           interrupt = state.interrupts.pop()
-          if interrupt.type == :break:
+          if interrupt.type == BREAK:
             break
-          # :continue just proceeds to next iteration
+          # CONTINUE just proceeds to next iteration
   finally:
     for_stack.pop()
 
 function calculate_bounds(tag, state):
-  offsets = state.registers[:for] ||= {}
+  offsets = state.registers["for"]
+  if offsets is nil:
+    offsets = {}
+    state.registers["for"] = offsets
   
   # Calculate 'from'
-  if tag.offset_expr == :continue:
+  if tag.offset_expr == CONTINUE:
     from = offsets[tag.name] || 0
   else if tag.offset_expr:
     from = to_integer(state.evaluate(tag.offset_expr))
@@ -203,7 +226,7 @@ function calculate_bounds(tag, state):
 
 function slice_collection(collection, from, to):
   # If collection supports lazy loading, use it
-  if collection.responds_to(:load_slice):
+  if collection.supports("load_slice"):
     return collection.load_slice(from, to)
   
   # Otherwise, slice normally
@@ -216,24 +239,22 @@ function slice_collection(collection, from, to):
 ### ForloopDrop
 
 ```
-class ForloopDrop:
-  def initialize(name, length, parentloop):
-    @name = name
-    @length = length
-    @parentloop = parentloop
-    @index = 0  # internal 0-based
+ForloopDrop:
+  init(name, length, parentloop):
+    this.name = name
+    this.length = length
+    this.parentloop = parentloop
+    this.index0 = 0  // internal 0-based
   
-  def index():  return @index + 1      # 1-based
-  def index0(): return @index          # 0-based
-  def rindex(): return @length - @index
-  def rindex0(): return @length - @index - 1
-  def first():  return @index == 0
-  def last():   return @index == @length - 1
-  def length(): return @length
-  def parentloop(): return @parentloop
+  function index():  return this.index0 + 1
+  function rindex(): return this.length - this.index0
+  function rindex0(): return this.length - this.index0 - 1
+  function first():  return this.index0 == 0
+  function last():   return this.index0 == this.length - 1
+  function parentloop(): return this.parentloop
   
-  def increment():
-    @index += 1
+  function increment():
+    this.index0 += 1
 ```
 
 ## Behavioral Specifications
@@ -362,9 +383,9 @@ Compare to `render`:
 ## Implementation Checklist
 
 1. **Collection slicing:** Support `limit`, `offset`, and `offset:continue`
-2. **Continue tracking:** Store position in `registers[:for][loop_name]`
+2. **Continue tracking:** Store position in `registers["for"][loop_name]`
 3. **ForloopDrop:** All index/rindex/first/last properties
-4. **parentloop stack:** Track in `registers[:for_stack]`
+4. **parentloop stack:** Track in `registers["for_stack"]`
 5. **Stack cleanup:** Always pop for_stack, even on error/interrupt
 6. **else block:** Render when collection is empty/nil
 7. **Range support:** Convert Range to array before iteration
@@ -376,5 +397,12 @@ Compare to `render`:
 2. **Wrong loop name:** Must use consistent `"var-collection"` format for continue
 3. **Length calculation:** `forloop.length` is segment length, not collection length
 4. **Parentloop nil:** Don't crash when accessing parentloop at top level
-5. **Continue across renders:** Position doesn't persist across `render` boundaries
-6. **Include vs render forloop:** `include for` has no forloop, `render for` does
+5. **Parentloop chain broken:** Missing or mismanaged `registers["for_stack"]` breaks `parentloop`
+6. **Continue across renders:** Position doesn't persist across `render` boundaries
+7. **Include vs render forloop:** `include for` has no forloop, `render for` does
+
+See also:
+- [Core Abstractions](core-abstractions.md)
+- [Interrupts](interrupts.md)
+- [Scopes](scopes.md)
+- [Partials](partials.md)

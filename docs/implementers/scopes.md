@@ -1,3 +1,13 @@
+---
+title: Scopes and Variable Resolution
+description: >
+  How Liquid resolves variables through its three-layer lookup system: scopes, environments, and
+  static environments. Covers the scope stack, assign behavior, register stores, and depth limiting.
+  Essential for understanding variable visibility and isolation.
+optional: false
+order: 3
+---
+
 # Scopes and Variable Resolution
 
 This document explains Liquid's variable resolution hierarchy and provides implementation guidance.
@@ -76,7 +86,7 @@ ExecutionState:
   static_environments: List<Map<String, Any>>  # Global data
   
   # Other state
-  registers: Registers                   # Host app state (see below)
+  registers: RegisterStore               # Host app state (see below)
   # ... interrupts, counters, etc.
 ```
 
@@ -105,10 +115,11 @@ function find_variable(state, key):
   return nil
 
 function evaluate_value(value, state):
-  # Proc memoization: call once, replace with result
-  if value.is_proc:
-    result = value.arity == 0 ? value.call() : value.call(state)
-    # Replace proc with result in the containing hash
+  # Callable memoization: call once, replace with result
+  if value.is_callable:
+    result = value.call(state)  // call with state if supported
+    # Replace callable with result in the containing hash
+    containing_hash[key] = result
     return result
   return value
 ```
@@ -125,13 +136,13 @@ function assign_variable(state, key, value):
 
 ```
 function push_scope(state, initial_vars = {}):
-  state.scopes.unshift(initial_vars)
+  state.scopes.push_front(initial_vars)
   check_depth_limit(state)
 
 function pop_scope(state):
   if state.scopes.length == 1:
     raise "Cannot pop last scope"
-  state.scopes.shift()
+  state.scopes.pop_front()
 
 function with_scope(state, initial_vars = {}):
   push_scope(state, initial_vars)
@@ -158,14 +169,14 @@ function squash_instance_assigns(state):
 
 **Why?** This allows host applications to pass default values in `outer_scope` that can be overridden by `environments`. The environments take precedence.
 
-## Registers: Host Application State
+## Register Store: Host Application State
 
-Registers are a separate key-value store for host application state that persists across the render but isn't exposed to templates.
+The register store is a separate key-value map for host application state that persists across the render but isn't exposed to templates.
 
 ### Copy-on-Write Semantics
 
 ```
-Registers:
+RegisterStore:
   static: Map<String, Any>   # Original values (shared)
   changes: Map<String, Any>  # Local modifications
 
@@ -189,7 +200,7 @@ function registers_set(registers, key, value):
 | `:file_system` | Template file system |
 | `:template_factory` | Template factory |
 
-### Registers in Isolated Subcontexts
+### Register Store in Isolated Subcontexts
 
 When `render` creates an isolated subcontext:
 
@@ -200,7 +211,7 @@ function new_isolated_subcontext(state):
     environments: [],                       # FRESH - no environments
     static_environments: state.static_environments,  # SHARED
     
-    registers: Registers(                   # NEW wrapper, SHARED static
+    registers: RegisterStore(               # NEW wrapper, SHARED static
       static: state.registers,              # Parent's registers become static
       changes: {}                           # Fresh changes
     ),
@@ -244,69 +255,13 @@ Output: `local` (found in scopes)
 {% assign x = "outer" %}
 {% for i in (1..1) %}
   {% assign x = "inner" %}
-  {{ x }}
-{% endfor %}
-{{ x }}
-```
-Output: `inner inner`
-
-**Note:** `{% assign %}` writes to `scopes[0]`, which is the for-loop's scope. But when the for-loop ends and its scope is popped, the **outer** scope's `x` is still `"outer"`... except that's not what happens!
-
-Actually, `{% assign %}` always writes to `scopes[0]`, and after the for-loop, that assignment persists because the for-loop's scope **becomes** the outer scope's modification. Let me correct:
-
-```liquid
-{% assign x = "outer" %}
-{% for i in (1..1) %}
-  {% assign x = "inner" %}
-{% endfor %}
-{{ x }}
-```
-Output: `inner`
-
-The `for` tag creates a new scope, but `{% assign %}` writes to the **top** scope. When the for-loop ends, the top scope is popped, but the assignment to `x` was made in that scope, which... 
-
-Actually, re-reading the code: assignments go to `scopes[0]`, which is the innermost scope. So after the for-loop pops its scope, any assignments made inside are lost.
-
-Let me verify with the actual behavior:
-
-```liquid
-{% assign x = "outer" %}
-{% for i in (1..1) %}
-  {% assign x = "inner" %}
-  inside: {{ x }}
-{% endfor %}
-outside: {{ x }}
-```
-
-The `for` tag does `context.stack do ... end`, which pushes a new scope. Inside, `{% assign x = "inner" %}` writes to that new scope. After the loop, the scope is popped.
-
-But wait - the lookup finds `x` in the inner scope first, then when popped, finds it in the outer scope again. So:
-
-Output: `inside: inner outside: outer`
-
-Actually no - the assign writes to scopes[0], and `for` pushes a scope, so the assign goes to the for-loop's scope. But looking at the actual implementation:
-
-```ruby
-def []=(key, value)
-  @scopes[0][key] = value
-end
-```
-
-So assignments do go to the **current** top scope. When that scope is popped, the assignment is gone.
-
-**Correction - verified behavior:**
-
-```liquid
-{% assign x = "outer" %}
-{% for i in (1..1) %}
-  {% assign x = "inner" %}
   inside: {{ x }}
 {% endfor %}
 outside: {{ x }}
 ```
 Output: `inside: inner outside: outer`
 
-The for-loop's scope shadows the outer assignment temporarily.
+`{% assign %}` always writes to the top scope. The `for` tag pushes a new scope, so the inner assignment shadows `x` inside the loop and is discarded when the loop scope is popped.
 
 ### Environment Override
 
@@ -336,22 +291,22 @@ The `render` tag creates an isolated context:
 
 So `shop` (from static_environments) is still accessible, but `shop_name` (assigned in outer scope) is not.
 
-### Proc Memoization
+### Lazy Value Memoization
 
-Host applications can pass Procs that are lazily evaluated:
+Host applications can pass lazy values (callables) that are evaluated on first access:
 
-```ruby
-Template.parse("{{ expensive }}").render({
-  "expensive" => -> { compute_expensive_value() }
+```
+render(template, {
+  "expensive": () => compute_expensive_value()
 })
 ```
 
-The Proc is called once on first access, then replaced with its result:
+The callable is invoked once on first access, then replaced with its result:
 
 ```
 function evaluate_value(value, state):
-  if value.is_proc:
-    result = value.arity == 0 ? value.call() : value.call(state)
+  if value.is_callable:
+    result = value.call(state)  // call with state if supported
     # IMPORTANT: Replace in the hash so subsequent lookups get cached value
     containing_hash[key] = result
     return result
@@ -364,14 +319,19 @@ function evaluate_value(value, state):
 2. **Scope stack:** push/pop for `for`, `tablerow`, `capture`, etc.
 3. **Writes to top:** `{% assign %}` always writes to `scopes[0]`
 4. **Squash on init:** Environment values override matching outer_scope keys
-5. **Registers copy-on-write:** New Registers wrapper for isolated contexts
+5. **Register store copy-on-write:** New wrapper for isolated contexts
 6. **Depth limiting:** Track `base_scope_depth` across isolated contexts
-7. **Proc memoization:** Call once, cache result in original hash
+7. **Callable memoization:** Call once, cache result in original hash
 
 ## Common Pitfalls
 
 1. **Forgetting squash behavior:** Tests may fail if outer_scope values aren't overridden by environments
 2. **Wrong scope for assigns:** Must write to `scopes[0]`, not search and update
-3. **Registers leaking:** Isolated contexts must wrap parent registers, not share directly
+3. **Register store leaking:** Isolated contexts must wrap parent registers, not share directly
 4. **Depth check timing:** Must check before pushing, not after
-5. **Proc replacement:** Must replace in the original hash, not just return the value
+5. **Callable replacement:** Must replace in the original hash, not just return the value
+
+See also:
+- [Core Abstractions](core-abstractions.md)
+- [For Loops](for-loops.md)
+- [Partials](partials.md)

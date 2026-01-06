@@ -1,3 +1,13 @@
+---
+title: "Interrupts: break and continue"
+description: >
+  How break and continue work in Liquid using a stack-based interrupt mechanism. Covers propagation
+  through nested blocks, consumption by loops, and the critical differences between include (propagates)
+  and render (isolates). A common source of subtle bugs.
+optional: false
+order: 4
+---
+
 # Interrupts: `break` and `continue`
 
 This document explains how Liquid's `break` and `continue` tags work and provides implementation guidance for new Liquid implementations.
@@ -21,7 +31,7 @@ ExecutionState:
   # ... other fields ...
 
 Interrupt:
-  type: :break | :continue
+  type: BREAK | CONTINUE
 ```
 
 ### `break` and `continue` Tags
@@ -32,14 +42,14 @@ Both tags simply push an interrupt onto the stack:
 function compile_break():
   return:
     """
-    state.interrupts.push(Interrupt(:break))
+    state.interrupts.push(Interrupt(BREAK))
     return  # stop rendering current block
     """
 
 function compile_continue():
   return:
     """
-    state.interrupts.push(Interrupt(:continue))
+    state.interrupts.push(Interrupt(CONTINUE))
     return  # stop rendering current block
     """
 ```
@@ -84,10 +94,10 @@ function compile_for(var_name, collection_expr, body):
       if state.interrupts.not_empty():
         interrupt = state.interrupts.pop()
         
-        if interrupt.type == :break:
+        if interrupt.type == BREAK:
           break  # exit the loop entirely
         
-        if interrupt.type == :continue:
+        if interrupt.type == CONTINUE:
           next   # skip to next iteration (interrupt is consumed)
     """
 ```
@@ -231,6 +241,8 @@ With `include`, interrupts **propagate** to the caller because they share the sa
 
 If `some_condition` is true, the `break` propagates and breaks the outer loop.
 
+**Hard part to get right:** this propagation is why `break`/`continue` behavior differs between `include` and `render`. If your implementation copies interrupt stacks for `include`, you'll incorrectly contain breaks.
+
 ### Interaction with `render`
 
 With `render`, interrupts are **contained** because `render` creates an isolated execution state with its own interrupt stack:
@@ -252,6 +264,8 @@ The inner `break`:
 2. Inner state is discarded when `render` returns
 3. Outer loop never sees the interrupt
 
+**Hard part to get right:** any `render` implementation that reuses the outer interrupt stack will leak breaks/continues to the caller.
+
 ## Compiled Output Examples
 
 ### Simple Break
@@ -265,23 +279,22 @@ The inner `break`:
 
 Compiles conceptually to:
 
-```ruby
-items.each do |item|
+```
+for item in items:
   state.variables["item"] = item
   
   # {% if item.stop %}
-  if state.evaluate(item_stop_expr)
+  if evaluate(item_stop_expr, state):
     # {% break %}
-    state.interrupts.push(:break)
+    state.interrupts.push(BREAK)
     # block body returns early due to interrupt
-  end
   
   # Check interrupt before continuing
-  break if state.interrupts.pop_if(:break)
+  if state.interrupts.pop_if(BREAK):
+    break
   
   # {{ item.name }}
-  output << state.evaluate(item_name_expr)
-end
+  output.append(evaluate(item_name_expr, state))
 ```
 
 ### Nested Structure
@@ -298,30 +311,30 @@ end
 
 Compiles conceptually to:
 
-```ruby
-outer.each do |i|
+```
+for i in outer:
   state.variables["i"] = i
   
   # Inner for loop
-  inner.each do |j|
+  for j in inner:
     state.variables["j"] = j
     
-    if state.evaluate(done_expr)
-      state.interrupts.push(:break)
+    if evaluate(done_expr, state):
+      state.interrupts.push(BREAK)
       break  # exit inner block body
-    end
     
-    break if state.interrupts.pop_if(:break)  # consume break, exit inner loop
+    if state.interrupts.pop_if(BREAK):  # consume break, exit inner loop
+      break
     
-    output << j
+    output.append(j)
   end
   # After inner loop, interrupt has been consumed
   
   # Check for any propagating interrupt (there isn't one)
-  break if state.interrupts.not_empty?
+  if state.interrupts.not_empty():
+    break
   
-  output << "still in outer"
-end
+  output.append("still in outer")
 ```
 
 ## Implementation Checklist
@@ -331,11 +344,11 @@ end
    - Methods: `push(type)`, `pop()`, `not_empty?`
 
 2. **`break` tag:**
-   - Push `:break` interrupt
+   - Push `BREAK` interrupt
    - Return from current render method
 
 3. **`continue` tag:**
-   - Push `:continue` interrupt
+   - Push `CONTINUE` interrupt
    - Return from current render method
 
 4. **Block body rendering:**
@@ -344,7 +357,7 @@ end
 
 5. **`for` tag:**
    - After each iteration body renders, check for interrupt
-   - Pop and handle: `:break` exits loop, `:continue` goes to next iteration
+   - Pop and handle: `BREAK` exits loop, `CONTINUE` goes to next iteration
 
 6. **`tablerow` tag:**
    - Same interrupt handling as `for`
@@ -382,3 +395,8 @@ end
 | `include` | Share interrupt stack (interrupts propagate) |
 
 The key insight: **interrupts are a simple stack-based signaling mechanism, not exceptions**. They propagate by block bodies returning early, and are consumed by loop constructs.
+
+See also:
+- [For Loops](for-loops.md)
+- [Partials](partials.md)
+- [Core Abstractions](core-abstractions.md)

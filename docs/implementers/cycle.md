@@ -1,3 +1,13 @@
+---
+title: The cycle Tag
+description: >
+  How the cycle tag rotates through values, including its quirky identity rules where unnamed cycles
+  with variables get independent counters. Covers named vs unnamed cycles, counter persistence, and
+  isolation in render vs include.
+optional: false
+order: 6
+---
+
 # The `cycle` Tag
 
 This document explains Liquid's `cycle` tag, including its counter-intuitive identity rules.
@@ -22,7 +32,7 @@ Output: `odd even odd even`
 
 ## Counter Identity: The Tricky Part
 
-Cycle counters are stored in `registers[:cycle]` keyed by a **cycle identity**. Two cycle tags share a counter if and only if they have the same identity.
+Cycle counters are stored in `registers["cycle"]` keyed by a **cycle identity**. Two cycle tags share a counter if and only if they have the same identity.
 
 ### Named Cycles
 
@@ -69,20 +79,11 @@ Output: `a a` (each cycle has its own counter!)
 
 ### Why This Quirk Exists
 
-The identity for unnamed cycles is computed as `@variables.to_s` - the string representation of the variables array.
+The identity for unnamed cycles is computed by stringifying the expression list.
 
-For literals like `"a"`, `to_s` produces a consistent string, so `{% cycle "a", "b" %}` always has the same identity.
+For literals like `"a"`, the string is consistent, so `{% cycle "a", "b" %}` always has the same identity.
 
-For `VariableLookup` objects, each instance has a different `object_id`, so `to_s` includes that ID. To preserve backwards compatibility, Liquid **duplicates** each VariableLookup, ensuring each cycle tag gets unique object IDs and thus a unique identity.
-
-```ruby
-# From cycle.rb
-def maybe_dup_lookup(var)
-  var.is_a?(VariableLookup) ? var.dup : var
-end
-```
-
-The code comment acknowledges this is a quirk preserved for backwards compatibility.
+For variable reference nodes, the stringification includes an internal identity token, so each tag gets a distinct identity even if the expressions are textually identical. To preserve backwards compatibility, implementations **clone** variable references for unnamed cycles before computing the identity.
 
 ## Pseudocode Implementation
 
@@ -90,7 +91,7 @@ The code comment acknowledges this is a quirk preserved for backwards compatibil
 
 ```
 # In registers
-registers[:cycle] = {
+registers["cycle"] = {
   "cycle_identity_1" => 0,  # current index
   "cycle_identity_2" => 1,
   # ...
@@ -100,6 +101,8 @@ CycleTag:
   name: Expression | nil      # The cycle name (for named cycles)
   variables: List<Expression> # The values to cycle through
   is_named: Boolean           # Whether this is a named cycle
+
+UNIQUE_REFERENCE_TOKEN_PATTERN = /.../  # implementation-defined unique token pattern
 ```
 
 ### Parsing
@@ -119,20 +122,20 @@ function parse_cycle(markup):
     tag.is_named = false
     
     # Compute identity from variables array
-    # CRITICAL: Duplicate VariableLookups to ensure unique identity per tag
-    tag.variables = tag.variables.map(v => maybe_dup_lookup(v))
+    # CRITICAL: Clone variable references to ensure unique identity per tag
+    tag.variables = tag.variables.map(v => maybe_clone_reference(v))
     tag.name = tag.variables.to_string()
     
-    # Check if the name looks like a unique object ID pattern
-    # If so, this is effectively a named cycle (shares counter)
-    if not tag.name.matches(/\w+:0x[0-9a-f]{8}/):
+    # Check if the name includes a unique reference token
+    # If it doesn't, treat it as named (shared counter)
+    if not tag.name.matches(UNIQUE_REFERENCE_TOKEN_PATTERN):
       tag.is_named = true
   
   return tag
 
-function maybe_dup_lookup(var):
-  if var is VariableLookup:
-    return var.duplicate()  # New object with new object_id
+function maybe_clone_reference(var):
+  if var is VariableReference:
+    return clone(var)  # New identity token
   return var
 ```
 
@@ -141,7 +144,10 @@ function maybe_dup_lookup(var):
 ```
 function render_cycle(tag, state, output):
   # Get or create cycle counters map
-  cycles = state.registers[:cycle] ||= {}
+  cycles = state.registers["cycle"]
+  if cycles is nil:
+    cycles = {}
+    state.registers["cycle"] = cycles
   
   # Evaluate the cycle identity key
   key = state.evaluate(tag.name)
@@ -154,9 +160,9 @@ function render_cycle(tag, state, output):
   
   # Output the value
   if value is Array:
-    output << value.join("")
+    output.append(value.join(""))
   else:
-    output << value.to_string()
+    output.append(value.to_string())
   
   # Advance counter (wrap around)
   index = (index + 1) % tag.variables.length
@@ -183,14 +189,6 @@ Output: `abcab`
 Output: `odd left even right odd left`
 
 ### Shared Counter Across Loops
-
-```liquid
-{% for i in (1..2) %}{% cycle "a", "b" %}{% endfor %}
-{% for i in (1..2) %}{% cycle "a", "b" %}{% endfor %}
-```
-Output: `ab ab`
-
-Wait, that's wrong. Let me reconsider. The cycle counter persists in registers, so:
 
 ```liquid
 {% for i in (1..2) %}{% cycle "a", "b" %}{% endfor %}
@@ -238,7 +236,7 @@ Output: `red red blue`
 ```
 Output: `1 1 2 2 1 1`
 
-Each `{% cycle a, "2" %}` has a **different** identity because the VariableLookup for `a` is duplicated, giving each tag a unique object ID.
+Each `{% cycle a, "2" %}` has a **different** identity because the variable reference for `a` is cloned, giving each tag a unique identity token.
 
 Compare to literals:
 
@@ -280,14 +278,19 @@ Output: `a a b`
 
 1. **Named cycles:** Use evaluated name as counter key
 2. **Unnamed cycles:** Use variables array string representation as key
-3. **VariableLookup duplication:** Duplicate lookups to give each tag unique identity
-4. **Counter storage:** Use `registers[:cycle]` hash
+3. **Variable reference cloning:** Clone references to give each tag unique identity
+4. **Counter storage:** Use `registers["cycle"]` hash
 5. **Wrap-around:** `(index + 1) % variables.length`
 6. **Array output:** Join arrays to string when outputting
 
 ## Common Pitfalls
 
-1. **Forgetting to duplicate VariableLookups:** Unnamed cycles with variables will incorrectly share counters
+1. **Forgetting to clone variable references:** Unnamed cycles with variables will incorrectly share counters
 2. **String representation inconsistency:** The identity string must be consistent for the same literals
 3. **Register isolation:** `render` tag must create fresh cycle counters
 4. **Counter not incrementing:** Must increment AFTER getting the value, not before
+
+See also:
+- [Core Abstractions](core-abstractions.md)
+- [For Loops](for-loops.md)
+- [Partials](partials.md)

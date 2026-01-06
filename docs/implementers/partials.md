@@ -1,3 +1,13 @@
+---
+title: "Partials: include vs render"
+description: >
+  The critical differences between include (deprecated, shares scope, propagates interrupts) and
+  render (recommended, isolated scope, contained interrupts). Understanding these differences is
+  essential for correct partial template handling.
+optional: false
+order: 5
+---
+
 # Partials: `include` vs `render`
 
 This document explains the differences between Liquid's two partial rendering tags and provides implementation guidance for new Liquid implementations.
@@ -6,12 +16,12 @@ This document explains the differences between Liquid's two partial rendering ta
 
 | Feature | `include` | `render` |
 |---------|-----------|----------|
-| Variable scope | Shared (leaky) | Isolated |
+| Variable scope | Outer visible, local assigns | Isolated (outer assigns hidden) |
 | Template name | Dynamic (variable) | Static (string literal) |
 | `break`/`continue` | Propagate to caller | Contained within partial |
 | Nested `include` | Allowed | **Disallowed** |
 | `forloop` access | None | Provided for `for` variant |
-| `assign` side effects | Visible to caller | Isolated |
+| `assign` side effects | Local to include | Local to render |
 | `increment`/`decrement` | Shared counters | Isolated counters |
 | Status | **Deprecated** | Recommended |
 
@@ -32,7 +42,7 @@ ExecutionState:
   
   # IMMUTABLE/SHARED - same across all partials
   static_env: Map<String, Any>         # global objects (shop, theme, etc.)
-  registers: Map<String, Any>          # host application state
+  registers: RegisterStore             # host application state (copy-on-write in render)
   resource_limits: ResourceLimits      # memory/time limits
   disabled_tags: Set<String>           # tags that cannot execute
   filters: List<FilterModule>          # available filters
@@ -41,7 +51,7 @@ ExecutionState:
 
 ### `include` Implementation
 
-`include` passes the **same** mutable state to the partial:
+`include` shares the execution state but pushes a new variable scope:
 
 ```
 function compile_include(partial_name, with_expr, for_expr, alias, attributes):
@@ -62,24 +72,25 @@ function compile_include(partial_name, with_expr, for_expr, alias, attributes):
     else:
       value = variables[template_name]  # auto-bind by name
     
-    # Assign attributes to SAME scope
-    for (key, expr) in attributes:
-      variables[key] = evaluate(expr)
-    
-    # Execute partial
-    if for_expr and is_iterable(collection):
-      for item in collection:
-        variables[var_name] = item
+    # Execute partial inside a new local scope
+    with_scope(state):
+      # Assign attributes to local scope
+      for (key, expr) in attributes:
+        variables[key] = evaluate(expr)
+      
+      if for_expr and is_iterable(collection):
+        for item in collection:
+          variables[var_name] = item
+          call partial(state)  # SAME state object
+          if interrupts.has_break():
+            break  # propagates to caller's loop!
+      else:
+        variables[var_name] = value
         call partial(state)  # SAME state object
-        if interrupts.has_break():
-          break  # propagates to caller's loop!
-    else:
-      variables[var_name] = value
-      call partial(state)  # SAME state object
     """
 
 # The partial receives:
-#   - SAME variables (reads AND writes affect caller)
+#   - NEW local scope (outer variables readable, inner assignments don't escape)
 #   - SAME interrupts (break/continue propagate up)
 #   - SAME counters (increment/decrement shared)
 #   - SAME everything else
@@ -87,7 +98,7 @@ function compile_include(partial_name, with_expr, for_expr, alias, attributes):
 
 ### `render` Implementation
 
-`render` creates **isolated** mutable state but shares immutable state:
+`render` creates **isolated** mutable state; shared state is copied or referenced (registers are copy-on-write):
 
 ```
 function compile_render(partial_name, with_expr, for_expr, alias, attributes):
@@ -123,7 +134,7 @@ function compile_render(partial_name, with_expr, for_expr, alias, attributes):
         counters: {},                     # FRESH - isolated counters
         
         static_env: state.static_env,     # SHARED
-        registers: state.registers,       # SHARED
+        registers: copy_on_write(state.registers),
         resource_limits: state.resource_limits,  # SHARED
         disabled_tags: state.disabled_tags + {"include"},  # SHARED + include disabled
         filters: state.filters,           # SHARED
@@ -155,7 +166,7 @@ function compile_render(partial_name, with_expr, for_expr, alias, attributes):
 #   - FRESH variables (no leakage in or out)
 #   - FRESH interrupts (break/continue contained)
 #   - FRESH counters (isolated increment/decrement)
-#   - SHARED static_env, registers, limits, filters, errors
+#   - SHARED static_env, COPY-ON-WRITE registers, limits, filters, errors
 #   - MODIFIED disabled_tags (include is prohibited)
 ```
 
@@ -188,16 +199,15 @@ For a template like:
 ```
 
 The compiled output might look like:
-```ruby
-# Assuming partial is pre-resolved to a method
-def render_product(inner_state)
+```
+# Assuming partial is pre-resolved to a callable
+function render_product(inner_state):
   # ... partial body ...
-end
 
 # At call site:
-inner = state.new_isolated_subcontext()
-inner.variables["title"] = state.evaluate(item_name_expr)
-inner.variables["price"] = state.evaluate(item_price_expr)
+inner = new_isolated_subcontext(state)
+inner.variables["title"] = evaluate(item_name_expr, state)
+inner.variables["price"] = evaluate(item_price_expr, state)
 render_product(inner)
 ```
 
@@ -206,18 +216,19 @@ For `include`:
 {% include 'product', title: item.name %}
 ```
 
-```ruby
-# At call site - no new context created
-state.variables["title"] = state.evaluate(item_name_expr)
-state.variables["product"] = state.find_variable("product")
-include_product(state)  # same state, potential break propagation
+```
+# At call site - same context, but a new local scope is pushed
+with_scope(state):
+  state.variables["title"] = evaluate(item_name_expr, state)
+  state.variables["product"] = find_variable("product", state)
+  include_product(state)  # same state, potential break propagation
 ```
 
 ## Behavioral Specifications
 
 ### Variable Scoping
 
-**`include`: Shared Scope (Leaky)**
+**`include`: Outer Scope Visible, Local Assigns**
 
 Variables assigned outside are visible inside:
 ```liquid
@@ -226,11 +237,11 @@ Variables assigned outside are visible inside:
 {%- # Inside snippet: {{ outer }} renders "visible" -%}
 ```
 
-Variables assigned inside are visible outside:
+Variables assigned inside are NOT visible outside:
 ```liquid
 {% include 'snippet' %}
 {%- # snippet contains: {% assign inner = "leaked" %} -%}
-{{ inner }}  {%- # Renders "leaked" -%}
+{{ inner }}  {%- # Renders "" (empty) -%}
 ```
 
 Automatic variable binding - if a variable exists with the same name as the partial:
@@ -274,6 +285,8 @@ A `break` inside an included partial will break the caller's loop:
 {%- # Output: "1" (loop exits after first iteration) -%}
 ```
 
+**Hard part to get right:** `include` must share the same interrupt stack as the caller. If you isolate interrupts here, `break` and `continue` will not reach the outer loop.
+
 **`render`: Interrupts Are Contained**
 
 A `break` inside a rendered partial has no effect on the caller:
@@ -284,6 +297,8 @@ A `break` inside a rendered partial has no effect on the caller:
 {%- # break_partial contains: {% break %} -%}
 {%- # Output: "112233" (all iterations complete) -%}
 ```
+
+**Hard part to get right:** `render` must create a fresh interrupt stack per call. If you share interrupts, breaks will escape the partial and behave like `include`.
 
 ### Template Name Resolution
 
@@ -320,7 +335,7 @@ Both bind the value to a variable named after the partial (e.g., `product`).
 |--------|---------------|--------------|
 | `forloop` available | No | Yes |
 | `break` behavior | Propagates to caller | Contained |
-| Scope per iteration | Same scope | Fresh isolated scope |
+| Scope per iteration | Same local scope | Fresh isolated scope |
 
 Note on `break` behavior: In `include for`, a `break` propagates up through the caller's loop stack. If there's an outer `for` loop, it exits that loop. If there's no outer loop, it stops rendering the rest of the template. In `render for`, the break only affects loops within the partial itself.
 
@@ -365,3 +380,8 @@ This applies transitively through nested `render` calls.
 | Want static analysis | Need dynamic template names |
 
 **The `include` tag is deprecated.** New code should always use `render`.
+
+See also:
+- [Scopes](scopes.md)
+- [Interrupts](interrupts.md)
+- [Core Abstractions](core-abstractions.md)

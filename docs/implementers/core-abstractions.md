@@ -1,3 +1,13 @@
+---
+title: Core Abstractions
+description: >
+  The five foundational functions every Liquid implementation needs: to_output, to_iterable,
+  is_empty, is_blank, and scope management. Implement these correctly and you're 90% done.
+  This is the most important document for new implementers - read it first.
+optional: false
+order: 1
+---
+
 # Core Abstractions
 
 If you implement these five abstractions correctly, you're 90% of the way to a working Liquid implementation. Everything else—individual tags, filters, operators—builds on top of these foundations.
@@ -332,7 +342,7 @@ Liquid uses a stack of scopes for variable lookup.
 ### Pseudocode
 
 ```
-class Context:
+Context:
     scopes = [root_environment]  // Stack of dictionaries
 
     function push_scope(scope):
@@ -486,3 +496,6 @@ See also:
 - [For Loops](for-loops.md)
 - [Scopes](scopes.md)
 - [Interrupts](interrupts.md)
+- [Partials](partials.md)
+- [Cycle](cycle.md)
+- [Parsing](parsing.md)

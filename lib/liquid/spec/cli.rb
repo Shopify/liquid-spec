@@ -6,6 +6,7 @@ require_relative "cli/inspect"
 require_relative "cli/eval"
 require_relative "cli/test"
 require_relative "cli/matrix"
+require_relative "cli/docs"
 
 module Liquid
   module Spec
@@ -23,6 +24,7 @@ module Liquid
           inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
           eval ADAPTER        Quick test a template against your adapter
           init [FILE]         Generate an adapter template (default: liquid_adapter.rb)
+          docs [NAME]         List or view implementer documentation
           help                Show this help message
 
         Examples:
@@ -103,6 +105,8 @@ module Liquid
           Inspect.run(args)
         when "eval"
           Eval.run(args)
+        when "docs"
+          Docs.run(args)
         when "help", "-h", "--help", nil
           puts HELP
         else
