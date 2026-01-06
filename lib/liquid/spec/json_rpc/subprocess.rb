@@ -77,12 +77,17 @@ module Liquid
         def shutdown
           return unless running?
 
+          # Send quit notification (no response expected)
           begin
-            Timeout.timeout(5) do
-              send_request("shutdown", {})
-            end
-          rescue Timeout::Error, IOError, Errno::EPIPE
+            write_message(Protocol.notification(method: "quit"))
+          rescue IOError, Errno::EPIPE
             # Subprocess may have already exited
+          end
+
+          # Give subprocess 1 second to exit gracefully
+          deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 1.0
+          while @wait_thr&.alive? && Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+            sleep(0.01)
           end
 
           cleanup

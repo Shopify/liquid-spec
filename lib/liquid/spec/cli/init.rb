@@ -97,10 +97,9 @@ module Liquid
           #    Request:  {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"version":"1.0"}}
           #    Response: {"jsonrpc":"2.0","id":1,"result":{"version":"1.0","features":["core"]}}
           #
-          # 2. shutdown (parent -> subprocess)
-          #    Request:  {"jsonrpc":"2.0","id":N,"method":"shutdown","params":{}}
-          #    Response: {"jsonrpc":"2.0","id":N,"result":{}}
-          #    Then subprocess should exit cleanly.
+          # 2. quit (parent -> subprocess) - notification, no response expected
+          #    Notification: {"jsonrpc":"2.0","method":"quit","params":{}}
+          #    Subprocess should exit cleanly within 1 second.
           #
           # --- COMPILE ---
           #
@@ -206,6 +205,7 @@ module Liquid
           DEFAULT_COMMAND = "path/to/your/liquid-server"
 
           LiquidSpec.setup do |ctx|
+            require "liquid"
             require "liquid/spec/json_rpc/adapter"
 
             # CLI --command flag overrides DEFAULT_COMMAND
@@ -438,7 +438,7 @@ module Liquid
             1. **initialize** - liquid-spec sends version info, your server responds with supported features
             2. **compile** - Parse a template, return a template_id
             3. **render** - Render a compiled template with variables
-            4. **shutdown** - Clean exit
+            4. **quit** - Notification to exit cleanly (no response expected)
 
             ### Example: Minimal Server (Node.js)
 
@@ -463,9 +463,8 @@ module Liquid
                 const t = templates.get(params.template_id);
                 const output = renderLiquid(t.source, params.environment || {}, t.filesystem);
                 respond(id, { output });
-              } else if (method === 'shutdown') {
-                respond(id, {});
-                process.exit(0);
+              } else if (method === 'quit') {
+                process.exit(0);  // No response needed for quit notification
               }
             });
 

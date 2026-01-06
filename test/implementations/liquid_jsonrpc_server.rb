@@ -24,8 +24,10 @@ class LiquidJsonRpcServer
       begin
         request = JSON.parse(line.chomp)
         response = handle_request(request)
-        $stdout.puts(JSON.generate(response))
-        $stdout.flush
+        if response  # nil for notifications like quit
+          $stdout.puts(JSON.generate(response))
+          $stdout.flush
+        end
       rescue JSON::ParserError => e
         $stderr.puts "[LiquidJsonRpcServer] JSON parse error: #{e.message}"
       end
@@ -67,11 +69,16 @@ class LiquidJsonRpcServer
     method = request["method"]
     params = request["params"] || {}
 
+    # Handle quit notification (no response)
+    if method == "quit"
+      $stderr.puts "[LiquidJsonRpcServer] Quit notification received"
+      @running = false
+      return nil
+    end
+
     result = case method
     when "initialize"
       handle_initialize(params)
-    when "shutdown"
-      handle_shutdown(params)
     when "compile"
       handle_compile(params)
     when "render"
@@ -114,12 +121,6 @@ class LiquidJsonRpcServer
       "implementation" => "liquid-ruby",
       "liquid_version" => Liquid::VERSION,
     }
-  end
-
-  def handle_shutdown(_params)
-    $stderr.puts "[LiquidJsonRpcServer] Shutdown requested"
-    @running = false
-    {}
   end
 
   def handle_compile(params)

@@ -29,6 +29,15 @@ module Liquid
           }
         end
 
+        # Build a JSON-RPC notification (no response expected)
+        def self.notification(method:, params: {})
+          {
+            "jsonrpc" => VERSION,
+            "method" => method,
+            "params" => params,
+          }
+        end
+
         # Build a JSON-RPC success response
         def self.response(id:, result:)
           {
