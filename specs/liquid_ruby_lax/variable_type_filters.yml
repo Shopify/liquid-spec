@@ -7,7 +7,7 @@ _metadata:
     These specs test that first, last, and size filters/methods behave correctly
     across all primitive and compound types in lax parsing mode.
     The expected outputs should be identical to strict mode.
-  minimum_complexity: 150
+  minimum_complexity: 500
 
 specs:
 # =============================================================================
@@ -16,7 +16,7 @@ specs:
 
 # --- Float ---
 - name: lax_filter_float_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     float, first:{{- f | first }}
     float, last:{{- f | last }}
@@ -30,7 +30,7 @@ specs:
 
 # --- Integer ---
 - name: lax_filter_int_global_first_last_size
-  complexity: 150
+  complexity: 500
   hint: |
     int | size returns 8 because Ruby's Integer#size returns the byte representation
     size (8 bytes on 64-bit systems), NOT the number of digits. This is inherited Ruby
@@ -48,7 +48,7 @@ specs:
 
 # --- Boolean (true) ---
 - name: lax_filter_bool_true_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     bool, first:{{- b | first }}
     bool, last:{{- b | last }}
@@ -62,7 +62,7 @@ specs:
 
 # --- Boolean (false) ---
 - name: lax_filter_bool_false_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     bool, first:{{- b | first }}
     bool, last:{{- b | last }}
@@ -76,7 +76,7 @@ specs:
 
 # --- String ---
 - name: lax_filter_string_global_first_last_size
-  complexity: 150
+  complexity: 500
   hint: "String first/last return the first/last character of the string"
   template: |
     string, first:{{- s | first }}
@@ -91,7 +91,7 @@ specs:
 
 # --- Nil ---
 - name: lax_filter_nil_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     nil, first:{{- n | first }}
     nil, last:{{- n | last }}
@@ -105,7 +105,7 @@ specs:
 
 # --- Array ---
 - name: lax_filter_array_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     array, first:{{- arr | first }}
     array, last:{{- arr | last }}
@@ -119,7 +119,7 @@ specs:
 
 # --- Empty Array ---
 - name: lax_filter_empty_array_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     empty_array, first:{{- arr | first }}
     empty_array, last:{{- arr | last }}
@@ -133,7 +133,7 @@ specs:
 
 # --- Hash ---
 - name: lax_filter_hash_global_first_last_size
-  complexity: 150
+  complexity: 500
   hint: "hash | first returns first key+value concatenated, hash | last returns empty"
   template: |
     hash, first:{{- h | first }}
@@ -150,7 +150,7 @@ specs:
 
 # --- Empty Hash ---
 - name: lax_filter_empty_hash_global_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     empty_hash, first:{{- h | first }}
     empty_hash, last:{{- h | last }}
@@ -164,7 +164,7 @@ specs:
 
 # --- Drop (using IntegerDrop) ---
 - name: lax_filter_drop_global_first_last_size
-  complexity: 160
+  complexity: 510
   template: |
     drop, first:{{- d | first }}
     drop, last:{{- d | last }}
@@ -183,7 +183,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_hash_properties_first_last_size
-  complexity: 160
+  complexity: 510
   hint: "Tests accessing various types as hash properties and applying filters"
   template: |
     hash.f, first:{{- hash.f | first }}
@@ -238,7 +238,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_array_containing_types_first
-  complexity: 160
+  complexity: 510
   hint: "Array containing float, int, bool, string, array, hash - test first"
   template: "{{ arr | first }}"
   environment:
@@ -252,7 +252,7 @@ specs:
   expected: "3.14"
 
 - name: lax_filter_array_containing_types_last
-  complexity: 160
+  complexity: 510
   hint: "Array containing various types - last returns hash's inspect string"
   template: "{{ arr | last }}"
   environment:
@@ -266,7 +266,7 @@ specs:
   expected: '{"a"=>1}'
 
 - name: lax_filter_array_containing_types_size
-  complexity: 160
+  complexity: 510
   template: "{{ arr | size }}"
   environment:
     arr:
@@ -283,7 +283,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_hash_containing_types_first_last_size
-  complexity: 160
+  complexity: 510
   hint: "Hash containing all types as values"
   template: |
     hash, first:{{- hash | first }}
@@ -305,7 +305,7 @@ specs:
 # =============================================================================
 
 - name: lax_property_access_array_first_last_size
-  complexity: 160
+  complexity: 510
   hint: "Using .first, .last, .size property access on arrays"
   template: |
     arr.first:{{- arr.first }}
@@ -319,7 +319,7 @@ specs:
     arr.size:3
 
 - name: lax_property_access_hash_first_last_size
-  complexity: 160
+  complexity: 510
   hint: "Using .first, .last, .size property access on hashes"
   template: |
     h.first:{{- h.first }}
@@ -335,7 +335,7 @@ specs:
     h.size:2
 
 - name: lax_property_access_string_size
-  complexity: 160
+  complexity: 510
   hint: "Strings support .size property access"
   template: "{{ s.size }}"
   environment:
@@ -347,7 +347,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_range_first_last_size
-  complexity: 160
+  complexity: 510
   template: |
     {%- assign r = (1..5) -%}
     range, first:{{- r | first }}
@@ -359,7 +359,7 @@ specs:
     range, size:5
 
 - name: lax_property_access_range_first_last_size
-  complexity: 160
+  complexity: 510
   template: |
     {%- assign r = (1..5) -%}
     range.first:{{- r.first }}
@@ -375,7 +375,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_undefined_first_last_size
-  complexity: 150
+  complexity: 500
   template: |
     undefined, first:{{- undefined | first }}
     undefined, last:{{- undefined | last }}
@@ -391,7 +391,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_negative_int_size
-  complexity: 150
+  complexity: 500
   hint: |
     int | size returns Ruby's Integer#size (8 bytes on 64-bit systems).
     Negative integers return the same byte size as positive integers.
@@ -405,7 +405,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_zero_values_first_last_size
-  complexity: 150
+  complexity: 500
   hint: |
     Zero integer still returns size 8 (Ruby Integer#size = byte representation).
     Zero float returns size 0 (Float doesn't respond to size the same way).
@@ -432,7 +432,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_vs_property_array_equivalence
-  complexity: 160
+  complexity: 510
   hint: "Verify filter and property access return identical results for arrays"
   template: |
     filter first:{{- arr | first }}, property first:{{- arr.first }}
@@ -446,7 +446,7 @@ specs:
     filter size:3, property size:3
 
 - name: lax_filter_vs_property_hash_equivalence
-  complexity: 160
+  complexity: 510
   hint: "Verify filter and property access return identical results for hashes"
   template: |
     filter first:{{- h | first }}, property first:{{- h.first }}
@@ -462,7 +462,7 @@ specs:
     filter size:2, property size:2
 
 - name: lax_filter_vs_property_string_equivalence
-  complexity: 160
+  complexity: 510
   hint: "Verify filter and property access return identical results for strings"
   template: |
     filter first:{{- s | first }}, property first:{{- s.first }}
@@ -476,7 +476,7 @@ specs:
     filter size:5, property size:5
 
 - name: lax_filter_vs_property_int_equivalence
-  complexity: 160
+  complexity: 510
   hint: "int | size returns Ruby Integer#size (byte size = 8 on 64-bit), not digit count"
   template: |
     filter first:{{- i | first }}, property first:{{- i.first }}
@@ -490,7 +490,7 @@ specs:
     filter size:8, property size:8
 
 - name: lax_filter_vs_property_float_equivalence
-  complexity: 160
+  complexity: 510
   hint: |
     Float.size differs between filter and property access:
     - filter: f | size returns 0 (filter handles missing .size method)
@@ -507,7 +507,7 @@ specs:
     filter size:0, property size:
 
 - name: lax_filter_vs_property_range_equivalence
-  complexity: 160
+  complexity: 510
   template: |
     {%- assign r = (1..5) -%}
     filter first:{{- r | first }}, property first:{{- r.first }}
@@ -524,7 +524,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_int_size_is_byte_size
-  complexity: 160
+  complexity: 510
   hint: |
     IMPORTANT: int | size returns Ruby's Integer#size which is the byte representation
     size (8 bytes on 64-bit systems), NOT the number of digits. This is Ruby behavior
@@ -553,7 +553,7 @@ specs:
 # =============================================================================
 
 - name: lax_filter_integerdrop_first_last_size
-  complexity: 170
+  complexity: 520
   hint: "IntegerDrop wraps an integer value via to_liquid_value"
   template: |
     drop value:{{- d }}
@@ -571,7 +571,7 @@ specs:
     drop, size:0
 
 - name: lax_filter_booleandrop_first_last_size
-  complexity: 170
+  complexity: 520
   hint: "BooleanDrop wraps a boolean value, to_s returns Yay/Nay"
   template: |
     drop value:{{- d }}

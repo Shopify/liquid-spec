@@ -12,6 +12,10 @@ hint: |
 required_features:
   - lax_parsing
 
+# Lax parsing is an advanced feature - implementations should focus on
+# strict mode first before tackling lax compatibility
+minimum_complexity: 500
+
 defaults:
   error_mode: :lax
   render_errors: false
