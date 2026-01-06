@@ -745,3 +745,48 @@ specs:
     break inside include for propagates to the OUTER for loop, not just
     the include's implicit loop. This is consistent with include's
     interrupt propagation behavior.
+
+# =============================================================================
+# INFINITE RECURSION: Stack Level Too Deep
+# =============================================================================
+
+- name: render_infinite_recursion
+  template: "{% render 'recursive' %}"
+  filesystem:
+    recursive: "{% render 'recursive' %}"
+  render_errors: true
+  errors:
+    output:
+      - nesting too deep
+  complexity: 300
+  hint: |
+    A template that renders itself infinitely must be caught and produce
+    a "nesting too deep" error. Implementations should track render depth
+    and fail when it exceeds a limit (typically 100).
+
+- name: include_infinite_recursion
+  template: "{% include 'recursive' %}"
+  filesystem:
+    recursive: "{% include 'recursive' %}"
+  render_errors: true
+  errors:
+    output:
+      - nesting too deep
+  complexity: 300
+  hint: |
+    A template that includes itself infinitely must be caught and produce
+    a "nesting too deep" error. Same depth limiting as render.
+
+- name: render_mutual_recursion
+  template: "{% render 'a' %}"
+  filesystem:
+    a: "{% render 'b' %}"
+    b: "{% render 'a' %}"
+  render_errors: true
+  errors:
+    output:
+      - nesting too deep
+  complexity: 300
+  hint: |
+    Mutual recursion (a renders b, b renders a) must also be caught.
+    The depth limit applies to total nesting, not just self-recursion.
