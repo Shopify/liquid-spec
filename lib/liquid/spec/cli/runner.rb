@@ -2,6 +2,7 @@
 
 require_relative "adapter_dsl"
 require_relative "../time_freezer"
+require "json"
 
 module Liquid
   module Spec
@@ -11,6 +12,7 @@ module Liquid
         TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
         TEST_TZ = "UTC"
         MAX_FAILURES_DEFAULT = 10
+        RESULTS_LOG_DIR = "/tmp"
 
         HELP = <<~HELP
           Usage: liquid-spec run ADAPTER [options]
@@ -173,6 +175,9 @@ module Liquid
           end
 
           def run_specs(config, options)
+            # Capture real time for run_id before freezing
+            run_id = Time.now.strftime("%Y%m%d_%H%M%S")
+
             # Set timezone BEFORE loading anything else
             original_tz = ENV["TZ"]
             ENV["TZ"] = TEST_TZ
@@ -182,14 +187,14 @@ module Liquid
               if options[:compare]
                 run_specs_compare(config, options)
               else
-                run_specs_frozen(config, options)
+                run_specs_frozen(config, options, run_id)
               end
             end
           ensure
             ENV["TZ"] = original_tz
           end
 
-          def run_specs_frozen(config, options)
+          def run_specs_frozen(config, options, run_id)
             # Run adapter setup first (loads the liquid gem)
             LiquidSpec.run_setup!
 
@@ -230,6 +235,9 @@ module Liquid
             max_failures = options[:max_failures]
             results_by_complexity = Hash.new { |h, k| h[k] = { pass: 0, fail: 0, error: 0 } }
 
+            # Open log file for appending results
+            log_file = File.open(results_log_path, "a")
+
             suites_to_run.each do |suite|
 
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
@@ -262,14 +270,17 @@ module Liquid
                 when :pass
                   passed += 1
                   results_by_complexity[complexity][:pass] += 1
+                  log_result(log_file, run_id, spec, :success)
                 when :fail
                   failed += 1
                   results_by_complexity[complexity][:fail] += 1
                   all_failures << { spec: spec, result: result }
+                  log_result(log_file, run_id, spec, :fail)
                 when :error
                   errors += 1
                   results_by_complexity[complexity][:error] += 1
                   all_failures << { spec: spec, result: result }
+                  log_result(log_file, run_id, spec, :error)
                 end
               end
 
@@ -283,6 +294,8 @@ module Liquid
               total_failed += failed
               total_errors += errors
             end
+
+            log_file.close
 
             # Run additional specs if provided
             run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors)
@@ -1034,6 +1047,24 @@ module Liquid
 
           def sort_by_complexity(specs)
             specs.sort_by { |s| s.complexity || Float::INFINITY }
+          end
+
+          def results_log_path
+            File.join(RESULTS_LOG_DIR, "liquid-spec-results.jsonl")
+          end
+
+          def log_result(log_file, run_id, spec, status)
+            return unless log_file
+
+            entry = [
+              run_id,
+              Liquid::Spec::VERSION,
+              spec.source_file,
+              spec.name,
+              spec.complexity || 1000,
+              status.to_s,
+            ]
+            log_file.puts(JSON.generate(entry))
           end
         end
       end
