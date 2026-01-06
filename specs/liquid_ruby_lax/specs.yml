@@ -60,7 +60,7 @@
 - name: Does not ignore unknown operators when the tags body is empty but there is an else
   template: "{% if true true %}{% else %}1{% endif %}"
   errors:
-      output: "Liquid error (line 1): Unknown operator true"
+      output: "Unknown operator true"
   render_errors: true
   hint: |
     Even in lax mode, errors are shown when there's an else block with content.
@@ -78,14 +78,14 @@
       b
     {% endif %}
   errors:
-      output: "Liquid error (line 1): Unknown operator true"
+      output: "Unknown operator true"
   render_errors: true
   hint: |
     When the if branch is false, the elsif is evaluated and the error is shown.
 - name: Unsupported operators render an error
   template: "{% if 0 = 0 %}NOPE{% endif %}"
   errors:
-      output: "Liquid error (line 1): Unknown operator ="
+      output: "Unknown operator ="
   render_errors: true
   hint: |
     The = operator is not valid in conditions (use ==). Shows error because body has content.
