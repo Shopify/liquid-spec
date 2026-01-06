@@ -80,35 +80,37 @@
     with spaces, tabs, or newlines has length > 0, so it's not
     empty. This distinguishes 'empty' from 'blank'.
 
-- name: "whitespace_string_not_blank_in_liquid_ruby"
+- name: "whitespace_string_is_blank"
   template: "{% if text == blank %}blank{% else %}not{% endif %}"
   environment: { text: "   " }
-  expected: "not"
+  expected: "blank"
   complexity: 120
   hint: |
-    In liquid-ruby, the 'blank' keyword does not implement equality
-    comparison. Nothing equals blank, not even blank itself.
-    The blank keyword exists but doesn't function for comparisons.
+    Whitespace-only strings are blank. The blank keyword matches values
+    that are nil, false, empty strings, whitespace-only strings, and
+    empty collections. A string with only spaces is considered blank
+    because it has no meaningful content.
 
-- name: "empty_string_not_blank_in_liquid_ruby"
+- name: "empty_string_is_blank"
   template: "{% if x == blank %}blank{% else %}not{% endif %}"
   environment: { x: "" }
-  expected: "not"
+  expected: "blank"
   complexity: 120
   hint: |
-    In liquid-ruby, empty strings don't equal blank because blank
-    doesn't implement equality comparison. Use 'empty' instead
-    for checking empty strings: x == empty works correctly.
+    Empty strings are blank. The blank keyword matches values that
+    are nil, false, empty strings, whitespace-only strings, and
+    empty collections. An empty string "" is both empty and blank.
 
-- name: "nil_not_blank_in_liquid_ruby"
+- name: "nil_is_blank"
   template: "{% if missing == blank %}blank{% else %}not{% endif %}"
   environment: {}
-  expected: "not"
+  expected: "blank"
   complexity: 120
   hint: |
-    In liquid-ruby, blank doesn't implement equality comparison.
-    Nothing equals blank, including nil/undefined values.
-    Use nil check instead: missing == nil.
+    Nil (undefined variables) are blank. The blank keyword matches
+    values that are nil, false, empty strings, whitespace-only strings,
+    and empty collections. Missing variables evaluate to nil, which
+    is blank.
 
 - name: "false_is_not_empty"
   template: "{% if flag == empty %}empty{% else %}not{% endif %}"
@@ -121,15 +123,16 @@
     or zero-length collections. When checking == empty, false should
     not match. Only nil, "", [], and {} are empty.
 
-- name: "false_not_blank_in_liquid_ruby"
+- name: "false_is_blank"
   template: "{% if flag == blank %}blank{% else %}not{% endif %}"
   environment: { flag: false }
-  expected: "not"
+  expected: "blank"
   complexity: 130
   hint: |
-    In liquid-ruby, blank doesn't implement equality comparison.
-    Nothing equals blank, including false. The blank keyword exists
-    in liquid-ruby but doesn't function for comparisons.
+    The boolean false is blank. The blank keyword matches values that
+    are nil, false, empty strings, whitespace-only strings, and empty
+    collections. False is considered blank because it represents a
+    falsy/absent value.
 
 - name: "zero_is_not_empty"
   template: "{% if num == empty %}empty{% else %}not{% endif %}"
@@ -254,16 +257,17 @@
     empty string. The AND requires both conditions true, so this
     evaluates false, outputting "Anonymous". Guard against nested empties.
 
-- name: "empty_vs_blank_comparison_in_liquid_ruby"
+- name: "empty_vs_blank_comparison"
   template: "{% if text == empty %}E{% elsif text == blank %}B{% else %}N{% endif %}"
   environment: { text: "  \n  " }
-  expected: "N"
+  expected: "B"
   complexity: 170
   hint: |
-    In liquid-ruby, blank doesn't implement equality comparison.
-    A whitespace-only string is not equal to empty (has characters),
-    and text == blank is always false. Other implementations may
-    support blank comparisons where whitespace-only strings equal blank.
+    Whitespace-only strings are blank but not empty. Empty checks for
+    zero length (the string has 5 characters), while blank checks for
+    meaningful content. Since whitespace has no meaningful content,
+    the string is blank. Output is "B" because empty check fails but
+    blank check succeeds.
 
 - name: "array_size_vs_empty"
   template: "{% if items.size == 0 %}size zero{% elsif items == empty %}empty{% else %}has items{% endif %}"
