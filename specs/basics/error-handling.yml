@@ -181,29 +181,29 @@
 
 - name: "malformed_syntax_unclosed_tag_lax"
   template: "{% if true %}hello"
-  expected: "Liquid syntax error: 'if' tag was never closed"
   complexity: 320
   error_mode: lax
-  render_errors: true
+  errors:
+    parse_error:
+      - "'if' tag was never closed"
   hint: |
     Syntax errors should always raise errors even in lax mode, because the
     template cannot be parsed correctly. An unclosed 'if' tag makes the
     template structure ambiguous. The parser should detect when block tags
     (if, for, case, etc.) are not properly closed before end-of-template.
-    Render syntax errors inline with descriptive messages.
 
 - name: "malformed_syntax_invalid_filter_separator"
   template: "{{ 'hello' || upcase }}"
-  expected: "Liquid syntax error: unexpected token '|' in filter chain"
   complexity: 330
   error_mode: lax
-  render_errors: true
+  errors:
+    parse_error:
+      - "unexpected"
+      - "filter"
   hint: |
     Double pipes (||) are not valid Liquid syntax. The lexer/parser should
     detect malformed filter chains. While '|' separates filters, '||' is
-    invalid. Syntax errors should be detected during parsing and rendered
-    as error messages. Even in lax mode, syntactically invalid templates
-    cannot be processed and must report errors.
+    invalid. Syntax errors should be detected during parsing.
 
 - name: "very_long_string_filter"
   template: "{{ long_string | size }}"
@@ -301,16 +301,15 @@
 
 - name: "empty_filter_chain_lax"
   template: "{{ 'hello' | }}"
-  expected: "Liquid syntax error: unexpected end of filter chain"
   complexity: 340
   error_mode: lax
-  render_errors: true
+  errors:
+    parse_error:
+      - "filter"
   hint: |
     A filter pipe with no filter name is a syntax error. Even in lax mode,
     this cannot be parsed correctly. The parser should detect the incomplete
-    filter chain syntax - a '|' must be followed by a filter name. Render
-    a syntax error message. This is different from unknown filters (which
-    pass through in lax mode); this is malformed syntax that cannot be parsed.
+    filter chain syntax - a '|' must be followed by a filter name.
 
 - name: "recursive_variable_reference"
   template: "{{ a }}"

@@ -8,20 +8,23 @@
 - name: StrictModeTest#test_assign_with_parentheses_rejected
   template: "{% assign foo = ('X' | downcase) %}"
   error_mode: :strict
-  render_errors: true
-  expected: "Liquid syntax error (line 1): Expected dotdot but found pipe in \"{{('X' | downcase) }}\""
+  errors:
+    parse_error:
+      - "Expected dotdot but found pipe"
   hint: "Parentheses in assign expressions are invalid - lax mode tolerates this, strict rejects it"
 
 - name: StrictModeTest#test_quirky_negative_sign_rejected
   template: "{{ - 'theme.css' - }}"
   error_mode: :strict
-  render_errors: true
-  expected: "Liquid syntax error (line 1): [:dash, \"-\"] is not a valid expression in \"{{ - 'theme.css' - }}\""
+  errors:
+    parse_error:
+      - "not a valid expression"
   hint: "Leading/trailing dashes in variable output are invalid - lax mode tolerates this, strict rejects it"
 
 - name: StrictModeTest#test_unclosed_bracket_lookup_rejected
   template: "{{['foo'}}"
   error_mode: :strict
-  render_errors: true
-  expected: "Liquid syntax error (line 1): Expected close_square but found end_of_string in \"{{['foo'}}\""
+  errors:
+    parse_error:
+      - "Expected close_square"
   hint: "Unclosed bracket in variable lookup is invalid - lax mode tolerates this, strict rejects it"

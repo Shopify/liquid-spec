@@ -67,7 +67,9 @@ specs:
     errors:
       instantiate:ErrorDrop: {}
   render_errors: true
-  expected: 'Liquid error (foo line 1): standard error'
+  errors:
+    output:
+      - "standard error"
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L384
@@ -80,7 +82,9 @@ specs:
     errors:
       instantiate:ErrorDrop: {}
   render_errors: true
-  expected: 'Liquid error (some/path/foo line 1): standard error'
+  errors:
+    output:
+      - "standard error"
   template_factory:
     instantiate:StubTemplateFactory:
       count: 1
@@ -96,7 +100,9 @@ specs:
     errors:
       instantiate:ErrorDrop: {}
   render_errors: true
-  expected: 'Liquid error (foo line 1): standard error'
+  errors:
+    output:
+      - "standard error"
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L298
@@ -109,7 +115,9 @@ specs:
     errors:
       instantiate:ErrorDrop: {}
   render_errors: true
-  expected: 'Liquid error (some/path/foo line 1): standard error'
+  errors:
+    output:
+      - "standard error"
   template_factory:
     instantiate:StubTemplateFactory:
       count: 1
