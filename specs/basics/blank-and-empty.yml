@@ -2,6 +2,11 @@
 # Progressive difficulty: 100-180
 # Focus: Empty vs blank semantics, nil handling, whitespace, type checking
 
+---
+_metadata:
+  doc: implementers/core-abstractions.md
+
+specs:
 - name: "empty_string_is_empty"
   template: "{% if x == empty %}empty{% else %}not{% endif %}"
   environment: { x: "" }

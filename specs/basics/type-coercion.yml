@@ -2,6 +2,11 @@
 # Progressive difficulty: 110-170
 # Focus: Type coercion in filters, comparisons, and output contexts
 
+---
+_metadata:
+  doc: implementers/core-abstractions.md
+
+specs:
 - name: "string_to_number_in_plus"
   template: "{{ '5' | plus: 3 }}"
   expected: "8"

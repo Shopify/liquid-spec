@@ -12,6 +12,10 @@
 #
 # =============================================================================
 
+_metadata:
+  doc: implementers/core-abstractions.md
+
+specs:
 # =============================================================================
 # COMPLEXITY 10: Raw Text Output
 # The most basic - templates with no Liquid syntax at all
