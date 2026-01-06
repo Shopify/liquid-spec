@@ -227,18 +227,14 @@
 - name: "split_then_compact"
   template: "{{ text | split: ',' | compact | size }}"
   environment: { text: "a,,b,c" }
-  expected: "3"
+  expected: "4"
   complexity: 110
   hint: |
-    Combining split and compact handles empty segments. Split 'a,,b,c'
-    by ',' to get ['a', '', 'b', 'c']. Wait - split creates empty strings,
-    not nils. Compact removes nil values, not empty strings. So the
-    array stays ['a', '', 'b', 'c'], and size is 4. Actually, re-examine:
-    if split creates nils for empty segments, compact would remove them.
-    Check your split implementation: does it create '' or nil for consecutive
-    delimiters? Standard Liquid split creates empty strings, so compact
-    doesn't affect them. Result should be 4, not 3. [Note: This tests
-    the distinction between nil and empty string.]
+    Split 'a,,b,c' by ',' gives ['a', '', 'b', 'c']. Split creates
+    empty strings for consecutive delimiters, not nils. Compact only
+    removes nil values, not empty strings. So the array stays
+    ['a', '', 'b', 'c'], and size is 4. This tests the distinction
+    between nil and empty string - compact doesn't affect empty strings.
 
 - name: "where_filter_with_nil_values"
   template: "{{ products | where: 'available' | size }}"
@@ -297,16 +293,17 @@
     can be duplicated; keep only one instance of nil when deduplicating.
 
 - name: "complex_nil_chain"
-  template: "{{ users | map: 'profile.bio' | compact | first | upcase | default: 'NO BIO' }}"
+  template: "{{ users | map: 'profile' | map: 'bio' | compact | first | upcase | default: 'NO BIO' }}"
   environment: { users: [{profile: {}}, {profile: {bio: 'hello'}}] }
   expected: "HELLO"
   complexity: 145
   hint: |
-    Complex chain with multiple nil-handling steps. Map 'profile.bio'
-    gives [nil, 'hello']. Compact removes nils to get ['hello']. First
-    gets 'hello'. Upcase gives 'HELLO'. Default not triggered because
+    Complex chain with multiple nil-handling steps. Map 'profile' then
+    map 'bio' gives [nil, 'hello']. Compact removes nils to get ['hello'].
+    First gets 'hello'. Upcase gives 'HELLO'. Default not triggered because
     'HELLO' is not empty. This tests that compact successfully removes
-    nils from mapped results before further processing.
+    nils from mapped results before further processing. Note: liquid-ruby
+    requires separate map calls for nested properties.
 
 - name: "nil_in_comparison_filters"
   template: "{{ missing | at_least: 10 }}"

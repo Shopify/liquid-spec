@@ -228,7 +228,7 @@ module Liquid
             total_errors = 0
             all_failures = []
             max_failures = options[:max_failures]
-            max_passed_complexity = 0
+            results_by_complexity = Hash.new { |h, k| h[k] = { pass: 0, fail: 0, error: 0 } }
 
             suites_to_run.each do |suite|
 
@@ -248,6 +248,8 @@ module Liquid
               errors = 0
 
               suite_specs.each do |spec|
+                complexity = spec.complexity || 1000
+
                 begin
                   result = run_single_spec(spec, config)
                 rescue SystemExit, Interrupt, SignalException
@@ -259,13 +261,14 @@ module Liquid
                 case result[:status]
                 when :pass
                   passed += 1
-                  complexity = spec.complexity || 0
-                  max_passed_complexity = complexity if complexity > max_passed_complexity
+                  results_by_complexity[complexity][:pass] += 1
                 when :fail
                   failed += 1
+                  results_by_complexity[complexity][:fail] += 1
                   all_failures << { spec: spec, result: result }
                 when :error
                   errors += 1
+                  results_by_complexity[complexity][:error] += 1
                   all_failures << { spec: spec, result: result }
                 end
               end
@@ -289,8 +292,21 @@ module Liquid
 
             print_failures(all_failures, max_failures)
 
+            # Calculate max complexity reached (highest level where all specs pass)
+            sorted_complexities = results_by_complexity.keys.sort
+            max_complexity_reached = 0
+            sorted_complexities.each do |c|
+              r = results_by_complexity[c]
+              if r[:fail] == 0 && r[:error] == 0
+                max_complexity_reached = c
+              else
+                break
+              end
+            end
+            max_possible = sorted_complexities.reject { |c| c >= 1000 }.max || 0
+
             puts ""
-            puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors (max complexity: #{max_passed_complexity})"
+            puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors. Max complexity reached: #{max_complexity_reached}/#{max_possible}"
 
             exit(1) if all_failures.any?
           end

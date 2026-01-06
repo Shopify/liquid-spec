@@ -1408,7 +1408,7 @@
   template: "{{ a0 | first }}"
   environment:
     a0: foo
-  expected: f
+  expected: ''
 - name: StandardFilterTest#test_first_1067f918
   template: "{{ a0 | first }}"
   environment:

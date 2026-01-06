@@ -287,10 +287,11 @@ specs:
   template: "{% if items contains nil %}yes{% else %}no{% endif %}"
   environment:
     items: [1, null, 3]
-  expected: "yes"
+  expected: "no"
   complexity: 120
   hint: |
-    The contains operator can find nil values in arrays.
+    In liquid-ruby, contains cannot find nil values in arrays.
+    The contains operator doesn't match nil elements.
 
 - name: nil_contains_check_on_undefined
   template: "{% if nil contains 'x' %}yes{% else %}no{% endif %}"
