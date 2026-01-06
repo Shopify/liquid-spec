@@ -643,6 +643,18 @@ module Liquid
             end
           end
 
+          def print_labeled_value(label, value)
+            padding = " " * (11 - label.length)
+            value_str = value.to_s
+            if value_str.include?("\n")
+              # Multi-line: show on next line with indentation
+              indented = value_str.gsub("\n", "\n              ")
+              puts "   #{label}:#{padding}\n              #{indented}"
+            else
+              puts "   #{label}:#{padding}#{value_str.inspect}"
+            end
+          end
+
           def print_failures(failures, max_failures = nil)
             return if failures.empty?
 
@@ -665,19 +677,24 @@ module Liquid
               puts "\e[2m#{location}\e[0m"
 
               puts "#{i + 1}) #{spec.name}"
-              puts "   Template: #{spec.template.inspect[0..80]}"
+              print_labeled_value("Template", spec.template)
 
               # Show environment if present
               if spec.raw_environment.is_a?(Hash) && !spec.raw_environment.empty?
-                env_str = spec.raw_environment.inspect[0..80]
-                puts "   Environment: #{env_str}"
+                print_labeled_value("Environment", spec.raw_environment.inspect)
               elsif spec.raw_environment.is_a?(String) && !spec.raw_environment.empty?
-                env_str = spec.raw_environment[0..80]
-                puts "   Environment: #{env_str}"
+                print_labeled_value("Environment", spec.raw_environment)
               end
 
-              puts "   Expected: #{result[:expected].inspect[0..80]}"
-              puts "   Got:      #{result[:actual].inspect[0..80]}"
+              # Show filesystem if present
+              if spec.raw_filesystem.is_a?(Hash) && !spec.raw_filesystem.empty?
+                files_summary = spec.raw_filesystem.keys.join(", ")
+                files_summary = files_summary[0..77] + "..." if files_summary.length > 80
+                puts "   Filesystem: #{files_summary}"
+              end
+
+              print_labeled_value("Expected", result[:expected])
+              print_labeled_value("Got", result[:actual])
               if result[:error]
                 puts "   Error:    #{result[:error].class}: #{result[:error].message}"
               end
@@ -709,20 +726,20 @@ module Liquid
 
             differences.first(print_count).each_with_index do |d, i|
               puts "#{i + 1}) #{d[:spec].name}"
-              puts "   Template: #{d[:spec].template.inspect[0..80]}"
+              print_labeled_value("Template", d[:spec].template)
               if d[:result][:reference_error]
-                puts "   Reference: \e[31mERROR\e[0m #{d[:result][:reference_error].class}: #{d[:result][:reference_error].message[0..60]}"
+                puts "   Reference: \e[31mERROR\e[0m #{d[:result][:reference_error].class}: #{d[:result][:reference_error].message}"
               else
-                puts "   Reference: #{d[:result][:reference].inspect[0..80]}"
+                print_labeled_value("Reference", d[:result][:reference])
               end
               if d[:result][:adapter_error]
-                puts "   Adapter:   \e[31mERROR\e[0m #{d[:result][:adapter_error].class}: #{d[:result][:adapter_error].message[0..60]}"
+                puts "   Adapter:   \e[31mERROR\e[0m #{d[:result][:adapter_error].class}: #{d[:result][:adapter_error].message}"
               else
-                puts "   Adapter:   #{d[:result][:adapter].inspect[0..80]}"
+                print_labeled_value("Adapter", d[:result][:adapter])
               end
               hint = d[:spec].effective_hint
               if hint
-                puts "   Hint: #{hint.strip.tr("\n", " ")[0..80]}"
+                puts "   Hint: #{hint.strip.gsub("\n", "\n         ")}"
               end
               puts ""
             end
