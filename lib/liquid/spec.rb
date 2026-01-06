@@ -8,6 +8,11 @@
 #   result = adapter.run(specs) { |r| print r.passed? ? "." : "F" }
 #   puts result.summary
 
+# Define Liquid module and FileSystemError if not already defined by Liquid gem
+module Liquid
+  FileSystemError = Class.new(StandardError) unless defined?(FileSystemError)
+end
+
 require_relative "spec/version"
 require_relative "spec/suite"
 require_relative "spec/lazy_spec"

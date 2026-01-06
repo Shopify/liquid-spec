@@ -175,8 +175,8 @@ class InstantiationTest < Minitest::Test
     )
 
     fs = spec.instantiate_filesystem
-    # SimpleFileSystem raises RuntimeError for missing files
-    assert_raises(RuntimeError) do
+    # SimpleFileSystem raises Liquid::FileSystemError for missing files
+    assert_raises(Liquid::FileSystemError) do
       fs.read_template_file("missing")
     end
   end
