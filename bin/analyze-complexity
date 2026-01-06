@@ -1,0 +1,228 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Analyzes liquid-spec results to find tests with potentially wrong complexity scores
+#
+# Logic:
+# - For each run, find the "complexity frontier" (max complexity that passed)
+# - Tests passing well above frontier = probably too high complexity (easy tests marked hard)
+# - Tests failing well below frontier = probably too low complexity (hard tests marked easy)
+#
+# Also analyzes:
+# - Tests with default complexity (1000) that consistently pass early
+# - Complexity distribution across suites
+#
+# Output: Lists ordered by frequency × complexity distance, plus suggestions
+
+require "json"
+
+RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
+DEFAULT_COMPLEXITY = 1000
+
+unless File.exist?(RESULTS_FILE)
+  puts "No results file found at #{RESULTS_FILE}"
+  puts "Run liquid-spec first to generate results."
+  exit 1
+end
+
+# Parse all results
+# Format: [run_id, version, source_file, test_name, complexity, status]
+results = File.readlines(RESULTS_FILE).map do |line|
+  JSON.parse(line)
+rescue JSON::ParserError
+  nil
+end.compact
+
+if results.empty?
+  puts "No valid results found in #{RESULTS_FILE}"
+  exit 1
+end
+
+# Group by run_id
+runs = results.group_by { |r| r[0] }
+
+puts "Analyzing #{results.size} results across #{runs.size} runs..."
+puts
+
+# Track anomalies
+too_high = Hash.new { |h, k| h[k] = { count: 0, distances: [], runs: [] } }  # passes above frontier
+too_low = Hash.new { |h, k| h[k] = { count: 0, distances: [], runs: [] } }   # fails below frontier
+
+runs.each do |run_id, run_results|
+  # Find the complexity frontier for this run
+  # The frontier is the highest complexity among passing tests
+  passing = run_results.select { |r| r[5] == "success" }
+  failing = run_results.select { |r| r[5] != "success" }
+
+  next if passing.empty? || failing.empty?
+
+  frontier = passing.map { |r| r[4] }.max
+  min_passing = passing.map { |r| r[4] }.min
+
+  # Find tests passing well above frontier (shouldn't happen often)
+  # Actually, let's redefine: find the 90th percentile of passing complexities
+  passing_complexities = passing.map { |r| r[4] }.sort
+  p90 = passing_complexities[(passing_complexities.size * 0.9).to_i] || frontier
+
+  # Tests that pass but have complexity way above the median passing complexity
+  median_passing = passing_complexities[passing_complexities.size / 2]
+
+  passing.each do |r|
+    complexity = r[4]
+    test_key = "#{r[2]}:#{r[3]}"  # source_file:test_name
+
+    # If this test passes but has complexity much higher than median, it might be overrated
+    distance = complexity - median_passing
+    if distance > 50  # arbitrary threshold: 50+ above median
+      too_high[test_key][:count] += 1
+      too_high[test_key][:distances] << distance
+      too_high[test_key][:runs] << run_id
+      too_high[test_key][:complexity] = complexity
+      too_high[test_key][:name] = r[3]
+      too_high[test_key][:file] = r[2]
+    end
+  end
+
+  # Tests that fail but have complexity below the frontier
+  failing.each do |r|
+    complexity = r[4]
+    test_key = "#{r[2]}:#{r[3]}"
+
+    # If this test fails but has lower complexity than things that pass, it might be underrated
+    distance = frontier - complexity
+    if distance > 50  # fails while things 50+ complexity higher pass
+      too_low[test_key][:count] += 1
+      too_low[test_key][:distances] << distance
+      too_low[test_key][:runs] << run_id
+      too_low[test_key][:complexity] = complexity
+      too_low[test_key][:name] = r[3]
+      too_low[test_key][:file] = r[2]
+    end
+  end
+end
+
+# Score and sort: frequency × average distance
+def score(entry)
+  avg_distance = entry[:distances].sum.to_f / entry[:distances].size
+  entry[:count] * avg_distance
+end
+
+puts "=" * 70
+puts "TESTS THAT MAY BE OVERRATED (complexity too high)"
+puts "These tests pass consistently but have higher complexity than peers"
+puts "=" * 70
+puts
+
+sorted_high = too_high.sort_by { |_, v| -score(v) }.first(30)
+
+if sorted_high.empty?
+  puts "(none found)"
+else
+  sorted_high.each_with_index do |(key, data), i|
+    avg_dist = (data[:distances].sum.to_f / data[:distances].size).round(1)
+    puts "#{i + 1}. #{data[:name]}"
+    puts "   Complexity: #{data[:complexity]} (avg #{avg_dist} above median passing)"
+    puts "   Passed #{data[:count]} times across #{data[:runs].uniq.size} runs"
+    puts "   File: #{File.basename(data[:file])}"
+    puts
+  end
+end
+
+puts
+puts "=" * 70
+puts "TESTS THAT MAY BE UNDERRATED (complexity too low)"
+puts "These tests fail while higher-complexity tests pass"
+puts "=" * 70
+puts
+
+sorted_low = too_low.sort_by { |_, v| -score(v) }.first(30)
+
+if sorted_low.empty?
+  puts "(none found)"
+else
+  sorted_low.each_with_index do |(key, data), i|
+    avg_dist = (data[:distances].sum.to_f / data[:distances].size).round(1)
+    puts "#{i + 1}. #{data[:name]}"
+    puts "   Complexity: #{data[:complexity]} (avg #{avg_dist} below frontier)"
+    puts "   Failed #{data[:count]} times across #{data[:runs].uniq.size} runs"
+    puts "   File: #{File.basename(data[:file])}"
+    puts
+  end
+end
+
+# Find tests at default complexity (1000) that always pass
+# These probably need real complexity scores
+default_always_pass = Hash.new { |h, k| h[k] = { pass: 0, fail: 0 } }
+
+results.each do |r|
+  next unless r[4] == DEFAULT_COMPLEXITY
+
+  test_key = "#{r[2]}:#{r[3]}"
+  if r[5] == "success"
+    default_always_pass[test_key][:pass] += 1
+  else
+    default_always_pass[test_key][:fail] += 1
+  end
+  default_always_pass[test_key][:name] = r[3]
+  default_always_pass[test_key][:file] = r[2]
+end
+
+# Filter to those that always pass
+needs_scoring = default_always_pass.select { |_, v| v[:pass] > 0 && v[:fail] == 0 }
+                                   .sort_by { |_, v| -v[:pass] }
+
+puts
+puts "=" * 70
+puts "TESTS AT DEFAULT COMPLEXITY (1000) THAT ALWAYS PASS"
+puts "These need real complexity scores assigned"
+puts "=" * 70
+puts
+
+if needs_scoring.empty?
+  puts "(none found - all tests have explicit complexity scores!)"
+else
+  # Group by file for easier editing
+  by_file = needs_scoring.group_by { |_, v| v[:file] }
+
+  by_file.sort_by { |f, _| f }.each do |file, tests|
+    puts "#{File.basename(file)} (#{tests.size} tests):"
+    tests.first(5).each do |_, data|
+      puts "  - #{data[:name]}"
+    end
+    puts "  ... and #{tests.size - 5} more" if tests.size > 5
+    puts
+  end
+
+  puts "Total: #{needs_scoring.size} tests need complexity scores"
+end
+
+# Complexity distribution
+puts
+puts "=" * 70
+puts "COMPLEXITY DISTRIBUTION"
+puts "=" * 70
+puts
+
+all_complexities = results.map { |r| r[4] }
+buckets = all_complexities.group_by { |c| (c / 100) * 100 }
+                          .sort_by { |k, _| k }
+
+buckets.each do |bucket, values|
+  bar_len = (values.size.to_f / results.size * 50).round
+  bar = "█" * bar_len
+  puts "#{bucket.to_s.rjust(4)}-#{(bucket + 99).to_s.ljust(4)}: #{bar} #{values.size}"
+end
+
+# Summary stats
+puts
+puts "=" * 70
+puts "SUMMARY"
+puts "=" * 70
+total_tests = results.map { |r| "#{r[2]}:#{r[3]}" }.uniq.size
+puts "Total unique tests: #{total_tests}"
+puts "Potentially overrated: #{too_high.size}"
+puts "Potentially underrated: #{too_low.size}"
+puts "Need complexity scores: #{needs_scoring.size}"
+puts
+puts "To use this data: Review the tests above and adjust their complexity"
+puts "scores in the YAML spec files. Lower scores = implement earlier."
