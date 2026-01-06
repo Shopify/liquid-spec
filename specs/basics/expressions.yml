@@ -173,34 +173,29 @@
 
 - name: "simple_range"
   template: "{{ (1..5) }}"
-  expected: "12345"
+  expected: "1..5"
   complexity: 100
   hint: |
-    Parse range syntax (start..end) with integer literals.
-    Create a Range node with start=1, end=5. During evaluation,
-    generate array [1, 2, 3, 4, 5]. When rendering a range directly,
-    output array elements concatenated (no separators in base Liquid).
+    Range literals render as their string representation.
+    The range (1..5) outputs "1..5", not expanded values.
+    Ranges are primarily used in for loops, not direct output.
 
 - name: "variable_range"
   template: "{{ (start..finish) }}"
   environment: { start: 3, finish: 7 }
-  expected: "34567"
+  expected: "3..7"
   complexity: 110
   hint: |
-    Parse range with variable expressions instead of literals.
-    The Range node contains two expression nodes (start, finish).
-    During evaluation, first evaluate both expressions to get
-    numeric values, then generate the range array.
+    Variable ranges also render as string representation.
+    Evaluate bounds (start=3, finish=7), render as "3..7".
 
 - name: "range_with_negative_numbers"
   template: "{{ (-2..2) }}"
-  expected: "-2-1012"
+  expected: "-2..2"
   complexity: 115
   hint: |
-    Handle negative numbers in range expressions. Parse the
-    minus sign as part of the number literal, not a separate
-    operator. Generate array [-2, -1, 0, 1, 2]. When concatenating
-    for output, negative numbers appear without spaces.
+    Negative numbers in ranges render as expected string.
+    The range (-2..2) outputs "-2..2".
 
 - name: "property_on_array_element"
   template: "{{ products[0].title }}"
@@ -316,13 +311,11 @@
 - name: "range_with_expression_bounds"
   template: "{{ (x..y) }}"
   environment: { x: 2, y: 4 }
-  expected: "234"
+  expected: "2..4"
   complexity: 120
   hint: |
-    Create ranges using variable expressions for both bounds.
-    Parse (x..y) where x and y are identifiers. During evaluation,
-    resolve both to numbers (2 and 4), then generate the range
-    array [2, 3, 4] which outputs as "234".
+    Ranges with variable bounds render as string representation.
+    Evaluate bounds to get (2..4), render as "2..4".
 
 - name: "multiple_bracket_lookups"
   template: "{{ a[b][c] }}"
