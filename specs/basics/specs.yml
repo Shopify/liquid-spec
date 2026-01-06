@@ -1311,6 +1311,13 @@ specs:
   hint: |
     Multi-line inline comments: each line inside the tag must start with #.
 
+- name: comment_inline_trimmed
+  template: "before{%- # inline comment with trim -%}after"
+  expected: "beforeafter"
+  complexity: 120
+  hint: |
+    Inline comments can use trim markers. The comment itself produces no output.
+
 - name: raw_basic
   template: "{% raw %}{{ not_processed }}{% endraw %}"
   expected: "{{ not_processed }}"
@@ -1405,6 +1412,29 @@ specs:
   complexity: 130
   hint: |
     Inside liquid tags, use # for comments (one per line).
+
+- name: liquid_tag_with_multiline_comments
+  template: |
+    {% liquid
+      # comment line 1
+      # comment line 2
+      echo "hi"
+    %}
+  expected: "hi\n"
+  complexity: 130
+  hint: |
+    Multiple comment lines are allowed inside a liquid tag.
+
+- name: liquid_tag_comments_with_trim
+  template: |
+    {%- liquid
+      # comment line
+      echo "hi"
+    -%}
+  expected: "hi"
+  complexity: 130
+  hint: |
+    Trim markers around a liquid tag remove surrounding whitespace, even with comments.
 
 # =============================================================================
 # COMPLEXITY 140: Array Filters
