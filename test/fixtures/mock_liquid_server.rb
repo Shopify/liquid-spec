@@ -18,11 +18,14 @@ class MockLiquidServer
   def run
     $stderr.puts "[MockServer] Starting..."
     $stdout.sync = true
-    $stdin.each_line do |line|
+    @running = true
+    while @running && (line = $stdin.gets)
       request = JSON.parse(line.chomp)
       response = handle_request(request)
-      $stdout.puts(JSON.generate(response))
-      $stdout.flush
+      if response  # nil for quit notification
+        $stdout.puts(JSON.generate(response))
+        $stdout.flush
+      end
     end
   rescue => e
     $stderr.puts "[MockServer] Error: #{e.message}"
@@ -58,11 +61,16 @@ class MockLiquidServer
     method = request["method"]
     params = request["params"] || {}
 
+    # Handle quit notification (no response)
+    if method == "quit"
+      $stderr.puts "[MockServer] Quit notification received"
+      @running = false
+      return nil
+    end
+
     result = case method
     when "initialize"
       handle_initialize(params)
-    when "shutdown"
-      handle_shutdown(params)
     when "compile"
       handle_compile(params)
     when "render"
@@ -94,12 +102,6 @@ class MockLiquidServer
   def handle_initialize(params)
     $stderr.puts "[MockServer] Initialized with version #{params["version"]}"
     { "version" => "1.0", "features" => ["core"] }
-  end
-
-  def handle_shutdown(_params)
-    $stderr.puts "[MockServer] Shutting down..."
-    Thread.new { sleep 0.1; exit(0) }
-    {}
   end
 
   def handle_compile(params)
