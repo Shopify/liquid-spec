@@ -15,9 +15,6 @@ require_relative "spec/spec_loader"
 require_relative "spec/adapter_runner"
 require_relative "spec/api"
 
-# Test infrastructure (loaded lazily when needed)
-autoload :Timecop, "timecop"
-
 module Liquid
   module Spec
     # Spec directory constant (defined in suite.rb, but provide fallback)

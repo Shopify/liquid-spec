@@ -226,73 +226,7 @@ module Liquid
         rescue Psych::SyntaxError => e
           warn("YAML syntax error in #{path}: #{e.message}")
           []
-        rescue Psych::DisallowedClass
-          # File contains custom classes we can't safe_load
-          # Fall back to loading with custom class handler
-          load_yaml_file_with_deferred_objects(path, suite: suite)
         rescue StandardError => e
-          warn("Error loading #{path}: #{e.class}: #{e.message.split("\n").first}")
-          []
-        end
-
-        # Load YAML file that contains custom objects, deferring their instantiation
-        def load_yaml_file_with_deferred_objects(path, suite: nil)
-          content = File.read(path)
-          specs = []
-
-          # Parse YAML into AST without instantiating objects
-          doc = Psych.parse(content)
-          return specs unless doc
-
-          root = doc.root
-          return specs unless root
-
-          # Extract specs from the AST
-          spec_nodes = extract_spec_nodes(root)
-
-          # Suite/metadata defaults
-          suite_defaults = suite&.defaults || {}
-          default_render_errors = suite_defaults[:render_errors]
-          minimum_complexity = suite&.minimum_complexity || 1000
-
-          spec_nodes.each do |spec_node|
-            spec_data = extract_spec_data(spec_node)
-            next unless spec_data
-
-            # Determine render_errors
-            spec_render_errors = if spec_data.key?(:render_errors)
-              spec_data[:render_errors]
-            else
-              default_render_errors
-            end
-
-            # Extract the environment node as YAML string for deferred loading
-            env_yaml = extract_environment_yaml(spec_node)
-
-            spec = LazySpec.new(
-              name: spec_data[:name],
-              template: spec_data[:template],
-              expected: spec_data[:expected],
-              errors: spec_data[:errors] || {},
-              hint: spec_data[:hint],
-              complexity: spec_data[:complexity] || minimum_complexity,
-              error_mode: spec_data[:error_mode]&.to_sym,
-              render_errors: spec_render_errors || false,
-              required_features: spec_data[:required_features] || [],
-              source_file: path,
-              line_number: spec_node.start_line,
-              raw_environment: env_yaml, # Store as YAML string
-              raw_filesystem: spec_data[:filesystem] || {},
-              raw_template_factory: spec_data[:template_factory],
-              source_hint: nil,
-              source_required_options: {},
-            )
-
-            specs << spec
-          end
-
-          specs
-        rescue => e
           warn("Error loading #{path}: #{e.class}: #{e.message.split("\n").first}")
           []
         end
@@ -305,15 +239,10 @@ module Liquid
           template = File.read(template_file)
           name = File.basename(dir)
 
-          # Load environment - keep as YAML string if it has custom objects
+          # Load environment
           env_file = File.join(dir, "environment.yml")
           raw_environment = if File.exist?(env_file)
-            env_content = File.read(env_file)
-            if env_content.include?("!ruby/")
-              env_content # Keep as string for deferred loading
-            else
-              YAML.safe_load(env_content, permitted_classes: [Symbol, Date, Time, Range]) || {}
-            end
+            safe_load_with_permitted_classes(File.read(env_file)) || {}
           else
             {}
           end
@@ -358,104 +287,7 @@ module Liquid
         private
 
         def safe_load_with_permitted_classes(content)
-          YAML.safe_load(
-            content,
-            permitted_classes: [Symbol, Date, Time, Range],
-            aliases: true,
-          )
-        rescue ArgumentError
-          # Ruby version compatibility
-          YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range])
-        end
-
-        # Extract spec nodes from YAML AST
-        def extract_spec_nodes(root)
-          case root
-          when Psych::Nodes::Sequence
-            root.children
-          when Psych::Nodes::Mapping
-            # Check for specs key or _metadata structure
-            root.children.each_slice(2) do |key, value|
-              if key.is_a?(Psych::Nodes::Scalar) && key.value == "specs"
-                return value.children if value.is_a?(Psych::Nodes::Sequence)
-              end
-            end
-            # If no specs key, maybe it's a simple array at root
-            []
-          else
-            []
-          end
-        end
-
-        # Extract basic spec data from a mapping node (without instantiating objects)
-        def extract_spec_data(node)
-          return unless node.is_a?(Psych::Nodes::Mapping)
-
-          data = {}
-          node.children.each_slice(2) do |key_node, value_node|
-            next unless key_node.is_a?(Psych::Nodes::Scalar)
-
-            key = key_node.value.to_sym
-            value = safe_extract_value(value_node)
-            data[key] = value
-          end
-
-          data
-        end
-
-        # Safely extract a scalar or simple value from a node
-        def safe_extract_value(node)
-          case node
-          when Psych::Nodes::Scalar
-            # Try to parse as appropriate type
-            case node.tag
-            when "tag:yaml.org,2002:int"
-              node.value.to_i
-            when "tag:yaml.org,2002:float"
-              node.value.to_f
-            when "tag:yaml.org,2002:bool"
-              node.value.downcase == "true"
-            when "tag:yaml.org,2002:null"
-              nil
-            else
-              node.value
-            end
-          when Psych::Nodes::Sequence
-            node.children.map { |child| safe_extract_value(child) }
-          when Psych::Nodes::Mapping
-            # For mappings that might contain custom objects, return as-is
-            # They'll be handled in environment instantiation
-            hash = {}
-            node.children.each_slice(2) do |k, v|
-              if k.is_a?(Psych::Nodes::Scalar)
-                hash[k.value] = safe_extract_value(v)
-              end
-            end
-            hash
-          end
-        end
-
-        # Extract environment as YAML string from spec node
-        def extract_environment_yaml(spec_node)
-          return {} unless spec_node.is_a?(Psych::Nodes::Mapping)
-
-          spec_node.children.each_slice(2) do |key_node, value_node|
-            if key_node.is_a?(Psych::Nodes::Scalar) && key_node.value == "environment"
-              # Convert this subtree back to YAML string
-              return node_to_yaml_string(value_node)
-            end
-          end
-
-          {}
-        end
-
-        # Convert a Psych node to a YAML string
-        def node_to_yaml_string(node)
-          stream = Psych::Nodes::Stream.new
-          doc = Psych::Nodes::Document.new
-          doc.children << node
-          stream.children << doc
-          stream.to_yaml.sub(/\A---\n?/, "").sub(/\n?\.\.\.\n?\z/, "").strip
+          YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range], aliases: true)
         end
 
         # Extract line numbers from YAML AST for each spec

@@ -334,7 +334,7 @@
 
 - name: "compact_removes_nils"
   template: "{{ items | compact | join: ',' }}"
-  environment: { items: [1, nil, 2, nil, 3] }
+  environment: { items: [1, null, 2, null, 3] }
   expected: "1,2,3"
   complexity: 70
   hint: |

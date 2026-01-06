@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "yaml"
 require_relative "spec_loader"
 
 module Liquid
@@ -225,19 +224,11 @@ module Liquid
       end
 
       # Instantiate environment for this spec
-      # If raw_environment is a String, parse it as YAML with custom object support
-      # If it's already a Hash, instantiate any deferred objects
+      # Deep copy and instantiate any deferred objects
       def instantiate_environment
-        case @raw_environment
-        when String
-          # YAML string - parse with custom object support
-          instantiate_from_yaml(@raw_environment)
-        when Hash
-          # Already a hash - deep copy and instantiate any deferred objects
-          deep_instantiate(@raw_environment)
-        else
-          {}
-        end
+        return {} unless @raw_environment.is_a?(Hash)
+
+        deep_instantiate(@raw_environment)
       end
 
       # Instantiate filesystem for this spec
@@ -269,17 +260,6 @@ module Liquid
       end
 
       private
-
-      # Parse YAML string and instantiate custom objects using the registry
-      def instantiate_from_yaml(yaml_str)
-        return {} if yaml_str.nil? || yaml_str.empty?
-
-        # Use unsafe_load - the classes should be defined by now
-        YAML.unsafe_load(yaml_str)
-      rescue => e
-        warn("Failed to instantiate environment: #{e.message}")
-        {}
-      end
 
       # Deep copy a hash and instantiate any deferred objects
       def deep_instantiate(obj, seen = {}.compare_by_identity)

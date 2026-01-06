@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
-require "timecop"
+require_relative "../time_freezer"
 
 module Liquid
   module Spec
@@ -178,7 +178,7 @@ module Liquid
             ENV["TZ"] = TEST_TZ
 
             # Freeze time BEFORE adapter setup
-            Timecop.freeze(TEST_TIME) do
+            TimeFreezer.freeze(TEST_TIME) do
               if options[:compare]
                 run_specs_compare(config, options)
               else
@@ -228,10 +228,9 @@ module Liquid
             total_errors = 0
             all_failures = []
             max_failures = options[:max_failures]
-            stopped_early = false
+            max_passed_complexity = 0
 
             suites_to_run.each do |suite|
-              break if stopped_early
 
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
@@ -260,17 +259,14 @@ module Liquid
                 case result[:status]
                 when :pass
                   passed += 1
+                  complexity = spec.complexity || 0
+                  max_passed_complexity = complexity if complexity > max_passed_complexity
                 when :fail
                   failed += 1
                   all_failures << { spec: spec, result: result }
                 when :error
                   errors += 1
                   all_failures << { spec: spec, result: result }
-                end
-
-                if max_failures && (total_failed + total_errors + failed + errors) >= max_failures
-                  stopped_early = true
-                  break
                 end
               end
 
@@ -286,22 +282,16 @@ module Liquid
             end
 
             # Run additional specs if provided
-            run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors, max_failures, stopped_early)
+            run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors)
 
             # Show skipped suites
             show_skipped_suites(config, features)
 
+            print_failures(all_failures, max_failures)
+
             puts ""
+            puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors (max complexity: #{max_passed_complexity})"
 
-            if stopped_early
-              total_run = total_passed + total_failed + total_errors
-              skipped = specs.size - total_run
-              puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors, #{skipped} skipped"
-            else
-              puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors"
-            end
-
-            print_failures(all_failures)
             exit(1) if all_failures.any?
           end
 
@@ -331,11 +321,8 @@ module Liquid
             total_errors = 0
             all_differences = []
             max_failures = options[:max_failures]
-            stopped_early = false
 
             suites_to_run.each do |suite|
-              break if stopped_early
-
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
               suite_specs = filter_by_features(suite_specs, features)
@@ -370,11 +357,6 @@ module Liquid
                   errors += 1
                   all_differences << { spec: spec, result: result }
                 end
-
-                if max_failures && (total_different + total_errors + different + errors) >= max_failures
-                  stopped_early = true
-                  break
-                end
               end
 
               if different + errors == 0
@@ -388,19 +370,16 @@ module Liquid
               total_errors += errors
             end
 
+            print_differences(all_differences, max_failures) if all_differences.any?
+
             puts ""
 
-            if stopped_early
-              total_run = total_same + total_different + total_errors
-              skipped = specs.size - total_run
-              puts "Total: #{total_same} match, \e[33m#{total_different} different\e[0m, #{total_errors} errors, #{skipped} skipped"
-            elsif total_different == 0 && total_errors == 0
+            if total_different == 0 && total_errors == 0
               puts "\e[32mTotal: #{total_same} specs match reference implementation\e[0m"
             else
               puts "Total: #{total_same} match, \e[33m#{total_different} different\e[0m, #{total_errors} errors"
             end
 
-            print_differences(all_differences) if all_differences.any?
             exit(1) if all_differences.any?
           end
 
@@ -593,8 +572,8 @@ module Liquid
             end
           end
 
-          def run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors, max_failures, stopped_early)
-            return if options[:add_specs].nil? || options[:add_specs].empty? || stopped_early
+          def run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors)
+            return if options[:add_specs].nil? || options[:add_specs].empty?
 
             additional_specs = load_additional_specs(options[:add_specs])
             additional_specs = filter_specs(additional_specs, config.filter) if config.filter
@@ -630,10 +609,6 @@ module Liquid
                 errors += 1
                 all_failures << { spec: spec, result: result }
               end
-
-              if max_failures && (total_failed + total_errors + failed + errors) >= max_failures
-                break
-              end
             end
 
             if failed + errors == 0
@@ -652,7 +627,7 @@ module Liquid
             end
           end
 
-          def print_failures(failures)
+          def print_failures(failures, max_failures = nil)
             return if failures.empty?
 
             puts ""
@@ -661,7 +636,10 @@ module Liquid
 
             shown_hints = Set.new
 
-            failures.each_with_index do |f, i|
+            # Determine how many to print
+            print_count = max_failures ? [failures.size, max_failures].min : failures.size
+
+            failures.first(print_count).each_with_index do |f, i|
               spec = f[:spec]
               result = f[:result]
 
@@ -697,14 +675,23 @@ module Liquid
 
               puts ""
             end
+
+            # Show truncation message if we limited output
+            if max_failures && failures.size > max_failures
+              puts "\e[2m(... #{failures.size - max_failures} more failures not shown due to --max-failures #{max_failures} ...)\e[0m"
+              puts ""
+            end
           end
 
-          def print_differences(differences)
+          def print_differences(differences, max_failures = nil)
             puts ""
             puts "\e[33mDifferences from reference liquid-ruby:\e[0m"
             puts ""
 
-            differences.each_with_index do |d, i|
+            # Determine how many to print
+            print_count = max_failures ? [differences.size, max_failures].min : differences.size
+
+            differences.first(print_count).each_with_index do |d, i|
               puts "#{i + 1}) #{d[:spec].name}"
               puts "   Template: #{d[:spec].template.inspect[0..80]}"
               if d[:result][:reference_error]
@@ -721,6 +708,12 @@ module Liquid
               if hint
                 puts "   Hint: #{hint.strip.tr("\n", " ")[0..80]}"
               end
+              puts ""
+            end
+
+            # Show truncation message if we limited output
+            if max_failures && differences.size > max_failures
+              puts "\e[2m(... #{differences.size - max_failures} more differences not shown due to --max-failures #{max_failures} ...)\e[0m"
               puts ""
             end
 

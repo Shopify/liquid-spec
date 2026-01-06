@@ -269,33 +269,43 @@ module Liquid
 
               checked += 1
 
-              # Check if all outputs match
+              # Check if all outputs match each other AND match expected (if specified)
               unique_outputs = ran_outputs.values.map { |v| v[:output] }.uniq
-              if unique_outputs.size == 1
+              adapters_match = unique_outputs.size == 1
+
+              # Check against spec.expected if it exists
+              expected_match = true
+              if spec.expected
+                reference_output = ran_outputs.values.first[:output]
+                expected_match = reference_output == spec.expected
+              end
+
+              if adapters_match && expected_match
                 matched += 1
                 print(".") if verbose
               else
                 # Build diff info - group adapters by their output
                 first_output = ran_outputs.values.first[:output]
-                differences << {
+                diff_info = {
                   spec: spec,
                   outputs: outputs,
                   first_output: first_output,
                 }
-                print("F") if verbose
-
-                if max_failures && differences.size >= max_failures
-                  puts " (stopped at max-failures)"
-                  break
+                # Add expected mismatch info if relevant
+                if spec.expected && !expected_match
+                  diff_info[:expected_mismatch] = true
+                  diff_info[:expected] = spec.expected
                 end
+                differences << diff_info
+                print("F") if verbose
               end
             end
 
             puts " done" unless verbose
             puts
 
-            # Print results
-            print_results_v2(differences, adapters, options)
+            # Print results (limited by max_failures for display only)
+            print_results_v2(differences, adapters, options, max_failures)
             print_summary(matched, differences.size, skipped, checked, specs.size, adapters)
 
             exit(1) if differences.any?
@@ -655,7 +665,7 @@ module Liquid
             false
           end
 
-          def print_results_v2(differences, adapters, options)
+          def print_results_v2(differences, adapters, options, max_failures = nil)
             return if differences.empty?
 
             puts "=" * 70
@@ -663,7 +673,10 @@ module Liquid
             puts "=" * 70
             puts
 
-            differences.each_with_index do |diff, idx|
+            # Determine how many to print
+            print_count = max_failures ? [differences.size, max_failures].min : differences.size
+
+            differences.first(print_count).each_with_index do |diff, idx|
               puts "-" * 70
               puts "\e[1m#{idx + 1}. #{diff[:spec].name}\e[0m"
               puts
@@ -675,6 +688,13 @@ module Liquid
                 puts "  #{template}"
               end
               puts
+
+              # Show expected if there's a mismatch
+              if diff[:expected_mismatch]
+                puts "\e[2mExpected:\e[0m"
+                print_output(diff[:expected])
+                puts
+              end
 
               # Collect outputs, marking skipped adapters
               outputs = {}
@@ -691,6 +711,13 @@ module Liquid
                 print_output(output)
                 puts
               end
+            end
+
+            # Show message if we truncated output
+            if max_failures && differences.size > max_failures
+              puts "-" * 70
+              puts "\e[2m(... #{differences.size - max_failures} more differences not shown due to --max-failures #{max_failures} ...)\e[0m"
+              puts
             end
 
             puts "=" * 70

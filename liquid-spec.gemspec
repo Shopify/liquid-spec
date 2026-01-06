@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
 
   # No runtime dependencies on liquid - the adapter provides it
   spec.add_dependency("super_diff", "~> 0.18")
-  spec.add_dependency("timecop", "~> 0.9")
 
   spec.require_paths = ["lib"]
 end

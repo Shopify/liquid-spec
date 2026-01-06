@@ -83,7 +83,7 @@ module Liquid
       def load_config
         suite_file = File.join(@path, SUITE_FILE)
         if File.exist?(suite_file)
-          YAML.safe_load_file(suite_file, permitted_classes: [Symbol]) || {}
+          YAML.safe_load(File.read(suite_file), permitted_classes: [Symbol]) || {}
         else
           {}
         end

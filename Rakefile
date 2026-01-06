@@ -39,9 +39,9 @@ task :test do
   Rake::Task[:unit_test].invoke
 end
 
-desc "Run liquid-spec matrix against all available adapters"
+desc "Run liquid-spec against the reference liquid-ruby adapter"
 task :run do
-  system("ruby", "bin/liquid-spec", "matrix", "--all") || abort
+  system("ruby", "bin/liquid-spec", "examples/liquid_ruby.rb", "--no-max-failures") || abort
 end
 
 # Spec generation tasks (only needed for development)

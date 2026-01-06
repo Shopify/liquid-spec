@@ -15,7 +15,6 @@ end
 # Core test dependencies
 gem "minitest"
 gem "minitest-focus"
-gem "timecop"
 
 # Development only
 group :development do
