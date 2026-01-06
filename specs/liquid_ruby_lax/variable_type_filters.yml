@@ -587,3 +587,350 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
+
+# =============================================================================
+# DYNAMIC VARIABLE LOOKUP - {{ [varname] }} syntax
+# Looks up varname's value, then uses that as the variable name to resolve
+# =============================================================================
+
+- name: lax_dynamic_lookup_basic
+  complexity: 520
+  hint: |
+    {{ [key] }} is dynamic variable lookup: resolves key's value, then uses
+    that string as the variable name to look up in the current scope.
+  template: "{{ [key] }}"
+  environment:
+    key: "target"
+    target: "found it"
+  expected: "found it"
+
+- name: lax_dynamic_lookup_first_last_size_string
+  complexity: 520
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "s"
+    s: "hello"
+  expected: |
+    [key], first:h
+    [key], last:o
+    [key], size:5
+
+- name: lax_dynamic_lookup_first_last_size_array
+  complexity: 520
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "arr"
+    arr: [10, 20, 30]
+  expected: |
+    [key], first:10
+    [key], last:30
+    [key], size:3
+
+- name: lax_dynamic_lookup_first_last_size_hash
+  complexity: 520
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "h"
+    h:
+      a: 1
+      b: 2
+  expected: |
+    [key], first:a1
+    [key], last:
+    [key], size:2
+
+- name: lax_dynamic_lookup_first_last_size_int
+  complexity: 520
+  hint: "Dynamic lookup to integer, then apply first/last/size"
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "num"
+    num: 42
+  expected: |
+    [key], first:
+    [key], last:
+    [key], size:8
+
+- name: lax_dynamic_lookup_first_last_size_float
+  complexity: 520
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "f"
+    f: 3.14
+  expected: |
+    [key], first:
+    [key], last:
+    [key], size:0
+
+- name: lax_dynamic_lookup_first_last_size_nil
+  complexity: 520
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "n"
+    n: null
+  expected: |
+    [key], first:
+    [key], last:
+    [key], size:0
+
+- name: lax_dynamic_lookup_first_last_size_bool
+  complexity: 520
+  template: |
+    [key], first:{{- [key] | first }}
+    [key], last:{{- [key] | last }}
+    [key], size:{{- [key] | size }}
+  environment:
+    key: "b"
+    b: true
+  expected: |
+    [key], first:
+    [key], last:
+    [key], size:0
+
+- name: lax_dynamic_lookup_undefined_key
+  complexity: 520
+  hint: "Dynamic lookup with undefined variable as key returns empty"
+  template: "result:{{- [missing] }}"
+  environment:
+    target: "value"
+  expected: "result:"
+
+- name: lax_dynamic_lookup_key_points_to_undefined
+  complexity: 520
+  hint: "Dynamic lookup where key points to non-existent variable"
+  template: "result:{{- [key] }}"
+  environment:
+    key: "missing"
+  expected: "result:"
+
+# =============================================================================
+# HASH BRACKET ACCESS - hash['key'] and hash[variable] syntax
+# =============================================================================
+
+- name: lax_hash_bracket_static_key
+  complexity: 520
+  hint: "hash['literal'] accesses hash with string literal key"
+  template: "{{ hash['a'] }}, {{ hash['b'] }}"
+  environment:
+    hash:
+      a: 1
+      b: 2
+  expected: "1, 2"
+
+- name: lax_hash_bracket_dynamic_key
+  complexity: 520
+  hint: "hash[variable] accesses hash with variable's value as key"
+  template: "{{ hash[key] }}"
+  environment:
+    hash:
+      x: "found"
+      y: "also found"
+    key: "x"
+  expected: "found"
+
+- name: lax_hash_bracket_first_last_size_array
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      arr: [1, 2, 3, 4, 5]
+    key: "arr"
+  expected: |
+    hash[key], first:1
+    hash[key], last:5
+    hash[key], size:5
+
+- name: lax_hash_bracket_first_last_size_string
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      str: "hello"
+    key: "str"
+  expected: |
+    hash[key], first:h
+    hash[key], last:o
+    hash[key], size:5
+
+- name: lax_hash_bracket_first_last_size_nested_hash
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      nested:
+        x: 10
+        y: 20
+    key: "nested"
+  expected: |
+    hash[key], first:x10
+    hash[key], last:
+    hash[key], size:2
+
+- name: lax_hash_bracket_first_last_size_int
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      num: 42
+    key: "num"
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:8
+
+- name: lax_hash_bracket_first_last_size_float
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      f: 3.14
+    key: "f"
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:0
+
+- name: lax_hash_bracket_first_last_size_nil
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      n: null
+    key: "n"
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:0
+
+- name: lax_hash_bracket_first_last_size_bool
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      b: true
+    key: "b"
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:0
+
+- name: lax_hash_bracket_missing_key
+  complexity: 520
+  hint: "hash[key] where key points to non-existent hash key"
+  template: "result:{{- hash[key] }}"
+  environment:
+    hash:
+      a: 1
+    key: "missing"
+  expected: "result:"
+
+- name: lax_hash_bracket_undefined_key_variable
+  complexity: 520
+  hint: "hash[undefined] where the key variable doesn't exist"
+  template: "result:{{- hash[missing] }}"
+  environment:
+    hash:
+      a: 1
+  expected: "result:"
+
+# =============================================================================
+# COMBINED DYNAMIC LOOKUPS WITH PROPERTY ACCESS
+# =============================================================================
+
+- name: lax_dynamic_lookup_then_property_access
+  complexity: 530
+  hint: "Dynamic lookup followed by property access: {{ [key].first }}"
+  template: |
+    [key].first:{{- [key].first }}
+    [key].last:{{- [key].last }}
+    [key].size:{{- [key].size }}
+  environment:
+    key: "arr"
+    arr: [10, 20, 30]
+  expected: |
+    [key].first:10
+    [key].last:30
+    [key].size:3
+
+- name: lax_hash_bracket_then_property_access
+  complexity: 530
+  hint: "Hash bracket access followed by property access"
+  template: |
+    hash[key].first:{{- hash[key].first }}
+    hash[key].last:{{- hash[key].last }}
+    hash[key].size:{{- hash[key].size }}
+  environment:
+    hash:
+      arr: [100, 200, 300]
+    key: "arr"
+  expected: |
+    hash[key].first:100
+    hash[key].last:300
+    hash[key].size:3
+
+# =============================================================================
+# NESTED DYNAMIC LOOKUPS
+# =============================================================================
+
+- name: lax_nested_dynamic_lookup
+  complexity: 530
+  hint: "Nested dynamic lookup: [[key]] resolves key, then resolves that result"
+  template: "{{ [[key]] }}"
+  environment:
+    key: "middle"
+    middle: "target"
+    target: "final value"
+  expected: "final value"
+
+- name: lax_hash_nested_bracket_access
+  complexity: 530
+  hint: "Nested bracket access: hash[hash2[key]]"
+  template: "{{ hash[lookup[key]] }}"
+  environment:
+    hash:
+      x: "found x"
+      y: "found y"
+    lookup:
+      a: "x"
+      b: "y"
+    key: "a"
+  expected: "found x"
