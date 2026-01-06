@@ -82,15 +82,15 @@
     not execute. Instead, execute the else block. Nil is one of only
     two falsy values in Liquid (along with false).
 
-- name: "empty_string_is_falsy"
+- name: "empty_string_is_truthy_in_liquid_ruby"
   template: "{% if '' %}yes{% else %}no{% endif %}"
-  expected: "no"
+  expected: "yes"
   complexity: 125
   hint: |
-    In Liquid, empty strings are falsy. Even though it's a string object,
-    the empty string '' fails the truthiness test. Check the string
-    length: if zero, treat as falsy. This differs from some languages
-    where only nil/null/false are falsy.
+    In liquid-ruby, empty strings are truthy (like Ruby itself).
+    Only nil and false are falsy. This follows Ruby semantics
+    where any object that exists is truthy, regardless of its
+    content or length.
 
 - name: "string_zero_is_truthy"
   template: "{% if '0' %}yes{% else %}no{% endif %}"

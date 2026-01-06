@@ -104,13 +104,13 @@
 - name: "split_empty_string"
   template: "{{ text | split: ',' | size }}"
   environment: { text: "" }
-  expected: "1"
+  expected: "0"
   complexity: 65
   hint: |
-    Split on an empty string produces an array with one empty element [""].
-    This is different from an empty array []. When you split "", you get
-    one piece (the empty string itself). Then size returns 1. This is a
-    quirky but standard behavior across implementations.
+    Split on an empty string produces an empty array [].
+    In Ruby, "".split(",") returns [], not [""]. This is different
+    from JavaScript where "".split(",") returns [""]. The size of
+    an empty array is 0.
 
 - name: "split_with_empty_delimiter"
   template: "{{ text | split: '' | join: '-' }}"
@@ -181,14 +181,15 @@
 - name: "sort_non_comparable_items"
   template: "{{ items | sort | join: ',' }}"
   environment: { items: [1, "a", true] }
-  expected: "1,a,true"
+  render_errors: true
+  errors:
+    output:
+      - "cannot sort"
   complexity: 90
   hint: |
-    When sorting arrays with mixed types (numbers, strings, booleans),
-    maintain the original order for non-comparable items. Standard sort
-    algorithms fail when items can't be compared (e.g., 1 < "a" is undefined).
-    Implement a stable sort that gracefully handles mixed types by treating
-    them as incomparable and preserving their relative order.
+    Sorting arrays with mixed types (numbers, strings, booleans) raises
+    an error because comparison between different types is undefined.
+    liquid-ruby outputs "Liquid error (line N): cannot sort values of incompatible types".
 
 - name: "map_empty_array"
   template: "{{ items | map: 'name' | join: ',' }}"
@@ -249,13 +250,13 @@
 - name: "replace_with_empty_search"
   template: "{{ text | replace: '', 'x' }}"
   environment: { text: "hi" }
-  expected: "hi"
+  expected: "xhxix"
   complexity: 85
   hint: |
-    Replace with an empty search string should return the original string
-    unchanged. Searching for "" in a string is ambiguous (it matches
-    everywhere), so the standard behavior is to not perform replacement.
-    Check if the search string is empty and return input unchanged.
+    Replace with an empty search string inserts the replacement between
+    every character. In Ruby, "hi".gsub("", "x") produces "xhxix".
+    The empty string matches at every position, including before the
+    first and after the last character.
 
 - name: "replace_with_empty_replacement"
   template: "{{ text | replace: 'l', '' }}"

@@ -48,19 +48,16 @@
     in the context. This is fundamental to Liquid's forgiving error handling.
     Do not throw errors or warnings for missing variables in lax mode.
 
-- name: "undefined_variable_strict"
+- name: "undefined_variable_strict_in_liquid_ruby"
   template: "{{ missing_var }}"
   environment: {}
-  expected: "Liquid error: undefined variable 'missing_var'"
+  expected: ""
   complexity: 230
   error_mode: strict
-  render_errors: true
   hint: |
-    In strict mode, accessing undefined variables should raise an error.
-    The error should be caught and rendered inline as "Liquid error: [message]".
-    Strict mode helps catch typos and missing data during development.
-    Implement error handling that captures the variable name and context
-    for helpful error messages.
+    In liquid-ruby, strict mode only affects parsing, not runtime variable
+    lookup. Undefined variables still render as empty strings. Other
+    implementations may raise errors for undefined variables in strict mode.
 
 - name: "property_access_on_nil_lax"
   template: "{{ missing.property }}"
@@ -75,19 +72,16 @@
     checks if the base is nil before attempting to access. Prevents null
     pointer exceptions in templates.
 
-- name: "property_access_on_nil_strict"
+- name: "property_access_on_nil_strict_in_liquid_ruby"
   template: "{{ missing.property }}"
   environment: {}
-  expected: "Liquid error: undefined variable 'missing'"
+  expected: ""
   complexity: 245
   error_mode: strict
-  render_errors: true
   hint: |
-    In strict mode, the error should occur at the variable lookup level.
-    Since 'missing' is undefined, the error is raised before attempting
-    property access. Strict mode validates each step of the lookup chain.
-    The error message should identify which variable is undefined for
-    easier debugging.
+    In liquid-ruby, strict mode only affects parsing. Property access on
+    undefined variables still returns nil (empty output). Other implementations
+    may raise errors for property access on undefined variables in strict mode.
 
 - name: "property_access_on_non_object_lax"
   template: "{{ number.property }}"
@@ -127,17 +121,15 @@
     the original value as if the unknown filter wasn't there. This is critical
     for backward compatibility.
 
-- name: "unknown_filter_strict"
+- name: "unknown_filter_strict_in_liquid_ruby"
   template: "{{ 'hello' | nonexistent_filter }}"
-  expected: "Liquid error: unknown filter 'nonexistent_filter'"
+  expected: "hello"
   complexity: 270
   error_mode: strict
-  render_errors: true
   hint: |
-    In strict mode, unknown filters should raise an error that gets rendered
-    inline. This helps catch typos in filter names during development. The
-    filter lookup system should check if the filter exists before attempting
-    to invoke it. Provide the filter name in the error message for debugging.
+    In liquid-ruby, unknown filters are ignored even in strict mode.
+    The filter passes through its input unchanged, like lax mode.
+    Other implementations may raise errors for unknown filters in strict mode.
 
 - name: "filter_with_invalid_argument_lax"
   template: "{{ 'hello' | slice: 'not a number' }}"
@@ -175,17 +167,17 @@
     recognize the tag syntax but the parser treats unknown tags as raw output.
     Include both opening and closing tags in the raw output.
 
-- name: "unknown_tag_strict"
+- name: "unknown_tag_strict_parse_error"
   template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
-  expected: "Liquid error: unknown tag 'nonexistent_tag'"
   complexity: 300
   error_mode: strict
-  render_errors: true
+  errors:
+    parse_error:
+      - "Unknown tag"
   hint: |
-    In strict mode, unknown tags should raise an error immediately during
-    parsing or rendering. The tag registry lookup fails and an error is raised.
-    This prevents templates with typos from silently failing. The error should
-    identify the unknown tag name and ideally the line number where it appears.
+    In liquid-ruby strict mode, unknown tags cause a parse error rather than
+    a render error. The template fails to parse with "Unknown tag 'nonexistent_tag'".
+    This is stricter than lax mode which outputs tags as raw text.
 
 - name: "malformed_syntax_unclosed_tag_lax"
   template: "{% if true %}hello"
@@ -296,7 +288,7 @@
 
 - name: "strict_mode_with_nil_safe_access"
   template: "{{ user.profile.name | default: 'Anonymous' }}"
-  environment: { user: { profile: nil } }
+  environment: { user: { profile: null } }
   expected: "Anonymous"
   complexity: 295
   error_mode: strict
