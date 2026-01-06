@@ -511,3 +511,45 @@ See `lib/liquid/spec/deps/liquid_ruby.rb` for all registered classes:
 1. Define the class in `lib/liquid/spec/deps/liquid_ruby.rb` or `lib/liquid/spec/test_drops.rb`
 2. Register it: `Liquid::Spec::ClassRegistry.register("MyClass") { |p| MyClass.new(p) }`
 3. Use in specs: `my_var: { instantiate: MyClass, arg1: value1 }`
+
+## Editing YAML Specs with yq
+
+If the `yq` tool is available, prefer it for bulk YAML edits. You can write bash scripts that make multiple edits in one go:
+
+```bash
+#!/bin/bash
+# Bulk update complexity scores in a spec file
+
+FILE="specs/liquid_ruby_lax/variable_type_filters.yml"
+
+# Update metadata minimum_complexity
+yq -i '._metadata.minimum_complexity = 500' "$FILE"
+
+# Update all specs with complexity 150 to 500
+yq -i '(.specs[] | select(.complexity == 150)).complexity = 500' "$FILE"
+
+# Add 350 to all complexity values under 200
+yq -i '(.specs[].complexity | select(. < 200)) += 350' "$FILE"
+
+# Set a value in suite config
+yq -i '.minimum_complexity = 500' specs/liquid_ruby_lax/suite.yml
+```
+
+Common yq patterns for spec files:
+
+```bash
+# Read a value
+yq '.specs[0].name' file.yml
+
+# Update matching specs by name
+yq -i '(.specs[] | select(.name == "test_foo")).complexity = 100' file.yml
+
+# Add a hint to all specs missing one
+yq -i '(.specs[] | select(.hint == null)).hint = "TODO: add hint"' file.yml
+
+# Delete a field from all specs
+yq -i 'del(.specs[].some_field)' file.yml
+
+# Count specs
+yq '.specs | length' file.yml
+```
