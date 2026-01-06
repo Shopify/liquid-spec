@@ -56,7 +56,7 @@ module Liquid
           def print_doc_summary(doc)
             puts "\e[1m#{doc[:title]}\e[0m"
             puts doc[:description]
-            puts "\e[2mliquid-spec docs #{doc[:name]}\e[0m"
+            puts "  → \e[1mliquid-spec docs #{doc[:name]}\e[0m"
             puts ""
           end
 
