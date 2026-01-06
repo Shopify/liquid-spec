@@ -137,6 +137,10 @@ class NumberLikeThing < Liquid::Drop
   def to_number
     @amount
   end
+
+  def to_liquid_value
+    @amount
+  end
 end
 
 class ThingWithToLiquid
