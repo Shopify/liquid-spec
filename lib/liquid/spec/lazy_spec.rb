@@ -234,6 +234,7 @@ module Liquid
       # Instantiate filesystem for this spec
       # Returns an object that responds to read_template_file
       # Filesystem is always a simple hash of filename => content
+      # Special key '_error-message' sets the error message for missing files
       def instantiate_filesystem
         return if @raw_filesystem.nil?
 
@@ -249,7 +250,10 @@ module Liquid
           {}
         end
 
-        SimpleFileSystem.new(files)
+        # Extract special _error-message key if present
+        error_message = files.delete("_error-message")
+
+        SimpleFileSystem.new(files, error_message: error_message)
       end
 
       # Instantiate template_factory for this spec
@@ -334,15 +338,17 @@ module Liquid
       end
 
       # Simple filesystem implementation for specs
+      # Supports a custom error_message for missing files via _error-message key
       class SimpleFileSystem
         attr_reader :templates
 
-        def initialize(templates)
+        def initialize(templates, error_message: nil)
           @templates = (templates || {}).transform_keys do |key|
             key = key.to_s.downcase
             key = "#{key}.liquid" unless key.end_with?(".liquid")
             key
           end
+          @error_message = error_message
         end
 
         def read_template_file(template_path)
@@ -350,7 +356,7 @@ module Liquid
           path = original_path.downcase
           path = "#{path}.liquid" unless path.end_with?(".liquid")
           @templates.find { |name, _| name.casecmp?(path) }&.last or
-            raise "Could not find template: #{original_path}"
+            raise Liquid::FileSystemError, @error_message || "Could not find asset #{original_path}"
         end
 
         def to_h
