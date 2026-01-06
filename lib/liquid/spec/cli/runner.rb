@@ -303,7 +303,7 @@ module Liquid
                 break
               end
             end
-            max_possible = sorted_complexities.reject { |c| c >= 1000 }.max || 0
+            max_possible = sorted_complexities.max || 0
 
             puts ""
             puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors. Max complexity reached: #{max_complexity_reached}/#{max_possible}"
