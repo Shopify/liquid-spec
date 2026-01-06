@@ -226,7 +226,7 @@ specs:
 
 # NumberLikeThing - returns number via to_number
 - name: StandardFiltersTest#test_at_least_acccepts_number_like_thing_2fa85f92
-  complexity: 120
+  complexity: 500
   template: "{{ width | at_least:5 }}"
   environment:
     width:
@@ -237,7 +237,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L327
 
 - name: StandardFiltersTest#test_at_least_acccepts_number_like_thing_3d65c66c
-  complexity: 120
+  complexity: 500
   template: "{{ 5 | at_least: width }}"
   environment:
     width:
@@ -248,7 +248,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L328
 
 - name: StandardFiltersTest#test_at_least_acccepts_number_like_thing_84fbbc20
-  complexity: 120
+  complexity: 500
   template: "{{ width | at_least:5 }}"
   environment:
     width:
@@ -259,7 +259,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L329
 
 - name: StandardFiltersTest#test_at_most_acccepts_number_like_thing_0fb6b2dc
-  complexity: 120
+  complexity: 500
   template: "{{ width | at_most:5 }}"
   environment:
     width:
@@ -270,7 +270,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L341
 
 - name: StandardFiltersTest#test_at_most_acccepts_number_like_thing_1b9cfae2
-  complexity: 120
+  complexity: 500
   template: "{{ 5 | at_most: width }}"
   environment:
     width:
@@ -281,7 +281,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L342
 
 - name: StandardFiltersTest#test_at_most_acccepts_number_like_thing_fc5a72a7
-  complexity: 120
+  complexity: 500
   template: "{{ width | at_most:5 }}"
   environment:
     width:
@@ -292,7 +292,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L343
 
 - name: StandardFiltersTest#test_ceil_number_like_thing_abe2fd28
-  complexity: 120
+  complexity: 500
   template: "{{ price | ceil }}"
   environment:
     price:
@@ -302,7 +302,7 @@ specs:
   expected: '5'
 
 - name: StandardFiltersTest#test_divided_by_number_like_thing_58ded0f9
-  complexity: 120
+  complexity: 500
   template: "{{ price | divided_by:2 }}"
   environment:
     price:
@@ -312,7 +312,7 @@ specs:
   expected: '5'
 
 - name: StandardFiltersTest#test_floor_number_like_thing_6db37ddf
-  complexity: 120
+  complexity: 500
   template: "{{ price | floor }}"
   environment:
     price:
@@ -322,7 +322,7 @@ specs:
   expected: '5'
 
 - name: StandardFiltersTest#test_minus_number_like_thing_caa53f2f
-  complexity: 120
+  complexity: 500
   template: "{{ price | minus:'2' }}"
   environment:
     price:
@@ -332,7 +332,7 @@ specs:
   expected: '5'
 
 - name: StandardFiltersTest#test_modulo_number_like_thing_fad6cc2c
-  complexity: 120
+  complexity: 500
   template: "{{ price | modulo:2 }}"
   environment:
     price:
@@ -342,7 +342,7 @@ specs:
   expected: '1'
 
 - name: StandardFiltersTest#test_plus_number_like_thing_4c0e7d25
-  complexity: 120
+  complexity: 500
   template: "{{ price | plus:'2' }}"
   environment:
     price:
@@ -352,7 +352,7 @@ specs:
   expected: '5'
 
 - name: StandardFiltersTest#test_round_number_like_thing_aa7f8a1c
-  complexity: 120
+  complexity: 500
   template: "{{ price | round }}"
   environment:
     price:
@@ -362,7 +362,7 @@ specs:
   expected: '5'
 
 - name: StandardFiltersTest#test_round_number_like_thing_b3d87c4e
-  complexity: 120
+  complexity: 500
   template: "{{ price | round }}"
   environment:
     price:
@@ -372,7 +372,7 @@ specs:
   expected: '4'
 
 - name: StandardFiltersTest#test_times_number_like_thing_edf3c4b7
-  complexity: 120
+  complexity: 500
   template: "{{ price | times:2 }}"
   environment:
     price:
