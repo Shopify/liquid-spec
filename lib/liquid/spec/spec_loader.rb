@@ -300,12 +300,14 @@ module Liquid
             root.children
           when Psych::Nodes::Mapping
             # Check for specs key
+            found = nil
             root.children.each_slice(2) do |key, value|
               if key.is_a?(Psych::Nodes::Scalar) && key.value == "specs"
-                return value.children if value.is_a?(Psych::Nodes::Sequence)
+                found = value.children if value.is_a?(Psych::Nodes::Sequence)
+                break
               end
             end
-            []
+            found || []
           else
             []
           end
