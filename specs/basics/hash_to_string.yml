@@ -1,0 +1,149 @@
+topic: hash_to_string
+description: Comprehensive tests for Hash to_s formatting with various data types (Ruby 2.x style expectation)
+
+tests:
+  - name: hash_empty
+    template: "{{ data }}"
+    assigns:
+      data: {}
+    expect: "{}"
+    complexity: 30
+    hint: |
+      An empty hash should render as "{}". This is the standard string representation
+      for an empty map/dictionary structure in Liquid's Ruby-based output format.
+
+  - name: hash_string_key_value
+    template: "{{ data }}"
+    assigns:
+      data:
+        key: "value"
+    expect: '{"key"=>"value"}'
+    complexity: 35
+    hint: |
+      A simple hash with a string key and value. Note the Ruby 2.x style hash rocket "=>"
+      syntax. Even if the implementation is in another language or Ruby 3.x, the output
+      string must match this format for spec compliance. Quotes around key and value are essential.
+
+  - name: hash_integer_value
+    template: "{{ data }}"
+    assigns:
+      data:
+        count: 42
+    expect: '{"count"=>42}'
+    complexity: 35
+    hint: |
+      Values in hashes preserve their type formatting. An integer 42 is rendered as 42
+      (no quotes), while the key "count" is quoted. The hash rocket separates them.
+
+  - name: hash_float_value
+    template: "{{ data }}"
+    assigns:
+      data:
+        pi: 3.14
+    expect: '{"pi"=>3.14}'
+    complexity: 35
+    hint: |
+      Floating point numbers in hashes are rendered as-is. Ensure precision is preserved
+      in the string representation.
+
+  - name: hash_boolean_true
+    template: "{{ data }}"
+    assigns:
+      data:
+        active: true
+    expect: '{"active"=>true}'
+    complexity: 35
+    hint: |
+      Boolean values are rendered as "true" or "false" without quotes.
+
+  - name: hash_boolean_false
+    template: "{{ data }}"
+    assigns:
+      data:
+        hidden: false
+    expect: '{"hidden"=>false}'
+    complexity: 35
+    hint: |
+      Boolean false is rendered as "false".
+
+  - name: hash_nil_value
+    template: "{{ data }}"
+    assigns:
+      data:
+        nothing: null
+    expect: '{"nothing"=>nil}'
+    complexity: 40
+    hint: |
+      Nil/null values in a hash are explicitly rendered as the text "nil". This differs
+      from top-level output where {{ nil }} renders as an empty string. Inside a hash
+      inspection string, it must be "nil".
+
+  - name: hash_nested_empty
+    template: "{{ data }}"
+    assigns:
+      data:
+        nested: {}
+    expect: '{"nested"=>{}}'
+    complexity: 45
+    hint: |
+      Nested hashes should be recursively formatted. An empty nested hash renders as "{}".
+
+  - name: hash_nested_with_values
+    template: "{{ data }}"
+    assigns:
+      data:
+        user:
+          name: "Alice"
+    expect: '{"user"=>{"name"=>"Alice"}}'
+    complexity: 50
+    hint: |
+      Recursively format the nested hash. The value for "user" is the string representation
+      of the inner hash: {"name"=>"Alice"}.
+
+  - name: hash_array_integers
+    template: "{{ data }}"
+    assigns:
+      data:
+        list: [1, 2, 3]
+    expect: '{"list"=>[1, 2, 3]}'
+    complexity: 50
+    hint: |
+      Arrays inside hashes are rendered with brackets []. Elements are comma-separated.
+      Space after comma is standard Ruby array formatting.
+
+  - name: hash_array_strings
+    template: "{{ data }}"
+    assigns:
+      data:
+        colors: ["red", "blue"]
+    expect: '{"colors"=>["red", "blue"]}'
+    complexity: 50
+    hint: |
+      Strings inside arrays inside hashes must be quoted.
+
+  - name: hash_mixed_types
+    template: "{{ data }}"
+    assigns:
+      data:
+        str: "s"
+        num: 1
+        bool: true
+    expect: '{"str"=>"s", "num"=>1, "bool"=>true}'
+    complexity: 55
+    hint: |
+      A hash with multiple keys of different types. Order may vary in some implementations,
+      but typically insertion order or key sort order is observed. Liquid specs generally
+      expect insertion order preservation or deterministic output.
+
+  - name: hash_deeply_nested
+    template: "{{ data }}"
+    assigns:
+      data:
+        l1:
+          l2:
+            l3: "deep"
+    expect: '{"l1"=>{"l2"=>{"l3"=>"deep"}}}'
+    complexity: 70
+    hint: |
+      Deeply nested structures must be recursively stringified correctly. Ensure brackets
+      are balanced and nesting level is visually distinct.

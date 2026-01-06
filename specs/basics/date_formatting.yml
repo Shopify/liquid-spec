@@ -1,0 +1,300 @@
+topic: date_formatting
+description: Extensive tests for the date filter covering all Ruby strftime features
+
+tests:
+  # Reference Date: Monday, December 5, 2022 15:04:05 (3:04:05 PM) UTC
+  # Using a string input that Liquid parses easily
+  - name: date_format_year_full
+    template: "{{ '2022-12-05 15:04:05' | date: '%Y' }}"
+    expect: "2022"
+    complexity: 30
+    hint: |
+      %Y - Year with century (can be negative, 4 digits at least).
+      Extract the full year from the date object.
+
+  - name: date_format_year_short
+    template: "{{ '2022-12-05 15:04:05' | date: '%y' }}"
+    expect: "22"
+    complexity: 30
+    hint: |
+      %y - Year without century (00..99).
+      Extract the last two digits of the year.
+
+  - name: date_format_century
+    template: "{{ '2022-12-05 15:04:05' | date: '%C' }}"
+    expect: "20"
+    complexity: 35
+    hint: |
+      %C - Century (year / 100). The first two digits of the four-digit year.
+
+  - name: date_format_month_name_full
+    template: "{{ '2022-12-05 15:04:05' | date: '%B' }}"
+    expect: "December"
+    complexity: 30
+    hint: |
+      %B - The full month name (e.g., January, December).
+      Locale-dependent, but standard tests assume English.
+
+  - name: date_format_month_name_short
+    template: "{{ '2022-12-05 15:04:05' | date: '%b' }}"
+    expect: "Dec"
+    complexity: 30
+    hint: |
+      %b - The abbreviated month name (e.g., Jan, Dec).
+
+  - name: date_format_month_name_short_h_alias
+    template: "{{ '2022-12-05 15:04:05' | date: '%h' }}"
+    expect: "Dec"
+    complexity: 30
+    hint: |
+      %h - Equivalent to %b (abbreviated month name).
+
+  - name: date_format_month_digit
+    template: "{{ '2022-12-05 15:04:05' | date: '%m' }}"
+    expect: "12"
+    complexity: 30
+    hint: |
+      %m - Month of the year, zero-padded (01..12).
+
+  - name: date_format_day_of_month
+    template: "{{ '2022-12-05 15:04:05' | date: '%d' }}"
+    expect: "05"
+    complexity: 30
+    hint: |
+      %d - Day of the month, zero-padded (01..31).
+
+  - name: date_format_day_of_month_space_padded
+    template: "{{ '2022-12-05 15:04:05' | date: '%e' }}"
+    expect: " 5"
+    complexity: 35
+    hint: |
+      %e - Day of the month, blank-padded ( 1..31).
+      Note the leading space for single digit days.
+
+  - name: date_format_day_of_year
+    template: "{{ '2022-12-05 15:04:05' | date: '%j' }}"
+    expect: "339"
+    complexity: 40
+    hint: |
+      %j - Day of the year (001..366).
+      December 5th is the 339th day of 2022.
+
+  - name: date_format_weekday_full
+    template: "{{ '2022-12-05 15:04:05' | date: '%A' }}"
+    expect: "Monday"
+    complexity: 30
+    hint: |
+      %A - The full weekday name (Sunday..Saturday).
+
+  - name: date_format_weekday_short
+    template: "{{ '2022-12-05 15:04:05' | date: '%a' }}"
+    expect: "Mon"
+    complexity: 30
+    hint: |
+      %a - The abbreviated weekday name (Sun..Sat).
+
+  - name: date_format_weekday_number_sunday_start
+    template: "{{ '2022-12-05 15:04:05' | date: '%w' }}"
+    expect: "1"
+    complexity: 35
+    hint: |
+      %w - Day of the week (Sunday is 0, 0..6).
+      Monday is 1.
+
+  - name: date_format_weekday_number_iso
+    template: "{{ '2022-12-05 15:04:05' | date: '%u' }}"
+    expect: "1"
+    complexity: 35
+    hint: |
+      %u - Day of the week (Monday is 1, 1..7).
+      Monday is 1.
+
+  - name: date_format_hour_24
+    template: "{{ '2022-12-05 15:04:05' | date: '%H' }}"
+    expect: "15"
+    complexity: 30
+    hint: |
+      %H - Hour of the day, 24-hour clock, zero-padded (00..23).
+
+  - name: date_format_hour_24_k_alias
+    template: "{{ '2022-12-05 15:04:05' | date: '%k' }}"
+    expect: "15"
+    complexity: 30
+    hint: |
+      %k - Hour of the day, 24-hour clock, blank-padded ( 0..23).
+      15 is two digits so no padding, but single digits get a space.
+
+  - name: date_format_hour_12
+    template: "{{ '2022-12-05 15:04:05' | date: '%I' }}"
+    expect: "03"
+    complexity: 30
+    hint: |
+      %I - Hour of the day, 12-hour clock, zero-padded (01..12).
+      15:00 is 03:00 PM.
+
+  - name: date_format_hour_12_l_alias
+    template: "{{ '2022-12-05 15:04:05' | date: '%l' }}"
+    expect: " 3"
+    complexity: 30
+    hint: |
+      %l - Hour of the day, 12-hour clock, blank-padded ( 1..12).
+      Note the leading space for single digit hour.
+
+  - name: date_format_am_pm_upper
+    template: "{{ '2022-12-05 15:04:05' | date: '%p' }}"
+    expect: "PM"
+    complexity: 30
+    hint: |
+      %p - Meridian indicator, uppercase (AM or PM).
+
+  - name: date_format_am_pm_lower
+    template: "{{ '2022-12-05 15:04:05' | date: '%P' }}"
+    expect: "pm"
+    complexity: 30
+    hint: |
+      %P - Meridian indicator, lowercase (am or pm).
+
+  - name: date_format_minute
+    template: "{{ '2022-12-05 15:04:05' | date: '%M' }}"
+    expect: "04"
+    complexity: 30
+    hint: |
+      %M - Minute of the hour (00..59).
+
+  - name: date_format_second
+    template: "{{ '2022-12-05 15:04:05' | date: '%S' }}"
+    expect: "05"
+    complexity: 30
+    hint: |
+      %S - Second of the minute (00..60).
+
+  - name: date_format_unix_timestamp
+    template: "{{ '2022-12-05 15:04:05' | date: '%s' }}"
+    complexity: 40
+    hint: |
+      %s - Number of seconds since 1970-01-01 00:00:00 UTC (Unix Timestamp).
+      Value depends on the timezone of the input string or system.
+      Generally treated as local time if no offset provided.
+
+  - name: date_format_week_of_year_sunday_start
+    template: "{{ '2022-12-05 15:04:05' | date: '%U' }}"
+    expect: "49"
+    complexity: 45
+    hint: |
+      %U - Week number of the year. The week starts with Sunday.
+      (00..53).
+
+  - name: date_format_week_of_year_monday_start
+    template: "{{ '2022-12-05 15:04:05' | date: '%W' }}"
+    expect: "49"
+    complexity: 45
+    hint: |
+      %W - Week number of the year. The week starts with Monday.
+      (00..53).
+
+  - name: date_format_iso_8601_week_year
+    template: "{{ '2022-12-05 15:04:05' | date: '%G' }}"
+    expect: "2022"
+    complexity: 50
+    hint: |
+      %G - The ISO 8601 week-based year with century.
+
+  - name: date_format_iso_8601_week_year_short
+    template: "{{ '2022-12-05 15:04:05' | date: '%g' }}"
+    expect: "22"
+    complexity: 50
+    hint: |
+      %g - The ISO 8601 week-based year without century (00..99).
+
+  - name: date_format_iso_8601_week_number
+    template: "{{ '2022-12-05 15:04:05' | date: '%V' }}"
+    expect: "49"
+    complexity: 50
+    hint: |
+      %V - Week number of the week-based year (01..53).
+
+  - name: date_format_timezone_offset
+    template: "{{ '2022-12-05 15:04:05 +0000' | date: '%z' }}"
+    expect: "+0000"
+    complexity: 40
+    hint: |
+      %z - Time zone as hour and minute offset from UTC (e.g. +0900).
+      Requires timezone information in the input or system context.
+
+  - name: date_format_timezone_name
+    template: "{{ '2022-12-05 15:04:05 UTC' | date: '%Z' }}"
+    expect: "UTC"
+    complexity: 40
+    hint: |
+      %Z - Time zone abbreviation name (e.g. EST, UTC).
+
+  - name: date_format_percent_literal
+    template: "{{ '2022-12-05 15:04:05' | date: '%%' }}"
+    expect: "%"
+    complexity: 25
+    hint: |
+      %% - A literal '%' character.
+
+  - name: date_format_date_time_combined
+    template: "{{ '2022-12-05 15:04:05' | date: '%c' }}"
+    complexity: 50
+    hint: |
+      %c - The preferred local date and time representation.
+      Output is locale-dependent (e.g., "Mon Dec 5 15:04:05 2022").
+
+  - name: date_format_date_combined
+    template: "{{ '2022-12-05 15:04:05' | date: '%x' }}"
+    complexity: 50
+    hint: |
+      %x - Preferred representation for the date alone, no time.
+      Locale-dependent (e.g., "12/05/22").
+
+  - name: date_format_time_combined
+    template: "{{ '2022-12-05 15:04:05' | date: '%X' }}"
+    complexity: 50
+    hint: |
+      %X - Preferred representation for the time alone, no date.
+      Locale-dependent (e.g., "15:04:05").
+
+  - name: date_format_full_iso_8601
+    template: "{{ '2022-12-05 15:04:05' | date: '%F' }}"
+    expect: "2022-12-05"
+    complexity: 40
+    hint: |
+      %F - The ISO 8601 date format (%Y-%m-%d).
+
+  - name: date_format_12hr_time
+    template: "{{ '2022-12-05 15:04:05' | date: '%r' }}"
+    expect: "03:04:05 PM"
+    complexity: 40
+    hint: |
+      %r - 12-hour clock time with AM/PM (%I:%M:%S %p).
+
+  - name: date_format_24hr_time
+    template: "{{ '2022-12-05 15:04:05' | date: '%R' }}"
+    expect: "15:04"
+    complexity: 40
+    hint: |
+      %R - 24-hour clock time (%H:%M).
+
+  - name: date_format_24hr_time_seconds
+    template: "{{ '2022-12-05 15:04:05' | date: '%T' }}"
+    expect: "15:04:05"
+    complexity: 40
+    hint: |
+      %T - 24-hour clock time with seconds (%H:%M:%S).
+
+  - name: date_format_date_slashes
+    template: "{{ '2022-12-05 15:04:05' | date: '%D' }}"
+    expect: "12/05/22"
+    complexity: 40
+    hint: |
+      %D - Date (%m/%d/%y).
+
+  - name: date_format_complex_string
+    template: "{{ '2022-12-05 15:04:05' | date: 'It is %I:%M %p on %A, %B %d, %Y.' }}"
+    expect: "It is 03:04 PM on Monday, December 05, 2022."
+    complexity: 60
+    hint: |
+      Combine literals with multiple format directives. All directives should be
+      replaced while preserving the literal text.

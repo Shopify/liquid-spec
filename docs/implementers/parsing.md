@@ -70,6 +70,17 @@ Important lexer rules observed in liquid-c:
 - A leading `-` is part of a number only if it is followed by digits.
 - Identifiers include letters, digits, underscore, and hyphen, and may end with `?`.
 
+### Keywords vs Identifiers
+
+Tokens like `blank`, `empty`, `true`, and `false` are usually lexed as keywords/literals. However, the parser must handle the edge case where they function as variable names.
+
+Rule: **If a keyword is followed by `.` or `[`, treat it as an identifier.**
+
+```liquid
+{{ blank }}       # literal blank (usually empty string or special value)
+{{ blank.foo }}   # variable lookup: find variable "blank", access property "foo"
+```
+
 ## Strict Expression Grammar
 
 The strict expression parser is small and uses two-token lookahead. Conceptually:

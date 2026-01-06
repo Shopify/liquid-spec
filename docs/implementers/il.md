@@ -392,6 +392,21 @@ The `PUSH_FORLOOP/POP_FORLOOP` pair maintains the `parentloop` chain in the regi
 - Unexpected tokens are fatal.
 - Use token names in errors to make debugging precise.
 
+## Source Tracking
+
+For better error reporting and debugging tools (like pretty-printers), track source spans for every instruction.
+
+- **Lexer**: Include `start_pos` and `end_pos` in every token.
+- **Parser**: When emitting IL, attach the source span of the generating token/construct.
+- **IL Structure**: Store a parallel array of spans or include span info in the instruction object.
+
+```
+[  0]     FIND_VAR          "x"                   # {{ x | plus: y }}  → x
+[  1]     FIND_VAR          "y"                   # {{ x | plus: y }}  → y
+```
+
+This allows you to reconstruct the context of a crash or display the original source alongside the bytecode.
+
 ## See also
 
 - [Parsing](parsing.md)

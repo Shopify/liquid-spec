@@ -1,0 +1,39 @@
+topic: default_filter_truthiness
+description: Tests for 'default' filter truthiness behavior (falsy values)
+
+tests:
+  - name: default_empty_string
+    template: "{{ val | default: 'fallback' }}"
+    assigns:
+      val: ""
+    expect: "fallback"
+
+  - name: default_empty_array
+    template: "{{ val | default: 'fallback' }}"
+    assigns:
+      val: []
+    expect: "fallback"
+
+  - name: default_false_value
+    template: "{{ val | default: 'fallback' }}"
+    assigns:
+      val: false
+    expect: "fallback"
+
+  - name: default_nil_value
+    template: "{{ val | default: 'fallback' }}"
+    assigns:
+      val: null
+    expect: "fallback"
+
+  - name: default_zero_value
+    template: "{{ val | default: 'fallback' }}"
+    assigns:
+      val: 0
+    expect: "0"
+
+  - name: default_whitespace_string
+    template: "{{ val | default: 'fallback' }}"
+    assigns:
+      val: " "
+    expect: " "

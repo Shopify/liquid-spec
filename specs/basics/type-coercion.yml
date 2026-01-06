@@ -47,6 +47,28 @@ specs:
     that happens during rendering. All output contexts expect strings,
     so numbers are converted using their string representation.
 
+- name: "array_to_string_output_single"
+  template: "{{ array }}"
+  environment: { array: ["data"] }
+  expected: "data"
+  complexity: 110
+  hint: |
+    Top-level output of an array concatenates its elements.
+    An array ["data"] renders as "data". Liquid does NOT
+    inspect the array (no brackets or quotes) when rendered
+    directly in {{ }}.
+
+- name: "array_to_string_output_nested"
+  template: "{{ array }}"
+  environment: { array: ["a", ["b", "c"]] }
+  expected: "abc"
+  complexity: 120
+  hint: |
+    Array rendering is recursive and concatenating. The array
+    ["a", ["b", "c"]] is flattened and joined into "abc".
+    This is Liquid's standard display-oriented behavior for
+    arrays in output tags.
+
 - name: "float_to_string_output"
   template: "{{ 3.14159 }}"
   expected: "3.14159"

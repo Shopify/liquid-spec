@@ -96,6 +96,10 @@ function to_output(value):
     return value.to_string()
 ```
 
+### Critical: Hash Formatting (Ruby 2.x vs 3.x)
+
+Liquid specs expect Ruby 2.x style hash output (`{:foo=>"bar"}`) rather than Ruby 3.x style (`{foo: "bar"}`). If you are implementing in Ruby 3+, you may need to customize `hash.to_s` or `inspect` to match the expected format for passing tests.
+
 ---
 
 ## 2. to_iterable(value)
@@ -307,7 +311,61 @@ function is_blank(value):
 
 ---
 
-## 5. Scope Stack
+## 5. Hash Pseudo-Methods
+
+Liquid Hashes support a few special "properties" that behave like methods. These are often implemented as virtual lookups.
+
+### The Rules
+
+| Access | Behavior |
+|--------|----------|
+| `hash.size` | Returns the number of keys (integer). |
+| `hash.first` | If key "first" exists, return it. If not, return the **first key-value pair as a string**. |
+| `hash.last` | If key "last" exists, return it. If not, return `nil` (unlike Array.last). |
+
+### Critical: `hash.first` Formatting
+
+`hash.first` is particularly strange. It converts the first pair `[key, value]` to a string `keyvalue`.
+
+```liquid
+{% assign h = { "foo": "bar" } %}
+{{ h.first }}
+```
+Output: `foobar` (concatenation of key and value)
+
+---
+
+## 6. Truthiness vs "Default" Truthiness
+
+Liquid generally follows Ruby truthiness (only `nil` and `false` are falsy), with one major exception: the `default` filter.
+
+### Standard Truthiness (`if`, `unless`, `case`)
+
+| Value | Truthy? |
+|-------|---------|
+| `nil` | No |
+| `false` | No |
+| `0` | Yes |
+| `""` | Yes |
+| `[]` | Yes |
+
+### "Default" Truthiness (`| default: ...`)
+
+The `default` filter treats empty strings and empty collections as falsy, merging the concept of "falsy" with "empty".
+
+| Value | `default` uses value? |
+|-------|-----------------------|
+| `nil` | No (uses default) |
+| `false` | No (uses default) |
+| `""` | **No** (uses default) |
+| `[]` | **No** (uses default) |
+| `{}` | **No** (uses default) |
+| `0` | Yes |
+| `" "` | Yes |
+
+---
+
+## 7. Scope Stack
 
 Liquid uses a stack of scopes for variable lookup.
 

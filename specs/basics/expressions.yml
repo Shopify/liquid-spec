@@ -327,3 +327,14 @@
     to get "key1", access a["key1"] to get an object. Then evaluate
     'c' to get "key2", access that object["key2"]. This demonstrates
     fully dynamic nested access where all keys are runtime values.
+
+- name: "keyword_as_variable_with_property"
+  template: "{{ blank.foo }}"
+  environment: { blank: { foo: "bar" } }
+  expected: "bar"
+  complexity: 165
+  hint: |
+    Parse a keyword like 'blank' as an identifier when followed
+    by a property access. Normally 'blank' is a literal, but
+    if followed by a dot or bracket, it must be treated as a
+    variable name. Find variable "blank" and access "foo".

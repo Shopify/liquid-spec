@@ -1,0 +1,33 @@
+topic: hash_quirks
+description: Tests for Liquid Hash specific behaviors (pseudo-methods and formatting)
+
+tests:
+  - name: hash_size_method
+    template: "{{ data.size }}"
+    assigns:
+      data:
+        foo: 1
+        bar: 2
+    expect: "2"
+
+  - name: hash_first_method_concatenation
+    template: "{{ data.first }}"
+    assigns:
+      data:
+        foo: "bar"
+    expect: "foobar"
+
+  - name: hash_last_method_returns_nil
+    template: "{{ data.last }}"
+    assigns:
+      data:
+        foo: "bar"
+        baz: "qux"
+    expect: ""
+
+  - name: hash_output_format_ruby_2_style
+    template: "{{ data }}"
+    assigns:
+      data:
+        foo: "bar"
+    expect: '{:foo=>"bar"}'
