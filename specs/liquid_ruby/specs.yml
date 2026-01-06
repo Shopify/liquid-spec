@@ -3267,20 +3267,23 @@
 - name: IncludeTagTest#test_render_raise_argument_error_when_template_is_not_a_string_6be3a2e3
   template: "{% include 123 %}"
   render_errors: true
-  expected: 'Liquid error (line 1): Argument error in tag ''include'' - Illegal template
-    name'
+  errors:
+    output:
+      - "Illegal template name"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L332
 - name: IncludeTagTest#test_render_raise_argument_error_when_template_is_undefined_3e971774
   template: "{% include undefined_variable %}"
   render_errors: true
-  expected: 'Liquid error (line 1): Argument error in tag ''include'' - Illegal template
-    name'
+  errors:
+    output:
+      - "Illegal template name"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L318
 - name: IncludeTagTest#test_render_raise_argument_error_when_template_is_undefined_d0944769
   template: "{% include nil %}"
   render_errors: true
-  expected: 'Liquid error (line 1): Argument error in tag ''include'' - Illegal template
-    name'
+  errors:
+    output:
+      - "Illegal template name"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/include_tag_test.rb#L324
 - name: IncludeTagTest#test_strict2_parsing_errors_6548b667
   template: '{% include "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
@@ -3645,20 +3648,20 @@
 - name: RenderTagTest#test_includes_will_not_render_inside_nested_sibling_tags_ab4b608e
   template: '{% render "nested_render_with_sibling_include" %}'
   render_errors: true
-  expected: 'Liquid error (test_include line 1): include usage is not allowed in this
-    contextLiquid error (nested_render_with_sibling_include line 1): include usage
-    is not allowed in this context'
+  errors:
+    output:
+      - "include usage is not allowed"
   filesystem:
     foo: bar
-    nested_render_with_sibling_include: '{% render "test_include" %}{% include "foo"
-      %}'
+    nested_render_with_sibling_include: '{% render "test_include" %}{% include "foo" %}'
     test_include: '{% include "foo" %}'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/render_tag_test.rb#L203
 - name: RenderTagTest#test_includes_will_not_render_inside_render_tag_72d410d2
   template: '{% render "test_include" %}'
   render_errors: true
-  expected: 'Liquid error (test_include line 1): include usage is not allowed in this
-    context'
+  errors:
+    output:
+      - "include usage is not allowed"
   filesystem:
     foo: bar
     test_include: '{% include "foo" %}'
@@ -5880,19 +5883,25 @@
   template: "{% tablerow n in (1...10) limit:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
-  expected: 'Liquid error (line 1): invalid integer'
+  errors:
+    output:
+      - "invalid integer"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L192
 - name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_5ff6df98
   template: "{% tablerow n in (1...10) cols:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
-  expected: 'Liquid error (line 1): invalid integer'
+  errors:
+    output:
+      - "invalid integer"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L206
 - name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_848b46e7
   template: "{% tablerow n in (1...10) offset:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
-  expected: 'Liquid error (line 1): invalid integer'
+  errors:
+    output:
+      - "invalid integer"
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L199
 - name: TableRowTest#test_table_row_with_different_cols_6e3d715c
   template: "{% tablerow n in numbers cols:5%} {{n}} {% endtablerow %}"

@@ -16,25 +16,31 @@
 
 - template: "{% include 'locale_variables' echo1: 'test123' %}"
   environment: {}
-  expected: "Liquid error (line 1): Could not find asset locale_variables"
   name: Rendering include tag with variables and file does not exist
   filesystem: {}
   render_errors: true
+  errors:
+    output:
+      - "Could not find asset locale_variables"
 
 - template: "{% include 'foo.liquid' %}"
   environment: {}
-  expected: "Liquid error (line 1): Could not find asset foo.liquid"
   name: Rendering include tag with file does not exist does not repeat .liquid extension
   filesystem: {}
   render_errors: true
+  errors:
+    output:
+      - "Could not find asset foo.liquid"
 
 - name: Rendering include asset not found error from snippet
   template: "{% include 'foo' %}"
   environment: {}
   filesystem:
     foo: "{% include 'bar' %}"
-  expected: "Liquid error (foo line 1): Could not find asset bar"
   render_errors: true
+  errors:
+    output:
+      - "Could not find asset bar"
 
 - template: "{% for i in (1..1) %}{{ x }} {% assign x = 2 %}{{ x }}{% endfor %}"
   environment:
@@ -139,7 +145,9 @@
   environment:
     end: 2.5
   render_errors: true
-  expected: "Liquid error (line 1): invalid integer"
+  errors:
+    output:
+      - "invalid integer"
 
 - name: Tablerow renders empty string when lookup returns nil
   template: "{% tablerow a in b %}{% endtablerow %}"
@@ -159,8 +167,10 @@
 
 - name: Tablerow throws invalid integer error when limit isn't a number
   template: "{% tablerow a in '' limit: true %}{{ a }}{% endtablerow %}"
-  expected: "Liquid error (line 1): invalid integer"
   render_errors: true
+  errors:
+    output:
+      - "invalid integer"
 
 - name: Tablerow doesn't throw error when limit isn't a number and lookup is undefined
   template: "{% tablerow a in b limit: true %}{{ a }}{% endtablerow %}"
