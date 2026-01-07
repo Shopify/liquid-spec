@@ -24,6 +24,7 @@ module Liquid
             --command=CMD         Command to run subprocess (for JSON-RPC adapters)
             -c, --compare         Compare adapter output against reference liquid-ruby
             -b, --bench           Run timing suites as benchmarks (measure iterations/second)
+            --profile             Profile with StackProf (use with --bench), outputs to /tmp/
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
             --list-suites         List available suites
@@ -111,6 +112,8 @@ module Liquid
                 options[:compare] = true
               when "-b", "--bench"
                 options[:bench] = true
+              when "--profile"
+                options[:profile] = true
               when "-v", "--verbose"
                 options[:verbose] = true
               when "-l", "--list"
@@ -416,6 +419,15 @@ module Liquid
 
           def run_benchmark_suites(suites, config, options)
             features = config.features
+            profile_dir = nil
+
+            if options[:profile]
+              require "stackprof"
+              profile_dir = "/tmp/liquid-spec-profile-#{Time.now.strftime("%Y%m%d_%H%M%S")}"
+              Dir.mkdir(profile_dir)
+              puts "Profiling enabled, output: #{profile_dir}"
+              puts ""
+            end
 
             suites.each do |suite|
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
@@ -430,6 +442,48 @@ module Liquid
 
               results = []
 
+              # Prepare all specs first
+              prepared_specs = suite_specs.map do |spec|
+                prepare_benchmark_spec(spec, config)
+              end.compact
+
+              # Profile compile phase (all specs together)
+              if profile_dir && prepared_specs.any?
+                puts "  Profiling compile phase..."
+                compile_profile = StackProf.run(mode: :cpu, raw: true) do
+                  prepared_specs.each do |prepared|
+                    100.times { LiquidSpec.do_compile(prepared[:template], prepared[:compile_options]) }
+                  end
+                end
+                File.binwrite("#{profile_dir}/compile_cpu.dump", Marshal.dump(compile_profile))
+
+                compile_obj_profile = StackProf.run(mode: :object, raw: true) do
+                  prepared_specs.each do |prepared|
+                    10.times { LiquidSpec.do_compile(prepared[:template], prepared[:compile_options]) }
+                  end
+                end
+                File.binwrite("#{profile_dir}/compile_object.dump", Marshal.dump(compile_obj_profile))
+              end
+
+              # Profile render phase (all specs together)
+              if profile_dir && prepared_specs.any?
+                puts "  Profiling render phase..."
+                render_profile = StackProf.run(mode: :cpu, raw: true) do
+                  prepared_specs.each do |prepared|
+                    100.times { LiquidSpec.do_render(deep_copy(prepared[:assigns]), prepared[:render_options]) }
+                  end
+                end
+                File.binwrite("#{profile_dir}/render_cpu.dump", Marshal.dump(render_profile))
+
+                render_obj_profile = StackProf.run(mode: :object, raw: true) do
+                  prepared_specs.each do |prepared|
+                    10.times { LiquidSpec.do_render(deep_copy(prepared[:assigns]), prepared[:render_options]) }
+                  end
+                end
+                File.binwrite("#{profile_dir}/render_object.dump", Marshal.dump(render_obj_profile))
+                puts ""
+              end
+
               suite_specs.each do |spec|
                 result = run_benchmark_spec(spec, config, suite.default_iteration_seconds)
                 results << result
@@ -442,17 +496,62 @@ module Liquid
                   compile_ms = result[:compile_mean] * 1000
                   render_ms = result[:render_mean] * 1000
                   total_ms = compile_ms + render_ms
+                  total_allocs = (result[:compile_allocs] || 0) + (result[:render_allocs] || 0)
 
                   puts "  \e[32m✓\e[0m #{spec.name}"
-                  puts "    Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}    \e[2m(#{format_time(result[:compile_min] * 1000)} … #{format_time(result[:compile_max] * 1000)})\e[0m"
-                  puts "    Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}    \e[2m(#{format_time(result[:render_min] * 1000)} … #{format_time(result[:render_max] * 1000)})\e[0m"
-                  puts "    Total:   #{format_time(total_ms)}    \e[2m#{result[:iterations]} runs\e[0m"
+                  puts "    Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}    \e[2m(#{format_time(result[:compile_min] * 1000)} … #{format_time(result[:compile_max] * 1000)})  #{result[:compile_allocs]} allocs\e[0m"
+                  puts "    Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}    \e[2m(#{format_time(result[:render_min] * 1000)} … #{format_time(result[:render_max] * 1000)})  #{result[:render_allocs]} allocs\e[0m"
+                  puts "    Total:   #{format_time(total_ms)}    \e[2m#{result[:iterations]} runs, #{total_allocs} allocs\e[0m"
                 end
                 puts ""
               end
 
               print_benchmark_summary(results)
             end
+
+            if profile_dir
+              puts ""
+              puts "=" * 60
+              puts "StackProf profiles saved to: #{profile_dir}"
+              puts "  #{profile_dir}/compile_cpu.dump"
+              puts "  #{profile_dir}/compile_object.dump"
+              puts "  #{profile_dir}/render_cpu.dump"
+              puts "  #{profile_dir}/render_object.dump"
+              puts ""
+              puts "View with: stackprof #{profile_dir}/render_cpu.dump"
+              puts "=" * 60
+            end
+          end
+
+          def prepare_benchmark_spec(spec, _config)
+            filesystem = spec.instantiate_filesystem
+            compile_options = {
+              line_numbers: true,
+              error_mode: :strict,
+              file_system: filesystem,
+            }.compact
+
+            # Pre-compile to set up ctx[:template]
+            LiquidSpec.do_compile(spec.template, compile_options)
+            assigns = deep_copy(spec.instantiate_environment)
+            render_options = {
+              registers: build_registers(spec, filesystem),
+              strict_errors: false,
+            }.compact
+
+            # Verify it works
+            actual = LiquidSpec.do_render(deep_copy(assigns), render_options)
+            return nil if spec.expected && actual != spec.expected
+
+            {
+              spec: spec,
+              template: spec.template,
+              compile_options: compile_options,
+              assigns: assigns,
+              render_options: render_options,
+            }
+          rescue
+            nil
           end
 
           def run_benchmark_spec(spec, _config, duration_seconds)
@@ -487,6 +586,19 @@ module Liquid
               LiquidSpec.do_render(deep_copy(assigns), render_options)
             end
 
+            # Count allocations for a single compile+render cycle
+            GC.start
+            alloc_before = GC.stat(:total_allocated_objects)
+            LiquidSpec.do_compile(spec.template, compile_options)
+            compile_allocs = GC.stat(:total_allocated_objects) - alloc_before
+
+            alloc_before = GC.stat(:total_allocated_objects)
+            LiquidSpec.do_render(deep_copy(assigns), render_options)
+            render_allocs = GC.stat(:total_allocated_objects) - alloc_before
+
+            # Disable GC for consistent timing
+            GC.disable
+
             # Benchmark compile (half the duration)
             compile_times = benchmark_operation(duration_seconds / 2.0) do
               LiquidSpec.do_compile(spec.template, compile_options)
@@ -497,6 +609,9 @@ module Liquid
               LiquidSpec.do_render(deep_copy(assigns), render_options)
             end
 
+            # Re-enable GC
+            GC.enable
+
             {
               name: spec.name,
               iterations: compile_times[:iterations] + render_times[:iterations],
@@ -504,10 +619,12 @@ module Liquid
               compile_stddev: compile_times[:stddev],
               compile_min: compile_times[:min],
               compile_max: compile_times[:max],
+              compile_allocs: compile_allocs,
               render_mean: render_times[:mean],
               render_stddev: render_times[:stddev],
               render_min: render_times[:min],
               render_max: render_times[:max],
+              render_allocs: render_allocs,
               # Legacy fields for compatibility
               mean_time: render_times[:mean],
               stddev: render_times[:stddev],
@@ -516,6 +633,8 @@ module Liquid
               error: nil,
             }
           rescue => e
+            # Ensure GC is re-enabled on error
+            GC.enable
             {
               name: spec.name,
               iterations: 0,

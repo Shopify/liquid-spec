@@ -19,6 +19,7 @@ module Liquid
             -n, --name PATTERN    Filter specs by name pattern
             -s, --suite SUITE     Spec suite: all, basics, liquid_ruby, etc.
             -b, --bench           Run timing suites as benchmarks, compare across adapters
+            --profile             Profile with StackProf (use with --bench), outputs to /tmp/
             --max-failures N      Stop after N differences (default: 10)
             --no-max-failures     Show all differences (not recommended)
             -v, --verbose         Show detailed output
@@ -84,6 +85,8 @@ module Liquid
                 options[:suite] = ::Regexp.last_match(1).to_sym
               when "-b", "--bench"
                 options[:bench] = true
+              when "--profile"
+                options[:profile] = true
               when "--max-failures"
                 options[:max_failures] = args.shift.to_i
               when /\A--max-failures=(\d+)\z/
@@ -337,6 +340,14 @@ module Liquid
               exit(1)
             end
 
+            profile_dir = nil
+            if options[:profile]
+              require "stackprof"
+              profile_dir = "/tmp/liquid-spec-profile-#{Time.now.strftime("%Y%m%d_%H%M%S")}"
+              Dir.mkdir(profile_dir)
+              puts "Profiling enabled, output: #{profile_dir}"
+            end
+
             puts ""
 
             # Collect all results across suites
@@ -354,6 +365,44 @@ module Liquid
               puts "=" * 70
               puts ""
 
+              # Profile each adapter separately
+              if profile_dir
+                adapters.each do |adapter_name, adapter|
+                  prepared = specs.map { |spec| prepare_matrix_spec(spec, adapter) }.compact
+                  next if prepared.empty?
+
+                  puts "  Profiling #{adapter_name}..."
+                  compile_profile = StackProf.run(mode: :cpu, raw: true) do
+                    prepared.each do |p|
+                      100.times { p[:compile_block].call(p[:ctx], p[:template], p[:compile_options]) }
+                    end
+                  end
+                  File.binwrite("#{profile_dir}/#{adapter_name}_compile_cpu.dump", Marshal.dump(compile_profile))
+
+                  compile_obj_profile = StackProf.run(mode: :object, raw: true) do
+                    prepared.each do |p|
+                      10.times { p[:compile_block].call(p[:ctx], p[:template], p[:compile_options]) }
+                    end
+                  end
+                  File.binwrite("#{profile_dir}/#{adapter_name}_compile_object.dump", Marshal.dump(compile_obj_profile))
+
+                  render_profile = StackProf.run(mode: :cpu, raw: true) do
+                    prepared.each do |p|
+                      100.times { p[:render_block].call(p[:ctx], deep_copy(p[:environment]), p[:render_options]) }
+                    end
+                  end
+                  File.binwrite("#{profile_dir}/#{adapter_name}_render_cpu.dump", Marshal.dump(render_profile))
+
+                  render_obj_profile = StackProf.run(mode: :object, raw: true) do
+                    prepared.each do |p|
+                      10.times { p[:render_block].call(p[:ctx], deep_copy(p[:environment]), p[:render_options]) }
+                    end
+                  end
+                  File.binwrite("#{profile_dir}/#{adapter_name}_render_object.dump", Marshal.dump(render_obj_profile))
+                end
+                puts ""
+              end
+
               specs.each do |spec|
                 results = run_benchmark_comparison(spec, adapters, suite.default_iteration_seconds)
                 all_results << { spec: spec, results: results }
@@ -362,6 +411,62 @@ module Liquid
 
             # Print summary at end
             print_benchmark_summaries(all_results, adapters)
+
+            if profile_dir
+              puts ""
+              puts "=" * 60
+              puts "StackProf profiles saved to: #{profile_dir}"
+              adapters.each_key do |name|
+                puts "  #{profile_dir}/#{name}_compile_cpu.dump"
+                puts "  #{profile_dir}/#{name}_render_cpu.dump"
+              end
+              puts ""
+              puts "View with: stackprof #{profile_dir}/<adapter>_render_cpu.dump"
+              puts "=" * 60
+            end
+          end
+
+          def prepare_matrix_spec(spec, adapter)
+            return nil unless adapter.can_run?(spec)
+
+            environment = spec.instantiate_environment
+            filesystem = spec.instantiate_filesystem
+            template_factory = spec.instantiate_template_factory
+
+            compile_options = { line_numbers: true }
+            compile_options[:error_mode] = spec.error_mode if spec.error_mode
+            compile_options[:file_system] = filesystem if filesystem
+
+            registers = {}
+            registers[:file_system] = filesystem if filesystem
+            registers[:template_factory] = template_factory if template_factory
+
+            render_options = {
+              registers: registers,
+              strict_errors: false,
+            }
+            render_options[:error_mode] = spec.error_mode if spec.error_mode
+
+            ctx = adapter.ctx
+            compile_block = adapter.instance_variable_get(:@compile_block)
+            render_block = adapter.instance_variable_get(:@render_block)
+
+            # Verify it works
+            compile_block.call(ctx, spec.template, compile_options)
+            actual = render_block.call(ctx, deep_copy(environment), render_options)
+            return nil if spec.expected && actual.to_s != spec.expected
+
+            {
+              ctx: ctx,
+              template: spec.template,
+              compile_options: compile_options,
+              environment: environment,
+              render_options: render_options,
+              compile_block: compile_block,
+              render_block: render_block,
+            }
+          rescue
+            nil
           end
 
           def run_benchmark_comparison(spec, adapters, duration_seconds)
@@ -382,11 +487,12 @@ module Liquid
                 compile_ms = result[:compile_mean] * 1000
                 render_ms = result[:render_mean] * 1000
                 total_ms = compile_ms + render_ms
+                total_allocs = (result[:compile_allocs] || 0) + (result[:render_allocs] || 0)
 
                 puts "  \e[32m✓\e[0m #{name}"
-                puts "      Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}"
-                puts "      Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}"
-                puts "      Total:   #{format_time(total_ms)}"
+                puts "      Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}  \e[2m#{result[:compile_allocs]} allocs\e[0m"
+                puts "      Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}  \e[2m#{result[:render_allocs]} allocs\e[0m"
+                puts "      Total:   #{format_time(total_ms)}  \e[2m#{total_allocs} allocs\e[0m"
               end
             end
 
@@ -432,6 +538,19 @@ module Liquid
               adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
             end
 
+            # Count allocations for a single compile+render cycle
+            GC.start
+            alloc_before = GC.stat(:total_allocated_objects)
+            adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
+            compile_allocs = GC.stat(:total_allocated_objects) - alloc_before
+
+            alloc_before = GC.stat(:total_allocated_objects)
+            adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
+            render_allocs = GC.stat(:total_allocated_objects) - alloc_before
+
+            # Disable GC for consistent timing
+            GC.disable
+
             # Benchmark compile
             compile_times = benchmark_operation(duration_seconds / 2.0) do
               adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
@@ -442,20 +561,26 @@ module Liquid
               adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
             end
 
+            # Re-enable GC
+            GC.enable
+
             {
               compile_mean: mean(compile_times),
               compile_stddev: stddev(compile_times),
               compile_min: compile_times.min,
               compile_max: compile_times.max,
               compile_runs: compile_times.size,
+              compile_allocs: compile_allocs,
               render_mean: mean(render_times),
               render_stddev: stddev(render_times),
               render_min: render_times.min,
               render_max: render_times.max,
               render_runs: render_times.size,
+              render_allocs: render_allocs,
               error: nil,
             }
           rescue => e
+            GC.enable
             { error: e }
           end
 
@@ -523,6 +648,7 @@ module Liquid
 
             compile_ratios = Hash.new { |h, k| h[k] = [] }
             render_ratios = Hash.new { |h, k| h[k] = [] }
+            total_allocs = Hash.new(0)
 
             all_results.each do |entry|
               results = entry[:results]
@@ -530,6 +656,11 @@ module Liquid
 
               next unless valid.key?(reference_name)
               ref = valid[reference_name]
+
+              # Track total allocations per adapter
+              valid.each do |name, r|
+                total_allocs[name] += (r[:compile_allocs] || 0) + (r[:render_allocs] || 0)
+              end
 
               other_adapters.each do |name|
                 next unless valid.key?(name)
@@ -563,6 +694,18 @@ module Liquid
               end
             end
 
+            # Total allocations comparison
+            if total_allocs.any?
+              puts "  \e[1mTotal allocations:\e[0m"
+              sorted_allocs = total_allocs.sort_by { |_, count| count }
+              fewest_name, fewest_count = sorted_allocs.first
+              puts "    \e[36m#{fewest_name}\e[0m: #{fewest_count} allocs"
+              sorted_allocs[1..].each do |name, count|
+                diff = count - fewest_count
+                puts "    \e[36m#{name}\e[0m: #{count} allocs (\e[32m%+d\e[0m)" % diff
+              end
+            end
+
             puts ""
           end
 
@@ -580,6 +723,17 @@ module Liquid
               puts "    \e[32m%.2f\e[0m ± \e[32m%.2f\e[0m times faster than \e[36m#{name}\e[0m" % [ratio, ratio_err]
             end
 
+            # Compile allocations comparison
+            if valid.values.all? { |r| r[:compile_allocs] }
+              compile_alloc_sorted = valid.sort_by { |_, r| r[:compile_allocs] }
+              fewest_name, fewest = compile_alloc_sorted.first
+              puts "  \e[1mCompile allocs:\e[0m \e[36m#{fewest_name}\e[0m (#{fewest[:compile_allocs]})"
+              compile_alloc_sorted[1..].each do |name, r|
+                diff = r[:compile_allocs] - fewest[:compile_allocs]
+                puts "    \e[32m%+d\e[0m allocs for \e[36m#{name}\e[0m (#{r[:compile_allocs]})" % diff
+              end
+            end
+
             # Render comparison
             render_sorted = valid.sort_by { |_, r| r[:render_mean] }
             fastest_render_name, fastest_render = render_sorted.first
@@ -591,6 +745,17 @@ module Liquid
               result_rel_err = r[:render_stddev] / r[:render_mean]
               ratio_err = ratio * Math.sqrt(fastest_rel_err**2 + result_rel_err**2)
               puts "    \e[32m%.2f\e[0m ± \e[32m%.2f\e[0m times faster than \e[36m#{name}\e[0m" % [ratio, ratio_err]
+            end
+
+            # Render allocations comparison
+            if valid.values.all? { |r| r[:render_allocs] }
+              render_alloc_sorted = valid.sort_by { |_, r| r[:render_allocs] }
+              fewest_name, fewest = render_alloc_sorted.first
+              puts "  \e[1mRender allocs:\e[0m \e[36m#{fewest_name}\e[0m (#{fewest[:render_allocs]})"
+              render_alloc_sorted[1..].each do |name, r|
+                diff = r[:render_allocs] - fewest[:render_allocs]
+                puts "    \e[32m%+d\e[0m allocs for \e[36m#{name}\e[0m (#{r[:render_allocs]})" % diff
+              end
             end
           end
 

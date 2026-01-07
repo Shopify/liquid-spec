@@ -161,6 +161,7 @@ Run Options:
   -n, --name PATTERN       Only run specs matching PATTERN
   -s, --suite SUITE        Run specific suite (liquid_ruby, benchmarks, etc.)
   -b, --bench              Run timing suites as benchmarks (measure compile/render times)
+  --profile                Profile with StackProf (use with --bench), outputs to /tmp/
   -c, --compare            Compare output against reference liquid-ruby
   -v, --verbose            Show detailed output
   -l, --list               List available specs
@@ -194,6 +195,7 @@ Options:
   -n, --name PATTERN       Filter specs by name pattern
   -s, --suite SUITE        Spec suite to run
   -b, --bench              Run timing suites as benchmarks, compare performance
+  --profile                Profile with StackProf (use with --bench), outputs to /tmp/
   --max-failures N         Stop after N differences (default: 10)
   --no-max-failures        Show all differences
   -v, --verbose            Show detailed output
@@ -254,15 +256,17 @@ Benchmark: Benchmarks
 Duration: 5s per spec
 
   ✓ bench_product_listing
-    Compile: 92.305 µs ± 2.399 µs    (89.906 µs … 94.704 µs)
-    Render:  82.574 µs ± 2.437 µs    (80.137 µs … 85.011 µs)
-    Total:   174.879 µs    10245 runs
+    Compile: 92.305 µs ± 2.399 µs    (89.906 µs … 94.704 µs)  412 allocs
+    Render:  82.574 µs ± 2.437 µs    (80.137 µs … 85.011 µs)  156 allocs
+    Total:   174.879 µs    10245 runs, 568 allocs
 
   ✓ bench_shopping_cart
-    Compile: 262.659 µs ± 2.528 µs
-    Render:  144.638 µs ± 1.081 µs
-    Total:   407.296 µs    8892 runs
+    Compile: 262.659 µs ± 2.528 µs    1013 allocs
+    Render:  144.638 µs ± 1.081 µs    170 allocs
+    Total:   407.296 µs    8892 runs, 1183 allocs
 ```
+
+Benchmarks show allocation counts for each phase, helping identify memory-heavy operations. GC is disabled during timing to reduce measurement jitter.
 
 #### Multi-Adapter Performance Comparison
 
@@ -272,7 +276,7 @@ Compare performance across different implementations using `matrix --bench`:
 liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -s benchmarks --bench
 ```
 
-Each benchmark runs against all adapters, then a summary shows relative performance:
+Each benchmark runs against all adapters, then a summary shows relative performance and allocation differences:
 
 ```
 ======================================================================
@@ -282,14 +286,12 @@ SUMMARY
 bench_product_listing
   Compile: liquid_ruby_lax ran
     1.08 ± 0.03 times faster than liquid_ruby
+  Compile allocs: liquid_ruby_lax (997)
+    +16 allocs for liquid_ruby (1013)
   Render: liquid_ruby_lax ran
     1.01 ± 0.03 times faster than liquid_ruby
-
-bench_shopping_cart
-  Compile: liquid_ruby_lax ran
-    1.03 ± 0.02 times faster than liquid_ruby
-  Render: liquid_ruby ran
-    1.02 ± 0.01 times faster than liquid_ruby_lax
+  Render allocs: liquid_ruby_lax (169)
+    +1 allocs for liquid_ruby (170)
 
 ----------------------------------------------------------------------
 Overall
@@ -297,9 +299,12 @@ Overall
     liquid_ruby_lax ran 1.05x faster than liquid_ruby (geometric mean)
   Render:
     liquid_ruby ran 1.00x faster than liquid_ruby_lax (geometric mean)
+  Total allocations:
+    liquid_ruby_lax: 1166 allocs
+    liquid_ruby: 1183 allocs (+17)
 ```
 
-The "Overall" section shows the geometric mean of ratios across all benchmarks, giving a single summary statistic for compile and render performance.
+The "Overall" section shows the geometric mean of ratios across all benchmarks, plus total allocation counts for comparing memory efficiency.
 
 #### Benchmark Specs
 
@@ -320,6 +325,36 @@ The benchmark suite includes 11 realistic templates:
 | `bench_email_template` | Email with conditional sections |
 
 Without `--bench`, benchmark specs run as regular tests to verify correctness.
+
+#### Profiling with StackProf
+
+Use `--profile` with `--bench` to generate StackProf profiles for detailed performance analysis:
+
+```bash
+# Single adapter profiling
+liquid-spec run examples/liquid_ruby.rb -s benchmarks --bench --profile
+
+# Multi-adapter profiling
+liquid-spec matrix --adapters=liquid_ruby,liquid_c -s benchmarks --bench --profile
+```
+
+Profiles are saved to `/tmp/liquid-spec-profile-{timestamp}/`:
+
+```
+StackProf profiles saved to: /tmp/liquid-spec-profile-20260107_145903
+  /tmp/liquid-spec-profile-20260107_145903/compile_cpu.dump
+  /tmp/liquid-spec-profile-20260107_145903/compile_object.dump
+  /tmp/liquid-spec-profile-20260107_145903/render_cpu.dump
+  /tmp/liquid-spec-profile-20260107_145903/render_object.dump
+
+View with: stackprof /tmp/liquid-spec-profile-20260107_145903/render_cpu.dump
+```
+
+For matrix mode, each adapter gets its own profile files (e.g., `liquid_ruby_render_cpu.dump`, `liquid_c_render_cpu.dump`).
+
+Profile types:
+- `*_cpu.dump` - CPU time profiles (where time is spent)
+- `*_object.dump` - Object allocation profiles (where allocations happen)
 
 ### Quick Testing with `eval`
 
