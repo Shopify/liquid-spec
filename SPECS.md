@@ -195,7 +195,6 @@ When a YAML file is a hash (not an array), only these keys are allowed:
 | `expected` | * | Expected output (required unless `errors` is set) |
 | `errors` | * | Error patterns to match (required unless `expected` is set) |
 | `environment` | No | Variables available to the template |
-| `assigns` | No | Alias for `environment` |
 | `filesystem` | No | Virtual filesystem for partials |
 | `complexity` | No | Difficulty score (defaults to 1000) |
 | `hint` | No | Explanation shown on failure |
@@ -203,7 +202,6 @@ When a YAML file is a hash (not an array), only these keys are allowed:
 | `error_mode` | No | `:strict` or `:lax` parsing mode |
 | `render_errors` | No | If true, errors render inline instead of throwing |
 | `required_features` | No | Features needed to run this spec |
-| `template_factory` | No | Custom template factory |
 
 ### Common Typos Caught
 

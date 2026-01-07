@@ -55,8 +55,8 @@ module Liquid
       VALID_FILE_KEYS = %w[_metadata specs].freeze
       VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity].freeze
       VALID_SPEC_KEYS = %w[
-        name template expected environment assigns filesystem complexity hint doc
-        error_mode render_errors required_features errors template_factory
+        name template expected environment filesystem complexity hint doc
+        error_mode render_errors required_features errors
       ].freeze
 
       class << self
