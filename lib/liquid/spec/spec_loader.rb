@@ -44,6 +44,11 @@ module Liquid
       end
     end
 
+    # Shared YAML loading with permitted classes for specs
+    def self.safe_yaml_load(content)
+      YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range], aliases: true)
+    end
+
     # Loads specs from YAML files without instantiating drop objects
     module SpecLoader
       class << self
@@ -287,7 +292,7 @@ module Liquid
         private
 
         def safe_load_with_permitted_classes(content)
-          YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range], aliases: true)
+          Liquid::Spec.safe_yaml_load(content)
         end
 
         # Extract line numbers from YAML AST for each spec

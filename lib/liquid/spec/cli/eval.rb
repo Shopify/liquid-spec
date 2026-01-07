@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
+require_relative "../spec_loader"
 
 module Liquid
   module Spec
@@ -438,9 +439,12 @@ module Liquid
           end
 
           def load_spec_from_string(yaml_content, options)
-            require "yaml"
+            spec = Liquid::Spec.safe_yaml_load(yaml_content)
 
-            spec = YAML.safe_load(yaml_content, permitted_classes: [Symbol])
+            unless spec.is_a?(Hash)
+              $stderr.puts "Error: Invalid spec format - expected YAML hash with 'template' key"
+              exit(1)
+            end
 
             options[:liquid] = spec["template"] || spec[:template]
             options[:expected] = spec["expected"] || spec[:expected] if spec.key?("expected") || spec.key?(:expected)
@@ -505,7 +509,7 @@ module Liquid
 
             existing_specs = []
             if File.exist?(daily_file) && File.size?(daily_file).to_i > 0
-              existing_specs = YAML.safe_load(File.read(daily_file), permitted_classes: [Symbol]) || []
+              existing_specs = Liquid::Spec.safe_yaml_load(File.read(daily_file)) || []
               existing_specs = [] unless existing_specs.is_a?(Array)
             end
 
