@@ -13,6 +13,7 @@ module Liquid
 
           Options:
             --all                 Run all available adapters from examples/
+            --adapter=PATH        Add a local adapter (can be used multiple times)
             --adapters=LIST       Comma-separated list of adapters to run
             --reference=NAME      Reference adapter (default: liquid_ruby)
             -n, --name PATTERN    Filter specs by name pattern
@@ -25,6 +26,7 @@ module Liquid
 
           Examples:
             liquid-spec matrix --all
+            liquid-spec matrix --all --adapter=./my_adapter.rb
             liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax
             liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -n truncate
             liquid-spec matrix --adapters=liquid_ruby,liquid_c -s benchmarks --bench
@@ -48,6 +50,7 @@ module Liquid
             options = {
               all: false,
               adapters: [],
+              extra_adapters: [],
               reference: "liquid_ruby",
               filter: nil,
               suite: :all,
@@ -61,6 +64,10 @@ module Liquid
               case arg
               when "--all"
                 options[:all] = true
+              when /\A--adapter=(.+)\z/
+                options[:extra_adapters] << ::Regexp.last_match(1)
+              when "--adapter"
+                options[:extra_adapters] << args.shift
               when /\A--adapters=(.+)\z/
                 options[:adapters] = ::Regexp.last_match(1).split(",").map(&:strip)
               when "--reference"
@@ -95,6 +102,11 @@ module Liquid
             # Discover all adapters if --all specified
             if options[:all]
               options[:adapters] = discover_all_adapters
+            end
+
+            # Add any extra adapters specified with --adapter
+            if options[:extra_adapters].any?
+              options[:adapters].concat(options[:extra_adapters])
             end
 
             if options[:adapters].empty?
