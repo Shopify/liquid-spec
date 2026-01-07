@@ -47,7 +47,75 @@ module Liquid
           set_features(config.features)
         end
 
+        # Validate block signatures
+        validate_blocks!
+
         self
+      end
+
+      # Validate that compile and render blocks have correct signatures
+      def validate_blocks!
+        errors = []
+
+        if @compile_block
+          arity = @compile_block.arity
+          params = @compile_block.parameters
+          expected_params = [[:opt, :ctx], [:opt, :source], [:opt, :parse_options]]
+
+          unless arity == 3 || arity == -1
+            errors << "compile block has wrong arity (#{arity}, expected 3)"
+          end
+
+          # Check first param is ctx-like
+          if params[0] && ![:ctx, :context, :c].include?(params[0][1])
+            errors << "compile block first param should be ctx, got #{params[0][1]}"
+          end
+        else
+          errors << "compile block is not defined"
+        end
+
+        if @render_block
+          arity = @render_block.arity
+          params = @render_block.parameters
+
+          unless arity == 3 || arity == -1
+            errors << "render block has wrong arity (#{arity}, expected 3)"
+          end
+
+          # Check first param is ctx-like
+          if params[0] && ![:ctx, :context, :c].include?(params[0][1])
+            errors << "render block first param should be ctx, got #{params[0][1]}"
+          end
+
+          # Warn if second param looks like 'template' (old API)
+          if params[1] && params[1][1] == :template
+            errors << "render block second param is 'template' - this is the old API. " \
+                      "New API: render do |ctx, assigns, render_options| with template from ctx[:template]"
+          end
+        else
+          errors << "render block is not defined"
+        end
+
+        if errors.any?
+          error_msg = "Adapter '#{@name}' has invalid block signatures:\n  " + errors.join("\n  ")
+          error_msg += "\n\nExpected signatures:\n"
+          error_msg += "  LiquidSpec.compile do |ctx, source, parse_options|\n"
+          error_msg += "    ctx[:template] = ...\n"
+          error_msg += "  end\n"
+          error_msg += "\n"
+          error_msg += "  LiquidSpec.render do |ctx, assigns, render_options|\n"
+          error_msg += "    ctx[:template].render(...)\n"
+          error_msg += "  end"
+          raise ArgumentError, error_msg
+        end
+      end
+
+      # Introspection: get info about adapter blocks
+      def block_info
+        {
+          compile: block_signature_info(@compile_block, "compile"),
+          render: block_signature_info(@render_block, "render"),
+        }
       end
 
       # Run setup if not already done
@@ -139,7 +207,7 @@ module Liquid
           compile_options[:error_mode] = spec.error_mode if spec.error_mode
           compile_options[:file_system] = filesystem if filesystem
 
-          template = @compile_block.call(@ctx, spec.template, compile_options)
+          @compile_block.call(@ctx, spec.template, compile_options)
 
           # Render
           registers = {}
@@ -152,7 +220,7 @@ module Liquid
           }
           render_options[:error_mode] = spec.error_mode if spec.error_mode
 
-          output = @render_block.call(@ctx, template, environment, render_options)
+          output = @render_block.call(@ctx, environment, render_options)
 
           # Compare
           check_result(spec, output: output.to_s)
@@ -163,6 +231,19 @@ module Liquid
       end
 
       private
+
+      def block_signature_info(block, name)
+        return { defined: false } unless block
+
+        params = block.parameters
+        {
+          defined: true,
+          arity: block.arity,
+          parameters: params,
+          param_names: params.map { |_, n| n },
+          signature: "#{name} do |#{params.map { |_, n| n }.join(", ")}|",
+        }
+      end
 
       def silence_output
         original_stdout = $stdout

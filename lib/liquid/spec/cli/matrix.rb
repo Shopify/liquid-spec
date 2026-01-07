@@ -402,9 +402,11 @@ module Liquid
             }
             render_options[:error_mode] = spec.error_mode if spec.error_mode
 
+            ctx = adapter.ctx
+
             # Verify it works first
-            template = adapter.instance_variable_get(:@compile_block).call(spec.template, compile_options)
-            actual = adapter.instance_variable_get(:@render_block).call(template, deep_copy(environment), render_options)
+            adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
+            actual = adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
 
             if spec.expected && actual.to_s != spec.expected
               return {
@@ -414,18 +416,18 @@ module Liquid
 
             # Warm up
             3.times do
-              t = adapter.instance_variable_get(:@compile_block).call(spec.template, compile_options)
-              adapter.instance_variable_get(:@render_block).call(t, deep_copy(environment), render_options)
+              adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
+              adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
             end
 
             # Benchmark compile
             compile_times = benchmark_operation(duration_seconds / 2.0) do
-              adapter.instance_variable_get(:@compile_block).call(spec.template, compile_options)
+              adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
             end
 
             # Benchmark render (pre-compiled template)
             render_times = benchmark_operation(duration_seconds / 2.0) do
-              adapter.instance_variable_get(:@render_block).call(template, deep_copy(environment), render_options)
+              adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
             end
 
             {

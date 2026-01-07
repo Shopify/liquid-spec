@@ -447,7 +447,7 @@ module Liquid
               file_system: filesystem,
             }.compact
 
-            template = LiquidSpec.do_compile(spec.template, compile_options)
+            LiquidSpec.do_compile(spec.template, compile_options)
 
             # Use forced render_errors if provided, otherwise use spec's setting
             render_errors = if options.key?(:force_render_errors)
@@ -464,7 +464,7 @@ module Liquid
 
             render_options[:registers][:file_system] = filesystem if filesystem
 
-            actual = LiquidSpec.do_render(template, environment, render_options)
+            actual = LiquidSpec.do_render(environment, render_options)
             { actual: actual, error: nil }
           rescue => e
             { actual: nil, error: e }

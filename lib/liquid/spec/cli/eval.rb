@@ -177,7 +177,8 @@ module Liquid
             has_difference = false
 
             begin
-              template = LiquidSpec.do_compile(template_source, { line_numbers: true })
+              LiquidSpec.do_compile(template_source, { line_numbers: true })
+              template = LiquidSpec.ctx[:template]
 
               if verbose && template.respond_to?(:source)
                 puts "\e[2mGenerated code:\e[0m"
@@ -186,7 +187,7 @@ module Liquid
               end
 
               render_options = { registers: {}, strict_errors: false }
-              actual = LiquidSpec.do_render(template, assigns, render_options)
+              actual = LiquidSpec.do_render(assigns, render_options)
 
               if compare_mode && reference_error
                 has_difference = true
@@ -392,9 +393,9 @@ module Liquid
                 load(adapter_file)
                 LiquidSpec.run_setup!
 
-                template = LiquidSpec.do_compile(template_source, { line_numbers: true })
+                LiquidSpec.do_compile(template_source, { line_numbers: true })
                 render_options = { registers: {}, strict_errors: false }
-                output = LiquidSpec.do_render(template, assigns, render_options)
+                output = LiquidSpec.do_render(assigns, render_options)
 
                 Marshal.dump({ output: output, error: nil }, writer)
               rescue SystemExit, Interrupt, SignalException

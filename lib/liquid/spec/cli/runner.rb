@@ -464,7 +464,7 @@ module Liquid
               file_system: filesystem,
             }.compact
 
-            template = LiquidSpec.do_compile(spec.template, compile_options)
+            LiquidSpec.do_compile(spec.template, compile_options)
             assigns = deep_copy(spec.instantiate_environment)
             render_options = {
               registers: build_registers(spec, filesystem),
@@ -472,7 +472,7 @@ module Liquid
             }.compact
 
             # Verify expected output first (warm up + validation)
-            actual = LiquidSpec.do_render(template, deep_copy(assigns), render_options)
+            actual = LiquidSpec.do_render(deep_copy(assigns), render_options)
             if spec.expected && actual != spec.expected
               return {
                 name: spec.name,
@@ -483,8 +483,8 @@ module Liquid
 
             # Warm up
             3.times do
-              t = LiquidSpec.do_compile(spec.template, compile_options)
-              LiquidSpec.do_render(t, deep_copy(assigns), render_options)
+              LiquidSpec.do_compile(spec.template, compile_options)
+              LiquidSpec.do_render(deep_copy(assigns), render_options)
             end
 
             # Benchmark compile (half the duration)
@@ -494,7 +494,7 @@ module Liquid
 
             # Benchmark render (half the duration)
             render_times = benchmark_operation(duration_seconds / 2.0) do
-              LiquidSpec.do_render(template, deep_copy(assigns), render_options)
+              LiquidSpec.do_render(deep_copy(assigns), render_options)
             end
 
             {
@@ -829,8 +829,8 @@ module Liquid
           end
 
           def run_adapter_spec(spec, compile_options, assigns, render_options)
-            template = LiquidSpec.do_compile(spec.template, compile_options)
-            adapter_result = LiquidSpec.do_render(template, assigns, render_options)
+            LiquidSpec.do_compile(spec.template, compile_options)
+            adapter_result = LiquidSpec.do_render(assigns, render_options)
             [adapter_result, nil]
           rescue SystemExit, Interrupt, SignalException
             raise
@@ -852,7 +852,7 @@ module Liquid
             }.compact
 
             begin
-              template = LiquidSpec.do_compile(spec.template, compile_options)
+              LiquidSpec.do_compile(spec.template, compile_options)
             rescue => e
               # Check if error class name contains "SyntaxError" (parse error)
               if e.class.name.include?("SyntaxError")
@@ -884,7 +884,7 @@ module Liquid
             }.compact
 
             begin
-              actual = LiquidSpec.do_render(template, assigns, render_options)
+              actual = LiquidSpec.do_render(assigns, render_options)
             rescue StandardError => e
               if spec.expects_render_error?
                 return check_error_patterns(e, spec.error_patterns(:render_error), "render_error")

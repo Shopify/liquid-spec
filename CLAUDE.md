@@ -81,14 +81,14 @@ LiquidSpec.configure do |config|
   ]
 end
 
-LiquidSpec.compile do |ctx, source, options|
-  MyLiquid::Template.parse(source, **options)
+LiquidSpec.compile do |ctx, source, parse_options|
+  ctx[:template] = MyLiquid::Template.parse(source, **parse_options)
 end
 
-LiquidSpec.render do |ctx, template, assigns, options|
+LiquidSpec.render do |ctx, assigns, render_options|
   # assigns: the environment variables for the template
-  # options: { registers:, strict_errors:, error_mode: }
-  template.render(assigns)
+  # render_options: { registers:, strict_errors:, error_mode: }
+  ctx[:template].render(assigns, **render_options)
 end
 ```
 

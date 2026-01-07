@@ -14,12 +14,12 @@
 #     config.features = [:core, :lax_parsing]
 #   end
 #
-#   LiquidSpec.compile do |ctx, source, options|
-#     MyLiquid::Template.parse(source, environment: ctx[:environment], **options)
+#   LiquidSpec.compile do |ctx, source, parse_options|
+#     ctx[:template] = MyLiquid::Template.parse(source, **parse_options)
 #   end
 #
-#   LiquidSpec.render do |ctx, template, assigns, options|
-#     template.render(assigns, **options)
+#   LiquidSpec.render do |ctx, assigns, render_options|
+#     ctx[:template].render(assigns, **render_options)
 #   end
 
 module LiquidSpec
@@ -106,13 +106,15 @@ module LiquidSpec
     end
 
     # Define how to compile/parse a template
-    # Block receives: ctx, source, options
+    # Block receives: ctx, source, parse_options
+    # Should store the template in ctx[:template]
     def compile(&block)
       @compile_block = block
     end
 
     # Define how to render a compiled template
-    # Block receives: ctx, template, assigns, options
+    # Block receives: ctx, assigns, render_options
+    # Template should be retrieved from ctx[:template] (set during compile)
     def render(&block)
       @render_block = block
     end
@@ -147,11 +149,11 @@ module LiquidSpec
       @compile_block.call(@ctx, source, options)
     end
 
-    def do_render(template, assigns, options = {})
+    def do_render(assigns, render_options = {})
       run_setup!
-      raise "No render block defined. Use LiquidSpec.render { |ctx, template, assigns, options| ... }" unless @render_block
+      raise "No render block defined. Use LiquidSpec.render { |ctx, assigns, render_options| ... }" unless @render_block
 
-      @render_block.call(@ctx, template, assigns, options)
+      @render_block.call(@ctx, assigns, render_options)
     end
 
     def running_from_cli!

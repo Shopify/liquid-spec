@@ -22,19 +22,19 @@ LiquidSpec.configure do |config|
   config.features = [:core, :lax_parsing]
 end
 
-LiquidSpec.compile do |ctx, source, options|
+LiquidSpec.compile do |ctx, source, parse_options|
   # Force lax mode regardless of spec (override comes after splat)
-  Liquid::Template.parse(source, **options, error_mode: :lax)
+  ctx[:template] = Liquid::Template.parse(source, **parse_options, error_mode: :lax)
 end
 
-LiquidSpec.render do |ctx, template, assigns, options|
+LiquidSpec.render do |ctx, assigns, render_options|
   # Build context with static_environments (read-only assigns that can be shadowed)
   context = Liquid::Context.build(
     static_environments: assigns,
-    registers: Liquid::Registers.new(options[:registers] || {}),
-    rethrow_errors: options[:strict_errors],
+    registers: Liquid::Registers.new(render_options[:registers] || {}),
+    rethrow_errors: render_options[:strict_errors],
   )
-  context.exception_renderer = options[:exception_renderer] if options[:exception_renderer]
+  context.exception_renderer = render_options[:exception_renderer] if render_options[:exception_renderer]
 
-  template.render(context)
+  ctx[:template].render(context)
 end
