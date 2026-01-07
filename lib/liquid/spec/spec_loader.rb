@@ -51,6 +51,14 @@ module Liquid
 
     # Loads specs from YAML files without instantiating drop objects
     module SpecLoader
+      # Valid keys at each level - unknown keys raise errors
+      VALID_FILE_KEYS = %w[_metadata specs].freeze
+      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity].freeze
+      VALID_SPEC_KEYS = %w[
+        name template expected environment assigns filesystem complexity hint doc
+        error_mode render_errors required_features errors template_factory
+      ].freeze
+
       class << self
         # Load all specs from the default suites
         def load_all(suite: :all, filter: nil)
@@ -137,24 +145,53 @@ module Liquid
           data = safe_load_with_permitted_classes(content)
           return specs unless data
 
-          # Extract metadata if present
+          # Validate file structure and extract data
           metadata = {}
           spec_list = []
 
-          if data.is_a?(Hash) && data.key?("_metadata")
+          if data.is_a?(Hash)
+            # Validate file-level keys
+            unknown_file_keys = data.keys.map(&:to_s) - VALID_FILE_KEYS
+            if unknown_file_keys.any?
+              raise "Unknown top-level keys in #{path}: #{unknown_file_keys.join(", ")}\n" \
+                    "Valid keys are: #{VALID_FILE_KEYS.join(", ")}\n" \
+                    "Did you mean 'specs' instead of '#{unknown_file_keys.first}'?" if unknown_file_keys.include?("tests")
+            end
+
             metadata = data["_metadata"] || {}
             spec_list = data["specs"] || []
+
+            # Validate _metadata keys
+            if metadata.is_a?(Hash)
+              unknown_meta_keys = metadata.keys.map(&:to_s) - VALID_METADATA_KEYS
+              if unknown_meta_keys.any?
+                raise "Unknown _metadata keys in #{path}: #{unknown_meta_keys.join(", ")}\n" \
+                      "Valid keys are: #{VALID_METADATA_KEYS.join(", ")}"
+              end
+            end
           elsif data.is_a?(Array)
             spec_list = data
-          elsif data.is_a?(Hash) && data.key?("specs")
-            spec_list = data["specs"] || []
+          end
+
+          # Validate each spec's keys
+          spec_list.each_with_index do |spec_data, idx|
+            next unless spec_data.is_a?(Hash)
+            spec_name = spec_data["name"] || "(spec ##{idx + 1})"
+            unknown_spec_keys = spec_data.keys.map(&:to_s) - VALID_SPEC_KEYS
+            if unknown_spec_keys.any?
+              line_num = line_numbers ? line_numbers[idx] : nil
+              location = line_num ? "#{path}:#{line_num}" : path
+              raise "Unknown keys in spec '#{spec_name}' at #{location}: #{unknown_spec_keys.join(", ")}\n" \
+                    "Valid keys are: #{VALID_SPEC_KEYS.join(", ")}\n" \
+                    "Did you mean 'expected' instead of 'expect'?" if unknown_spec_keys.include?("expect")
+            end
           end
 
           # Build source-level defaults
           source_hint = metadata["hint"]
           source_doc = metadata["doc"]
           source_required_options = (metadata["required_options"] || {}).transform_keys(&:to_sym)
-          minimum_complexity = suite&.minimum_complexity || metadata["minimum_complexity"] || 1000
+          minimum_complexity = suite&.minimum_complexity || metadata["minimum_complexity"] || metadata["complexity"] || 1000
 
           # Suite defaults
           suite_defaults = suite&.defaults || {}

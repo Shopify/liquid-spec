@@ -162,6 +162,56 @@ specs:
   # ...
 ```
 
+## Valid Keys (Strict Validation)
+
+Spec files are strictly validated. Unknown keys cause errors with helpful suggestions.
+
+### File-Level Keys
+
+When a YAML file is a hash (not an array), only these keys are allowed:
+
+| Key | Description |
+|-----|-------------|
+| `_metadata` | File-level settings applied to all specs |
+| `specs` | Array of spec objects |
+
+### _metadata Keys
+
+| Key | Description |
+|-----|-------------|
+| `hint` | Default hint for all specs in this file |
+| `doc` | Documentation link for all specs |
+| `complexity` | Default complexity for specs without explicit complexity |
+| `minimum_complexity` | Alias for `complexity` |
+| `render_errors` | Default render_errors setting |
+| `required_options` | Options applied to all specs (e.g., `error_mode: :lax`) |
+
+### Spec Keys
+
+| Key | Required | Description |
+|-----|----------|-------------|
+| `name` | Yes | Unique identifier for the spec |
+| `template` | Yes | The Liquid template to render |
+| `expected` | * | Expected output (required unless `errors` is set) |
+| `errors` | * | Error patterns to match (required unless `expected` is set) |
+| `environment` | No | Variables available to the template |
+| `assigns` | No | Alias for `environment` |
+| `filesystem` | No | Virtual filesystem for partials |
+| `complexity` | No | Difficulty score (defaults to 1000) |
+| `hint` | No | Explanation shown on failure |
+| `doc` | No | Link to documentation |
+| `error_mode` | No | `:strict` or `:lax` parsing mode |
+| `render_errors` | No | If true, errors render inline instead of throwing |
+| `required_features` | No | Features needed to run this spec |
+| `template_factory` | No | Custom template factory |
+
+### Common Typos Caught
+
+The validator catches common mistakes:
+- `tests` → Did you mean `specs`?
+- `expect` → Did you mean `expected`?
+- `topic`, `description` → Use `_metadata` with `hint`
+
 ## Common Mistakes
 
 ### Wrong Complexity
