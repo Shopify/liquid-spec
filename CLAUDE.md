@@ -279,6 +279,7 @@ Each spec should have a `complexity` field indicating implementation difficulty.
 | 1000+ | Production recordings, unscored specs (default) |
 
 See [COMPLEXITY.md](COMPLEXITY.md) for the full guide with examples.
+See [SPECS.md](SPECS.md) for guidelines on writing effective specs.
 
 ### Available Suites
 
