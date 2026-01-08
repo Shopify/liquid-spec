@@ -26,6 +26,8 @@ module Liquid
             -s, --suite SUITE       Spec suite: all, liquid_ruby, basics, etc.
             --strict                Only inspect specs with error_mode: strict
             --print-actual          Output YAML spec matching actual behavior (for updating specs)
+            --print-il              Print intermediate representation (IL/bytecode) if available
+            --print-ruby            Print generated Ruby source code if available
             --render-errors=BOOL    Force render_errors setting (true/false) for --print-actual
             -h, --help              Show this help
 
@@ -93,6 +95,10 @@ module Liquid
                 options[:strict_only] = true
               when "--print-actual"
                 options[:print_actual] = true
+              when "--print-il"
+                options[:print_il] = true
+              when "--print-ruby"
+                options[:print_ruby] = true
               when /\A--render-errors=(.+)\z/
                 options[:force_render_errors] = ::Regexp.last_match(1).downcase == "true"
               end
@@ -126,13 +132,13 @@ module Liquid
 
               specs.each_with_index do |spec, idx|
                 puts "" if idx > 0
-                inspect_single_spec(spec, config)
+                inspect_single_spec(spec, config, options)
                 puts "=" * 80
               end
             end
           end
 
-          def inspect_single_spec(spec, config)
+          def inspect_single_spec(spec, config, options = {})
             # Show source location
             puts "\e[2m#{spec.source_file}#{spec.line_number ? ":#{spec.line_number}" : ""}\e[0m"
             puts "\e[1m#{spec.name}\e[0m"
@@ -182,7 +188,13 @@ module Liquid
 
             puts "\n\e[2mActual:\e[0m"
             TimeFreezer.freeze(TEST_TIME) do
-              result = run_with_adapter(spec, config)
+              result = run_with_adapter(spec, config, options)
+
+              # Print IL/Ruby if requested and available
+              if options[:print_il] || options[:print_ruby]
+                print_generated_code(result[:template], options)
+              end
+
               if result[:error]
                 puts "  \e[31mERROR:\e[0m #{result[:error].class}: #{result[:error].message}"
                 result[:error].backtrace.first(5).each { |line| puts "    #{line}" }
@@ -438,36 +450,118 @@ module Liquid
           end
 
           def run_with_adapter(spec, _config, options = {})
-            environment = spec.instantiate_environment
-            filesystem = spec.instantiate_filesystem
-
-            compile_options = {
-              line_numbers: true,
-              error_mode: spec.error_mode&.to_sym,
-              file_system: filesystem,
-            }.compact
-
-            LiquidSpec.do_compile(spec.template, compile_options)
+            required_opts = spec.source_required_options || {}
 
             # Use forced render_errors if provided, otherwise use spec's setting
             render_errors = if options.key?(:force_render_errors)
               options[:force_render_errors]
             else
-              spec.render_errors
+              spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
             end
 
-            render_options = {
-              registers: {},
-              strict_errors: !render_errors,
-              error_mode: spec.error_mode&.to_sym,
+            # Build filesystem first so it can be passed to compile
+            filesystem = spec.instantiate_filesystem
+
+            compile_options = {
+              line_numbers: true,
+              error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+              file_system: filesystem,
             }.compact
 
-            render_options[:registers][:file_system] = filesystem if filesystem
+            LiquidSpec.do_compile(spec.template, compile_options)
+            template = LiquidSpec.ctx[:template]
+
+            environment = deep_copy(spec.instantiate_environment)
+            render_options = {
+              registers: build_registers(spec, filesystem),
+              strict_errors: !render_errors,
+            }.compact
 
             actual = LiquidSpec.do_render(environment, render_options)
-            { actual: actual, error: nil }
+            { actual: actual, error: nil, template: template }
           rescue => e
-            { actual: nil, error: e }
+            { actual: nil, error: e, template: LiquidSpec.ctx[:template] }
+          end
+
+          def build_registers(spec, filesystem = nil)
+            registers = {}
+            filesystem ||= spec.instantiate_filesystem
+            registers[:file_system] = filesystem if filesystem
+            template_factory = spec.instantiate_template_factory
+            registers[:template_factory] = template_factory if template_factory
+            registers
+          end
+
+          def deep_copy(obj, seen = {}.compare_by_identity)
+            return seen[obj] if seen.key?(obj)
+
+            case obj
+            when Hash
+              copy = obj.class.new
+              seen[obj] = copy
+              obj.each { |k, v| copy[deep_copy(k, seen)] = deep_copy(v, seen) }
+              copy
+            when Array
+              copy = []
+              seen[obj] = copy
+              obj.each { |v| copy << deep_copy(v, seen) }
+              copy
+            else
+              obj
+            end
+          end
+
+          def print_generated_code(template, options)
+            return unless template
+
+            printed_any = false
+
+            if options[:print_il]
+              # Try various IL/bytecode methods
+              il = nil
+              if template.respond_to?(:il)
+                il = template.il
+              elsif template.respond_to?(:bytecode)
+                il = template.bytecode
+              elsif template.respond_to?(:instructions)
+                il = template.instructions
+              end
+
+              if il
+                puts "\n\e[2mIL/Bytecode:\e[0m"
+                if il.is_a?(Array)
+                  il.each_with_index { |instr, i| puts "  #{i}: #{instr.inspect}" }
+                else
+                  il.to_s.each_line { |line| puts "  #{line}" }
+                end
+                printed_any = true
+              end
+            end
+
+            if options[:print_ruby]
+              # Try various Ruby source methods
+              ruby_source = nil
+              if template.respond_to?(:source)
+                ruby_source = template.source
+              elsif template.respond_to?(:ruby_source)
+                ruby_source = template.ruby_source
+              elsif template.respond_to?(:generated_source)
+                ruby_source = template.generated_source
+              end
+
+              if ruby_source
+                puts "\n\e[2mGenerated Ruby:\e[0m"
+                ruby_source.to_s.each_line.with_index(1) { |line, i| puts "  #{i.to_s.rjust(3)}: #{line}" }
+                printed_any = true
+              end
+            end
+
+            unless printed_any
+              methods_tried = []
+              methods_tried << "il, bytecode, instructions" if options[:print_il]
+              methods_tried << "source, ruby_source, generated_source" if options[:print_ruby]
+              puts "\n\e[2mNo generated code available (tried: #{methods_tried.join("; ")})\e[0m"
+            end
           end
 
           def load_specs(config)
