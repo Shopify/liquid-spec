@@ -27,7 +27,7 @@ module Liquid
     class LazySpec
       VALID_ERROR_KEYS = ["parse_error", "render_error", "output"].freeze
 
-      attr_reader :name, :template, :expected, :errors, :hint, :doc, :complexity
+      attr_reader :name, :template, :template_name, :expected, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :render_errors, :required_features
       attr_reader :source_file, :line_number
       attr_reader :raw_environment, :raw_filesystem, :raw_template_factory
@@ -35,6 +35,7 @@ module Liquid
       def initialize(
         name:,
         template:,
+        template_name: nil,
         expected: nil,
         errors: {},
         hint: nil,
@@ -53,6 +54,7 @@ module Liquid
       )
         @name = name
         @template = template
+        @template_name = template_name
         @expected = expected
         @errors = errors || {}
         @hint = hint

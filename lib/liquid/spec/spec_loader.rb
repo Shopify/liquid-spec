@@ -56,7 +56,7 @@ module Liquid
       VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity].freeze
       VALID_SPEC_KEYS = %w[
         name template expected environment filesystem complexity hint doc
-        error_mode render_errors required_features errors
+        error_mode render_errors required_features errors template_name
       ].freeze
 
       class << self
@@ -237,6 +237,7 @@ module Liquid
             spec = LazySpec.new(
               name: spec_data["name"],
               template: spec_data["template"],
+              template_name: spec_data["template_name"],
               expected: spec_expected,
               errors: spec_data["errors"] || {},
               hint: spec_data["hint"],
