@@ -1,0 +1,248 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Analyzes test results to discover the natural "implementation ramp"
+#
+# Groups tests by when they first start passing in each run, creating
+# a natural ordering that reflects actual implementation difficulty.
+#
+# Key insight: Tests that first pass at the same frontier are probably
+# implementing the same feature and should have similar complexity.
+#
+# Output: A recommended complexity ramp with groups of tests
+
+require "json"
+require "set"
+require "optparse"
+
+RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
+MIN_RUNS = 3
+
+options = {
+  group_size: 50,  # Target complexity points between groups
+  show_tests: false,
+  file_filter: nil,
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: complexity-ramp [options]"
+
+  opts.on("-g", "--group-size N", Integer, "Complexity gap between groups (default: 50)") do |n|
+    options[:group_size] = n
+  end
+
+  opts.on("-t", "--show-tests", "Show individual tests in each group") do
+    options[:show_tests] = true
+  end
+
+  opts.on("-f", "--file PATTERN", "Filter to files matching pattern") do |f|
+    options[:file_filter] = f
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless File.exist?(RESULTS_FILE)
+  puts "No results file found at #{RESULTS_FILE}"
+  puts "Run liquid-spec first to generate results."
+  exit 1
+end
+
+# Parse all results
+results = File.readlines(RESULTS_FILE).map do |line|
+  JSON.parse(line)
+rescue JSON::ParserError
+  nil
+end.compact
+
+if results.empty?
+  puts "No valid results found in #{RESULTS_FILE}"
+  exit 1
+end
+
+# Group by run_id
+runs = results.group_by { |r| r[0] }
+
+puts "Analyzing #{results.size} results across #{runs.size} runs..."
+puts
+
+# For each run, build the "ramp" - order tests by when they first pass
+# as the frontier increases
+run_ramps = {}
+
+runs.each do |run_id, run_results|
+  # Sort by complexity
+  sorted = run_results.sort_by { |r| r[4] }
+
+  # Track when each test first passes
+  first_pass = {}
+  current_frontier = 0
+
+  sorted.each do |r|
+    _, _, file, name, complexity, status = r
+    test_key = "#{file}:#{name}"
+
+    if status == "success"
+      first_pass[test_key] ||= complexity
+      current_frontier = [current_frontier, complexity].max
+    end
+  end
+
+  run_ramps[run_id] = first_pass
+end
+
+# For each test, find the median "first pass" complexity across runs
+test_first_pass = Hash.new { |h, k| h[k] = { values: [], file: nil, name: nil } }
+
+run_ramps.each do |_run_id, ramp|
+  ramp.each do |test_key, complexity|
+    test_first_pass[test_key][:values] << complexity
+    file, name = test_key.split(":", 2)
+    test_first_pass[test_key][:file] = file
+    test_first_pass[test_key][:name] = name
+  end
+end
+
+# Filter and compute median
+test_medians = []
+
+test_first_pass.each do |key, data|
+  next if data[:values].size < MIN_RUNS
+
+  if options[:file_filter]
+    next unless data[:file]&.include?(options[:file_filter])
+  end
+
+  values = data[:values].sort
+  median = values[values.size / 2]
+
+  test_medians << {
+    key: key,
+    file: data[:file],
+    name: data[:name],
+    median_first_pass: median,
+    runs: values.size,
+    consistency: (values.max - values.min),  # Lower = more consistent
+  }
+end
+
+# Sort by median first pass
+test_medians.sort_by! { |t| t[:median_first_pass] }
+
+puts "=" * 70
+puts "NATURAL IMPLEMENTATION RAMP"
+puts "Tests ordered by when they typically first pass"
+puts "=" * 70
+puts
+
+# Group into complexity tiers
+group_size = options[:group_size]
+groups = test_medians.group_by { |t| (t[:median_first_pass] / group_size) * group_size }
+
+groups.sort_by { |k, _| k }.each do |bucket, tests|
+  puts "-" * 50
+  puts "COMPLEXITY #{bucket} - #{bucket + group_size - 1}"
+  puts "#{tests.size} tests"
+  puts "-" * 50
+
+  if options[:show_tests]
+    # Group by file within this complexity tier
+    by_file = tests.group_by { |t| File.basename(t[:file]) }
+    by_file.sort_by { |f, _| f }.each do |file, file_tests|
+      puts "  #{file}:"
+      file_tests.first(10).each do |t|
+        consistency_marker = t[:consistency] > 100 ? " ⚠" : ""
+        puts "    - #{t[:name]}#{consistency_marker}"
+      end
+      puts "    ... and #{file_tests.size - 10} more" if file_tests.size > 10
+    end
+  else
+    # Just show files and counts
+    by_file = tests.group_by { |t| File.basename(t[:file]) }
+    by_file.sort_by { |_, v| -v.size }.each do |file, file_tests|
+      puts "  #{file}: #{file_tests.size} tests"
+    end
+  end
+  puts
+end
+
+# Find tests that are inconsistent (high variance in first pass)
+puts "=" * 70
+puts "INCONSISTENT TESTS"
+puts "Tests with high variance in when they first pass (may need investigation)"
+puts "=" * 70
+puts
+
+inconsistent = test_medians.select { |t| t[:consistency] > 200 }
+                           .sort_by { |t| -t[:consistency] }
+                           .first(20)
+
+if inconsistent.empty?
+  puts "(none found)"
+else
+  inconsistent.each do |t|
+    puts "#{t[:name]}"
+    puts "  Range: #{t[:consistency]} complexity points"
+    puts "  File: #{File.basename(t[:file])}"
+    puts
+  end
+end
+
+# Generate recommended complexity assignments
+puts "=" * 70
+puts "RECOMMENDED COMPLEXITY RAMP"
+puts "=" * 70
+puts
+
+# Compute target complexities based on natural groupings
+# We want:
+# - First 10% of tests: complexity 10-50
+# - Next 20%: 50-100
+# - etc.
+
+total = test_medians.size
+percentiles = [
+  [0.05, 10, 30],    # First 5%: 10-30
+  [0.10, 30, 50],    # Next 5%: 30-50
+  [0.20, 50, 70],    # Next 10%: 50-70
+  [0.35, 70, 100],   # Next 15%: 70-100
+  [0.50, 100, 150],  # Next 15%: 100-150
+  [0.70, 150, 250],  # Next 20%: 150-250
+  [0.85, 250, 400],  # Next 15%: 250-400
+  [0.95, 400, 700],  # Next 10%: 400-700
+  [1.00, 700, 1000], # Last 5%: 700-1000
+]
+
+current_idx = 0
+percentiles.each do |pct, min_c, max_c|
+  end_idx = (total * pct).to_i - 1
+  tests_in_range = test_medians[current_idx..end_idx]
+  next if tests_in_range.nil? || tests_in_range.empty?
+
+  puts "Complexity #{min_c}-#{max_c} (#{(pct * 100).round}th percentile):"
+  puts "  #{tests_in_range.size} tests"
+
+  # Show representative tests
+  by_file = tests_in_range.group_by { |t| File.basename(t[:file]) }
+  by_file.sort_by { |_, v| -v.size }.first(5).each do |file, file_tests|
+    puts "    #{file}: #{file_tests.size}"
+  end
+
+  current_idx = end_idx + 1
+  puts
+end
+
+puts "=" * 70
+puts "SUMMARY"
+puts "=" * 70
+puts "Total tests with enough data: #{test_medians.size}"
+puts "Runs analyzed: #{runs.size}"
+puts "Tests per complexity tier:"
+groups.sort_by { |k, _| k }.each do |bucket, tests|
+  bar_len = [(tests.size.to_f / test_medians.size * 50).round, 1].max
+  bar = "█" * bar_len
+  puts "  #{bucket.to_s.rjust(4)}: #{bar} #{tests.size}"
+end

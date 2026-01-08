@@ -17,8 +17,95 @@ _metadata:
 
 specs:
 # =============================================================================
-# COMPLEXITY 10: Raw Text Output
-# The most basic - templates with no Liquid syntax at all
+# COMPLEXITY 0: The Foundation
+# Absolute minimum - can your implementation compile and render at all?
+# =============================================================================
+
+- name: empty_template
+  template: ""
+  expected: ""
+  complexity: 0
+  hint: |
+    START HERE. The absolute first test: an empty template returns empty string.
+
+    This validates your core pipeline exists:
+    1. You can accept a template string
+    2. You can produce output
+
+    Run `liquid-spec docs` for implementation guidance.
+
+- name: literal_passthrough
+  template: "hello"
+  expected: "hello"
+  complexity: 1
+  hint: |
+    Plain text passes through unchanged. No Liquid syntax here - just verify
+    that literal characters flow from input to output without corruption.
+
+    This is the foundation of templating: static content renders verbatim.
+
+    Run `liquid-spec docs` for implementation guidance.
+
+- name: whitespace_preserved
+  template: "  hello  "
+  expected: "  hello  "
+  complexity: 1
+  hint: |
+    Whitespace must be preserved exactly. Spaces at the start and end should
+    not be trimmed. Many HTML templates rely on precise whitespace.
+
+- name: newlines_preserved
+  template: "a\nb\nc"
+  expected: "a\nb\nc"
+  complexity: 1
+  hint: |
+    Newline characters pass through unchanged. Templates often contain
+    multi-line HTML that must render with correct line breaks.
+
+# =============================================================================
+# COMPLEXITY 5: Basic Objects
+# Can you parse and output {{ expression }}?
+# =============================================================================
+
+- name: object_string_literal
+  template: "{{ 'world' }}"
+  expected: "world"
+  complexity: 5
+  hint: |
+    The {{ }} syntax outputs the value of an expression. Single-quoted strings
+    are literals - 'world' outputs "world". The quotes are delimiters.
+
+    This tests: lexer recognizes {{, parser handles string literals, renderer
+    outputs the value.
+
+    Run `liquid-spec docs` for implementation guidance.
+
+- name: object_with_text
+  template: "hello {{ 'world' }}"
+  expected: "hello world"
+  complexity: 5
+  hint: |
+    Mix static text with Liquid objects. The {{ }} is replaced with its value,
+    surrounding text preserved. This is the essence of templating.
+
+- name: object_integer
+  template: "{{ 42 }}"
+  expected: "42"
+  complexity: 5
+  hint: |
+    Integer literals render as their string representation.
+
+- name: object_nil_outputs_nothing
+  template: "{{ nil }}"
+  expected: ""
+  complexity: 5
+  hint: |
+    The nil literal produces NO output (empty string). Not the word "nil".
+    This is important - undefined variables are nil, and they shouldn't
+    pollute output with "nil" text.
+
+# =============================================================================
+# COMPLEXITY 10: Raw Text Output (more thorough tests)
 # =============================================================================
 
 - name: raw_text_empty

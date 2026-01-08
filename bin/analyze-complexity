@@ -3,6 +3,13 @@
 
 # Analyzes liquid-spec results to find tests with potentially wrong complexity scores
 #
+# This is the main entry point for complexity analysis. For detailed analysis, use:
+#   calibrate-complexity  - Suggests individual test changes
+#   complexity-ramp       - Shows natural implementation order
+#   compute-ramp          - Computes optimal complexity from pass order
+#   fix-misordered        - Finds explicitly scored tests that are wrong
+#   score-unscored        - Finds unscored tests that need complexity
+#
 # Logic:
 # - For each run, find the "complexity frontier" (max complexity that passed)
 # - Tests passing well above frontier = probably too high complexity (easy tests marked hard)
@@ -11,13 +18,16 @@
 # Also analyzes:
 # - Tests with default complexity (1000) that consistently pass early
 # - Complexity distribution across suites
+# - Files where all tests are at wrong complexity
 #
-# Output: Lists ordered by frequency × complexity distance, plus suggestions
+# Output: Executive summary with actionable recommendations
 
 require "json"
+require "set"
 
 RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
 DEFAULT_COMPLEXITY = 1000
+MIN_RUNS = 3  # Minimum runs required to consider data reliable
 
 unless File.exist?(RESULTS_FILE)
   puts "No results file found at #{RESULTS_FILE}"
@@ -113,10 +123,11 @@ puts "These tests pass consistently but have higher complexity than peers"
 puts "=" * 70
 puts
 
-sorted_high = too_high.sort_by { |_, v| -score(v) }.first(30)
+sorted_high = too_high.select { |_, v| v[:runs].uniq.size >= MIN_RUNS }
+                      .sort_by { |_, v| -score(v) }.first(30)
 
 if sorted_high.empty?
-  puts "(none found)"
+  puts "(none found with #{MIN_RUNS}+ runs)"
 else
   sorted_high.each_with_index do |(key, data), i|
     avg_dist = (data[:distances].sum.to_f / data[:distances].size).round(1)
@@ -135,10 +146,11 @@ puts "These tests fail while higher-complexity tests pass"
 puts "=" * 70
 puts
 
-sorted_low = too_low.sort_by { |_, v| -score(v) }.first(30)
+sorted_low = too_low.select { |_, v| v[:runs].uniq.size >= MIN_RUNS }
+                    .sort_by { |_, v| -score(v) }.first(30)
 
 if sorted_low.empty?
-  puts "(none found)"
+  puts "(none found with #{MIN_RUNS}+ runs)"
 else
   sorted_low.each_with_index do |(key, data), i|
     avg_dist = (data[:distances].sum.to_f / data[:distances].size).round(1)
@@ -196,6 +208,105 @@ else
   puts "Total: #{needs_scoring.size} tests need complexity scores"
 end
 
+# File-level complexity analysis
+# Group results by file and analyze if entire files are at wrong complexity
+puts
+puts "=" * 70
+puts "FILES WITH POTENTIALLY WRONG COMPLEXITY"
+puts "Entire files where specs consistently pass/fail at unexpected levels"
+puts "=" * 70
+puts
+
+file_stats = Hash.new { |h, k| h[k] = { results: [], complexities: Set.new, runs: Set.new } }
+
+results.each do |r|
+  file = r[2]
+  file_stats[file][:results] << r
+  file_stats[file][:complexities] << r[4]
+  file_stats[file][:runs] << r[0]
+end
+
+file_anomalies = []
+
+file_stats.each do |file, stats|
+  next if stats[:runs].size < MIN_RUNS  # Need enough data
+
+  # Calculate pass rate and average complexity distance from frontier
+  pass_count = stats[:results].count { |r| r[5] == "success" }
+  total = stats[:results].size
+  pass_rate = pass_count.to_f / total
+
+  # Get the file's complexity range
+  file_complexities = stats[:complexities].to_a.sort
+  file_min = file_complexities.min
+  file_max = file_complexities.max
+
+  # Compare to what complexity level typically passes in these runs
+  runs_in_file = stats[:runs].to_a
+  frontier_for_runs = runs_in_file.map do |run_id|
+    run_results = results.select { |r| r[0] == run_id && r[5] == "success" }
+    run_results.empty? ? 0 : run_results.map { |r| r[4] }.max
+  end
+  avg_frontier = frontier_for_runs.sum.to_f / frontier_for_runs.size
+
+  # If file passes often but has high complexity, might be overrated
+  if pass_rate > 0.8 && file_min > avg_frontier + 100
+    file_anomalies << {
+      file: file,
+      type: :overrated,
+      pass_rate: pass_rate,
+      complexity_range: "#{file_min}-#{file_max}",
+      avg_frontier: avg_frontier.round,
+      runs: stats[:runs].size,
+      test_count: stats[:complexities].size,
+      suggestion: [file_min - 100, avg_frontier.round].max
+    }
+  end
+
+  # If file fails often but has low complexity, might be underrated
+  if pass_rate < 0.2 && file_max < avg_frontier - 100 && avg_frontier > 0
+    file_anomalies << {
+      file: file,
+      type: :underrated,
+      pass_rate: pass_rate,
+      complexity_range: "#{file_min}-#{file_max}",
+      avg_frontier: avg_frontier.round,
+      runs: stats[:runs].size,
+      test_count: stats[:complexities].size,
+      suggestion: avg_frontier.round + 50
+    }
+  end
+end
+
+if file_anomalies.empty?
+  puts "(no files with consistent anomalies across #{MIN_RUNS}+ runs)"
+else
+  overrated = file_anomalies.select { |a| a[:type] == :overrated }.sort_by { |a| -a[:runs] }
+  underrated = file_anomalies.select { |a| a[:type] == :underrated }.sort_by { |a| -a[:runs] }
+
+  unless overrated.empty?
+    puts "OVERRATED FILES (pass often, complexity may be too high):"
+    overrated.first(10).each do |a|
+      puts "  #{File.basename(a[:file])}"
+      puts "    Complexity: #{a[:complexity_range]}, Pass rate: #{(a[:pass_rate] * 100).round}%"
+      puts "    Avg frontier: #{a[:avg_frontier]}, Runs: #{a[:runs]}, Tests: #{a[:test_count]}"
+      puts "    Suggested complexity: ~#{a[:suggestion]}"
+      puts
+    end
+  end
+
+  unless underrated.empty?
+    puts "UNDERRATED FILES (fail often, complexity may be too low):"
+    underrated.first(10).each do |a|
+      puts "  #{File.basename(a[:file])}"
+      puts "    Complexity: #{a[:complexity_range]}, Pass rate: #{(a[:pass_rate] * 100).round}%"
+      puts "    Avg frontier: #{a[:avg_frontier]}, Runs: #{a[:runs]}, Tests: #{a[:test_count]}"
+      puts "    Suggested complexity: ~#{a[:suggestion]}"
+      puts
+    end
+  end
+end
+
 # Complexity distribution
 puts
 puts "=" * 70
@@ -219,10 +330,27 @@ puts "=" * 70
 puts "SUMMARY"
 puts "=" * 70
 total_tests = results.map { |r| "#{r[2]}:#{r[3]}" }.uniq.size
+total_files = results.map { |r| r[2] }.uniq.size
+reliable_high = too_high.count { |_, v| v[:runs].uniq.size >= MIN_RUNS }
+reliable_low = too_low.count { |_, v| v[:runs].uniq.size >= MIN_RUNS }
+
 puts "Total unique tests: #{total_tests}"
-puts "Potentially overrated: #{too_high.size}"
-puts "Potentially underrated: #{too_low.size}"
-puts "Need complexity scores: #{needs_scoring.size}"
+puts "Total spec files: #{total_files}"
+puts "Runs analyzed: #{runs.size}"
 puts
-puts "To use this data: Review the tests above and adjust their complexity"
-puts "scores in the YAML spec files. Lower scores = implement earlier."
+puts "Potentially overrated tests: #{reliable_high} (#{too_high.size - reliable_high} excluded, <#{MIN_RUNS} runs)"
+puts "Potentially underrated tests: #{reliable_low} (#{too_low.size - reliable_low} excluded, <#{MIN_RUNS} runs)"
+puts "Files with wrong complexity: #{file_anomalies.size}"
+puts "Tests need complexity scores: #{needs_scoring.size}"
+puts
+puts "=" * 70
+puts "NEXT STEPS"
+puts "=" * 70
+puts
+puts "For detailed analysis and actionable output, run:"
+puts "  calibrate-complexity    # Individual test suggestions"
+puts "  compute-ramp -s suite   # Optimal complexity from pass order"
+puts "  fix-misordered --output yq  # yq commands to fix misordered tests"
+puts
+puts "Lower complexity = implement earlier. The goal is a smooth ramp"
+puts "from simple (10-50) to complex (500-1000) features."

@@ -1,0 +1,242 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Assigns complexity scores to unscored tests (those at default 1000)
+# based on when they typically first pass in actual runs.
+#
+# Uses the "first pass frontier" concept: if a test consistently passes
+# when the implementation has reached complexity X, the test should have
+# complexity slightly below X.
+#
+# Outputs yq commands to update spec files.
+
+require "json"
+require "set"
+require "optparse"
+
+RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
+DEFAULT_COMPLEXITY = 1000
+MIN_RUNS = 3
+
+options = {
+  output: :summary,
+  limit: nil,
+  file_filter: nil,
+  max_complexity: 500,  # Only suggest scores below this (tests above are "advanced")
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: score-unscored [options]"
+
+  opts.on("-o", "--output MODE", [:summary, :yq, :csv],
+          "Output mode: summary, yq, csv") do |m|
+    options[:output] = m
+  end
+
+  opts.on("-l", "--limit N", Integer, "Limit to N suggestions") do |n|
+    options[:limit] = n
+  end
+
+  opts.on("-f", "--file PATTERN", "Filter to files matching pattern") do |f|
+    options[:file_filter] = f
+  end
+
+  opts.on("-m", "--max N", Integer, "Max complexity to suggest (default: 500)") do |n|
+    options[:max_complexity] = n
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless File.exist?(RESULTS_FILE)
+  puts "No results file found at #{RESULTS_FILE}"
+  exit 1
+end
+
+results = File.readlines(RESULTS_FILE).map do |line|
+  JSON.parse(line)
+rescue JSON::ParserError
+  nil
+end.compact
+
+if results.empty?
+  puts "No valid results found"
+  exit 1
+end
+
+# Only look at tests currently at default complexity
+unscored_results = results.select { |r| r[4] == DEFAULT_COMPLEXITY }
+
+# Group by run and compute frontiers
+runs = results.group_by { |r| r[0] }
+run_frontiers = {}
+runs.each do |run_id, run_results|
+  passing = run_results.select { |r| r[5] == "success" }
+  run_frontiers[run_id] = passing.empty? ? 0 : passing.map { |r| r[4] }.max
+end
+
+# For each unscored test, find when it first passes in each run
+test_first_pass = Hash.new { |h, k| h[k] = { pass_at: [], file: nil, name: nil } }
+
+# Group results by run, then iterate in complexity order
+runs.each do |run_id, run_results|
+  # Filter to unscored tests only
+  unscored_in_run = run_results.select { |r| r[4] == DEFAULT_COMPLEXITY }
+
+  unscored_in_run.each do |r|
+    _, _, file, name, _, status = r
+    test_key = "#{file}:#{name}"
+
+    test_first_pass[test_key][:file] = file
+    test_first_pass[test_key][:name] = name
+
+    if status == "success"
+      # The "first pass frontier" for unscored tests is the frontier at that run
+      # since they all have the same complexity (1000)
+      frontier = run_frontiers[run_id]
+      test_first_pass[test_key][:pass_at] << frontier
+    end
+  end
+end
+
+# Compute suggestions
+suggestions = []
+
+test_first_pass.each do |key, data|
+  next if data[:pass_at].size < MIN_RUNS
+
+  if options[:file_filter]
+    next unless data[:file]&.include?(options[:file_filter])
+  end
+
+  # Use the median frontier at which this test passes
+  values = data[:pass_at].sort
+  median = values[values.size / 2]
+
+  # Suggest a complexity slightly below the median pass frontier
+  # This ensures the test is included when implementations reach that level
+  suggested = [(median * 0.9).round, median - 20].max
+  suggested = [suggested, 10].max  # Floor at 10
+
+  next if suggested > options[:max_complexity]
+
+  # Compute consistency (lower = more consistent)
+  consistency = values.max - values.min
+
+  suggestions << {
+    key: key,
+    file: data[:file],
+    name: data[:name],
+    suggested: suggested,
+    median_pass: median,
+    runs: values.size,
+    consistency: consistency,
+  }
+end
+
+# Sort by suggested complexity (implementation order)
+suggestions.sort_by! { |s| s[:suggested] }
+
+if options[:limit]
+  suggestions = suggestions.first(options[:limit])
+end
+
+case options[:output]
+when :summary
+  puts "=" * 70
+  puts "UNSCORED TESTS THAT NEED COMPLEXITY SCORES"
+  puts "Tests at default 1000 that consistently pass at lower frontiers"
+  puts "=" * 70
+  puts
+  puts "Found #{suggestions.size} tests that should have complexity <= #{options[:max_complexity]}"
+  puts
+
+  # Group by suggested complexity tier
+  tiers = suggestions.group_by { |s| (s[:suggested] / 50) * 50 }
+
+  tiers.sort_by { |k, _| k }.each do |tier, tier_tests|
+    puts "-" * 50
+    puts "SUGGESTED COMPLEXITY #{tier}-#{tier + 49}"
+    puts "#{tier_tests.size} tests"
+    puts "-" * 50
+
+    # Group by file
+    by_file = tier_tests.group_by { |t| File.basename(t[:file]) }
+    by_file.sort_by { |_, v| -v.size }.first(5).each do |file, file_tests|
+      puts "  #{file}: #{file_tests.size} tests"
+      file_tests.first(3).each do |t|
+        puts "    - #{t[:name][0, 50]}..."
+      end
+      puts "    ..." if file_tests.size > 3
+    end
+    puts
+  end
+
+  puts "=" * 70
+  puts "Run with --output yq to generate yq commands"
+  puts "Run with --output csv for spreadsheet import"
+
+when :yq
+  puts "#!/bin/bash"
+  puts "# yq commands to add complexity scores to unscored tests"
+  puts "# Generated from #{suggestions.size} test results"
+  puts "#"
+  puts "# Review before running! These are suggestions based on pass/fail patterns."
+  puts
+
+  by_file = suggestions.group_by { |s| s[:file] }
+
+  by_file.sort_by { |f, _| f }.each do |file, file_suggestions|
+    puts
+    puts "# #{File.basename(file)} (#{file_suggestions.size} tests)"
+
+    # Group by suggested complexity for bulk updates
+    by_complexity = file_suggestions.group_by { |s| s[:suggested] }
+
+    by_complexity.sort_by { |c, _| c }.each do |complexity, tests|
+      if tests.size == 1
+        # Single test update
+        t = tests.first
+        escaped = t[:name].gsub('"', '\\"').gsub("'", "'\\''")
+        puts "yq -i '(.specs[] | select(.name == \"#{escaped}\")).complexity = #{complexity}' '#{file}'"
+      else
+        # Multiple tests at same complexity - could batch but safer to do individually
+        tests.each do |t|
+          escaped = t[:name].gsub('"', '\\"').gsub("'", "'\\''")
+          puts "yq -i '(.specs[] | select(.name == \"#{escaped}\")).complexity = #{complexity}' '#{file}'"
+        end
+      end
+    end
+  end
+
+when :csv
+  puts "file,test_name,suggested_complexity,median_pass_frontier,runs,consistency"
+  suggestions.each do |s|
+    name = s[:name].gsub('"', '""')
+    puts "#{File.basename(s[:file])},\"#{name}\",#{s[:suggested]},#{s[:median_pass]},#{s[:runs]},#{s[:consistency]}"
+  end
+end
+
+unless options[:output] == :csv
+  puts
+  puts "=" * 70
+  puts "STATISTICS"
+  puts "=" * 70
+  puts "Unscored tests analyzed: #{test_first_pass.size}"
+  puts "Tests with suggested scores (<= #{options[:max_complexity]}): #{suggestions.size}"
+
+  if suggestions.any?
+    suggested_values = suggestions.map { |s| s[:suggested] }
+    puts
+    puts "Suggested complexity distribution:"
+    buckets = suggested_values.group_by { |c| (c / 50) * 50 }.sort_by { |k, _| k }
+    buckets.each do |bucket, values|
+      bar_len = [(values.size.to_f / suggestions.size * 40).round, 1].max
+      bar = "█" * bar_len
+      puts "  #{bucket.to_s.rjust(3)}-#{(bucket + 49).to_s.ljust(3)}: #{bar} #{values.size}"
+    end
+  end
+end

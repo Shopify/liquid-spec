@@ -1,0 +1,284 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Calibrates complexity scores based on actual pass/fail data
+#
+# Uses the "frontier" concept: in each run, the frontier is the highest
+# complexity that passed. Tests that pass have complexity <= frontier.
+#
+# For each test, we compute:
+# - min_frontier: lowest frontier at which this test passed
+# - max_frontier: highest frontier at which this test failed
+#
+# The optimal complexity is between max_frontier and min_frontier.
+# We suggest complexity = (max_frontier + min_frontier) / 2 or max_frontier + 50
+#
+# Output modes:
+# - summary: Show overview and top recommendations
+# - suggest: Show suggested complexity values per test
+# - yaml: Output YAML patches to apply
+# - by-file: Group recommendations by spec file
+
+require "json"
+require "set"
+require "optparse"
+
+RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
+MIN_RUNS = 3
+
+options = {
+  mode: :summary,
+  limit: 50,
+  file_filter: nil,
+  min_confidence: 0.7,  # at least 70% of runs must have consistent behavior
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: calibrate-complexity [options]"
+
+  opts.on("-m", "--mode MODE", [:summary, :suggest, :yaml, :by_file],
+          "Output mode: summary, suggest, yaml, by_file") do |m|
+    options[:mode] = m
+  end
+
+  opts.on("-l", "--limit N", Integer, "Limit output to N tests") do |n|
+    options[:limit] = n
+  end
+
+  opts.on("-f", "--file PATTERN", "Filter to files matching pattern") do |f|
+    options[:file_filter] = f
+  end
+
+  opts.on("-c", "--confidence N", Float, "Minimum confidence threshold (0-1)") do |c|
+    options[:min_confidence] = c
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless File.exist?(RESULTS_FILE)
+  puts "No results file found at #{RESULTS_FILE}"
+  puts "Run liquid-spec first to generate results."
+  exit 1
+end
+
+# Parse all results
+# Format: [run_id, version, source_file, test_name, complexity, status]
+results = File.readlines(RESULTS_FILE).map do |line|
+  JSON.parse(line)
+rescue JSON::ParserError
+  nil
+end.compact
+
+if results.empty?
+  puts "No valid results found in #{RESULTS_FILE}"
+  exit 1
+end
+
+# Group by run_id and compute frontier for each run
+runs = results.group_by { |r| r[0] }
+run_frontiers = {}
+
+runs.each do |run_id, run_results|
+  passing = run_results.select { |r| r[5] == "success" }
+  run_frontiers[run_id] = passing.empty? ? 0 : passing.map { |r| r[4] }.max
+end
+
+puts "Analyzing #{results.size} results across #{runs.size} runs..."
+puts "Frontier range: #{run_frontiers.values.min} - #{run_frontiers.values.max}"
+puts
+
+# For each test, compute:
+# - frontiers where it passed
+# - frontiers where it failed
+test_data = Hash.new { |h, k| h[k] = { pass_frontiers: [], fail_frontiers: [], complexity: nil, file: nil, name: nil } }
+
+results.each do |r|
+  run_id, _, file, name, complexity, status = r
+  test_key = "#{file}:#{name}"
+  frontier = run_frontiers[run_id]
+
+  test_data[test_key][:complexity] = complexity
+  test_data[test_key][:file] = file
+  test_data[test_key][:name] = name
+
+  if status == "success"
+    test_data[test_key][:pass_frontiers] << frontier
+  else
+    test_data[test_key][:fail_frontiers] << frontier
+  end
+end
+
+# Compute suggested complexity for each test
+suggestions = []
+
+test_data.each do |key, data|
+  total_runs = data[:pass_frontiers].size + data[:fail_frontiers].size
+  next if total_runs < MIN_RUNS  # Skip low-confidence tests
+
+  # Apply file filter if specified
+  if options[:file_filter]
+    next unless data[:file].include?(options[:file_filter])
+  end
+
+  pass_count = data[:pass_frontiers].size
+  fail_count = data[:fail_frontiers].size
+  pass_rate = pass_count.to_f / total_runs
+
+  # Compute the suggested complexity
+  if pass_count > 0 && fail_count > 0
+    # Mixed results: use the boundary
+    min_pass_frontier = data[:pass_frontiers].min
+    max_fail_frontier = data[:fail_frontiers].max
+
+    # The test passes at frontier min_pass_frontier, fails at max_fail_frontier
+    # So its true complexity is between max_fail_frontier and min_pass_frontier
+    if max_fail_frontier < min_pass_frontier
+      suggested = ((max_fail_frontier + min_pass_frontier) / 2.0).round
+      confidence = [pass_count, fail_count].min.to_f / total_runs * 2  # Higher when balanced
+    else
+      # Inconsistent data - frontier higher when it fails than when it passes
+      # This suggests noise or non-determinism
+      suggested = data[:complexity]
+      confidence = 0.3
+    end
+  elsif pass_count > 0
+    # Always passes: complexity should be <= minimum frontier it passed at
+    min_pass_frontier = data[:pass_frontiers].min
+    suggested = [min_pass_frontier - 50, data[:complexity]].min
+    suggested = [suggested, 10].max  # Don't go below 10
+    confidence = pass_rate
+  else
+    # Always fails: complexity should be > maximum frontier it failed at
+    max_fail_frontier = data[:fail_frontiers].max
+    suggested = max_fail_frontier + 100
+    confidence = 1.0 - pass_rate
+  end
+
+  # Calculate change
+  current = data[:complexity]
+  change = suggested - current
+
+  next if confidence < options[:min_confidence]
+  next if change.abs < 30  # Skip small changes
+
+  suggestions << {
+    key: key,
+    file: data[:file],
+    name: data[:name],
+    current: current,
+    suggested: suggested,
+    change: change,
+    pass_rate: pass_rate,
+    runs: total_runs,
+    confidence: confidence,
+    direction: change > 0 ? :increase : :decrease,
+  }
+end
+
+# Sort by magnitude of change * confidence
+suggestions.sort_by! { |s| -(s[:change].abs * s[:confidence]) }
+suggestions = suggestions.first(options[:limit]) if options[:limit]
+
+case options[:mode]
+when :summary
+  puts "=" * 70
+  puts "COMPLEXITY CALIBRATION SUMMARY"
+  puts "=" * 70
+  puts
+
+  # Group by direction
+  increases = suggestions.select { |s| s[:direction] == :increase }
+  decreases = suggestions.select { |s| s[:direction] == :decrease }
+
+  puts "Tests that need HIGHER complexity (currently too low):"
+  puts "-" * 50
+  increases.first(15).each do |s|
+    puts "  #{s[:name]}"
+    puts "    #{s[:current]} -> #{s[:suggested]} (+#{s[:change]})"
+    puts "    Pass rate: #{(s[:pass_rate] * 100).round}%, Confidence: #{(s[:confidence] * 100).round}%"
+    puts
+  end
+  puts "  ... and #{increases.size - 15} more" if increases.size > 15
+  puts
+
+  puts "Tests that need LOWER complexity (currently too high):"
+  puts "-" * 50
+  decreases.first(15).each do |s|
+    puts "  #{s[:name]}"
+    puts "    #{s[:current]} -> #{s[:suggested]} (#{s[:change]})"
+    puts "    Pass rate: #{(s[:pass_rate] * 100).round}%, Confidence: #{(s[:confidence] * 100).round}%"
+    puts
+  end
+  puts "  ... and #{decreases.size - 15} more" if decreases.size > 15
+
+when :suggest
+  puts "# Suggested complexity changes"
+  puts "# Format: file:test_name current -> suggested (change)"
+  puts
+  suggestions.each do |s|
+    puts "#{File.basename(s[:file])}:#{s[:name]}"
+    puts "  #{s[:current]} -> #{s[:suggested]} (#{s[:change] > 0 ? '+' : ''}#{s[:change]})"
+  end
+
+when :yaml
+  # Group by file and output yq commands
+  by_file = suggestions.group_by { |s| s[:file] }
+
+  puts "#!/bin/bash"
+  puts "# yq commands to update complexity scores"
+  puts "# Review before running!"
+  puts
+
+  by_file.each do |file, file_suggestions|
+    puts "# #{File.basename(file)}"
+    file_suggestions.each do |s|
+      # Escape test name for yq selector
+      escaped_name = s[:name].gsub('"', '\\"')
+      puts "yq -i '(.specs[] | select(.name == \"#{escaped_name}\")).complexity = #{s[:suggested]}' \"#{file}\""
+    end
+    puts
+  end
+
+when :by_file
+  by_file = suggestions.group_by { |s| s[:file] }
+
+  by_file.sort_by { |f, _| f }.each do |file, file_suggestions|
+    puts "=" * 70
+    puts File.basename(file)
+    puts "=" * 70
+
+    file_suggestions.sort_by { |s| -s[:change].abs }.each do |s|
+      direction = s[:change] > 0 ? "↑" : "↓"
+      puts "  #{direction} #{s[:name]}"
+      puts "    #{s[:current]} -> #{s[:suggested]} (#{s[:change] > 0 ? '+' : ''}#{s[:change]})"
+    end
+    puts
+  end
+end
+
+# Show overall stats
+puts
+puts "=" * 70
+puts "STATISTICS"
+puts "=" * 70
+puts "Total tests analyzed: #{test_data.size}"
+puts "Tests with suggested changes: #{suggestions.size}"
+puts "  Need higher complexity: #{suggestions.count { |s| s[:direction] == :increase }}"
+puts "  Need lower complexity: #{suggestions.count { |s| s[:direction] == :decrease }}"
+
+# Compute suggested complexity distribution
+if suggestions.any?
+  suggested_values = suggestions.map { |s| s[:suggested] }
+  puts
+  puts "Suggested complexity distribution:"
+  buckets = suggested_values.group_by { |c| (c / 100) * 100 }.sort_by { |k, _| k }
+  buckets.each do |bucket, values|
+    bar_len = [values.size, 40].min
+    bar = "█" * bar_len
+    puts "  #{bucket.to_s.rjust(4)}-#{(bucket + 99).to_s.ljust(4)}: #{bar} #{values.size}"
+  end
+end

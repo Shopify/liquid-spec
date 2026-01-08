@@ -22,13 +22,31 @@ This avoids restating the same complexity on every spec in suites where most spe
 
 ## Complexity Ranges
 
-### 10-20: Literals and Raw Output
-The absolute basics. No parsing logic beyond recognizing delimiters.
+### 0-1: The Foundation
+Can your implementation compile and render at all? These are the first specs any implementation should pass.
 
 | Range | Feature | Examples |
 |-------|---------|----------|
-| 10 | Raw text passthrough | Empty template, "Hello World", whitespace preservation |
-| 20 | Literal values in `{{ }}` | `{{ 'hello' }}`, `{{ 42 }}`, `{{ true }}`, `{{ nil }}` |
+| 0 | Empty template | `""` → `""` |
+| 1 | Literal passthrough | `"hello"` → `"hello"`, whitespace preserved, newlines preserved |
+
+A correct implementation at complexity 1 can accept a template string and output it unchanged.
+
+### 5: Basic Object Output
+The first Liquid syntax: `{{ expression }}` for outputting values.
+
+| Range | Feature | Examples |
+|-------|---------|----------|
+| 5 | String/number literals | `{{ 'world' }}`, `{{ 42 }}`, `{{ nil }}` outputs nothing |
+| 5 | Mixed text and objects | `"hello {{ 'world' }}"` → `"hello world"` |
+
+### 10-20: Literals and Raw Output (thorough tests)
+More comprehensive tests of the basics. Edge cases for raw text and literals.
+
+| Range | Feature | Examples |
+|-------|---------|----------|
+| 10 | Raw text edge cases | Special characters, unicode, multi-line |
+| 20 | All literal types | `{{ 'hello' }}`, `{{ 42 }}`, `{{ true }}`, `{{ false }}`, `{{ nil }}` |
 
 A correct implementation at complexity 20 can output literal strings, numbers, booleans, and nil.
 

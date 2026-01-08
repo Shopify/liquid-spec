@@ -1,0 +1,217 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Finds tests with explicit complexity that are misordered relative to their
+# actual pass/fail behavior.
+#
+# A test is "misordered" if:
+# - It has explicit complexity < 1000
+# - It consistently fails while higher-complexity tests pass
+# OR
+# - It consistently passes while lower-complexity tests fail
+#
+# Suggests reordering to match actual implementation order.
+
+require "json"
+require "set"
+require "optparse"
+
+RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
+DEFAULT_COMPLEXITY = 1000
+MIN_RUNS = 3
+
+options = {
+  output: :summary,
+  min_distance: 100,  # Minimum complexity distance to flag
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: fix-misordered [options]"
+
+  opts.on("-o", "--output MODE", [:summary, :yq, :detail],
+          "Output mode: summary, yq, detail") do |m|
+    options[:output] = m
+  end
+
+  opts.on("-d", "--distance N", Integer, "Min complexity distance to flag (default: 100)") do |n|
+    options[:min_distance] = n
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless File.exist?(RESULTS_FILE)
+  puts "No results file found at #{RESULTS_FILE}"
+  exit 1
+end
+
+results = File.readlines(RESULTS_FILE).map do |line|
+  JSON.parse(line)
+rescue JSON::ParserError
+  nil
+end.compact
+
+# Only look at explicitly scored tests
+scored_results = results.reject { |r| r[4] == DEFAULT_COMPLEXITY }
+
+# Group by run and compute frontiers
+runs = results.group_by { |r| r[0] }
+run_frontiers = {}
+runs.each do |run_id, run_results|
+  passing = run_results.select { |r| r[5] == "success" }
+  run_frontiers[run_id] = passing.empty? ? 0 : passing.map { |r| r[4] }.max
+end
+
+# For each scored test, track pass/fail relative to frontier
+test_data = Hash.new { |h, k| h[k] = {
+  complexity: nil,
+  file: nil,
+  name: nil,
+  pass_frontiers: [],
+  fail_frontiers: [],
+} }
+
+scored_results.each do |r|
+  run_id, _, file, name, complexity, status = r
+  test_key = "#{file}:#{name}"
+  frontier = run_frontiers[run_id]
+
+  test_data[test_key][:complexity] = complexity
+  test_data[test_key][:file] = file
+  test_data[test_key][:name] = name
+
+  if status == "success"
+    test_data[test_key][:pass_frontiers] << frontier
+  else
+    test_data[test_key][:fail_frontiers] << frontier
+  end
+end
+
+# Find misordered tests
+misordered = []
+
+test_data.each do |key, data|
+  total = data[:pass_frontiers].size + data[:fail_frontiers].size
+  next if total < MIN_RUNS
+
+  complexity = data[:complexity]
+  pass_rate = data[:pass_frontiers].size.to_f / total
+
+  # Compute the "natural" complexity based on when it passes
+  if data[:pass_frontiers].any?
+    # Median frontier at which it passes
+    sorted = data[:pass_frontiers].sort
+    natural_complexity = sorted[sorted.size / 2]
+  elsif data[:fail_frontiers].any?
+    # Always fails - should be higher than max fail frontier
+    natural_complexity = data[:fail_frontiers].max + 100
+  else
+    next
+  end
+
+  distance = (natural_complexity - complexity).abs
+
+  next if distance < options[:min_distance]
+
+  misordered << {
+    key: key,
+    file: data[:file],
+    name: data[:name],
+    current: complexity,
+    natural: natural_complexity,
+    suggested: natural_complexity,
+    distance: distance,
+    direction: natural_complexity > complexity ? :increase : :decrease,
+    pass_rate: pass_rate,
+    runs: total,
+  }
+end
+
+# Sort by distance (biggest misorderings first)
+misordered.sort_by! { |m| -m[:distance] }
+
+case options[:output]
+when :summary
+  puts "=" * 70
+  puts "MISORDERED TESTS"
+  puts "Tests with explicit complexity that don't match actual pass/fail behavior"
+  puts "=" * 70
+  puts
+  puts "Found #{misordered.size} misordered tests (distance >= #{options[:min_distance]})"
+  puts
+
+  increases = misordered.select { |m| m[:direction] == :increase }
+  decreases = misordered.select { |m| m[:direction] == :decrease }
+
+  if increases.any?
+    puts "NEED HIGHER COMPLEXITY (#{increases.size} tests):"
+    puts "-" * 50
+    increases.first(20).each do |m|
+      puts "  #{m[:name][0, 60]}"
+      puts "    #{m[:current]} -> #{m[:suggested]} (+#{m[:distance]})"
+      puts "    Pass rate: #{(m[:pass_rate] * 100).round}%, File: #{File.basename(m[:file])}"
+      puts
+    end
+    puts "  ... and #{increases.size - 20} more" if increases.size > 20
+    puts
+  end
+
+  if decreases.any?
+    puts "NEED LOWER COMPLEXITY (#{decreases.size} tests):"
+    puts "-" * 50
+    decreases.first(20).each do |m|
+      puts "  #{m[:name][0, 60]}"
+      puts "    #{m[:current]} -> #{m[:suggested]} (#{-m[:distance]})"
+      puts "    Pass rate: #{(m[:pass_rate] * 100).round}%, File: #{File.basename(m[:file])}"
+      puts
+    end
+    puts "  ... and #{decreases.size - 20} more" if decreases.size > 20
+  end
+
+when :yq
+  puts "#!/bin/bash"
+  puts "# yq commands to fix misordered complexity scores"
+  puts "# #{misordered.size} tests need adjustment"
+  puts
+
+  by_file = misordered.group_by { |m| m[:file] }
+
+  by_file.sort_by { |f, _| f }.each do |file, tests|
+    puts "# #{File.basename(file)} (#{tests.size} tests)"
+    tests.sort_by { |t| t[:suggested] }.each do |t|
+      escaped = t[:name].gsub('"', '\\"').gsub("'", "'\\''")
+      puts "yq -i '(.specs[] | select(.name == \"#{escaped}\")).complexity = #{t[:suggested]}' '#{file}'"
+    end
+    puts
+  end
+
+when :detail
+  misordered.each do |m|
+    puts "=" * 70
+    puts m[:name]
+    puts "=" * 70
+    puts "File: #{m[:file]}"
+    puts "Current complexity: #{m[:current]}"
+    puts "Natural complexity: #{m[:natural]}"
+    puts "Suggested: #{m[:suggested]} (#{m[:direction] == :increase ? '+' : '-'}#{m[:distance]})"
+    puts "Pass rate: #{(m[:pass_rate] * 100).round}%"
+    puts "Runs: #{m[:runs]}"
+    puts
+  end
+end
+
+puts
+puts "=" * 70
+puts "SUMMARY BY FILE"
+puts "=" * 70
+
+by_file = misordered.group_by { |m| File.basename(m[:file]) }
+by_file.sort_by { |_, v| -v.size }.each do |file, tests|
+  inc = tests.count { |t| t[:direction] == :increase }
+  dec = tests.count { |t| t[:direction] == :decrease }
+  avg_dist = (tests.sum { |t| t[:distance] } / tests.size.to_f).round
+  puts "  #{file}: #{tests.size} tests (#{inc}↑ #{dec}↓) avg distance: #{avg_dist}"
+end

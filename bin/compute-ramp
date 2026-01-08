@@ -1,0 +1,265 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Computes the optimal complexity ramp based on the ORDER tests pass in.
+#
+# Key insight: complexity scores are about RELATIVE order, not absolute values.
+# A test with complexity 50 should pass before a test with complexity 100.
+#
+# This tool:
+# 1. For each run, sorts tests by the order they start passing
+# 2. Assigns rank-based complexity: first 5% get 10-30, next 5% get 30-50, etc.
+# 3. Aggregates across runs to find consensus rankings
+#
+# Output: Recommended complexity values that create a smooth implementation ramp.
+
+require "json"
+require "set"
+require "optparse"
+
+RESULTS_FILE = "/tmp/liquid-spec-results.jsonl"
+MIN_RUNS = 3
+
+# Complexity tiers - what percentage of tests should be at each level
+TIERS = [
+  [0.05, 10],    # First 5%: complexity 10
+  [0.10, 30],    # Next 5%: 30
+  [0.20, 50],    # Next 10%: 50
+  [0.35, 70],    # Next 15%: 70
+  [0.50, 100],   # Next 15%: 100
+  [0.65, 150],   # Next 15%: 150
+  [0.80, 200],   # Next 15%: 200
+  [0.90, 300],   # Next 10%: 300
+  [0.95, 500],   # Next 5%: 500
+  [1.00, 1000],  # Last 5%: 1000
+]
+
+options = {
+  output: :summary,
+  file_filter: nil,
+  suite_filter: nil,
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: compute-ramp [options]"
+
+  opts.on("-o", "--output MODE", [:summary, :yaml, :by_file],
+          "Output mode: summary, yaml, by_file") do |m|
+    options[:output] = m
+  end
+
+  opts.on("-f", "--file PATTERN", "Filter to spec files matching pattern") do |f|
+    options[:file_filter] = f
+  end
+
+  opts.on("-s", "--suite SUITE", "Filter to suite (liquid_ruby, etc)") do |s|
+    options[:suite_filter] = s
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless File.exist?(RESULTS_FILE)
+  puts "No results file found at #{RESULTS_FILE}"
+  exit 1
+end
+
+results = File.readlines(RESULTS_FILE).map do |line|
+  JSON.parse(line)
+rescue JSON::ParserError
+  nil
+end.compact
+
+# Apply filters
+if options[:file_filter]
+  results = results.select { |r| r[2].include?(options[:file_filter]) }
+end
+if options[:suite_filter]
+  results = results.select { |r| r[2].include?(options[:suite_filter]) }
+end
+
+if results.empty?
+  puts "No results found matching filters"
+  exit 1
+end
+
+# Group by run
+runs = results.group_by { |r| r[0] }
+
+puts "Analyzing #{results.size} results across #{runs.size} runs..."
+puts
+
+# For each run, compute the pass order
+# Pass order = sorted by complexity at which test first passes
+run_orders = {}
+
+runs.each do |run_id, run_results|
+  # Group by test
+  by_test = run_results.group_by { |r| "#{r[2]}:#{r[3]}" }
+
+  # For each test, find the minimum complexity at which it passes
+  pass_complexities = {}
+  by_test.each do |test_key, test_results|
+    passing = test_results.select { |r| r[5] == "success" }
+    next if passing.empty?
+
+    # Use the test's own complexity as its pass point
+    # (since all results for a test have the same complexity)
+    pass_complexities[test_key] = passing.first[4]
+  end
+
+  # Sort tests by pass complexity to get the order
+  sorted = pass_complexities.sort_by { |_, c| c }
+  run_orders[run_id] = sorted.map(&:first)  # Just the test keys in order
+end
+
+# Aggregate rankings across runs
+# For each test, compute its median rank (position in pass order)
+test_ranks = Hash.new { |h, k| h[k] = { ranks: [], file: nil, name: nil, current: nil } }
+
+run_orders.each do |_run_id, order|
+  order.each_with_index do |test_key, rank|
+    # Normalize rank to 0-1 range
+    normalized = rank.to_f / order.size
+    test_ranks[test_key][:ranks] << normalized
+  end
+end
+
+# Also capture current complexity and file info
+results.each do |r|
+  test_key = "#{r[2]}:#{r[3]}"
+  test_ranks[test_key][:file] = r[2]
+  test_ranks[test_key][:name] = r[3]
+  test_ranks[test_key][:current] = r[4]
+end
+
+# Compute median rank and suggested complexity for each test
+suggestions = []
+
+test_ranks.each do |key, data|
+  next if data[:ranks].size < MIN_RUNS
+
+  sorted = data[:ranks].sort
+  median_rank = sorted[sorted.size / 2]
+
+  # Map median rank to complexity tier
+  suggested = 1000  # Default
+  TIERS.each do |percentile, complexity|
+    if median_rank <= percentile
+      suggested = complexity
+      break
+    end
+  end
+
+  # Only include if complexity would change significantly
+  current = data[:current]
+  distance = (suggested - current).abs
+  next if distance < 30
+
+  suggestions << {
+    key: key,
+    file: data[:file],
+    name: data[:name],
+    current: current,
+    suggested: suggested,
+    median_rank: median_rank,
+    runs: data[:ranks].size,
+    distance: distance,
+    direction: suggested > current ? :increase : :decrease,
+  }
+end
+
+# Sort by suggested complexity (gives us the ramp order)
+suggestions.sort_by! { |s| [s[:suggested], s[:median_rank]] }
+
+case options[:output]
+when :summary
+  puts "=" * 70
+  puts "COMPUTED COMPLEXITY RAMP"
+  puts "Optimal complexity values based on actual pass order"
+  puts "=" * 70
+  puts
+
+  # Group by suggested complexity tier
+  by_tier = suggestions.group_by { |s| s[:suggested] }
+
+  TIERS.each do |_, tier_complexity|
+    tier_tests = by_tier[tier_complexity] || []
+    next if tier_tests.empty?
+
+    puts "-" * 50
+    puts "COMPLEXITY #{tier_complexity}"
+    puts "#{tier_tests.size} tests"
+    puts "-" * 50
+
+    # Break down by file
+    by_file = tier_tests.group_by { |t| File.basename(t[:file]) }
+    by_file.sort_by { |_, v| -v.size }.first(5).each do |file, file_tests|
+      # Show breakdown by direction
+      ups = file_tests.count { |t| t[:direction] == :increase }
+      downs = file_tests.count { |t| t[:direction] == :decrease }
+      puts "  #{file}: #{file_tests.size} (#{ups}↑ #{downs}↓)"
+    end
+    puts "  ... and #{by_file.size - 5} more files" if by_file.size > 5
+    puts
+  end
+
+  # Summary
+  increases = suggestions.count { |s| s[:direction] == :increase }
+  decreases = suggestions.count { |s| s[:direction] == :decrease }
+  puts "=" * 70
+  puts "SUMMARY"
+  puts "=" * 70
+  puts "Total tests needing adjustment: #{suggestions.size}"
+  puts "  Need higher complexity: #{increases}"
+  puts "  Need lower complexity: #{decreases}"
+
+when :yaml
+  # Output as YAML mapping test name -> complexity
+  puts "# Computed complexity ramp"
+  puts "# Copy these values to your spec files"
+  puts
+
+  by_file = suggestions.group_by { |s| s[:file] }
+
+  by_file.sort_by { |f, _| f }.each do |file, file_tests|
+    puts "# #{file}"
+    puts "# Current complexities vs suggested:"
+    file_tests.sort_by { |t| t[:suggested] }.each do |t|
+      arrow = t[:direction] == :increase ? "↑" : "↓"
+      puts "#   #{t[:name]}: #{t[:current]} -> #{t[:suggested]} #{arrow}"
+    end
+    puts
+  end
+
+when :by_file
+  by_file = suggestions.group_by { |s| s[:file] }
+
+  by_file.sort_by { |f, _| f }.each do |file, file_tests|
+    puts "=" * 70
+    puts File.basename(file)
+    puts "=" * 70
+
+    # Sort by suggested complexity
+    file_tests.sort_by { |t| t[:suggested] }.each do |t|
+      arrow = t[:direction] == :increase ? "↑" : "↓"
+      puts "  #{t[:suggested].to_s.rjust(4)} #{arrow} #{t[:name][0, 55]}"
+      puts "       (was #{t[:current]}, rank: #{(t[:median_rank] * 100).round}%)"
+    end
+    puts
+  end
+end
+
+puts
+puts "=" * 70
+puts "TIER DISTRIBUTION"
+puts "=" * 70
+TIERS.each do |percentile, complexity|
+  tier_count = suggestions.count { |s| s[:suggested] == complexity }
+  bar_len = [(tier_count.to_f / suggestions.size * 40).round, 0].max
+  bar = "█" * bar_len
+  puts "  #{complexity.to_s.rjust(4)}: #{bar} #{tier_count}"
+end
