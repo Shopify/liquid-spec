@@ -4023,8 +4023,8 @@
   template: "{%if h contains b%}y{%else%}n{%endif%}"
   environment:
     b:
-      instantiate: SafeBuffer
-      value: A
+      instantiate:SafeBuffer:
+        value: A
     h:
       a: 1
       b:
@@ -4175,8 +4175,8 @@
   template: "{%if h contains b%}y{%else%}n{%endif%}"
   environment:
     b:
-      instantiate: SafeBuffer
-      value: a
+      instantiate:SafeBuffer:
+        value: a
     h:
       a: 1
       b:
@@ -22908,8 +22908,8 @@
   template: "{{h[b]}}"
   environment:
     b:
-      instantiate: SafeBuffer
-      value: word
+      instantiate:SafeBuffer:
+        value: word
     h:
       word: "y"
   filesystem: {}
@@ -23157,11 +23157,11 @@
   template: "{{ input | truncate: 6, suffix }}"
   environment:
     input:
-      instantiate: SafeBuffer
-      value: 123456789
+      instantiate:SafeBuffer:
+        value: 123456789
     suffix:
-      instantiate: SafeBuffer
-      value: ' &gt;'
+      instantiate:SafeBuffer:
+        value: ' &gt;'
   filesystem: {}
 - name: RecordedTest#test_truncate_empty_negative_516a59098
   expected: "..."
@@ -23173,8 +23173,8 @@
   template: "{{ description | truncate: 15, '&' }}"
   environment:
     description:
-      instantiate: SafeBuffer
-      value: you&#39;re doing great
+      instantiate:SafeBuffer:
+        value: you&#39;re doing great
   filesystem: {}
   required_features:
     - activesupport
@@ -23191,8 +23191,8 @@
   template: "{{ description | truncatewords: 2, '<' }}"
   environment:
     description:
-      instantiate: SafeBuffer
-      value: you&#39;re doing great
+      instantiate:SafeBuffer:
+        value: you&#39;re doing great
   filesystem: {}
 - name: RecordedTest#test_truncatewords_with_newlines_c34fe3398
   expected: 'Soft Faux Suede Heeled Sandal Closed Back Block Heel Heel Height: 5cm
@@ -24428,29 +24428,29 @@
   expected: America&amp;#39;s Floor Source
   environment:
     already_escaped:
-      instantiate: SafeBuffer
-      value: ' America&#39;s Floor Source '
+      instantiate:SafeBuffer:
+        value: ' America&#39;s Floor Source '
 - name: RecordedTest#test_strip_on_html_safe_string_with_surrounding_whitespace_without_default_f7510e74
   template: "{{ already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
     already_escaped:
-      instantiate: SafeBuffer
-      value: ' America&#39;s Floor Source '
+      instantiate:SafeBuffer:
+        value: ' America&#39;s Floor Source '
 - name: RecordedTest#test_strip_on_html_safe_string_without_surrounding_whitespace_with_default_596b0e9c
   template: "{{ foo | default: already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
     already_escaped:
-      instantiate: SafeBuffer
-      value: America&#39;s Floor Source
+      instantiate:SafeBuffer:
+        value: America&#39;s Floor Source
 - name: RecordedTest#test_strip_on_html_safe_string_without_surrounding_whitespace_without_default_79421b6f
   template: "{{ already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
     already_escaped:
-      instantiate: SafeBuffer
-      value: America&#39;s Floor Source
+      instantiate:SafeBuffer:
+        value: America&#39;s Floor Source
 
 - name: RecordedTest#test_render_hash_with_append____appended_text__filter_0c0d87da
   template: "{{ my_hash | append: ' appended text' }}"
@@ -25832,8 +25832,8 @@
   expected: 'Liquid error (line 1): invalid byte sequence in UTF-8'
   environment:
     a0:
-      instantiate: SafeBuffer
-      value: "\0%ED_"
+      instantiate:SafeBuffer:
+        value: "\0%ED_"
 - name: RecordedTest#ScratchpadTest#test_url_decode_580fb7e7_04ff60f1
   template: "{{a0 | url_decode}}"
   expected: " %+"
@@ -25844,15 +25844,15 @@
   expected: "\0%+"
   environment:
     a0:
-      instantiate: SafeBuffer
-      value: "\0%+"
+      instantiate:SafeBuffer:
+        value: "\0%+"
 - name: RecordedTest#ScratchpadTest#test_url_decode_ad8e5186_fd1a77ea
   template: "{{a0 | url_decode}}"
   expected: "&i\0\v\v851 \0\0\0\0&&%#\0\0\0'0"
   environment:
     a0:
-      instantiate: SafeBuffer
-      value: "&i\0\v\v851+\0\0\0\0&&%#\0\0\0'0"
+      instantiate:SafeBuffer:
+        value: "&i\0\v\v851+\0\0\0\0&&%#\0\0\0'0"
 - name: RecordedTest#ScratchpadTest#test_url_decode_d44cda18_af41d41f
   template: "{{a0 | url_decode}}"
   expected: 'E%% `````````````EEE
@@ -26193,16 +26193,16 @@
   environment:
     a0: "&rep3l;;"
     a1:
-      instantiate: SafeBuffer
-      value: ;
+      instantiate:SafeBuffer:
+        value: ;
 - name: RecordedTest#ScratchpadTest#test_split_with_two_semicolon_c2a0447_269a1b59
   template: "{{a0 | split: a1 | json}}"
   expected: '["&rep3l"]'
   environment:
     a0: "&rep3l;;"
     a1:
-      instantiate: SafeBuffer
-      value: ;
+      instantiate:SafeBuffer:
+        value: ;
 
 - name: RecordedTest#ScratchpadTest#test_reject_filter_when_it_finds_items_to_reject_db3b775e
   template: "{%- assign items = products | reject: 'price', 1299 -%}{{- items -}}"
@@ -28166,8 +28166,8 @@
   expected: foo baz &amp;
   environment:
     s:
-      instantiate: SafeBuffer
-      value: foo baz &amp;
+      instantiate:SafeBuffer:
+        value: foo baz &amp;
 
 - name: RecordedTest#test_scratchpadtest#test_everyman_jack_theme_product_card_issue_a73460c9
   template: "{% comment %}\n  This test case replicates the exact theme product card
