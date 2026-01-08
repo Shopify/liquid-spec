@@ -26,8 +26,7 @@ module Liquid
             -s, --suite SUITE       Spec suite: all, liquid_ruby, basics, etc.
             --strict                Only inspect specs with error_mode: strict
             --print-actual          Output YAML spec matching actual behavior (for updating specs)
-            --print-il              Print intermediate representation (IL/bytecode) if available
-            --print-ruby            Print generated Ruby source code if available
+            --json                  Output results as JSON (includes template object data if available)
             --render-errors=BOOL    Force render_errors setting (true/false) for --print-actual
             -h, --help              Show this help
 
@@ -95,10 +94,8 @@ module Liquid
                 options[:strict_only] = true
               when "--print-actual"
                 options[:print_actual] = true
-              when "--print-il"
-                options[:print_il] = true
-              when "--print-ruby"
-                options[:print_ruby] = true
+              when "--json"
+                options[:json] = true
               when /\A--render-errors=(.+)\z/
                 options[:force_render_errors] = ::Regexp.last_match(1).downcase == "true"
               end
@@ -124,7 +121,9 @@ module Liquid
               return
             end
 
-            if options[:print_actual]
+            if options[:json]
+              print_json_specs(specs, config, options)
+            elsif options[:print_actual]
               print_actual_specs(specs, config, options)
             else
               puts "Found #{specs.size} matching spec(s)"
@@ -189,11 +188,6 @@ module Liquid
             puts "\n\e[2mActual:\e[0m"
             TimeFreezer.freeze(TEST_TIME) do
               result = run_with_adapter(spec, config, options)
-
-              # Print IL/Ruby if requested and available
-              if options[:print_il] || options[:print_ruby]
-                print_generated_code(result[:template], options)
-              end
 
               if result[:error]
                 puts "  \e[31mERROR:\e[0m #{result[:error].class}: #{result[:error].message}"
@@ -511,57 +505,72 @@ module Liquid
             end
           end
 
-          def print_generated_code(template, options)
-            return unless template
+          def print_json_specs(specs, config, options)
+            require "json"
 
-            printed_any = false
+            results = []
+            TimeFreezer.freeze(TEST_TIME) do
+              specs.each do |spec|
+                result = run_with_adapter(spec, config, options)
+                template = result[:template]
 
-            if options[:print_il]
-              # Try various IL/bytecode methods
-              il = nil
-              if template.respond_to?(:il)
-                il = template.il
-              elsif template.respond_to?(:bytecode)
-                il = template.bytecode
-              elsif template.respond_to?(:instructions)
-                il = template.instructions
-              end
+                spec_data = {
+                  name: spec.name,
+                  source_file: spec.source_file,
+                  line_number: spec.line_number,
+                  template: spec.template,
+                  expected: spec.expected,
+                  actual: result[:actual],
+                  passed: result[:error].nil? && result[:actual] == spec.expected,
+                  complexity: spec.complexity,
+                  hint: spec.effective_hint,
+                }
 
-              if il
-                puts "\n\e[2mIL/Bytecode:\e[0m"
-                if il.is_a?(Array)
-                  il.each_with_index { |instr, i| puts "  #{i}: #{instr.inspect}" }
-                else
-                  il.to_s.each_line { |line| puts "  #{line}" }
+                # Add environment if present
+                env = spec.raw_environment
+                spec_data[:environment] = env if env && !env.empty?
+
+                # Add filesystem if present
+                fs = spec.raw_filesystem
+                spec_data[:filesystem] = fs if fs && !fs.empty?
+
+                # Add error info if present
+                if result[:error]
+                  spec_data[:error] = {
+                    class: result[:error].class.name,
+                    message: result[:error].message,
+                  }
                 end
-                printed_any = true
+
+                # Add template object data if available
+                if template
+                  template_data = {}
+
+                  # Try various methods that might expose internal representation
+                  if template.respond_to?(:source)
+                    template_data[:source] = template.source
+                  end
+                  if template.respond_to?(:il)
+                    template_data[:il] = template.il
+                  end
+                  if template.respond_to?(:bytecode)
+                    template_data[:bytecode] = template.bytecode
+                  end
+                  if template.respond_to?(:instructions)
+                    template_data[:instructions] = template.instructions
+                  end
+                  if template.respond_to?(:ast)
+                    template_data[:ast] = template.ast.inspect
+                  end
+
+                  spec_data[:template_object] = template_data unless template_data.empty?
+                end
+
+                results << spec_data
               end
             end
 
-            if options[:print_ruby]
-              # Try various Ruby source methods
-              ruby_source = nil
-              if template.respond_to?(:source)
-                ruby_source = template.source
-              elsif template.respond_to?(:ruby_source)
-                ruby_source = template.ruby_source
-              elsif template.respond_to?(:generated_source)
-                ruby_source = template.generated_source
-              end
-
-              if ruby_source
-                puts "\n\e[2mGenerated Ruby:\e[0m"
-                ruby_source.to_s.each_line.with_index(1) { |line, i| puts "  #{i.to_s.rjust(3)}: #{line}" }
-                printed_any = true
-              end
-            end
-
-            unless printed_any
-              methods_tried = []
-              methods_tried << "il, bytecode, instructions" if options[:print_il]
-              methods_tried << "source, ruby_source, generated_source" if options[:print_ruby]
-              puts "\n\e[2mNo generated code available (tried: #{methods_tried.join("; ")})\e[0m"
-            end
+            puts JSON.pretty_generate(results)
           end
 
           def load_specs(config)
