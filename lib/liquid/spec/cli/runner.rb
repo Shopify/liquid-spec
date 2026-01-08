@@ -3,6 +3,7 @@
 require_relative "adapter_dsl"
 require_relative "../time_freezer"
 require "json"
+require "set"
 
 module Liquid
   module Spec
@@ -14,6 +15,45 @@ module Liquid
         MAX_FAILURES_DEFAULT = 10
         RESULTS_LOG_DIR = "/tmp"
 
+        # Manages known failure patterns (exact match only)
+        class KnownFailures
+          def initialize
+            @names = Set.new
+          end
+
+          # Load names from a file (one per line, # comments, blank lines ignored)
+          def load_file(path)
+            return unless path && File.exist?(path)
+
+            File.readlines(path).each do |line|
+              add(line.strip)
+            end
+          end
+
+          # Load names from an array of strings
+          def load_patterns(list)
+            Array(list).each { |name| add(name.to_s) }
+          end
+
+          def add(name)
+            return if name.empty? || name.start_with?("#")
+
+            @names << name
+          end
+
+          def known_failure?(spec_name)
+            @names.include?(spec_name.to_s)
+          end
+
+          def empty?
+            @names.empty?
+          end
+
+          def size
+            @names.size
+          end
+        end
+
         HELP = <<~HELP
           Usage: liquid-spec run ADAPTER [options]
 
@@ -21,6 +61,7 @@ module Liquid
             -n, --name PATTERN    Only run specs matching PATTERN (use /regex/ for regex)
             -s, --suite SUITE     Spec suite (use 'all' for all default suites, or a specific suite name)
             --add-specs=GLOB      Add additional spec files (can be used multiple times)
+            --known-failures=FILE File containing known failure patterns (one per line)
             --command=CMD         Command to run subprocess (for JSON-RPC adapters)
             -c, --compare         Compare adapter output against reference liquid-ruby
             -b, --bench           Run timing suites as benchmarks (measure iterations/second)
@@ -32,6 +73,15 @@ module Liquid
             --no-max-failures     Run all specs regardless of failures (not recommended)
             -h, --help            Show this help
 
+          Known Failures File Format:
+            - One spec name per line (exact match)
+            - Lines starting with # are comments
+            - Blank lines are ignored
+
+          Exit codes:
+            0 - All specs pass (known failures may fail)
+            1 - Unexpected failures, or known failures now pass (stale entries)
+
           Examples:
             liquid-spec run my_adapter.rb
             liquid-spec run my_adapter.rb -n assign
@@ -41,6 +91,7 @@ module Liquid
             liquid-spec run my_adapter.rb --add-specs="my_specs/*.yml"
             liquid-spec run my_adapter.rb --list-suites
             liquid-spec run my_adapter.rb -s benchmarks --bench
+            liquid-spec run my_adapter.rb --known-failures=known_failures.txt
 
         HELP
 
@@ -108,6 +159,10 @@ module Liquid
                 options[:add_specs] << ::Regexp.last_match(1)
               when "--strict"
                 options[:strict_only] = true
+              when "--known-failures"
+                options[:known_failures_file] = args.shift
+              when /\A--known-failures=(.+)\z/
+                options[:known_failures_file] = ::Regexp.last_match(1)
               when "-c", "--compare"
                 options[:compare] = true
               when "-b", "--bench"
@@ -216,6 +271,15 @@ module Liquid
 
             features = config.features
             puts "Features: #{features.join(", ")}"
+
+            # Initialize known failures matcher
+            known_failures = KnownFailures.new
+            known_failures.load_file(options[:known_failures_file])
+            known_failures.load_patterns(config.known_failures)
+
+            unless known_failures.empty?
+              puts "Known failures: #{known_failures.size} patterns loaded"
+            end
             puts ""
 
             # Group specs by suite
@@ -234,7 +298,11 @@ module Liquid
             total_passed = 0
             total_failed = 0
             total_errors = 0
+            total_known_failed = 0
+            total_known_fixed = 0
             all_failures = []
+            all_known_failures = []
+            all_known_fixed = []
             max_failures = options[:max_failures]
             results_by_complexity = Hash.new { |h, k| h[k] = { pass: 0, fail: 0, error: 0 } }
 
@@ -257,9 +325,12 @@ module Liquid
               passed = 0
               failed = 0
               errors = 0
+              known_failed = 0
+              known_fixed = 0
 
               suite_specs.each do |spec|
                 complexity = spec.complexity || 1000
+                is_known = known_failures.known_failure?(spec.name)
 
                 begin
                   result = run_single_spec(spec, config)
@@ -271,42 +342,74 @@ module Liquid
 
                 case result[:status]
                 when :pass
+                  if is_known
+                    # Known failure passed - might be fixed!
+                    known_fixed += 1
+                    all_known_fixed << { spec: spec, result: result }
+                  end
                   passed += 1
                   results_by_complexity[complexity][:pass] += 1
                   log_result(log_file, run_id, spec, :success)
                 when :fail
-                  failed += 1
+                  if is_known
+                    known_failed += 1
+                    all_known_failures << { spec: spec, result: result }
+                    log_result(log_file, run_id, spec, :known_fail)
+                  else
+                    failed += 1
+                    all_failures << { spec: spec, result: result }
+                    log_result(log_file, run_id, spec, :fail)
+                  end
                   results_by_complexity[complexity][:fail] += 1
-                  all_failures << { spec: spec, result: result }
-                  log_result(log_file, run_id, spec, :fail)
                 when :error
-                  errors += 1
+                  if is_known
+                    known_failed += 1
+                    all_known_failures << { spec: spec, result: result }
+                    log_result(log_file, run_id, spec, :known_error)
+                  else
+                    errors += 1
+                    all_failures << { spec: spec, result: result }
+                    log_result(log_file, run_id, spec, :error)
+                  end
                   results_by_complexity[complexity][:error] += 1
-                  all_failures << { spec: spec, result: result }
-                  log_result(log_file, run_id, spec, :error)
                 end
               end
 
-              if failed + errors == 0
-                puts "#{passed}/#{suite_specs.size} passed"
-              else
-                puts "#{passed}/#{suite_specs.size} passed, #{failed} failed, #{errors} errors"
-              end
+              parts = ["#{passed}/#{suite_specs.size} passed"]
+              parts << "#{failed} failed" if failed > 0
+              parts << "#{errors} errors" if errors > 0
+              parts << "#{known_failed} known" if known_failed > 0
+              puts parts.join(", ")
 
               total_passed += passed
               total_failed += failed
               total_errors += errors
+              total_known_failed += known_failed
+              total_known_fixed += known_fixed
             end
 
             log_file.close
 
             # Run additional specs if provided
-            run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors)
+            add_passed, add_failed, add_errors, add_known_failed, add_known_fixed =
+              run_additional_specs(options, config, features, known_failures, all_failures, all_known_failures, all_known_fixed)
+            total_passed += add_passed
+            total_failed += add_failed
+            total_errors += add_errors
+            total_known_failed += add_known_failed
+            total_known_fixed += add_known_fixed
 
             # Show skipped suites
             show_skipped_suites(config, features)
 
+            # Print unexpected failures
             print_failures(all_failures, max_failures)
+
+            # Print known failures (expected)
+            print_known_failures(all_known_failures) if all_known_failures.any?
+
+            # Print warnings about known failures that now pass
+            print_known_fixed(all_known_fixed) if all_known_fixed.any?
 
             # Calculate max complexity reached (highest level where all specs pass)
             sorted_complexities = results_by_complexity.keys.sort
@@ -322,9 +425,20 @@ module Liquid
             max_possible = sorted_complexities.max || 0
 
             puts ""
-            puts "Total: #{total_passed} passed, #{total_failed} failed, #{total_errors} errors. Max complexity reached: #{max_complexity_reached}/#{max_possible}"
+            parts = ["#{total_passed} passed"]
+            parts << "#{total_failed} failed" if total_failed > 0
+            parts << "#{total_errors} errors" if total_errors > 0
+            parts << "#{total_known_failed} known failures" if total_known_failed > 0
+            parts << "#{total_known_fixed} known now passing" if total_known_fixed > 0
+            puts "Total: #{parts.join(", ")}. Max complexity reached: #{max_complexity_reached}/#{max_possible}"
 
-            exit(1) if all_failures.any?
+            # Determine exit code
+            # - Unexpected failures always cause exit(1)
+            # - Known failures that now pass cause exit(1) (stale entries should be removed)
+            has_unexpected = all_failures.any?
+            has_stale_known = all_known_fixed.any?
+
+            exit(1) if has_unexpected || has_stale_known
           end
 
           def run_specs_compare(config, options)
@@ -720,15 +834,15 @@ module Liquid
             end
           end
 
-          def run_additional_specs(options, config, features, all_failures, total_passed, total_failed, total_errors)
-            return if options[:add_specs].nil? || options[:add_specs].empty?
+          def run_additional_specs(options, config, features, known_failures, all_failures, all_known_failures, all_known_fixed)
+            return [0, 0, 0, 0, 0] if options[:add_specs].nil? || options[:add_specs].empty?
 
             additional_specs = load_additional_specs(options[:add_specs])
             additional_specs = filter_specs(additional_specs, config.filter) if config.filter
             additional_specs = filter_by_features(additional_specs, features)
             additional_specs = sort_by_complexity(additional_specs)
 
-            return if additional_specs.empty?
+            return [0, 0, 0, 0, 0] if additional_specs.empty?
 
             suite_name_padded = "Additional Specs ".ljust(40, ".")
             print("#{suite_name_padded} ")
@@ -737,8 +851,12 @@ module Liquid
             passed = 0
             failed = 0
             errors = 0
+            known_failed = 0
+            known_fixed = 0
 
             additional_specs.each do |spec|
+              is_known = known_failures.known_failure?(spec.name)
+
               begin
                 result = run_single_spec(spec, config)
               rescue SystemExit, Interrupt, SignalException
@@ -749,21 +867,37 @@ module Liquid
 
               case result[:status]
               when :pass
+                if is_known
+                  known_fixed += 1
+                  all_known_fixed << { spec: spec, result: result }
+                end
                 passed += 1
               when :fail
-                failed += 1
-                all_failures << { spec: spec, result: result }
+                if is_known
+                  known_failed += 1
+                  all_known_failures << { spec: spec, result: result }
+                else
+                  failed += 1
+                  all_failures << { spec: spec, result: result }
+                end
               when :error
-                errors += 1
-                all_failures << { spec: spec, result: result }
+                if is_known
+                  known_failed += 1
+                  all_known_failures << { spec: spec, result: result }
+                else
+                  errors += 1
+                  all_failures << { spec: spec, result: result }
+                end
               end
             end
 
-            if failed + errors == 0
-              puts "#{passed}/#{additional_specs.size} passed"
-            else
-              puts "#{passed}/#{additional_specs.size} passed, #{failed} failed, #{errors} errors"
-            end
+            parts = ["#{passed}/#{additional_specs.size} passed"]
+            parts << "#{failed} failed" if failed > 0
+            parts << "#{errors} errors" if errors > 0
+            parts << "#{known_failed} known" if known_failed > 0
+            puts parts.join(", ")
+
+            [passed, failed, errors, known_failed, known_fixed]
           end
 
           def show_skipped_suites(config, features)
@@ -846,6 +980,34 @@ module Liquid
               puts "\e[2m(... #{failures.size - max_failures} more failures not shown due to --max-failures #{max_failures} ...)\e[0m"
               puts ""
             end
+          end
+
+          def print_known_failures(known_failures)
+            return if known_failures.empty?
+
+            puts ""
+            puts "\e[33mKnown failures (expected):\e[0m"
+
+            known_failures.each_with_index do |f, i|
+              puts "  #{i + 1}) #{f[:spec].name}"
+            end
+
+            puts ""
+          end
+
+          def print_known_fixed(known_fixed)
+            return if known_fixed.empty?
+
+            puts ""
+            puts "\e[31mKnown failures that now PASS:\e[0m"
+
+            known_fixed.each_with_index do |f, i|
+              puts "  #{i + 1}) #{f[:spec].name}"
+            end
+
+            puts ""
+            puts "\e[31mRemove these from your known_failures list to pass.\e[0m"
+            puts ""
           end
 
           def print_differences(differences, max_failures = nil)

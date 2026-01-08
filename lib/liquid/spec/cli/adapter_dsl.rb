@@ -46,7 +46,7 @@ module LiquidSpec
 
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
-    attr_reader :features
+    attr_reader :features, :known_failures
 
     def initialize
       @suite = :all
@@ -54,12 +54,17 @@ module LiquidSpec
       @verbose = false
       @strict_only = false
       @features = [:core]
+      @known_failures = []
       expand_features!
     end
 
     def features=(list)
       @features = Array(list).map(&:to_sym)
       expand_features!
+    end
+
+    def known_failures=(list)
+      @known_failures = Array(list).map(&:to_s)
     end
 
     def feature?(name)
