@@ -643,6 +643,7 @@ module Liquid
               line_numbers: true,
               error_mode: :strict,
               file_system: filesystem,
+              template_name: spec.template_name,
             }.compact
 
             # Pre-compile to set up ctx[:template]
@@ -675,6 +676,7 @@ module Liquid
               line_numbers: true,
               error_mode: :strict,
               file_system: filesystem,
+              template_name: spec.template_name,
             }.compact
 
             LiquidSpec.do_compile(spec.template, compile_options)
@@ -1061,6 +1063,7 @@ module Liquid
             compile_options = {
               line_numbers: true,
               error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+              template_name: spec.template_name,
             }.compact
 
             assigns = deep_copy(spec.instantiate_environment)
@@ -1130,6 +1133,7 @@ module Liquid
               line_numbers: true,
               error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
               file_system: filesystem,
+              template_name: spec.template_name,
             }.compact
 
             begin
