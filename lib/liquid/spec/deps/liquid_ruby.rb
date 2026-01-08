@@ -452,6 +452,8 @@ Liquid::Spec::ClassRegistry.register("StubExceptionRenderer") { |p| StubExceptio
 Liquid::Spec::ClassRegistry.register("SafeBuffer") { |p| (p["value"] || p[:value] || "").to_s.html_safe }
 Liquid::Spec::ClassRegistry.register("LoaderDrop") { |p| LoaderDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("ArrayDrop") { |p| ArrayDrop.new(p) }
+Liquid::Spec::ClassRegistry.register("LongString") { |p| "X" * (p["length"] || p[:length] || 0) }
+
 
 # Range - special handling for array format [start, end]
 Liquid::Spec::ClassRegistry.register("Range") { |p| Range.new(p[0], p[1]) }
