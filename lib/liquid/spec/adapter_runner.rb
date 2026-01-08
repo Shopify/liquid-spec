@@ -224,8 +224,9 @@ module Liquid
 
           # Compare
           check_result(spec, output: output.to_s)
-        rescue StandardError => e
+        rescue ::StandardError => e
           # Check if this was an expected error
+          # NOTE: Must use ::StandardError to avoid resolving to Liquid::StandardError
           check_result(spec, error: "#{e.class}: #{e.message}")
         end
       end
