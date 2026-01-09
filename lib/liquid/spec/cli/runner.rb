@@ -63,6 +63,7 @@ module Liquid
             --add-specs=GLOB      Add additional spec files (can be used multiple times)
             --known-failures=FILE File containing known failure patterns (one per line)
             --command=CMD         Command to run subprocess (for JSON-RPC adapters)
+            --timeout=SECS        Timeout in seconds for JSON-RPC requests (default: 2)
             -c, --compare         Compare adapter output against reference liquid-ruby
             -b, --bench           Run timing suites as benchmarks (measure iterations/second)
             --profile             Profile with StackProf (use with --bench), outputs to /tmp/
@@ -117,6 +118,7 @@ module Liquid
             # Pass CLI options to adapter (for JSON-RPC --command flag, etc.)
             LiquidSpec.cli_options = {
               command: options[:command],
+              timeout: options[:timeout],
             }.compact
 
             load(File.expand_path(adapter_file))
@@ -185,6 +187,10 @@ module Liquid
                 options[:command] = args.shift
               when /\A--command=(.+)\z/
                 options[:command] = ::Regexp.last_match(1)
+              when "--timeout"
+                options[:timeout] = args.shift.to_i
+              when /\A--timeout=(\d+)\z/
+                options[:timeout] = ::Regexp.last_match(1).to_i
               end
             end
 

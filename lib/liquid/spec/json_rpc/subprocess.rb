@@ -12,7 +12,7 @@ module Liquid
       class Subprocess
         attr_reader :drop_registry
 
-        DEFAULT_TIMEOUT = 30 # seconds
+        DEFAULT_TIMEOUT = 2 # seconds
 
         def initialize(command, timeout: DEFAULT_TIMEOUT)
           @command = command
@@ -22,6 +22,7 @@ module Liquid
           @stdin = nil
           @stdout = nil
           @stderr = nil
+          @stderr_thread = nil
           @wait_thr = nil
           @initialized = false
         end
@@ -35,6 +36,21 @@ module Liquid
           # Set streams to non-blocking where possible
           @stdout.sync = true
           @stdin.sync = true
+
+          # Forward subprocess stderr to real stderr for debug output
+          @stderr_thread = Thread.new do
+            while (line = @stderr.gets)
+              $stderr.puts "[#{executable_name}] #{line}"
+            end
+          rescue IOError
+            # Stream closed, ignore
+          end
+        end
+
+        # Extract executable name from command for error messages
+        def executable_name
+          # Handle commands like "./server", "node server.js", "/path/to/server"
+          @command.to_s.split.first&.split("/")&.last || @command.to_s
         end
 
         # Check if subprocess is running
@@ -129,7 +145,7 @@ module Liquid
             end
           end
         rescue Timeout::Error
-          raise SubprocessError, "Timeout waiting for response (#{@timeout}s)"
+          raise SubprocessError, "#{executable_name} didn't respond in timeout #{@timeout} seconds"
         rescue IOError => e
           raise SubprocessError, "Failed to read from subprocess: #{e.message}"
         end
@@ -222,6 +238,7 @@ module Liquid
           @stdin&.close rescue nil
           @stdout&.close rescue nil
           @stderr&.close rescue nil
+          @stderr_thread&.kill rescue nil
 
           if @wait_thr&.alive?
             Process.kill("TERM", @wait_thr.pid) rescue nil
@@ -232,6 +249,7 @@ module Liquid
           @stdin = nil
           @stdout = nil
           @stderr = nil
+          @stderr_thread = nil
           @wait_thr = nil
           @initialized = false
         end
