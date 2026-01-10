@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
     "Use it to verify your Liquid implementation produces correct output."
   spec.homepage = "https://github.com/Shopify/liquid-spec"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.0"
+  spec.required_ruby_version = ">= 3.1"
 
   spec.metadata["source_code_uri"] = spec.homepage
 
