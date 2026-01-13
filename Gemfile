@@ -4,12 +4,12 @@ source "https://rubygems.org"
 
 gemspec
 
-# Use local liquid gem if available, otherwise use latest from rubygems
+# Use local liquid gem if available, otherwise use main from GitHub
 local_liquid_path = File.expand_path("../liquid", __dir__)
 if File.exist?(local_liquid_path)
   gem "liquid", path: local_liquid_path
 else
-  gem "liquid"
+  gem "liquid", github: "Shopify/liquid", branch: "main"
 end
 
 # Core test dependencies
