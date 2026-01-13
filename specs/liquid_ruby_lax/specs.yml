@@ -46,16 +46,20 @@
 - name: Conditional tag returns false when the operator is unknown
   template: "{% if a true %}{% endif %}"
   expected: ""
+  render_errors: true
   hint: |
-    Lax mode quirk: unknown operators in conditions with empty bodies don't render errors.
-    In strict mode this would be a parse error.
+    Lax mode quirk: unknown operators in conditions with empty bodies are
+    silently swallowed (no error in output). Requires render_errors: true
+    so the runner doesn't raise exceptions, allowing the swallowing to occur.
 
 - name: Ignore unknown operators when the tags body is empty
   template: "{% if true true %}{% endif %}"
   expected: ""
+  render_errors: true
   hint: |
-    Lax mode quirk: blank tag bodies swallow render errors.
-    In strict mode {% if true true %} is a syntax error.
+    Lax mode quirk: blank tag bodies swallow render errors entirely.
+    Requires render_errors: true so the runner doesn't raise exceptions,
+    allowing the swallowing behavior to be observed.
 
 - name: Does not ignore unknown operators when the tags body is empty but there is an else
   template: "{% if true true %}{% else %}1{% endif %}"
