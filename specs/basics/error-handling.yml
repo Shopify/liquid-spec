@@ -200,18 +200,18 @@
   template: "{{ 'hello' || upcase }}"
   complexity: 330
   error_mode: lax
-  errors:
-    parse_error:
-      - "unexpected"
-      - "filter"
+  expected: "HELLO"
   hint: |
-    Double pipes (||) are not valid Liquid syntax. The lexer/parser should
-    detect malformed filter chains. While '|' separates filters, '||' is
-    invalid. Syntax errors should be detected during parsing.
+    WART: Double pipes (||) in lax mode are treated as a single pipe followed
+    by a blank token, then another filter. The lexer interprets '||' as '|'
+    followed by '|upcase'. This quirky behavior is specific to lax mode.
 
 - name: "very_long_string_filter"
   template: "{{ long_string | size }}"
-  environment: { long_string: instantiate:LongString: { length: 100000 } }
+  environment:
+    long_string:
+      instantiate:LongString:
+        length: 100000
   expected: "100000"
   complexity: 290
   error_mode: lax
@@ -308,13 +308,11 @@
   template: "{{ 'hello' | }}"
   complexity: 340
   error_mode: lax
-  errors:
-    parse_error:
-      - "filter"
+  expected: "hello"
   hint: |
-    A filter pipe with no filter name is a syntax error. Even in lax mode,
-    this cannot be parsed correctly. The parser should detect the incomplete
-    filter chain syntax - a '|' must be followed by a filter name.
+    WART: A trailing pipe with no filter name is silently ignored in lax mode.
+    The parser treats the empty filter chain as a no-op, passing through the
+    original value unchanged.
 
 - name: "recursive_variable_reference"
   template: "{{ a }}"
