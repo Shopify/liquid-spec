@@ -206,6 +206,7 @@ module Liquid
           compile_options = { line_numbers: true }
           compile_options[:error_mode] = spec.error_mode if spec.error_mode
           compile_options[:file_system] = filesystem if filesystem
+          compile_options[:template_name] = spec.template_name if spec.template_name
 
           @compile_block.call(@ctx, spec.template, compile_options)
 

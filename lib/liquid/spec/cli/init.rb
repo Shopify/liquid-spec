@@ -201,8 +201,19 @@ module Liquid
           # -32601  Method not found (unknown method name)
           #
           # ==============================================================================
+          #
+          # DEBUG OUTPUT
+          # ------------
+          # Your server can write to stderr for debug output. liquid-spec forwards all
+          # stderr to the terminal, prefixed with [server-name]. Example:
+          #   console.error("Compiling:", template);  // Node.js
+          #   eprintln!("Compiling: {}", template);   // Rust
+          #   print("Compiling:", template, file=sys.stderr)  # Python
+          #
+          # ==============================================================================
 
           DEFAULT_COMMAND = "path/to/your/liquid-server"
+          DEFAULT_TIMEOUT = 2  # seconds - increase if your server needs more time
 
           LiquidSpec.setup do |ctx|
             require "liquid"
@@ -210,14 +221,29 @@ module Liquid
 
             # CLI --command flag overrides DEFAULT_COMMAND
             command = LiquidSpec.cli_options[:command] || DEFAULT_COMMAND
-            ctx[:adapter] = Liquid::Spec::JsonRpc::Adapter.new(command)
+            timeout = LiquidSpec.cli_options[:timeout]&.to_i || DEFAULT_TIMEOUT
+
+            ctx[:adapter] = Liquid::Spec::JsonRpc::Adapter.new(command, timeout: timeout)
             ctx[:adapter].start
+
+            # Store features reported by subprocess for use in configure block
+            ctx[:features] = ctx[:adapter].features
 
             at_exit { ctx[:adapter]&.shutdown }
           end
 
           LiquidSpec.configure do |config|
-            config.features = [:core]  # Adjust based on your implementation's capabilities
+            # Features are reported by your subprocess in the initialize response.
+            # If your subprocess doesn't support runtime_drops (bidirectional RPC),
+            # declare features = [] to opt out of drop-related specs.
+            #
+            # Common features:
+            #   :core           - Full Liquid implementation (implies :runtime_drops)
+            #   :runtime_drops  - Supports drop_get/drop_call/drop_iterate callbacks
+            #   :lax_parsing    - Supports error_mode: :lax
+            #
+            # For most JSON-RPC implementations without drop callbacks:
+            config.features = []
           end
 
           LiquidSpec.compile do |ctx, source, options|
@@ -439,6 +465,22 @@ module Liquid
             2. **compile** - Parse a template, return a template_id
             3. **render** - Render a compiled template with variables
             4. **quit** - Notification to exit cleanly (no response expected)
+
+            ### Debug Output
+
+            Your server can write debug information to **stderr** at any time. liquid-spec forwards
+            all stderr output to the terminal, prefixed with your server name:
+
+            ```
+            [my-liquid-server] Compiling template: {{ x | upcase }}
+            [my-liquid-server] Render complete in 0.5ms
+            ```
+
+            This is useful for debugging your implementation without interfering with the JSON-RPC
+            protocol (which uses stdout). Write to stderr liberally during development.
+
+            **Important:** The default timeout is 2 seconds per request. If your server doesn't
+            respond within 2 seconds, liquid-spec will fail with a timeout error.
 
             ### Example: Minimal Server (Node.js)
 
