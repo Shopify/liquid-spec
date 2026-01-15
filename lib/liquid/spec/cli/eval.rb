@@ -27,6 +27,7 @@ module Liquid
             -s, --spec FILE.yml     Load test from a YAML spec file (or use stdin)
             -c, --compare [MODE]    Compare against reference (default: strict, or 'lax')
             -v, --verbose           Show detailed output
+            --adapter-timeout=SECS  Adapter compile/render timeout in seconds (default: #{LiquidSpec::DEFAULT_ADAPTER_TIMEOUT})
             -h, --help              Show this help
 
           Examples:
@@ -102,6 +103,10 @@ module Liquid
                 options[:compare] = mode == "lax" ? :lax : :strict
               when "-v", "--verbose"
                 options[:verbose] = true
+              when "--adapter-timeout"
+                options[:adapter_timeout] = args.shift
+              when /\A--adapter-timeout=(.+)\z/
+                options[:adapter_timeout] = ::Regexp.last_match(1)
               end
             end
 
@@ -140,6 +145,21 @@ module Liquid
               exit(1)
             end
 
+            spec_source = if options[:spec_file]
+              options[:spec_file]
+            elsif options[:stdin_yaml]
+              "stdin"
+            elsif options[:spec_data]
+              "spec_data"
+            else
+              nil
+            end
+
+            context_overrides = {}
+            context_overrides[:spec_name] = name if name
+            context_overrides[:source_file] = spec_source if spec_source
+            context_overrides[:template_name] = spec_data["template_name"] if spec_data["template_name"]
+
             # Print spec header
             puts ""
             print_spec_header(template_source, name, hint, complexity, assigns, verbose)
@@ -157,7 +177,8 @@ module Liquid
             reference_output = nil
             reference_error = nil
             if compare_mode
-              reference_output, reference_error = run_reference_implementation(template_source, assigns, verbose, compare_mode)
+              reference_output, reference_error =
+                run_reference_implementation(template_source, assigns, verbose, compare_mode, context_overrides)
 
               if reference_error
                 spec_data ||= {}
@@ -170,14 +191,16 @@ module Liquid
             # NOW load the user's adapter
             LiquidSpec.reset!
             LiquidSpec.running_from_cli!
+            apply_adapter_timeout_option!(options[:adapter_timeout]) if options.key?(:adapter_timeout)
             load(File.expand_path(adapter_file))
             LiquidSpec.run_setup!
+            adapter_context = LiquidSpec.adapter_context(nil, context_overrides)
 
             test_passed = true
             has_difference = false
 
             begin
-              LiquidSpec.do_compile(template_source, { line_numbers: true })
+              LiquidSpec.do_compile(template_source, { line_numbers: true }, adapter_context)
               template = LiquidSpec.ctx[:template]
 
               if verbose && template.respond_to?(:source)
@@ -187,7 +210,7 @@ module Liquid
               end
 
               render_options = { registers: {}, strict_errors: false }
-              actual = LiquidSpec.do_render(assigns, render_options)
+              actual = LiquidSpec.do_render(assigns, render_options, adapter_context)
 
               if compare_mode && reference_error
                 has_difference = true
@@ -377,7 +400,7 @@ module Liquid
             lax: File.expand_path("../../../../examples/liquid_ruby_lax.rb", __dir__),
           }.freeze
 
-          def run_reference_implementation(template_source, assigns, _verbose, mode = :strict)
+          def run_reference_implementation(template_source, assigns, _verbose, mode = :strict, context_overrides = {})
             adapter_file = REFERENCE_ADAPTERS[mode]
             puts "\e[2mComparing against reference (#{File.basename(adapter_file)})...\e[0m"
 
@@ -393,9 +416,13 @@ module Liquid
                 load(adapter_file)
                 LiquidSpec.run_setup!
 
-                LiquidSpec.do_compile(template_source, { line_numbers: true })
+                reference_context = LiquidSpec.adapter_context(
+                  nil,
+                  context_overrides.merge(adapter_timeout: nil)
+                )
+                LiquidSpec.do_compile(template_source, { line_numbers: true }, reference_context)
                 render_options = { registers: {}, strict_errors: false }
-                output = LiquidSpec.do_render(assigns, render_options)
+                output = LiquidSpec.do_render(assigns, render_options, reference_context)
 
                 Marshal.dump({ output: output, error: nil }, writer)
               rescue SystemExit, Interrupt, SignalException
@@ -532,6 +559,13 @@ module Liquid
             puts "This spec reveals a behavioral difference worth documenting."
             puts "\e[1mPlease contribute it:\e[0m \e[4mhttps://github.com/Shopify/liquid-spec\e[0m"
             puts ""
+          end
+
+          def apply_adapter_timeout_option!(value)
+            LiquidSpec.adapter_timeout_seconds = value
+          rescue ArgumentError => e
+            $stderr.puts "Error: #{e.message}"
+            exit(1)
           end
         end
       end

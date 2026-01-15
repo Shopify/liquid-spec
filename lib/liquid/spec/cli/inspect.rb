@@ -28,6 +28,7 @@ module Liquid
             --print-actual          Output YAML spec matching actual behavior (for updating specs)
             --json                  Output results as JSON (includes template object data if available)
             --render-errors=BOOL    Force render_errors setting (true/false) for --print-actual
+            --adapter-timeout=SECS  Adapter compile/render timeout in seconds (default: #{LiquidSpec::DEFAULT_ADAPTER_TIMEOUT})
             -h, --help              Show this help
 
           Examples:
@@ -65,6 +66,7 @@ module Liquid
             # Load the adapter
             LiquidSpec.reset!
             LiquidSpec.running_from_cli!
+            apply_adapter_timeout_option!(options[:adapter_timeout]) if options.key?(:adapter_timeout)
             load(File.expand_path(adapter_file))
 
             config = LiquidSpec.config || LiquidSpec.configure
@@ -98,6 +100,10 @@ module Liquid
                 options[:json] = true
               when /\A--render-errors=(.+)\z/
                 options[:force_render_errors] = ::Regexp.last_match(1).downcase == "true"
+              when "--adapter-timeout"
+                options[:adapter_timeout] = args.shift
+              when /\A--adapter-timeout=(.+)\z/
+                options[:adapter_timeout] = ::Regexp.last_match(1)
               end
             end
 
@@ -462,7 +468,8 @@ module Liquid
               file_system: filesystem,
             }.compact
 
-            LiquidSpec.do_compile(spec.template, compile_options)
+            context = LiquidSpec.adapter_context(spec)
+            LiquidSpec.do_compile(spec.template, compile_options, context)
             template = LiquidSpec.ctx[:template]
 
             environment = deep_copy(spec.instantiate_environment)
@@ -471,7 +478,7 @@ module Liquid
               strict_errors: !render_errors,
             }.compact
 
-            actual = LiquidSpec.do_render(environment, render_options)
+            actual = LiquidSpec.do_render(environment, render_options, context)
             { actual: actual, error: nil, template: template }
           rescue => e
             { actual: nil, error: e, template: LiquidSpec.ctx[:template] }
@@ -596,6 +603,13 @@ module Liquid
               mode = s.error_mode&.to_sym
               mode.nil? || mode == :strict
             end
+          end
+
+          def apply_adapter_timeout_option!(value)
+            LiquidSpec.adapter_timeout_seconds = value
+          rescue ArgumentError => e
+            $stderr.puts "Error: #{e.message}"
+            exit(1)
           end
         end
       end

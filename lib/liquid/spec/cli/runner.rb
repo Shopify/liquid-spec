@@ -64,6 +64,7 @@ module Liquid
             --known-failures=FILE File containing known failure patterns (one per line)
             --command=CMD         Command to run subprocess (for JSON-RPC adapters)
             --timeout=SECS        Timeout in seconds for JSON-RPC requests (default: 2)
+            --adapter-timeout=SECS Adapter compile/render timeout in seconds (default: #{LiquidSpec::DEFAULT_ADAPTER_TIMEOUT})
             -c, --compare         Compare adapter output against reference liquid-ruby
             -b, --bench           Run timing suites as benchmarks (measure iterations/second)
             --profile             Profile with StackProf (use with --bench), outputs to /tmp/
@@ -119,7 +120,10 @@ module Liquid
             LiquidSpec.cli_options = {
               command: options[:command],
               timeout: options[:timeout],
+              adapter_timeout: options[:adapter_timeout],
             }.compact
+
+            apply_adapter_timeout_option!(options[:adapter_timeout]) if options.key?(:adapter_timeout)
 
             load(File.expand_path(adapter_file))
 
@@ -191,6 +195,10 @@ module Liquid
                 options[:timeout] = args.shift.to_i
               when /\A--timeout=(\d+)\z/
                 options[:timeout] = ::Regexp.last_match(1).to_i
+              when "--adapter-timeout"
+                options[:adapter_timeout] = args.shift
+              when /\A--adapter-timeout=(.+)\z/
+                options[:adapter_timeout] = ::Regexp.last_match(1)
               end
             end
 
@@ -572,14 +580,18 @@ module Liquid
                 puts "  Profiling compile phase..."
                 compile_profile = StackProf.run(mode: :cpu, raw: true) do
                   prepared_specs.each do |prepared|
-                    100.times { LiquidSpec.do_compile(prepared[:template], prepared[:compile_options]) }
+                    100.times do
+                      LiquidSpec.do_compile(prepared[:template], prepared[:compile_options], prepared[:context])
+                    end
                   end
                 end
                 File.binwrite("#{profile_dir}/compile_cpu.dump", Marshal.dump(compile_profile))
 
                 compile_obj_profile = StackProf.run(mode: :object, raw: true) do
                   prepared_specs.each do |prepared|
-                    10.times { LiquidSpec.do_compile(prepared[:template], prepared[:compile_options]) }
+                    10.times do
+                      LiquidSpec.do_compile(prepared[:template], prepared[:compile_options], prepared[:context])
+                    end
                   end
                 end
                 File.binwrite("#{profile_dir}/compile_object.dump", Marshal.dump(compile_obj_profile))
@@ -590,14 +602,26 @@ module Liquid
                 puts "  Profiling render phase..."
                 render_profile = StackProf.run(mode: :cpu, raw: true) do
                   prepared_specs.each do |prepared|
-                    100.times { LiquidSpec.do_render(deep_copy(prepared[:assigns]), prepared[:render_options]) }
+                    100.times do
+                      LiquidSpec.do_render(
+                        deep_copy(prepared[:assigns]),
+                        prepared[:render_options],
+                        prepared[:context]
+                      )
+                    end
                   end
                 end
                 File.binwrite("#{profile_dir}/render_cpu.dump", Marshal.dump(render_profile))
 
                 render_obj_profile = StackProf.run(mode: :object, raw: true) do
                   prepared_specs.each do |prepared|
-                    10.times { LiquidSpec.do_render(deep_copy(prepared[:assigns]), prepared[:render_options]) }
+                    10.times do
+                      LiquidSpec.do_render(
+                        deep_copy(prepared[:assigns]),
+                        prepared[:render_options],
+                        prepared[:context]
+                      )
+                    end
                   end
                 end
                 File.binwrite("#{profile_dir}/render_object.dump", Marshal.dump(render_obj_profile))
@@ -653,7 +677,8 @@ module Liquid
             }.compact
 
             # Pre-compile to set up ctx[:template]
-            LiquidSpec.do_compile(spec.template, compile_options)
+            context = LiquidSpec.adapter_context(spec, adapter_timeout: nil)
+            LiquidSpec.do_compile(spec.template, compile_options, context)
             assigns = deep_copy(spec.instantiate_environment)
             render_options = {
               registers: build_registers(spec, filesystem),
@@ -661,7 +686,7 @@ module Liquid
             }.compact
 
             # Verify it works
-            actual = LiquidSpec.do_render(deep_copy(assigns), render_options)
+            actual = LiquidSpec.do_render(deep_copy(assigns), render_options, context)
             return nil if spec.expected && actual != spec.expected
 
             {
@@ -670,6 +695,7 @@ module Liquid
               compile_options: compile_options,
               assigns: assigns,
               render_options: render_options,
+              context: context,
             }
           rescue
             nil
@@ -685,7 +711,8 @@ module Liquid
               template_name: spec.template_name,
             }.compact
 
-            LiquidSpec.do_compile(spec.template, compile_options)
+            context = LiquidSpec.adapter_context(spec, adapter_timeout: nil)
+            LiquidSpec.do_compile(spec.template, compile_options, context)
             assigns = deep_copy(spec.instantiate_environment)
             render_options = {
               registers: build_registers(spec, filesystem),
@@ -693,7 +720,7 @@ module Liquid
             }.compact
 
             # Verify expected output first (warm up + validation)
-            actual = LiquidSpec.do_render(deep_copy(assigns), render_options)
+            actual = LiquidSpec.do_render(deep_copy(assigns), render_options, context)
             if spec.expected && actual != spec.expected
               return {
                 name: spec.name,
@@ -704,18 +731,18 @@ module Liquid
 
             # Warm up
             3.times do
-              LiquidSpec.do_compile(spec.template, compile_options)
-              LiquidSpec.do_render(deep_copy(assigns), render_options)
+              LiquidSpec.do_compile(spec.template, compile_options, context)
+              LiquidSpec.do_render(deep_copy(assigns), render_options, context)
             end
 
             # Count allocations for a single compile+render cycle
             GC.start
             alloc_before = GC.stat(:total_allocated_objects)
-            LiquidSpec.do_compile(spec.template, compile_options)
+            LiquidSpec.do_compile(spec.template, compile_options, context)
             compile_allocs = GC.stat(:total_allocated_objects) - alloc_before
 
             alloc_before = GC.stat(:total_allocated_objects)
-            LiquidSpec.do_render(deep_copy(assigns), render_options)
+            LiquidSpec.do_render(deep_copy(assigns), render_options, context)
             render_allocs = GC.stat(:total_allocated_objects) - alloc_before
 
             # Disable GC for consistent timing
@@ -723,12 +750,12 @@ module Liquid
 
             # Benchmark compile (half the duration)
             compile_times = benchmark_operation(duration_seconds / 2.0) do
-              LiquidSpec.do_compile(spec.template, compile_options)
+              LiquidSpec.do_compile(spec.template, compile_options, context)
             end
 
             # Benchmark render (half the duration)
             render_times = benchmark_operation(duration_seconds / 2.0) do
-              LiquidSpec.do_render(deep_copy(assigns), render_options)
+              LiquidSpec.do_render(deep_copy(assigns), render_options, context)
             end
 
             # Re-enable GC
@@ -1119,8 +1146,9 @@ module Liquid
           end
 
           def run_adapter_spec(spec, compile_options, assigns, render_options)
-            LiquidSpec.do_compile(spec.template, compile_options)
-            adapter_result = LiquidSpec.do_render(assigns, render_options)
+            context = LiquidSpec.adapter_context(spec)
+            LiquidSpec.do_compile(spec.template, compile_options, context)
+            adapter_result = LiquidSpec.do_render(assigns, render_options, context)
             [adapter_result, nil]
           rescue SystemExit, Interrupt, SignalException
             raise
@@ -1142,8 +1170,10 @@ module Liquid
               template_name: spec.template_name,
             }.compact
 
+            context = LiquidSpec.adapter_context(spec)
+
             begin
-              LiquidSpec.do_compile(spec.template, compile_options)
+              LiquidSpec.do_compile(spec.template, compile_options, context)
             rescue => e
               # Check if error class name contains "SyntaxError" (parse error)
               if e.class.name.include?("SyntaxError")
@@ -1175,7 +1205,7 @@ module Liquid
             }.compact
 
             begin
-              actual = LiquidSpec.do_render(assigns, render_options)
+              actual = LiquidSpec.do_render(assigns, render_options, context)
             rescue StandardError => e
               if spec.expects_render_error?
                 return check_error_patterns(e, spec.error_patterns(:render_error), "render_error")
@@ -1378,6 +1408,13 @@ module Liquid
               status.to_s,
             ]
             log_file.puts(JSON.generate(entry))
+          end
+
+          def apply_adapter_timeout_option!(value)
+            LiquidSpec.adapter_timeout_seconds = value
+          rescue ArgumentError => e
+            $stderr.puts "Error: #{e.message}"
+            exit(1)
           end
         end
       end
