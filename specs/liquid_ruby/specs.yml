@@ -2399,6 +2399,7 @@
   expected: '{"numbers"=>[]}'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L73
 - name: HashRenderingTest#test_render_hash_with_array_values_hash_4362e37f
+  required_features: [ruby_types]
   template: "{{ my_hash }}"
   environment:
     my_hash:
@@ -2426,6 +2427,7 @@
   expected: '{"key1"=>"value1", "key2"=>"value2"}'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L11
 - name: HashRenderingTest#test_render_hash_with_symbol_keys_and_integer_values_904aa51d
+  required_features: [ruby_types]
   template: "{{ my_hash }}"
   environment:
     my_hash:
@@ -2460,6 +2462,7 @@
   expected: kewl
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L91
 - name: HashRenderingTest#test_rendering_hash_without_custom_to_s_uses_default_inspect_5098df4b
+  required_features: [ruby_types]
   template: "{{ my_hash }}"
   environment:
     my_hash:
@@ -3267,6 +3270,7 @@
 - name: IncludeTagTest#test_render_raise_argument_error_when_template_is_not_a_string_6be3a2e3
   template: "{% include 123 %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "Illegal template name"
@@ -3274,6 +3278,7 @@
 - name: IncludeTagTest#test_render_raise_argument_error_when_template_is_undefined_3e971774
   template: "{% include undefined_variable %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "Illegal template name"
@@ -3281,6 +3286,7 @@
 - name: IncludeTagTest#test_render_raise_argument_error_when_template_is_undefined_d0944769
   template: "{% include nil %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "Illegal template name"
@@ -3649,6 +3655,7 @@
 - name: RenderTagTest#test_includes_will_not_render_inside_nested_sibling_tags_ab4b608e
   template: '{% render "nested_render_with_sibling_include" %}'
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "include usage is not allowed"
@@ -3660,6 +3667,7 @@
 - name: RenderTagTest#test_includes_will_not_render_inside_render_tag_72d410d2
   template: '{% render "test_include" %}'
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "include usage is not allowed"
@@ -4344,6 +4352,7 @@
   expected: abc
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L473
 - name: StandardFiltersTest#test_map_calls_context=_b2cc672e
+  required_features: [ruby_types]
   template: "{:test=>1234}"
   render_errors: false
   expected: "{:test=>1234}"
@@ -5539,6 +5548,7 @@
   expected: array has 4 elements
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/standard_tag_test.rb#L331
 - name: StandardTagTest#test_size_of_hash_f93beacd
+  required_features: [ruby_types]
   template: hash has {{ hash.size }} elements
   environment:
     hash:
@@ -5885,6 +5895,7 @@
   template: "{% tablerow n in (1...10) limit:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "invalid integer"
@@ -5893,6 +5904,7 @@
   template: "{% tablerow n in (1...10) cols:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "invalid integer"
@@ -5901,6 +5913,7 @@
   template: "{% tablerow n in (1...10) offset:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "invalid integer"

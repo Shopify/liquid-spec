@@ -19,6 +19,7 @@
   name: Rendering include tag with variables and file does not exist
   filesystem: {}
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "Could not find asset locale_variables"
@@ -28,6 +29,7 @@
   name: Rendering include tag with file does not exist does not repeat .liquid extension
   filesystem: {}
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "Could not find asset foo.liquid"
@@ -38,6 +40,7 @@
   filesystem:
     foo: "{% include 'bar' %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "Could not find asset bar"
@@ -70,11 +73,17 @@
       before
       {{ "input" | truncate: 1.5 | default: "unused" }}
       after
-  expected: |-
-    start,before
-    Liquid error (part line 2): invalid integer
-    after,end
+  errors:
+    output:
+      - start,before
+      - invalid integer
+      - after,end
   render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    Tests inline error rendering in a partial. The error occurs on line 2
+    of the partial (truncate filter with float argument). Output should
+    contain: "start,before", "invalid integer" error, and "after,end".
 
 - name: Comparing float greater or equal than integer
   template: "{% if 1.5 >= 1 %}YES{% endif %}"
@@ -145,6 +154,7 @@
   environment:
     end: 2.5
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "invalid integer"
@@ -168,6 +178,7 @@
 - name: Tablerow throws invalid integer error when limit isn't a number
   template: "{% tablerow a in '' limit: true %}{{ a }}{% endtablerow %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "invalid integer"

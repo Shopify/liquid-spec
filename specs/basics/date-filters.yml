@@ -1,0 +1,703 @@
+# Comprehensive Date Filter Specs
+# Tests all strftime format directives and various input formats
+# Complexity range: 80-200
+
+---
+_metadata:
+  hint: |
+    The date filter formats dates using strftime directives.
+    Input can be: Unix timestamps, ISO 8601 strings, "now", "today", or other parseable date strings.
+    Time is frozen during spec runs to 2024-01-01 00:01:58 UTC (America/New_York timezone).
+  doc: filters/date.md
+
+specs:
+# =============================================================================
+# Input Format Tests (complexity 80-100)
+# =============================================================================
+
+- name: date_unix_timestamp_integer
+  template: "{{ 1152098955 | date: '%Y-%m-%d' }}"
+  expected: "2006-07-05"
+  complexity: 80
+  hint: |
+    Unix timestamps (seconds since epoch) are valid date input.
+    1152098955 = July 5, 2006. Convert integer to Time, then format.
+
+- name: date_unix_timestamp_string
+  template: "{{ '1152098955' | date: '%Y-%m-%d' }}"
+  expected: "2006-07-05"
+  complexity: 80
+  hint: |
+    Numeric strings should be parsed as Unix timestamps.
+    Detect if input is all digits, convert to integer, then to Time.
+
+- name: date_iso8601_basic
+  template: "{{ '2020-06-15 14:30:00' | date: '%Y-%m-%d %H:%M' }}"
+  expected: "2020-06-15 14:30"
+  complexity: 85
+  hint: |
+    ISO 8601 style dates without timezone are common input.
+    Parse using Ruby's Time.parse or equivalent date parsing.
+
+- name: date_iso8601_with_timezone
+  template: "{{ '2006-07-05 10:00:00 -04:00' | date: '%B %d, %Y' }}"
+  expected: "July 05, 2006"
+  complexity: 90
+  hint: |
+    Date strings may include timezone offsets. Parse and format
+    according to the offset. Ruby's Time.parse handles this.
+
+- name: date_verbose_format
+  template: "{{ 'Fri Jul 16 01:00:00 2004' | date: '%Y-%m-%d' }}"
+  expected: "2004-07-16"
+  complexity: 95
+  hint: |
+    Ruby's Time.parse accepts verbose date formats like "Fri Jul 16...".
+    These should be parsed and formatted correctly.
+
+- name: date_now_keyword
+  template: "{{ 'now' | date: '%Y-%m-%d %H:%M:%S' }}"
+  expected: "2024-01-01 00:01:58"
+  complexity: 100
+  hint: |
+    The string 'now' is a special keyword meaning current time.
+    During spec runs, time is frozen to 2024-01-01 00:01:58 UTC.
+    Detect the literal string 'now' and use Time.now instead of parsing.
+
+- name: date_today_keyword
+  template: "{{ 'today' | date: '%Y-%m-%d' }}"
+  expected: "2024-01-01"
+  complexity: 100
+  hint: |
+    The string 'today' is a special keyword meaning current date.
+    During spec runs, time is frozen to 2024-01-01 00:01:58 UTC.
+    Detect the literal 'today' and use Time.now for the date.
+
+- name: date_Today_capitalized
+  template: "{{ 'Today' | date: '%Y-%m-%d' }}"
+  expected: "2024-01-01"
+  complexity: 100
+  hint: |
+    'Today' (capitalized) should work the same as 'today'.
+    Case-insensitive check for the today keyword.
+
+# =============================================================================
+# Year Format Directives (complexity 105-110)
+# =============================================================================
+
+- name: date_format_Y_four_digit_year
+  template: "{{ '2020-06-15' | date: '%Y' }}"
+  expected: "2020"
+  complexity: 105
+  hint: |
+    %Y outputs the 4-digit year. This is the most common year format.
+
+- name: date_format_y_two_digit_year
+  template: "{{ '2020-06-15' | date: '%y' }}"
+  expected: "20"
+  complexity: 105
+  hint: |
+    %y outputs the 2-digit year (last two digits). 2020 becomes "20".
+
+- name: date_format_C_century
+  template: "{{ '2020-06-15' | date: '%C' }}"
+  expected: "20"
+  complexity: 110
+  hint: |
+    %C outputs the century (first two digits of year). 2020 becomes "20".
+
+# =============================================================================
+# Month Format Directives (complexity 110-120)
+# =============================================================================
+
+- name: date_format_m_month_number_padded
+  template: "{{ '2020-06-15' | date: '%m' }}"
+  expected: "06"
+  complexity: 110
+  hint: |
+    %m outputs month as zero-padded decimal (01-12). June is "06".
+
+- name: date_format_m_month_january
+  template: "{{ '2020-01-15' | date: '%m' }}"
+  expected: "01"
+  complexity: 110
+  hint: |
+    %m pads single-digit months with zero. January is "01".
+
+- name: date_format_m_month_december
+  template: "{{ '2020-12-15' | date: '%m' }}"
+  expected: "12"
+  complexity: 110
+  hint: |
+    %m for December outputs "12" (no padding needed for two digits).
+
+- name: date_format_B_full_month_name
+  template: "{{ '2020-06-15' | date: '%B' }}"
+  expected: "June"
+  complexity: 115
+  hint: |
+    %B outputs the full month name. June, not Jun.
+
+- name: date_format_b_abbreviated_month
+  template: "{{ '2020-06-15' | date: '%b' }}"
+  expected: "Jun"
+  complexity: 115
+  hint: |
+    %b outputs abbreviated month name (3 letters typically).
+
+- name: date_format_h_abbreviated_month_alias
+  template: "{{ '2020-06-15' | date: '%h' }}"
+  expected: "Jun"
+  complexity: 115
+  hint: |
+    %h is an alias for %b (abbreviated month name).
+
+- name: date_format_e_day_space_padded
+  template: "{{ '2020-06-05' | date: '%e' }}"
+  expected: " 5"
+  complexity: 120
+  hint: |
+    %e outputs day of month space-padded. Day 5 becomes " 5" (with leading space).
+
+# =============================================================================
+# Day Format Directives (complexity 120-130)
+# =============================================================================
+
+- name: date_format_d_day_zero_padded
+  template: "{{ '2020-06-05' | date: '%d' }}"
+  expected: "05"
+  complexity: 120
+  hint: |
+    %d outputs day of month zero-padded (01-31). Day 5 is "05".
+
+- name: date_format_d_day_two_digits
+  template: "{{ '2020-06-15' | date: '%d' }}"
+  expected: "15"
+  complexity: 120
+  hint: |
+    %d for two-digit days outputs as-is. Day 15 is "15".
+
+- name: date_format_j_day_of_year
+  template: "{{ '2020-03-01' | date: '%j' }}"
+  expected: "061"
+  complexity: 125
+  hint: |
+    %j outputs day of year (001-366), zero-padded to 3 digits.
+    March 1, 2020 is day 61 (2020 is a leap year: 31+29+1=61).
+
+- name: date_format_j_day_of_year_january
+  template: "{{ '2020-01-15' | date: '%j' }}"
+  expected: "015"
+  complexity: 125
+  hint: |
+    %j for January 15 is "015" - padded to 3 digits.
+
+# =============================================================================
+# Weekday Format Directives (complexity 125-135)
+# =============================================================================
+
+- name: date_format_A_full_weekday
+  template: "{{ '2020-06-15' | date: '%A' }}"
+  expected: "Monday"
+  complexity: 125
+  hint: |
+    %A outputs full weekday name. June 15, 2020 was a Monday.
+
+- name: date_format_a_abbreviated_weekday
+  template: "{{ '2020-06-15' | date: '%a' }}"
+  expected: "Mon"
+  complexity: 125
+  hint: |
+    %a outputs abbreviated weekday name (3 letters typically).
+
+- name: date_format_w_weekday_number
+  template: "{{ '2020-06-14' | date: '%w' }}"
+  expected: "0"
+  complexity: 130
+  hint: |
+    %w outputs weekday as decimal (0=Sunday, 6=Saturday).
+    June 14, 2020 was a Sunday, so output is "0".
+
+- name: date_format_u_weekday_number_monday_start
+  template: "{{ '2020-06-14' | date: '%u' }}"
+  expected: "7"
+  complexity: 130
+  hint: |
+    %u outputs weekday with Monday=1, Sunday=7.
+    June 14, 2020 was a Sunday, so output is "7".
+
+# =============================================================================
+# Hour Format Directives (complexity 130-140)
+# =============================================================================
+
+- name: date_format_H_hour_24
+  template: "{{ '2020-06-15 14:30:00' | date: '%H' }}"
+  expected: "14"
+  complexity: 130
+  hint: |
+    %H outputs hour in 24-hour format (00-23). 2:30 PM is "14".
+
+- name: date_format_H_hour_24_midnight
+  template: "{{ '2020-06-15 00:30:00' | date: '%H' }}"
+  expected: "00"
+  complexity: 130
+  hint: |
+    %H at midnight is "00" (zero-padded).
+
+- name: date_format_I_hour_12
+  template: "{{ '2020-06-15 14:30:00' | date: '%I' }}"
+  expected: "02"
+  complexity: 135
+  hint: |
+    %I outputs hour in 12-hour format (01-12). 2:30 PM is "02".
+
+- name: date_format_I_hour_12_noon
+  template: "{{ '2020-06-15 12:00:00' | date: '%I' }}"
+  expected: "12"
+  complexity: 135
+  hint: |
+    %I at noon is "12" (not "00").
+
+- name: date_format_I_hour_12_midnight
+  template: "{{ '2020-06-15 00:30:00' | date: '%I' }}"
+  expected: "12"
+  complexity: 135
+  hint: |
+    %I at midnight (00:30) is "12" in 12-hour format.
+
+- name: date_format_k_hour_24_space_padded
+  template: "{{ '2020-06-15 09:30:00' | date: '%k' }}"
+  expected: " 9"
+  complexity: 140
+  hint: |
+    %k outputs 24-hour format space-padded. 9 AM is " 9".
+
+- name: date_format_l_hour_12_space_padded
+  template: "{{ '2020-06-15 09:30:00' | date: '%l' }}"
+  expected: " 9"
+  complexity: 140
+  hint: |
+    %l outputs 12-hour format space-padded. 9 AM is " 9".
+
+# =============================================================================
+# Minute and Second Format Directives (complexity 135-145)
+# =============================================================================
+
+- name: date_format_M_minute
+  template: "{{ '2020-06-15 14:05:00' | date: '%M' }}"
+  expected: "05"
+  complexity: 135
+  hint: |
+    %M outputs minute zero-padded (00-59).
+
+- name: date_format_S_second
+  template: "{{ '2020-06-15 14:30:07' | date: '%S' }}"
+  expected: "07"
+  complexity: 135
+  hint: |
+    %S outputs second zero-padded (00-59).
+
+- name: date_format_s_unix_timestamp_output
+  template: "{{ '2020-06-15 12:00:00 UTC' | date: '%s' }}"
+  expected: "1592222400"
+  complexity: 145
+  hint: |
+    %s outputs Unix timestamp (seconds since epoch).
+    June 15, 2020 12:00:00 UTC = 1592222400.
+
+# =============================================================================
+# AM/PM Format Directives (complexity 140-145)
+# =============================================================================
+
+- name: date_format_p_AM_PM_uppercase
+  template: "{{ '2020-06-15 14:30:00' | date: '%p' }}"
+  expected: "PM"
+  complexity: 140
+  hint: |
+    %p outputs AM/PM in uppercase. 2:30 PM outputs "PM".
+
+- name: date_format_p_AM_uppercase
+  template: "{{ '2020-06-15 09:30:00' | date: '%p' }}"
+  expected: "AM"
+  complexity: 140
+  hint: |
+    %p for morning times outputs "AM".
+
+- name: date_format_P_am_pm_lowercase
+  template: "{{ '2020-06-15 14:30:00' | date: '%P' }}"
+  expected: "pm"
+  complexity: 140
+  hint: |
+    %P outputs am/pm in lowercase. 2:30 PM outputs "pm".
+
+# =============================================================================
+# Week Number Format Directives (complexity 145-155)
+# =============================================================================
+
+- name: date_format_U_week_sunday_start
+  template: "{{ '2020-01-05' | date: '%U' }}"
+  expected: "01"
+  complexity: 145
+  hint: |
+    %U outputs week number with Sunday as first day (00-53).
+    January 5, 2020 (Sunday) is week 01.
+
+- name: date_format_W_week_monday_start
+  template: "{{ '2020-01-06' | date: '%W' }}"
+  expected: "01"
+  complexity: 145
+  hint: |
+    %W outputs week number with Monday as first day (00-53).
+    January 6, 2020 (Monday) is week 01.
+
+- name: date_format_V_iso_week
+  template: "{{ '2020-01-01' | date: '%V' }}"
+  expected: "01"
+  complexity: 150
+  hint: |
+    %V outputs ISO 8601 week number (01-53).
+    Week 1 is the week containing January 4th.
+
+- name: date_format_G_iso_week_year
+  template: "{{ '2019-12-30' | date: '%G' }}"
+  expected: "2020"
+  complexity: 155
+  hint: |
+    %G outputs ISO 8601 week-based year.
+    Dec 30, 2019 is in ISO week 1 of 2020, so %G outputs "2020".
+
+- name: date_format_g_iso_week_year_2digit
+  template: "{{ '2019-12-30' | date: '%g' }}"
+  expected: "20"
+  complexity: 155
+  hint: |
+    %g outputs 2-digit ISO week-based year.
+    Dec 30, 2019 is in ISO week 1 of 2020, so %g outputs "20".
+
+# =============================================================================
+# Timezone Format Directives (complexity 150-160)
+# =============================================================================
+
+- name: date_format_z_timezone_offset
+  template: "{{ '2020-06-15 14:30:00 -0400' | date: '%z' }}"
+  expected: "-0400"
+  complexity: 150
+  hint: |
+    %z outputs timezone as offset from UTC (+HHMM or -HHMM).
+
+- name: date_format_colon_z_timezone_offset_colon
+  template: "{{ '2020-06-15 14:30:00 -04:00' | date: '%:z' }}"
+  expected: "-04:00"
+  complexity: 155
+  hint: |
+    %:z outputs timezone offset with colon (-HH:MM).
+
+- name: date_format_Z_timezone_name
+  template: "{{ '2020-06-15 14:30:00 UTC' | date: '%Z' }}"
+  expected: "UTC"
+  complexity: 160
+  hint: |
+    %Z outputs timezone name/abbreviation.
+
+# =============================================================================
+# Literal and Special Characters (complexity 155-165)
+# =============================================================================
+
+- name: date_format_percent_literal
+  template: "{{ '2020-06-15' | date: '%%' }}"
+  expected: "%"
+  complexity: 155
+  hint: |
+    %% outputs a literal percent sign.
+
+- name: date_format_n_newline
+  template: "{{ '2020-06-15' | date: '%n' }}"
+  expected: "\n"
+  complexity: 160
+  hint: |
+    %n outputs a newline character.
+
+- name: date_format_t_tab
+  template: "{{ '2020-06-15' | date: '%t' }}"
+  expected: "\t"
+  complexity: 160
+  hint: |
+    %t outputs a tab character.
+
+# =============================================================================
+# Composite Format Directives (complexity 160-170)
+# =============================================================================
+
+- name: date_format_c_preferred_datetime
+  template: "{{ '2020-06-15 14:30:45' | date: '%c' }}"
+  expected: "Mon Jun 15 14:30:45 2020"
+  complexity: 165
+  hint: |
+    %c outputs locale's preferred date and time representation.
+    In C locale: "Mon Jun 15 14:30:45 2020".
+
+- name: date_format_x_preferred_date
+  template: "{{ '2020-06-15' | date: '%x' }}"
+  expected: "06/15/20"
+  complexity: 165
+  hint: |
+    %x outputs locale's preferred date representation.
+    In C locale: "06/15/20".
+
+- name: date_format_X_preferred_time
+  template: "{{ '2020-06-15 14:30:45' | date: '%X' }}"
+  expected: "14:30:45"
+  complexity: 165
+  hint: |
+    %X outputs locale's preferred time representation.
+    In C locale: "14:30:45".
+
+- name: date_format_D_short_date
+  template: "{{ '2020-06-15' | date: '%D' }}"
+  expected: "06/15/20"
+  complexity: 165
+  hint: |
+    %D is equivalent to %m/%d/%y.
+
+- name: date_format_F_iso_date
+  template: "{{ '2020-06-15' | date: '%F' }}"
+  expected: "2020-06-15"
+  complexity: 165
+  hint: |
+    %F is equivalent to %Y-%m-%d (ISO 8601 date).
+
+- name: date_format_R_24h_time
+  template: "{{ '2020-06-15 14:30:00' | date: '%R' }}"
+  expected: "14:30"
+  complexity: 165
+  hint: |
+    %R is equivalent to %H:%M.
+
+- name: date_format_T_24h_time_with_seconds
+  template: "{{ '2020-06-15 14:30:45' | date: '%T' }}"
+  expected: "14:30:45"
+  complexity: 165
+  hint: |
+    %T is equivalent to %H:%M:%S.
+
+- name: date_format_r_12h_time
+  template: "{{ '2020-06-15 14:30:45' | date: '%r' }}"
+  expected: "02:30:45 PM"
+  complexity: 170
+  hint: |
+    %r outputs 12-hour time with AM/PM (locale dependent).
+    In C locale: "02:30:45 PM".
+
+# =============================================================================
+# Combined Format Strings (complexity 170-180)
+# =============================================================================
+
+- name: date_format_combined_full_datetime
+  template: "{{ '2020-06-15 14:30:45' | date: '%B %d, %Y at %I:%M %p' }}"
+  expected: "June 15, 2020 at 02:30 PM"
+  complexity: 170
+  hint: |
+    Multiple directives can be combined with literal text.
+    This creates a human-readable date format.
+
+- name: date_format_combined_iso8601_like
+  template: "{{ '2020-06-15 14:30:45' | date: '%Y-%m-%dT%H:%M:%S' }}"
+  expected: "2020-06-15T14:30:45"
+  complexity: 170
+  hint: |
+    ISO 8601 datetime format commonly used in APIs.
+
+- name: date_format_combined_rfc822
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%a, %d %b %Y %H:%M:%S %z' }}"
+  expected: "Mon, 15 Jun 2020 14:30:45 -0400"
+  complexity: 175
+  hint: |
+    RFC 822/2822 date format used in email headers and RSS.
+
+# =============================================================================
+# Edge Cases and Special Handling (complexity 175-200)
+# =============================================================================
+
+- name: date_empty_string_input
+  template: "{{ '' | date: '%Y-%m-%d' }}"
+  expected: ""
+  complexity: 175
+  hint: |
+    Empty string input should return empty string.
+    Don't attempt to parse empty strings as dates.
+
+- name: date_nil_input
+  template: "{{ missing_var | date: '%Y-%m-%d' }}"
+  expected: ""
+  complexity: 175
+  hint: |
+    Nil input should return empty string.
+    Check for nil before attempting date formatting.
+
+- name: date_empty_format_string
+  template: "{{ '2020-06-15 14:30:45' | date: '' }}"
+  expected: "2020-06-15 14:30:45"
+  complexity: 180
+  hint: |
+    Empty format string should return the original input as string.
+    This is liquid-ruby's behavior.
+
+- name: date_nil_format_string
+  template: "{{ '2020-06-15 14:30:45' | date: nil_var }}"
+  environment:
+    nil_var: null
+  expected: "2020-06-15 14:30:45"
+  complexity: 180
+  hint: |
+    Nil format string should behave like empty string.
+    Return the input date as string.
+
+- name: date_plain_text_format
+  template: "{{ '2020-06-15' | date: 'Today is a great day!' }}"
+  expected: "Today is a great day!"
+  complexity: 185
+  hint: |
+    Format strings without % directives pass through as-is.
+    This allows using date filter for simple string replacement.
+
+- name: date_unknown_directive
+  template: "{{ '2020-06-15' | date: '%Q' }}"
+  expected: "%Q"
+  complexity: 190
+  hint: |
+    Unknown directives like %Q pass through as literal text in Ruby.
+    The %Q is not a recognized strftime directive, so it's output as-is.
+
+- name: date_leap_year_feb_29
+  template: "{{ '2020-02-29' | date: '%Y-%m-%d %j' }}"
+  expected: "2020-02-29 060"
+  complexity: 185
+  hint: |
+    2020 is a leap year, so Feb 29 exists.
+    Day of year for Feb 29 is 60 (31+29=60).
+
+- name: date_end_of_year
+  template: "{{ '2020-12-31 23:59:59' | date: '%j %H:%M:%S' }}"
+  expected: "366 23:59:59"
+  complexity: 185
+  hint: |
+    Dec 31, 2020 is day 366 (leap year).
+    Tests end-of-year edge case.
+
+- name: date_negative_timestamp
+  template: "{{ -86400 | date: '%Y-%m-%d' }}"
+  expected: "1969-12-31"
+  complexity: 190
+  hint: |
+    Negative timestamps represent dates before Unix epoch (1970-01-01).
+    -86400 seconds = Dec 31, 1969.
+
+- name: date_very_old_date
+  template: "{{ '1900-01-01' | date: '%Y-%m-%d %A' }}"
+  expected: "1900-01-01 Monday"
+  complexity: 195
+  hint: |
+    Historical dates should be handled correctly.
+    January 1, 1900 was a Monday.
+
+- name: date_future_date
+  template: "{{ '2100-12-31' | date: '%Y-%m-%d %A' }}"
+  expected: "2100-12-31 Friday"
+  complexity: 195
+  hint: |
+    Future dates should be handled correctly.
+    December 31, 2100 will be a Friday.
+
+- name: date_now_with_complex_format
+  template: "{{ 'now' | date: '%B %d, %Y' }}"
+  expected: "January 01, 2024"
+  complexity: 200
+  hint: |
+    'now' with complex formatting. Time is frozen to 2024-01-01 00:01:58 UTC.
+    Output uses the frozen UTC time.
+
+- name: date_format_only_literals
+  template: "{{ '2020-06-15' | date: 'Date: ' }}"
+  expected: "Date: "
+  complexity: 185
+  hint: |
+    Format string with only literals (no % directives).
+    Returns the literal string as-is.
+
+# =============================================================================
+# Padding Modifiers (complexity 190-200)
+# =============================================================================
+
+- name: date_format_dash_no_padding
+  template: "{{ '2020-06-05' | date: '%-d' }}"
+  expected: "5"
+  complexity: 190
+  hint: |
+    The - flag removes padding. %-d outputs "5" instead of "05".
+
+- name: date_format_underscore_space_padding
+  template: "{{ '2020-06-05' | date: '%_d' }}"
+  expected: " 5"
+  complexity: 190
+  hint: |
+    The _ flag uses space padding. %_d outputs " 5".
+
+- name: date_format_zero_zero_padding
+  template: "{{ '2020-06-05' | date: '%0d' }}"
+  expected: "05"
+  complexity: 190
+  hint: |
+    The 0 flag uses zero padding. %0d outputs "05" (default for %d).
+
+- name: date_format_caret_uppercase
+  template: "{{ '2020-06-15' | date: '%^b' }}"
+  expected: "JUN"
+  complexity: 195
+  hint: |
+    The ^ flag uppercases the result. %^b outputs "JUN" instead of "Jun".
+
+- name: date_format_hash_opposite_case
+  template: "{{ '2020-06-15' | date: '%#B' }}"
+  expected: "JUNE"
+  complexity: 195
+  hint: |
+    The # flag changes case. For %B (normally "June"), %#B outputs "JUNE".
+    Behavior may vary by platform.
+
+# =============================================================================
+# Pattern Matching Tests (complexity 250-300)
+# These use expected_pattern for regex matching - useful for dynamic content
+# =============================================================================
+
+- name: date_now_year_pattern
+  template: "{{ 'now' | date: '%Y' }}"
+  expected_pattern: "^20[2-9][0-9]$"
+  complexity: 250
+  hint: |
+    This test uses expected_pattern for regex matching instead of a fixed value.
+    It matches any 4-digit year from 2020-2099, useful when time isn't frozen.
+    Note: During normal spec runs, time IS frozen to 2024, so this always matches "2024".
+
+- name: date_now_iso_format_pattern
+  template: "{{ 'now' | date: '%Y-%m-%d' }}"
+  expected_pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+  complexity: 250
+  hint: |
+    Validates that date output matches ISO 8601 date format (YYYY-MM-DD).
+    Uses regex pattern to match any valid date format without checking specific value.
+
+- name: date_now_full_timestamp_pattern
+  template: "{{ 'now' | date: '%Y-%m-%d %H:%M:%S' }}"
+  expected_pattern: "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+  complexity: 250
+  hint: |
+    Validates full ISO-style timestamp format.
+    Pattern ensures YYYY-MM-DD HH:MM:SS structure without validating specific values.
+
+- name: date_unix_timestamp_output_pattern
+  template: "{{ 'now' | date: '%s' }}"
+  expected_pattern: "^\\d{10}$"
+  complexity: 275
+  hint: |
+    Unix timestamp should be a 10-digit number (valid until year 2286).
+    Pattern matching is useful here since the exact value depends on current time.

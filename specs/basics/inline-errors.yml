@@ -1,0 +1,174 @@
+---
+_metadata:
+  hint: |
+    These specs test Liquid's inline error rendering feature where errors
+    are rendered as text in the output instead of raising exceptions.
+    This feature is useful for debugging and graceful degradation.
+    Set render_errors: true to enable this behavior.
+  minimum_complexity: 300
+  required_features:
+    - inline_errors
+
+specs:
+- name: inline_error_basic_format
+  template: "{{ 10 | divided_by: 0 }}"
+  errors:
+    output:
+      - Liquid error
+      - divided by 0
+  complexity: 300
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When render_errors is true, division by zero renders as an inline
+    error message instead of raising an exception. The output should
+    contain "Liquid error" and the error description.
+
+- name: inline_error_shows_line_number
+  template: |
+    line one
+    {{ 10 | divided_by: 0 }}
+  errors:
+    output:
+      - Liquid error
+      - line 2
+      - divided by 0
+  complexity: 400
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    Inline errors should include the line number where the error occurred.
+    This helps template authors debug issues. The error on line 2 should
+    show "line 2" in the error message.
+
+- name: inline_error_shows_partial_name
+  template: "{% render 'bad_partial' %}"
+  filesystem:
+    bad_partial.liquid: "{{ x | divided_by: 0 }}"
+  environment:
+    x: 10
+  errors:
+    output:
+      - Liquid error
+      - bad_partial
+      - divided by 0
+  complexity: 450
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When an error occurs in a partial, the inline error should include
+    the partial name to help identify where the error came from.
+
+- name: inline_error_multiple_errors
+  template: "{{ 5 | divided_by: 0 }} and {{ 10 | divided_by: 0 }}"
+  errors:
+    output:
+      - divided by 0
+  complexity: 350
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When multiple errors occur in a template, each should be rendered
+    inline. Both division by zero errors should appear in the output.
+    We check for at least one "divided by 0" message.
+
+- name: inline_error_in_loop_per_iteration
+  template: "{% for i in (1..3) %}{{ 10 | divided_by: 0 }}{% endfor %}"
+  errors:
+    output:
+      - divided by 0
+  complexity: 350
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When an error occurs inside a loop, each iteration produces its own
+    inline error. The loop continues despite errors when render_errors
+    is true. Check that at least one error message appears.
+
+- name: inline_error_preserves_surrounding_content
+  template: "before {{ 10 | divided_by: 0 }} after"
+  errors:
+    output:
+      - before
+      - Liquid error
+      - divided by 0
+      - after
+  complexity: 320
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    Inline errors should be inserted into the output without discarding
+    the surrounding content. The words "before" and "after" should both
+    appear in the output along with the error message.
+
+- name: inline_error_modulo_by_zero
+  template: "{{ 10 | modulo: 0 }}"
+  errors:
+    output:
+      - Liquid error
+      - divided by 0
+  complexity: 310
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    Modulo by zero produces an inline error similar to division by zero.
+    The error message typically says "divided by 0" since modulo is
+    mathematically related to division.
+
+- name: inline_error_invalid_slice_argument
+  template: "{{ 'hello' | slice: 'not a number' }}"
+  errors:
+    output:
+      - Liquid error
+      - invalid integer
+  complexity: 330
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When a filter receives an invalid argument type, the error is
+    rendered inline. The slice filter expects an integer but receives
+    a string, producing an "invalid integer" error in the output.
+
+- name: inline_error_in_nested_partial
+  template: "{% render 'outer' %}"
+  filesystem:
+    outer.liquid: "{% render 'inner' %}"
+    inner.liquid: "{{ 10 | divided_by: 0 }}"
+  errors:
+    output:
+      - Liquid error
+      - inner
+      - divided by 0
+  complexity: 470
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When an error occurs in a nested partial, the error message should
+    identify the innermost partial where the error occurred. This helps
+    trace errors through multiple levels of includes.
+
+- name: inline_error_with_successful_content
+  template: "{{ 'hello' | upcase }} {{ 10 | divided_by: 0 }} {{ 'world' | upcase }}"
+  errors:
+    output:
+      - HELLO
+      - Liquid error
+      - divided by 0
+      - WORLD
+  complexity: 340
+  error_mode: lax
+  render_errors: true
+  required_features: [inline_errors]
+  hint: |
+    When render_errors is true, successful expressions still render
+    correctly and errors are interpolated inline. The upcase filters
+    should produce "HELLO" and "WORLD" around the error message.

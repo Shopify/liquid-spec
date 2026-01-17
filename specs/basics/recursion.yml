@@ -2,6 +2,12 @@
 _metadata:
   doc: implementers/scopes.md
   complexity: 400
+  required_features:
+    - inline_errors
+  hint: |
+    Liquid has a stack limit of 100 recursive partial calls. When this
+    limit is exceeded, an inline error is rendered containing "Nesting too deep"
+    and template execution continues after the error.
 
 specs:
 - name: recursion_include_error_inline
@@ -11,46 +17,63 @@ specs:
     done
   environment: {depth: 1}
   render_errors: true
-  expected: |
-    start
-    1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|Liquid error (snippets/foo line 2): Nesting too deep
-    done
+  required_features: [inline_errors]
+  errors:
+    output:
+      - start
+      - "100|"
+      - Nesting too deep
+      - done
   filesystem:
     snippets/foo: |
       {{depth}}{% assign depth = depth | plus: 1 %}|
       {%- include 'snippets/foo' -%}
-  hint: "Liquid hits a hard limit at stack level 100"
+  hint: |
+    Include has a stack limit of 100. When recursion exceeds this limit,
+    an inline error is rendered containing "Nesting too deep". Template
+    execution continues after the error, so "done" still appears.
 
-- name: recursion_render_error_inline_with_syntax
+- name: recursion_render_error_inline
   template: |
     start
     {% render 'snippets/foo' with depth as depth %}
     done
   environment: {depth: 1}
   render_errors: true
-  expected: |
-    start
-    1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|Liquid error (snippets/foo line 2): Nesting too deep
-    done
+  required_features: [inline_errors]
+  errors:
+    output:
+      - start
+      - "100|"
+      - Nesting too deep
+      - done
   filesystem:
     snippets/foo: |
       {{depth}}{% assign depth = depth | plus: 1 %}|
       {%- render 'snippets/foo' with depth as depth -%}
-  hint: "Liquid hits a hard limit at stack level 100"
+  hint: |
+    Render has a stack limit of 100. When recursion exceeds this limit,
+    an inline error is rendered containing "Nesting too deep". Template
+    execution continues after the error, so "done" still appears.
 
-- name: recursion_render_named_arg_error_inline
+- name: recursion_render_named_arg_inline
   template: |
     start
     {% render 'snippets/foo' with depth as depth %}
     done
   environment: {depth: 1}
   render_errors: true
-  expected: |
-    start
-    1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|Liquid error (snippets/foo line 2): Nesting too deep
-    done
+  required_features: [inline_errors]
+  errors:
+    output:
+      - start
+      - "100|"
+      - Nesting too deep
+      - done
   filesystem:
     snippets/foo: |
       {{depth}}{% assign depth = depth | plus: 1 %}|
       {%- render 'snippets/foo' depth: depth -%}
-  hint: "Liquid hits a hard limit at stack level 100"
+  hint: |
+    Named argument syntax (depth: depth) behaves the same as
+    "with depth as depth" for recursion limits. Stack limit is 100.

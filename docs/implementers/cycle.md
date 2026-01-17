@@ -1,296 +1,233 @@
 ---
 title: The cycle Tag
 description: >
-  How the cycle tag rotates through values, including its quirky identity rules where unnamed cycles
-  with variables get independent counters. Covers named vs unnamed cycles, counter persistence, and
-  isolation in render vs include.
+  Complete guide to Liquid's cycle tag grouping rules. Explains how unnamed cycles with literals
+  share counters while unnamed cycles with variables get independent counters, plus named cycle
+  behavior and state isolation.
 optional: false
 order: 6
 ---
 
 # The `cycle` Tag
 
-This document explains Liquid's `cycle` tag, including its counter-intuitive identity rules.
+The `cycle` tag rotates through a list of values. The tricky part is understanding **when two cycle tags share a counter** vs **when they get independent counters**.
 
-## Quick Reference
-
-```liquid
-{% cycle "a", "b", "c" %}  → outputs "a", then "b", then "c", then "a"...
-{% cycle name: "a", "b" %} → named cycle, independent counter
-```
-
-## Basic Behavior
-
-The `cycle` tag outputs values in rotation. Each call advances to the next value:
+## Surface Syntax
 
 ```liquid
-{% for i in (1..4) %}
-  {% cycle "odd", "even" %}
-{% endfor %}
+{# Unnamed form - values only #}
+{% cycle 'one', 'two', 'three' %}
+
+{# Named form - group name before colon #}
+{% cycle 'row-colors': 'odd', 'even' %}
+
+{# Group name can be a variable #}
+{% cycle varname: 'a', 'b', 'c' %}
 ```
-Output: `odd even odd even`
 
-## Counter Identity: The Tricky Part
+## The Grouping Rules (The Key to Understanding Cycle)
 
-Cycle counters are stored in `registers["cycle"]` keyed by a **cycle identity**. Two cycle tags share a counter if and only if they have the same identity.
+Two cycle tags share a counter **if and only if** they resolve to the same **group key**. The rules for computing the group key differ based on the cycle form:
 
-### Named Cycles
+### Decision Table
 
-Named cycles use the **evaluated name** as their identity:
+| Cycle Form | Group Key | Counter Sharing |
+|------------|-----------|-----------------|
+| Named: `{% cycle 'grp': 'a', 'b' %}` | Evaluated group expression (`"grp"`) | All cycles with same evaluated name share |
+| Named with variable: `{% cycle myvar: 'a', 'b' %}` | Evaluated variable value | All cycles evaluating to same value share |
+| Unnamed with literals: `{% cycle 'a', 'b' %}` | String representation of values (`"'a''b'"`) | **All identical literal cycles share** |
+| Unnamed with variables: `{% cycle x, 'b' %}` | Unique per tag instance | **Each tag gets its own counter** |
+
+### Decision Flowchart
+
+```
+Is there a group name (colon syntax)?
+├── YES → Group key = evaluate(name_expression)
+│         All cycles with same evaluated name share counter
+│
+└── NO (unnamed cycle)
+    │
+    └── Do ANY values contain variable lookups?
+        ├── NO (all literals) → Group key = stable string of parameters
+        │                       All textually identical cycles share counter
+        │
+        └── YES (has variables) → Each tag instance gets unique key
+                                  Independent counters per tag
+```
+
+### Why Unnamed Cycles with Variables Get Independent Counters
+
+This is the most confusing part of cycle behavior. Here's why it happens:
+
+The Ruby reference implementation computes the group key for unnamed cycles by stringifying the expression list. When expressions contain `VariableLookup` objects, Ruby's default `#to_s` includes an object ID like `#<Liquid::VariableLookup:0x00007f8b1c0a2e80>`.
+
+**The key insight**: The implementation detects whether the stringified key contains object-ID-like patterns (matching `/\w+:0x\h{8}/`). If it does, the cycle is treated as having an unstable key, and each tag instance effectively gets its own counter.
+
+**For implementers**: You can achieve equivalent behavior by either:
+1. Cloning variable lookup nodes during parsing so each tag has distinct object identities
+2. Detecting at parse time whether any values are variable lookups and marking the cycle as "independent"
+3. Using a unique tag instance ID as the key when variables are present
+
+## Examples That Clarify the Rules
+
+### Named Cycles: Evaluated Name is the Key
 
 ```liquid
-{% cycle "group1": "a", "b" %}
-{% cycle "group1": "a", "b" %}
-{% cycle "group2": "a", "b" %}
+{% cycle "group1": "a", "b" %}  → "a" (key="group1", index 0→1)
+{% cycle "group1": "a", "b" %}  → "b" (key="group1", index 1→0)
+{% cycle "group2": "a", "b" %}  → "a" (key="group2", new counter)
 ```
-Output: `a b a`
 
-- First two cycles share counter (same name "group1")
-- Third cycle has independent counter (name "group2")
-
-The name can be a variable:
+### Named Cycles with Variable Names
 
 ```liquid
-{% assign name = "mygroup" %}
-{% cycle name: "a", "b" %}
-{% cycle name: "a", "b" %}
-```
-Output: `a b` (both evaluate to "mygroup", share counter)
-
-### Unnamed Cycles: The Quirk
-
-Unnamed cycles have surprising identity rules that differ based on whether the values are **literals** or **variables**:
-
-**Literal values → Shared counter:**
-```liquid
-{% cycle "a", "b" %}
-{% cycle "a", "b" %}
-{% cycle "a", "b" %}
-```
-Output: `a b a` (all three share one counter)
-
-**Variable lookups → Independent counters:**
-```liquid
-{% assign x = "a" %}
-{% cycle x, "b" %}
-{% cycle x, "b" %}
-```
-Output: `a a` (each cycle has its own counter!)
-
-### Why This Quirk Exists
-
-The identity for unnamed cycles is computed by stringifying the expression list.
-
-For literals like `"a"`, the string is consistent, so `{% cycle "a", "b" %}` always has the same identity.
-
-For variable reference nodes, the stringification includes an internal identity token, so each tag gets a distinct identity even if the expressions are textually identical. To preserve backwards compatibility, implementations **clone** variable references for unnamed cycles before computing the identity.
-
-## Pseudocode Implementation
-
-### Data Structures
-
-```
-# In registers
-registers["cycle"] = {
-  "cycle_identity_1" => 0,  # current index
-  "cycle_identity_2" => 1,
-  # ...
-}
-
-CycleTag:
-  name: Expression | nil      # The cycle name (for named cycles)
-  variables: List<Expression> # The values to cycle through
-  is_named: Boolean           # Whether this is a named cycle
-
-UNIQUE_REFERENCE_TOKEN_PATTERN = /.../  # implementation-defined unique token pattern
+{% assign g = "colors" %}
+{% cycle g: "red", "blue" %}   → "red"  (key="colors", index 0→1)
+{% cycle g: "red", "blue" %}   → "blue" (key="colors", index 1→0)
 ```
 
-### Parsing
+Both cycles evaluate `g` to `"colors"`, so they share a counter.
 
-```
-function parse_cycle(markup):
-  tag = CycleTag()
-  
-  # Check for named syntax: name: value1, value2, ...
-  if markup matches "expr: expr, expr, ...":
-    tag.name = parse_expression(name_part)
-    tag.variables = parse_values(values_part)
-    tag.is_named = true
-  else:
-    # Unnamed syntax: value1, value2, ...
-    tag.variables = parse_values(markup)
-    tag.is_named = false
-    
-    # Compute identity from variables array
-    # CRITICAL: Clone variable references to ensure unique identity per tag
-    tag.variables = tag.variables.map(v => maybe_clone_reference(v))
-    tag.name = tag.variables.to_string()
-    
-    # Check if the name includes a unique reference token
-    # If it doesn't, treat it as named (shared counter)
-    if not tag.name.matches(UNIQUE_REFERENCE_TOKEN_PATTERN):
-      tag.is_named = true
-  
-  return tag
-
-function maybe_clone_reference(var):
-  if var is VariableReference:
-    return clone(var)  # New identity token
-  return var
-```
-
-### Rendering
-
-```
-function render_cycle(tag, state, output):
-  # Get or create cycle counters map
-  cycles = state.registers["cycle"]
-  if cycles is nil:
-    cycles = {}
-    state.registers["cycle"] = cycles
-  
-  # Evaluate the cycle identity key
-  key = state.evaluate(tag.name)
-  
-  # Get current position, default to 0
-  index = cycles[key] || 0
-  
-  # Get the value at current position
-  value = state.evaluate(tag.variables[index])
-  
-  # Output the value
-  if value is Array:
-    output.append(value.join(""))
-  else:
-    output.append(value.to_string())
-  
-  # Advance counter (wrap around)
-  index = (index + 1) % tag.variables.length
-  cycles[key] = index
-```
-
-## Behavioral Specifications
-
-### Basic Cycling
+### Unnamed Cycles with Literals: SHARED Counter
 
 ```liquid
-{% for i in (1..5) %}{% cycle "a", "b", "c" %}{% endfor %}
+{% cycle "a", "b" %}  → "a" (index 0→1)
+{% cycle "a", "b" %}  → "b" (index 1→0)
+{% cycle "a", "b" %}  → "a" (index 0→1)
 ```
-Output: `abcab`
 
-### Named Cycles Stay Separate
+All three share one counter because the literal string `"'a''b'"` is identical.
+
+### Unnamed Cycles with Variables: INDEPENDENT Counters
 
 ```liquid
-{% for i in (1..3) %}
-  {% cycle "row": "odd", "even" %}
-  {% cycle "col": "left", "right" %}
-{% endfor %}
+{% assign x = "1" %}
+{% cycle x, "2" %}    → "1" (tag A, index 0→1)
+{% cycle x, "2" %}    → "1" (tag B, index 0→1)  ← NOT "2"!
 ```
-Output: `odd left even right odd left`
 
-### Shared Counter Across Loops
+Each `{% cycle x, "2" %}` has its own counter, so both output `"1"`.
+
+### The Contrast in a Loop
 
 ```liquid
-{% for i in (1..2) %}{% cycle "a", "b" %}{% endfor %}
-{% for i in (1..2) %}{% cycle "a", "b" %}{% endfor %}
-```
-Output: `abab`
+{# With literals - shared counter, alternates #}
+{% for i in (1..4) %}{% cycle "1", "2" %}{% cycle "1", "2" %}{% endfor %}
+→ "12121212"
 
-The counter continues from where it left off (2 % 2 = 0, so back to "a").
-
-### Variable Names Create Shared Counters
-
-```liquid
-{% assign group = "colors" %}
-{% cycle group: "red", "blue" %}
-{% cycle group: "red", "blue" %}
-{% cycle group: "red", "blue" %}
-```
-Output: `red blue red`
-
-The variable `group` evaluates to `"colors"` both times, so they share a counter.
-
-### Different Variable Values = Different Counters
-
-```liquid
-{% assign g1 = "colors" %}
-{% assign g2 = "sizes" %}
-{% cycle g1: "red", "blue" %}
-{% cycle g2: "red", "blue" %}
-{% cycle g1: "red", "blue" %}
-```
-Output: `red red blue`
-
-- First cycle: g1="colors", index 0 → "red", advance to 1
-- Second cycle: g2="sizes", index 0 → "red", advance to 1  
-- Third cycle: g1="colors", index 1 → "blue", advance to 0
-
-### The Unnamed Variable Quirk
-
-```liquid
+{# With variables - independent counters, each tag cycles independently #}
 {% assign a = "1" %}
-{% for i in (1..3) %}
-  {% cycle a, "2" %}
-  {% cycle a, "2" %}
-{% endfor %}
+{% for i in (1..4) %}{% cycle a, "2" %}{% cycle a, "2" %}{% endfor %}
+→ "11221122"
 ```
-Output: `1 1 2 2 1 1`
 
-Each `{% cycle a, "2" %}` has a **different** identity because the variable reference for `a` is cloned, giving each tag a unique identity token.
+## State Storage
 
-Compare to literals:
+Cycle counters are stored in `registers["cycle"]` as a hash mapping group keys to current indices:
+
+```
+registers["cycle"] = {
+  "group1" => 2,           # Named cycle at index 2
+  "'a''b'" => 0,           # Unnamed literal cycle at index 0
+  "#<unique_id_1>" => 1,   # Unnamed variable cycle instance 1
+  "#<unique_id_2>" => 0,   # Unnamed variable cycle instance 2
+}
+```
+
+### Persistence Rules
+
+| Context | Behavior |
+|---------|----------|
+| Same template | Counter persists across all occurrences |
+| Multiple loops | Counter continues (doesn't reset per loop) |
+| `{% include %}` | **Shares** registers with parent |
+| `{% render %}` | **Isolated** - gets fresh registers |
+| Different render calls | Fresh start each time |
+
+### Include vs Render Example
 
 ```liquid
-{% for i in (1..3) %}
-  {% cycle "1", "2" %}
-  {% cycle "1", "2" %}
-{% endfor %}
+{% cycle "a", "b" %}     → "a" (index 0→1)
+{% include 'snippet' %}  → "b" (shares counter, index 1→0)
+{% cycle "a", "b" %}     → "a" (index 0→1)
+
+{# But with render: #}
+{% cycle "a", "b" %}     → "a" (index 0→1)
+{% render 'snippet' %}   → "a" (isolated, fresh counter, index 0→1)
+{% cycle "a", "b" %}     → "b" (back in parent, index 1→0)
 ```
-Output: `1 2 1 2 1 2`
 
-Same identity string, shared counter.
+## Render Algorithm
 
-## Counter Persistence
-
-Cycle counters persist across:
-- Multiple loops in the same render
-- Different locations in the same template
-
-But NOT across:
-- Different render calls
-- Isolated subcontexts (`render` tag creates fresh registers)
-
-```liquid
-{% cycle "a", "b" %}
-{% render 'snippet' %}
-{% cycle "a", "b" %}
-
-{# snippet.liquid #}
-{% cycle "a", "b" %}
 ```
-Output: `a a b`
+function render_cycle(tag, context):
+    # 1. Compute group key
+    if tag.is_named:
+        key = evaluate(tag.group_name, context)
+    else if tag.has_stable_key:  # all literals
+        key = tag.precomputed_key
+    else:  # has variables - unique per instance
+        key = tag.unique_instance_id
 
-- First cycle: index 0 → "a"
-- Rendered snippet: fresh registers, index 0 → "a"
-- Third cycle: back in main context, index 1 → "b"
+    # 2. Get current index (default 0)
+    cycles = context.registers["cycle"] ||= {}
+    index = cycles[key] || 0
+
+    # 3. Evaluate value at current index
+    value = evaluate(tag.values[index], context)
+
+    # 4. Output the value
+    if value.is_array:
+        output(value.join(""))
+    else:
+        output(to_string(value))
+
+    # 5. Advance counter with wraparound
+    cycles[key] = (index + 1) % tag.values.length
+```
+
+## Common Mistakes
+
+| Mistake | Why It's Wrong | Correct Behavior |
+|---------|----------------|------------------|
+| All unnamed cycles share counter | Only literal-only cycles share | Variables cause independent counters |
+| Evaluate values before computing key | Key must be computed at parse time for literals | Parse-time key for literals, render-time uniqueness for variables |
+| Reset counter each loop iteration | Counter is persistent | Counter continues across entire render |
+| `render` shares cycle state | `render` isolates registers | Only `include` shares cycle state |
+| Increment before output | Would skip first value | Output THEN increment |
+| Named cycle key = literal string | Key is the evaluated expression | `{% cycle myvar: ... %}` uses myvar's value |
 
 ## Implementation Checklist
 
-1. **Named cycles:** Use evaluated name as counter key
-2. **Unnamed cycles:** Use variables array string representation as key
-3. **Variable reference cloning:** Clone references to give each tag unique identity
-4. **Counter storage:** Use `registers["cycle"]` hash
-5. **Wrap-around:** `(index + 1) % variables.length`
-6. **Array output:** Join arrays to string when outputting
+1. **Parse time**:
+   - [ ] Detect named vs unnamed form (presence of colon)
+   - [ ] For unnamed: check if all values are literals
+   - [ ] For unnamed with variables: assign unique instance ID or clone variable nodes
 
-## Common Pitfalls
+2. **Render time**:
+   - [ ] Compute group key (evaluate for named, use precomputed/unique for unnamed)
+   - [ ] Look up counter in `registers["cycle"]`
+   - [ ] Evaluate value at current index
+   - [ ] Output value (join arrays)
+   - [ ] Increment counter with modulo wraparound
 
-1. **Forgetting to clone variable references:** Unnamed cycles with variables will incorrectly share counters
-2. **String representation inconsistency:** The identity string must be consistent for the same literals
-3. **Register isolation:** `render` tag must create fresh cycle counters
-4. **Counter not incrementing:** Must increment AFTER getting the value, not before
+3. **Context handling**:
+   - [ ] `include` shares registers
+   - [ ] `render` creates fresh registers
 
-See also:
-- [Core Abstractions](core-abstractions.md)
-- [For Loops](for-loops.md)
-- [Partials](partials.md)
+## Related Specs
+
+These specs test cycle behavior - run them to verify your implementation:
+
+- `specs/basics/cycle.yml` - Core cycle grouping rules
+  - `cycle_unnamed_literals_share_counter` - Literals share
+  - `cycle_unnamed_variables_independent_counters` - Variables don't share
+  - `cycle_unnamed_variable_in_loop` - The tricky interleaved case
+  - `cycle_isolated_in_render` / `cycle_shared_in_include` - Isolation rules
+- `specs/liquid_ruby/specs.yml` - Additional edge cases from Shopify/liquid
+
+## See Also
+
+- [Core Abstractions](core-abstractions.md) - Registers and context
+- [For Loops](for-loops.md) - Common cycle usage context
+- [Partials](partials.md) - Include vs render isolation

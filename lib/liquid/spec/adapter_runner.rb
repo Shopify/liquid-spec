@@ -292,6 +292,19 @@ module Liquid
               expected: spec.expected,
             )
           end
+        elsif spec.expected_pattern
+          # Regex pattern matching for dynamic content
+          pattern = spec.expected_pattern_regex
+          if pattern && output.match?(pattern)
+            SpecResult.new(spec: spec, status: :pass, output: output)
+          else
+            SpecResult.new(
+              spec: spec,
+              status: :fail,
+              output: output,
+              expected: "output matching pattern /#{spec.expected_pattern}/",
+            )
+          end
         elsif spec.errors.key?("output") || spec.errors.key?(:output)
           patterns = spec.errors["output"] || spec.errors[:output]
           if matches_patterns?(output, patterns)

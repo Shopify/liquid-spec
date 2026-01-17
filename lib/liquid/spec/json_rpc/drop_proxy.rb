@@ -44,17 +44,34 @@ module Liquid
           # Primitives pass through unchanged
           # Hashes and arrays are recursively wrapped
           def wrap(obj, registry, seen = {}.compare_by_identity)
-            return seen[obj] if seen.key?(obj)
+            # Return placeholder for circular references to prevent JSON nesting errors
+            return "[circular]" if seen.key?(obj)
 
             case obj
-            when nil, true, false, Integer, Float, String, Symbol
-              # Primitives pass through
-              obj.is_a?(Symbol) ? obj.to_s : obj
+            when nil, true, false, Integer
+              obj
+            when Float
+              # Handle special float values that JSON can't encode
+              if obj.nan? || obj.infinite?
+                nil
+              else
+                obj
+              end
+            when Symbol
+              obj.to_s
+            when String
+              # Ensure valid UTF-8 for JSON encoding
+              sanitize_string(obj)
             when Hash
               wrapped = {}
               seen[obj] = wrapped
               obj.each do |k, v|
-                key = k.is_a?(Symbol) ? k.to_s : k
+                # Sanitize keys for JSON (symbols -> strings, binary -> utf8)
+                key = case k
+                      when Symbol then k.to_s
+                      when String then sanitize_string(k)
+                      else k.to_s
+                      end
                 wrapped[key] = wrap(v, registry, seen)
               end
               wrapped
@@ -104,6 +121,14 @@ module Liquid
             end
           end
 
+          # Convert string to valid UTF-8 for JSON encoding
+          # Binary data gets replacement characters
+          def sanitize_string(str)
+            return str if str.encoding == Encoding::UTF_8 && str.valid_encoding?
+
+            str.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "\uFFFD")
+          end
+
           # Check if a value is an RPC drop marker
           def rpc_drop?(value)
             value.is_a?(Hash) && value.key?(RPC_DROP_KEY)
@@ -115,8 +140,15 @@ module Liquid
           end
 
           # Access a property on a drop
+          # Some methods (to_s, to_liquid_value, to_number) must be called directly,
+          # not via [] which is for property access
+          DIRECT_METHODS = %w[to_s to_liquid to_liquid_value to_number size length first last blank?].to_set.freeze
+
           def access_drop(drop, property)
-            if drop.respond_to?(:[])
+            # Call certain methods directly - they're not properties
+            if DIRECT_METHODS.include?(property) && drop.respond_to?(property)
+              drop.public_send(property)
+            elsif drop.respond_to?(:[])
               drop[property]
             elsif drop.respond_to?(property)
               drop.public_send(property)

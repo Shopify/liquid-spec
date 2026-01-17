@@ -1,21 +1,18 @@
-# Tests for first, last, size filters on various variable types
-# Each type is tested at global scope and inside a hash
 ---
 _metadata:
   hint: |
-    These specs test that first, last, and size filters/methods behave correctly
-    across all primitive and compound types. Each type is tested both at global
-    scope and when accessed as a property of a hash.
-  minimum_complexity: 150
+    These specs test Ruby-specific behavior of first, last, and size filters.
+    See docs/implementers/ruby-quirks.md for the complete type reference tables.
 
+    Key quirks:
+    - int | size returns 8 (Ruby Integer#size = byte representation)
+    - float | size returns 0 (Float has no size method)
+    - hash | first returns key+value concatenated
+    - hash | last returns empty
+  minimum_complexity: 300
 specs:
-# =============================================================================
-# GLOBAL SCOPE - Each variable type with first, last, size
-# =============================================================================
-
-# --- Float ---
 - name: filter_float_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     float, first:{{- f | first }}
     float, last:{{- f | last }}
@@ -26,14 +23,14 @@ specs:
     float, first:
     float, last:
     float, size:0
-
-# --- Integer ---
-- name: filter_int_global_first_last_size
-  complexity: 150
   hint: |
-    int | size returns 8 because Ruby's Integer#size returns the byte representation
-    size (8 bytes on 64-bit systems), NOT the number of digits. This is inherited Ruby
-    behavior - all integers return 8 regardless of their actual value.
+    Ruby quirk: float | size returns 0, float.size returns empty.
+    See docs/implementers/ruby-quirks.md for details.
+- name: filter_int_global_first_last_size
+  complexity: 300
+  hint: |
+    Ruby quirk: int | size returns 8 (byte representation on 64-bit).
+    See docs/implementers/ruby-quirks.md for details.
   template: |
     int, first:{{- i | first }}
     int, last:{{- i | last }}
@@ -44,10 +41,8 @@ specs:
     int, first:
     int, last:
     int, size:8
-
-# --- Boolean (true) ---
 - name: filter_bool_true_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     bool, first:{{- b | first }}
     bool, last:{{- b | last }}
@@ -58,10 +53,11 @@ specs:
     bool, first:
     bool, last:
     bool, size:0
-
-# --- Boolean (false) ---
+  hint: |
+    Ruby quirk: bool | size returns 0.
+    See docs/implementers/ruby-quirks.md for details.
 - name: filter_bool_false_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     bool, first:{{- b | first }}
     bool, last:{{- b | last }}
@@ -72,53 +68,55 @@ specs:
     bool, first:
     bool, last:
     bool, size:0
-
-# --- String ---
+  hint: |
+    Ruby quirk: bool | size returns 0.
+    See docs/implementers/ruby-quirks.md for details.
 - name: filter_string_global_first_last_size
-  complexity: 150
-  hint: "String first/last return the first/last character of the string"
+  complexity: 300
+  hint: |
+    first/last filters on strings should return the first/last character.
+    size returns the string length.
   template: |
     string, first:{{- s | first }}
     string, last:{{- s | last }}
     string, size:{{- s | size }}
   environment:
-    s: "hello"
+    s: hello
   expected: |
     string, first:h
     string, last:o
     string, size:5
-
-# --- Nil ---
 - name: filter_nil_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     nil, first:{{- n | first }}
     nil, last:{{- n | last }}
     nil, size:{{- n | size }}
   environment:
-    n: null
+    "n":
   expected: |
     nil, first:
     nil, last:
     nil, size:0
-
-# --- Array ---
 - name: filter_array_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     array, first:{{- arr | first }}
     array, last:{{- arr | last }}
     array, size:{{- arr | size }}
   environment:
-    arr: [1, 2, 3, 4, 5]
+    arr:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
   expected: |
     array, first:1
     array, last:5
     array, size:5
-
-# --- Empty Array ---
 - name: filter_empty_array_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     empty_array, first:{{- arr | first }}
     empty_array, last:{{- arr | last }}
@@ -129,11 +127,9 @@ specs:
     empty_array, first:
     empty_array, last:
     empty_array, size:0
-
-# --- Hash ---
 - name: filter_hash_global_first_last_size
-  complexity: 150
-  hint: "hash | first returns first key+value concatenated, hash | last returns empty"
+  complexity: 300
+  hint: hash | first returns first key+value concatenated, hash | last returns empty
   template: |
     hash, first:{{- h | first }}
     hash, last:{{- h | last }}
@@ -146,10 +142,8 @@ specs:
     hash, first:a1
     hash, last:
     hash, size:2
-
-# --- Empty Hash ---
 - name: filter_empty_hash_global_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     empty_hash, first:{{- h | first }}
     empty_hash, last:{{- h | last }}
@@ -160,10 +154,11 @@ specs:
     empty_hash, first:
     empty_hash, last:
     empty_hash, size:0
-
-# --- Drop (using IntegerDrop) ---
+  hint: |
+    Ruby quirk: hash | first returns key+value concatenated, hash | last returns empty.
+    See docs/implementers/ruby-quirks.md for details.
 - name: filter_drop_global_first_last_size
-  complexity: 160
+  complexity: 300
   template: |
     drop, first:{{- d | first }}
     drop, last:{{- d | last }}
@@ -176,14 +171,9 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
-
-# =============================================================================
-# HASH PROPERTY ACCESS - Types inside a hash with first, last, size filters
-# =============================================================================
-
 - name: filter_hash_properties_first_last_size
-  complexity: 160
-  hint: "Tests accessing various types as hash properties and applying filters"
+  complexity: 300
+  hint: Tests accessing various types as hash properties and applying filters
   template: |
     hash.f, first:{{- hash.f | first }}
     hash.f, last:{{- hash.f | last }}
@@ -208,8 +198,11 @@ specs:
       f: 3.14
       i: 42
       b: true
-      s: "hello"
-      arr: [1, 2, 3]
+      s: hello
+      arr:
+      - 1
+      - 2
+      - 3
       nested:
         x: 10
   expected: |
@@ -231,59 +224,50 @@ specs:
     hash.nested, first:x10
     hash.nested, last:
     hash.nested, size:1
-
-# =============================================================================
-# ARRAYS CONTAINING EACH TYPE - Test first/last retrieval
-# =============================================================================
-
 - name: filter_array_containing_types_first
-  complexity: 160
-  hint: "Array containing float, int, bool, string, array, hash - test first"
+  complexity: 300
+  hint: Array containing float, int, bool, string, array, hash - test first
   template: "{{ arr | first }}"
   environment:
     arr:
-      - 3.14
-      - 42
-      - true
-      - "hello"
-      - [1, 2]
-      - {a: 1}
-  expected: "3.14"
-
+    - 3.14
+    - 42
+    - true
+    - hello
+    - - 1
+      - 2
+    - a: 1
+  expected: '3.14'
 - name: filter_array_containing_types_last
-  complexity: 160
-  hint: "Array containing various types - last returns hash's inspect string"
+  complexity: 300
+  hint: Array containing various types - last returns hash's inspect string
   template: "{{ arr | last }}"
   environment:
     arr:
-      - 3.14
-      - 42
-      - true
-      - "hello"
-      - [1, 2]
-      - {a: 1}
+    - 3.14
+    - 42
+    - true
+    - hello
+    - - 1
+      - 2
+    - a: 1
   expected: '{"a"=>1}'
-
 - name: filter_array_containing_types_size
-  complexity: 160
+  complexity: 300
   template: "{{ arr | size }}"
   environment:
     arr:
-      - 3.14
-      - 42
-      - true
-      - "hello"
-      - [1, 2]
-      - {a: 1}
-  expected: "6"
-
-# =============================================================================
-# HASH CONTAINING EACH TYPE AS VALUES
-# =============================================================================
-
+    - 3.14
+    - 42
+    - true
+    - hello
+    - - 1
+      - 2
+    - a: 1
+  expected: '6'
 - name: filter_hash_containing_types_first_last_size
-  complexity: 160
-  hint: "Hash containing all types as values"
+  complexity: 300
+  hint: Hash containing all types as values
   template: |
     hash, first:{{- hash | first }}
     hash, size:{{- hash | size }}
@@ -292,34 +276,34 @@ specs:
       float_val: 3.14
       int_val: 42
       bool_val: true
-      string_val: "hello"
-      array_val: [1, 2]
-      hash_val: {nested: true}
+      string_val: hello
+      array_val:
+      - 1
+      - 2
+      hash_val:
+        nested: true
   expected: |
     hash, first:float_val3.14
     hash, size:6
-
-# =============================================================================
-# PROPERTY ACCESS STYLE (dot notation for first/last/size)
-# =============================================================================
-
 - name: property_access_array_first_last_size
-  complexity: 160
-  hint: "Using .first, .last, .size property access on arrays"
+  complexity: 300
+  hint: Using .first, .last, .size property access on arrays
   template: |
     arr.first:{{- arr.first }}
     arr.last:{{- arr.last }}
     arr.size:{{- arr.size }}
   environment:
-    arr: [10, 20, 30]
+    arr:
+    - 10
+    - 20
+    - 30
   expected: |
     arr.first:10
     arr.last:30
     arr.size:3
-
 - name: property_access_hash_first_last_size
-  complexity: 160
-  hint: "Using .first, .last, .size property access on hashes"
+  complexity: 300
+  hint: Using .first, .last, .size property access on hashes
   template: |
     h.first:{{- h.first }}
     h.last:{{- h.last }}
@@ -332,21 +316,15 @@ specs:
     h.first:a1
     h.last:
     h.size:2
-
 - name: property_access_string_size
-  complexity: 160
-  hint: "Strings support .size property access"
+  complexity: 300
+  hint: Strings support .size property access
   template: "{{ s.size }}"
   environment:
-    s: "hello"
-  expected: "5"
-
-# =============================================================================
-# RANGE TESTS
-# =============================================================================
-
+    s: hello
+  expected: '5'
 - name: filter_range_first_last_size
-  complexity: 160
+  complexity: 300
   template: |
     {%- assign r = (1..5) -%}
     range, first:{{- r | first }}
@@ -356,9 +334,8 @@ specs:
     range, first:1
     range, last:5
     range, size:5
-
 - name: property_access_range_first_last_size
-  complexity: 160
+  complexity: 300
   template: |
     {%- assign r = (1..5) -%}
     range.first:{{- r.first }}
@@ -368,13 +345,8 @@ specs:
     range.first:1
     range.last:5
     range.size:5
-
-# =============================================================================
-# UNDEFINED VARIABLE TESTS
-# =============================================================================
-
 - name: filter_undefined_first_last_size
-  complexity: 150
+  complexity: 300
   template: |
     undefined, first:{{- undefined | first }}
     undefined, last:{{- undefined | last }}
@@ -384,14 +356,11 @@ specs:
     undefined, first:
     undefined, last:
     undefined, size:0
-
-# =============================================================================
-# DROP WITH to_liquid_value
-# =============================================================================
-
 - name: filter_integerdrop_first_last_size
-  complexity: 170
-  hint: "IntegerDrop wraps an integer value via to_liquid_value"
+  complexity: 300
+  hint: |
+    Ruby quirk: int | size returns 8 (byte representation on 64-bit).
+    See docs/implementers/ruby-quirks.md for details.
   template: |
     drop value:{{- d }}
     drop, first:{{- d | first }}
@@ -406,10 +375,11 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
-
 - name: filter_booleandrop_first_last_size
-  complexity: 170
-  hint: "BooleanDrop wraps a boolean value, to_s returns Yay/Nay"
+  complexity: 300
+  hint: |
+    Ruby quirk: bool | size returns 0.
+    See docs/implementers/ruby-quirks.md for details.
   template: |
     drop value:{{- d }}
     drop, first:{{- d | first }}
@@ -424,30 +394,20 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
-
-# =============================================================================
-# NEGATIVE INTEGER SIZE (same byte size)
-# =============================================================================
-
 - name: filter_negative_int_size
-  complexity: 150
+  complexity: 300
   hint: |
-    int | size returns Ruby's Integer#size (8 bytes on 64-bit systems).
-    Negative integers return the same byte size as positive integers.
+    Ruby quirk: int | size returns 8 (byte representation on 64-bit).
+    See docs/implementers/ruby-quirks.md for details.
   template: "{{ i | size }}"
   environment:
     i: -999999
-  expected: "8"
-
-# =============================================================================
-# ZERO VALUES
-# =============================================================================
-
+  expected: '8'
 - name: filter_zero_values_first_last_size
-  complexity: 150
+  complexity: 300
   hint: |
-    Zero integer still returns size 8 (Ruby Integer#size = byte representation).
-    Zero float returns size 0 (Float doesn't respond to size the same way).
+    Ruby quirks: int | size = 8 (byte size), float | size = 0.
+    See docs/implementers/ruby-quirks.md for complete type reference.
   template: |
     zero_int, first:{{- i | first }}
     zero_int, size:{{- i | size }}
@@ -457,36 +417,32 @@ specs:
   environment:
     i: 0
     f: 0.0
-    s: ""
+    s: ''
   expected: |
     zero_int, first:
     zero_int, size:8
     zero_float, first:
     zero_float, size:0
     empty_string, size:0
-
-# =============================================================================
-# FILTER VS PROPERTY ACCESS EQUIVALENCE
-# Verifies that .first/.last/.size property access produces same results as filters
-# =============================================================================
-
 - name: filter_vs_property_array_equivalence
-  complexity: 160
-  hint: "Verify filter and property access return identical results for arrays"
+  complexity: 300
+  hint: Verify filter and property access return identical results for arrays
   template: |
     filter first:{{- arr | first }}, property first:{{- arr.first }}
     filter last:{{- arr | last }}, property last:{{- arr.last }}
     filter size:{{- arr | size }}, property size:{{- arr.size }}
   environment:
-    arr: [10, 20, 30]
+    arr:
+    - 10
+    - 20
+    - 30
   expected: |
     filter first:10, property first:10
     filter last:30, property last:30
     filter size:3, property size:3
-
 - name: filter_vs_property_hash_equivalence
-  complexity: 160
-  hint: "Verify filter and property access return identical results for hashes"
+  complexity: 300
+  hint: Verify filter and property access return identical results for hashes
   template: |
     filter first:{{- h | first }}, property first:{{- h.first }}
     filter last:{{- h | last }}, property last:{{- h.last }}
@@ -499,24 +455,23 @@ specs:
     filter first:a1, property first:a1
     filter last:, property last:
     filter size:2, property size:2
-
 - name: filter_vs_property_string_equivalence
-  complexity: 160
-  hint: "Verify filter and property access return identical results for strings"
+  complexity: 300
+  hint: Verify filter and property access return identical results for strings
   template: |
     filter first:{{- s | first }}, property first:{{- s.first }}
     filter last:{{- s | last }}, property last:{{- s.last }}
     filter size:{{- s | size }}, property size:{{- s.size }}
   environment:
-    s: "hello"
+    s: hello
   expected: |
     filter first:h, property first:h
     filter last:o, property last:o
     filter size:5, property size:5
-
 - name: filter_vs_property_int_equivalence
-  complexity: 160
-  hint: "int | size returns Ruby Integer#size (byte size = 8 on 64-bit), not digit count"
+  complexity: 300
+  hint: int | size returns Ruby Integer#size (byte size = 8 on 64-bit), not digit
+    count
   template: |
     filter first:{{- i | first }}, property first:{{- i.first }}
     filter last:{{- i | last }}, property last:{{- i.last }}
@@ -527,9 +482,8 @@ specs:
     filter first:, property first:
     filter last:, property last:
     filter size:8, property size:8
-
 - name: filter_vs_property_float_equivalence
-  complexity: 160
+  complexity: 300
   hint: |
     Float.size differs between filter and property access:
     - filter: f | size returns 0 (filter handles missing .size method)
@@ -544,9 +498,8 @@ specs:
     filter first:, property first:
     filter last:, property last:
     filter size:0, property size:
-
 - name: filter_vs_property_range_equivalence
-  complexity: 160
+  complexity: 300
   template: |
     {%- assign r = (1..5) -%}
     filter first:{{- r | first }}, property first:{{- r.first }}
@@ -556,18 +509,11 @@ specs:
     filter first:1, property first:1
     filter last:5, property last:5
     filter size:5, property size:5
-
-# =============================================================================
-# INTEGER SIZE EDGE CASES
-# Ruby Integer#size returns byte representation size (8 on 64-bit), not digit count
-# =============================================================================
-
 - name: filter_int_size_is_byte_size
-  complexity: 160
+  complexity: 300
   hint: |
-    IMPORTANT: int | size returns Ruby's Integer#size which is the byte representation
-    size (8 bytes on 64-bit systems), NOT the number of digits. This is Ruby behavior
-    inherited by Liquid. All integers return 8 regardless of value.
+    Ruby quirk: int | size returns 8 (byte representation on 64-bit).
+    See docs/implementers/ruby-quirks.md for details.
   template: |
     size of 0:{{- i0 | size }}
     size of 1:{{- i1 | size }}

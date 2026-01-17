@@ -182,6 +182,7 @@
   template: "{{ items | sort | join: ',' }}"
   environment: { items: [1, "a", true] }
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
       - "cannot sort"

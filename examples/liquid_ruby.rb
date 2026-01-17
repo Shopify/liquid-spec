@@ -19,7 +19,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :strict_parsing]
+  config.features = [:core, :strict_parsing, :ruby_types]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|

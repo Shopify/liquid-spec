@@ -1,20 +1,10 @@
-# Tests for first, last, size filters on various variable types (LAX MODE)
-# Each type is tested at global scope and inside a hash
-# This file mirrors liquid_ruby/variable_type_filters.yml but runs in lax parsing mode
 ---
 _metadata:
   hint: |
-    These specs test that first, last, and size filters/methods behave correctly
-    across all primitive and compound types in lax parsing mode.
-    The expected outputs should be identical to strict mode.
-  minimum_complexity: 500
-
+    These specs test Ruby-specific behavior of first, last, and size filters in lax mode.
+    See docs/implementers/ruby-quirks.md for the complete type reference tables.
+  minimum_complexity: 300
 specs:
-# =============================================================================
-# GLOBAL SCOPE - Each variable type with first, last, size
-# =============================================================================
-
-# --- Float ---
 - name: lax_filter_float_global_first_last_size
   complexity: 500
   template: |
@@ -27,8 +17,6 @@ specs:
     float, first:
     float, last:
     float, size:0
-
-# --- Integer ---
 - name: lax_filter_int_global_first_last_size
   complexity: 500
   hint: |
@@ -45,8 +33,6 @@ specs:
     int, first:
     int, last:
     int, size:8
-
-# --- Boolean (true) ---
 - name: lax_filter_bool_true_global_first_last_size
   complexity: 500
   template: |
@@ -59,8 +45,6 @@ specs:
     bool, first:
     bool, last:
     bool, size:0
-
-# --- Boolean (false) ---
 - name: lax_filter_bool_false_global_first_last_size
   complexity: 500
   template: |
@@ -73,23 +57,19 @@ specs:
     bool, first:
     bool, last:
     bool, size:0
-
-# --- String ---
 - name: lax_filter_string_global_first_last_size
   complexity: 500
-  hint: "String first/last return the first/last character of the string"
+  hint: String first/last return the first/last character of the string
   template: |
     string, first:{{- s | first }}
     string, last:{{- s | last }}
     string, size:{{- s | size }}
   environment:
-    s: "hello"
+    s: hello
   expected: |
     string, first:h
     string, last:o
     string, size:5
-
-# --- Nil ---
 - name: lax_filter_nil_global_first_last_size
   complexity: 500
   template: |
@@ -97,13 +77,11 @@ specs:
     nil, last:{{- n | last }}
     nil, size:{{- n | size }}
   environment:
-    n: null
+    "n":
   expected: |
     nil, first:
     nil, last:
     nil, size:0
-
-# --- Array ---
 - name: lax_filter_array_global_first_last_size
   complexity: 500
   template: |
@@ -111,13 +89,16 @@ specs:
     array, last:{{- arr | last }}
     array, size:{{- arr | size }}
   environment:
-    arr: [1, 2, 3, 4, 5]
+    arr:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
   expected: |
     array, first:1
     array, last:5
     array, size:5
-
-# --- Empty Array ---
 - name: lax_filter_empty_array_global_first_last_size
   complexity: 500
   template: |
@@ -130,11 +111,9 @@ specs:
     empty_array, first:
     empty_array, last:
     empty_array, size:0
-
-# --- Hash ---
 - name: lax_filter_hash_global_first_last_size
   complexity: 500
-  hint: "hash | first returns first key+value concatenated, hash | last returns empty"
+  hint: hash | first returns first key+value concatenated, hash | last returns empty
   template: |
     hash, first:{{- h | first }}
     hash, last:{{- h | last }}
@@ -147,8 +126,6 @@ specs:
     hash, first:a1
     hash, last:
     hash, size:2
-
-# --- Empty Hash ---
 - name: lax_filter_empty_hash_global_first_last_size
   complexity: 500
   template: |
@@ -161,8 +138,6 @@ specs:
     empty_hash, first:
     empty_hash, last:
     empty_hash, size:0
-
-# --- Drop (using IntegerDrop) ---
 - name: lax_filter_drop_global_first_last_size
   complexity: 510
   template: |
@@ -177,14 +152,9 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
-
-# =============================================================================
-# HASH PROPERTY ACCESS - Types inside a hash with first, last, size filters
-# =============================================================================
-
 - name: lax_filter_hash_properties_first_last_size
   complexity: 510
-  hint: "Tests accessing various types as hash properties and applying filters"
+  hint: Tests accessing various types as hash properties and applying filters
   template: |
     hash.f, first:{{- hash.f | first }}
     hash.f, last:{{- hash.f | last }}
@@ -209,8 +179,11 @@ specs:
       f: 3.14
       i: 42
       b: true
-      s: "hello"
-      arr: [1, 2, 3]
+      s: hello
+      arr:
+      - 1
+      - 2
+      - 3
       nested:
         x: 10
   expected: |
@@ -232,59 +205,50 @@ specs:
     hash.nested, first:x10
     hash.nested, last:
     hash.nested, size:1
-
-# =============================================================================
-# ARRAYS CONTAINING EACH TYPE - Test first/last retrieval
-# =============================================================================
-
 - name: lax_filter_array_containing_types_first
   complexity: 510
-  hint: "Array containing float, int, bool, string, array, hash - test first"
+  hint: Array containing float, int, bool, string, array, hash - test first
   template: "{{ arr | first }}"
   environment:
     arr:
-      - 3.14
-      - 42
-      - true
-      - "hello"
-      - [1, 2]
-      - {a: 1}
-  expected: "3.14"
-
+    - 3.14
+    - 42
+    - true
+    - hello
+    - - 1
+      - 2
+    - a: 1
+  expected: '3.14'
 - name: lax_filter_array_containing_types_last
   complexity: 510
-  hint: "Array containing various types - last returns hash's inspect string"
+  hint: Array containing various types - last returns hash's inspect string
   template: "{{ arr | last }}"
   environment:
     arr:
-      - 3.14
-      - 42
-      - true
-      - "hello"
-      - [1, 2]
-      - {a: 1}
+    - 3.14
+    - 42
+    - true
+    - hello
+    - - 1
+      - 2
+    - a: 1
   expected: '{"a"=>1}'
-
 - name: lax_filter_array_containing_types_size
   complexity: 510
   template: "{{ arr | size }}"
   environment:
     arr:
-      - 3.14
-      - 42
-      - true
-      - "hello"
-      - [1, 2]
-      - {a: 1}
-  expected: "6"
-
-# =============================================================================
-# HASH CONTAINING EACH TYPE AS VALUES
-# =============================================================================
-
+    - 3.14
+    - 42
+    - true
+    - hello
+    - - 1
+      - 2
+    - a: 1
+  expected: '6'
 - name: lax_filter_hash_containing_types_first_last_size
   complexity: 510
-  hint: "Hash containing all types as values"
+  hint: Hash containing all types as values
   template: |
     hash, first:{{- hash | first }}
     hash, size:{{- hash | size }}
@@ -293,34 +257,34 @@ specs:
       float_val: 3.14
       int_val: 42
       bool_val: true
-      string_val: "hello"
-      array_val: [1, 2]
-      hash_val: {nested: true}
+      string_val: hello
+      array_val:
+      - 1
+      - 2
+      hash_val:
+        nested: true
   expected: |
     hash, first:float_val3.14
     hash, size:6
-
-# =============================================================================
-# PROPERTY ACCESS STYLE (dot notation for first/last/size)
-# =============================================================================
-
 - name: lax_property_access_array_first_last_size
   complexity: 510
-  hint: "Using .first, .last, .size property access on arrays"
+  hint: Using .first, .last, .size property access on arrays
   template: |
     arr.first:{{- arr.first }}
     arr.last:{{- arr.last }}
     arr.size:{{- arr.size }}
   environment:
-    arr: [10, 20, 30]
+    arr:
+    - 10
+    - 20
+    - 30
   expected: |
     arr.first:10
     arr.last:30
     arr.size:3
-
 - name: lax_property_access_hash_first_last_size
   complexity: 510
-  hint: "Using .first, .last, .size property access on hashes"
+  hint: Using .first, .last, .size property access on hashes
   template: |
     h.first:{{- h.first }}
     h.last:{{- h.last }}
@@ -333,19 +297,13 @@ specs:
     h.first:a1
     h.last:
     h.size:2
-
 - name: lax_property_access_string_size
   complexity: 510
-  hint: "Strings support .size property access"
+  hint: Strings support .size property access
   template: "{{ s.size }}"
   environment:
-    s: "hello"
-  expected: "5"
-
-# =============================================================================
-# RANGE TESTS
-# =============================================================================
-
+    s: hello
+  expected: '5'
 - name: lax_filter_range_first_last_size
   complexity: 510
   template: |
@@ -357,7 +315,6 @@ specs:
     range, first:1
     range, last:5
     range, size:5
-
 - name: lax_property_access_range_first_last_size
   complexity: 510
   template: |
@@ -369,11 +326,6 @@ specs:
     range.first:1
     range.last:5
     range.size:5
-
-# =============================================================================
-# UNDEFINED VARIABLE TESTS
-# =============================================================================
-
 - name: lax_filter_undefined_first_last_size
   complexity: 500
   template: |
@@ -385,11 +337,6 @@ specs:
     undefined, first:
     undefined, last:
     undefined, size:0
-
-# =============================================================================
-# NEGATIVE INTEGER SIZE (same byte size)
-# =============================================================================
-
 - name: lax_filter_negative_int_size
   complexity: 500
   hint: |
@@ -398,12 +345,7 @@ specs:
   template: "{{ i | size }}"
   environment:
     i: -999999
-  expected: "8"
-
-# =============================================================================
-# ZERO VALUES
-# =============================================================================
-
+  expected: '8'
 - name: lax_filter_zero_values_first_last_size
   complexity: 500
   hint: |
@@ -418,36 +360,32 @@ specs:
   environment:
     i: 0
     f: 0.0
-    s: ""
+    s: ''
   expected: |
     zero_int, first:
     zero_int, size:8
     zero_float, first:
     zero_float, size:0
     empty_string, size:0
-
-# =============================================================================
-# FILTER VS PROPERTY ACCESS EQUIVALENCE
-# Verifies that .first/.last/.size property access produces same results as filters
-# =============================================================================
-
 - name: lax_filter_vs_property_array_equivalence
   complexity: 510
-  hint: "Verify filter and property access return identical results for arrays"
+  hint: Verify filter and property access return identical results for arrays
   template: |
     filter first:{{- arr | first }}, property first:{{- arr.first }}
     filter last:{{- arr | last }}, property last:{{- arr.last }}
     filter size:{{- arr | size }}, property size:{{- arr.size }}
   environment:
-    arr: [10, 20, 30]
+    arr:
+    - 10
+    - 20
+    - 30
   expected: |
     filter first:10, property first:10
     filter last:30, property last:30
     filter size:3, property size:3
-
 - name: lax_filter_vs_property_hash_equivalence
   complexity: 510
-  hint: "Verify filter and property access return identical results for hashes"
+  hint: Verify filter and property access return identical results for hashes
   template: |
     filter first:{{- h | first }}, property first:{{- h.first }}
     filter last:{{- h | last }}, property last:{{- h.last }}
@@ -460,24 +398,23 @@ specs:
     filter first:a1, property first:a1
     filter last:, property last:
     filter size:2, property size:2
-
 - name: lax_filter_vs_property_string_equivalence
   complexity: 510
-  hint: "Verify filter and property access return identical results for strings"
+  hint: Verify filter and property access return identical results for strings
   template: |
     filter first:{{- s | first }}, property first:{{- s.first }}
     filter last:{{- s | last }}, property last:{{- s.last }}
     filter size:{{- s | size }}, property size:{{- s.size }}
   environment:
-    s: "hello"
+    s: hello
   expected: |
     filter first:h, property first:h
     filter last:o, property last:o
     filter size:5, property size:5
-
 - name: lax_filter_vs_property_int_equivalence
   complexity: 510
-  hint: "int | size returns Ruby Integer#size (byte size = 8 on 64-bit), not digit count"
+  hint: int | size returns Ruby Integer#size (byte size = 8 on 64-bit), not digit
+    count
   template: |
     filter first:{{- i | first }}, property first:{{- i.first }}
     filter last:{{- i | last }}, property last:{{- i.last }}
@@ -488,7 +425,6 @@ specs:
     filter first:, property first:
     filter last:, property last:
     filter size:8, property size:8
-
 - name: lax_filter_vs_property_float_equivalence
   complexity: 510
   hint: |
@@ -505,7 +441,6 @@ specs:
     filter first:, property first:
     filter last:, property last:
     filter size:0, property size:
-
 - name: lax_filter_vs_property_range_equivalence
   complexity: 510
   template: |
@@ -517,12 +452,6 @@ specs:
     filter first:1, property first:1
     filter last:5, property last:5
     filter size:5, property size:5
-
-# =============================================================================
-# INTEGER SIZE EDGE CASES
-# Ruby Integer#size returns byte representation size (8 on 64-bit), not digit count
-# =============================================================================
-
 - name: lax_filter_int_size_is_byte_size
   complexity: 510
   hint: |
@@ -547,14 +476,9 @@ specs:
     size of 42:8
     size of 999999999:8
     size of -1:8
-
-# =============================================================================
-# DROP WITH to_liquid_value
-# =============================================================================
-
 - name: lax_filter_integerdrop_first_last_size
   complexity: 520
-  hint: "IntegerDrop wraps an integer value via to_liquid_value"
+  hint: IntegerDrop wraps an integer value via to_liquid_value
   template: |
     drop value:{{- d }}
     drop, first:{{- d | first }}
@@ -569,10 +493,9 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
-
 - name: lax_filter_booleandrop_first_last_size
   complexity: 520
-  hint: "BooleanDrop wraps a boolean value, to_s returns Yay/Nay"
+  hint: BooleanDrop wraps a boolean value, to_s returns Yay/Nay
   template: |
     drop value:{{- d }}
     drop, first:{{- d | first }}
@@ -587,12 +510,6 @@ specs:
     drop, first:
     drop, last:
     drop, size:0
-
-# =============================================================================
-# DYNAMIC VARIABLE LOOKUP - {{ [varname] }} syntax
-# Looks up varname's value, then uses that as the variable name to resolve
-# =============================================================================
-
 - name: lax_dynamic_lookup_basic
   complexity: 520
   hint: |
@@ -600,10 +517,9 @@ specs:
     that string as the variable name to look up in the current scope.
   template: "{{ [key] }}"
   environment:
-    key: "target"
-    target: "found it"
-  expected: "found it"
-
+    key: target
+    target: found it
+  expected: found it
 - name: lax_dynamic_lookup_first_last_size_string
   complexity: 520
   template: |
@@ -611,13 +527,12 @@ specs:
     [key], last:{{- [key] | last }}
     [key], size:{{- [key] | size }}
   environment:
-    key: "s"
-    s: "hello"
+    key: s
+    s: hello
   expected: |
     [key], first:h
     [key], last:o
     [key], size:5
-
 - name: lax_dynamic_lookup_first_last_size_array
   complexity: 520
   template: |
@@ -625,13 +540,15 @@ specs:
     [key], last:{{- [key] | last }}
     [key], size:{{- [key] | size }}
   environment:
-    key: "arr"
-    arr: [10, 20, 30]
+    key: arr
+    arr:
+    - 10
+    - 20
+    - 30
   expected: |
     [key], first:10
     [key], last:30
     [key], size:3
-
 - name: lax_dynamic_lookup_first_last_size_hash
   complexity: 520
   template: |
@@ -639,7 +556,7 @@ specs:
     [key], last:{{- [key] | last }}
     [key], size:{{- [key] | size }}
   environment:
-    key: "h"
+    key: h
     h:
       a: 1
       b: 2
@@ -647,22 +564,20 @@ specs:
     [key], first:a1
     [key], last:
     [key], size:2
-
 - name: lax_dynamic_lookup_first_last_size_int
   complexity: 520
-  hint: "Dynamic lookup to integer, then apply first/last/size"
+  hint: Dynamic lookup to integer, then apply first/last/size
   template: |
     [key], first:{{- [key] | first }}
     [key], last:{{- [key] | last }}
     [key], size:{{- [key] | size }}
   environment:
-    key: "num"
+    key: num
     num: 42
   expected: |
     [key], first:
     [key], last:
     [key], size:8
-
 - name: lax_dynamic_lookup_first_last_size_float
   complexity: 520
   template: |
@@ -670,13 +585,12 @@ specs:
     [key], last:{{- [key] | last }}
     [key], size:{{- [key] | size }}
   environment:
-    key: "f"
+    key: f
     f: 3.14
   expected: |
     [key], first:
     [key], last:
     [key], size:0
-
 - name: lax_dynamic_lookup_first_last_size_nil
   complexity: 520
   template: |
@@ -685,12 +599,11 @@ specs:
     [key], size:{{- [key] | size }}
   environment:
     key: "n"
-    n: null
+    "n":
   expected: |
     [key], first:
     [key], last:
     [key], size:0
-
 - name: lax_dynamic_lookup_first_last_size_bool
   complexity: 520
   template: |
@@ -698,54 +611,45 @@ specs:
     [key], last:{{- [key] | last }}
     [key], size:{{- [key] | size }}
   environment:
-    key: "b"
+    key: b
     b: true
   expected: |
     [key], first:
     [key], last:
     [key], size:0
-
 - name: lax_dynamic_lookup_undefined_key
   complexity: 520
-  hint: "Dynamic lookup with undefined variable as key returns empty"
-  template: "result:{{- [missing] }}"
+  hint: Dynamic lookup with undefined variable as key returns empty
+  template: result:{{- [missing] }}
   environment:
-    target: "value"
-  expected: "result:"
-
+    target: value
+  expected: 'result:'
 - name: lax_dynamic_lookup_key_points_to_undefined
   complexity: 520
-  hint: "Dynamic lookup where key points to non-existent variable"
-  template: "result:{{- [key] }}"
+  hint: Dynamic lookup where key points to non-existent variable
+  template: result:{{- [key] }}
   environment:
-    key: "missing"
-  expected: "result:"
-
-# =============================================================================
-# HASH BRACKET ACCESS - hash['key'] and hash[variable] syntax
-# =============================================================================
-
+    key: missing
+  expected: 'result:'
 - name: lax_hash_bracket_static_key
   complexity: 520
-  hint: "hash['literal'] accesses hash with string literal key"
+  hint: hash['literal'] accesses hash with string literal key
   template: "{{ hash['a'] }}, {{ hash['b'] }}"
   environment:
     hash:
       a: 1
       b: 2
-  expected: "1, 2"
-
+  expected: 1, 2
 - name: lax_hash_bracket_dynamic_key
   complexity: 520
-  hint: "hash[variable] accesses hash with variable's value as key"
+  hint: hash[variable] accesses hash with variable's value as key
   template: "{{ hash[key] }}"
   environment:
     hash:
-      x: "found"
-      y: "also found"
-    key: "x"
-  expected: "found"
-
+      x: found
+      "y": also found
+    key: x
+  expected: found
 - name: lax_hash_bracket_first_last_size_array
   complexity: 520
   template: |
@@ -754,13 +658,17 @@ specs:
     hash[key], size:{{- hash[key] | size }}
   environment:
     hash:
-      arr: [1, 2, 3, 4, 5]
-    key: "arr"
+      arr:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    key: arr
   expected: |
     hash[key], first:1
     hash[key], last:5
     hash[key], size:5
-
 - name: lax_hash_bracket_first_last_size_string
   complexity: 520
   template: |
@@ -769,13 +677,12 @@ specs:
     hash[key], size:{{- hash[key] | size }}
   environment:
     hash:
-      str: "hello"
-    key: "str"
+      str: hello
+    key: str
   expected: |
     hash[key], first:h
     hash[key], last:o
     hash[key], size:5
-
 - name: lax_hash_bracket_first_last_size_nested_hash
   complexity: 520
   template: |
@@ -786,13 +693,12 @@ specs:
     hash:
       nested:
         x: 10
-        y: 20
-    key: "nested"
+        "y": 20
+    key: nested
   expected: |
     hash[key], first:x10
     hash[key], last:
     hash[key], size:2
-
 - name: lax_hash_bracket_first_last_size_int
   complexity: 520
   template: |
@@ -802,12 +708,11 @@ specs:
   environment:
     hash:
       num: 42
-    key: "num"
+    key: num
   expected: |
     hash[key], first:
     hash[key], last:
     hash[key], size:8
-
 - name: lax_hash_bracket_first_last_size_float
   complexity: 520
   template: |
@@ -817,12 +722,11 @@ specs:
   environment:
     hash:
       f: 3.14
-    key: "f"
+    key: f
   expected: |
     hash[key], first:
     hash[key], last:
     hash[key], size:0
-
 - name: lax_hash_bracket_first_last_size_nil
   complexity: 520
   template: |
@@ -831,13 +735,12 @@ specs:
     hash[key], size:{{- hash[key] | size }}
   environment:
     hash:
-      n: null
+      "n":
     key: "n"
   expected: |
     hash[key], first:
     hash[key], last:
     hash[key], size:0
-
 - name: lax_hash_bracket_first_last_size_bool
   complexity: 520
   template: |
@@ -847,90 +750,82 @@ specs:
   environment:
     hash:
       b: true
-    key: "b"
+    key: b
   expected: |
     hash[key], first:
     hash[key], last:
     hash[key], size:0
-
 - name: lax_hash_bracket_missing_key
   complexity: 520
-  hint: "hash[key] where key points to non-existent hash key"
-  template: "result:{{- hash[key] }}"
+  hint: hash[key] where key points to non-existent hash key
+  template: result:{{- hash[key] }}
   environment:
     hash:
       a: 1
-    key: "missing"
-  expected: "result:"
-
+    key: missing
+  expected: 'result:'
 - name: lax_hash_bracket_undefined_key_variable
   complexity: 520
-  hint: "hash[undefined] where the key variable doesn't exist"
-  template: "result:{{- hash[missing] }}"
+  hint: hash[undefined] where the key variable doesn't exist
+  template: result:{{- hash[missing] }}
   environment:
     hash:
       a: 1
-  expected: "result:"
-
-# =============================================================================
-# COMBINED DYNAMIC LOOKUPS WITH PROPERTY ACCESS
-# =============================================================================
-
+  expected: 'result:'
 - name: lax_dynamic_lookup_then_property_access
   complexity: 530
-  hint: "Dynamic lookup followed by property access: {{ [key].first }}"
+  hint: 'Dynamic lookup followed by property access: {{ [key].first }}'
   template: |
     [key].first:{{- [key].first }}
     [key].last:{{- [key].last }}
     [key].size:{{- [key].size }}
   environment:
-    key: "arr"
-    arr: [10, 20, 30]
+    key: arr
+    arr:
+    - 10
+    - 20
+    - 30
   expected: |
     [key].first:10
     [key].last:30
     [key].size:3
-
 - name: lax_hash_bracket_then_property_access
   complexity: 530
-  hint: "Hash bracket access followed by property access"
+  hint: Hash bracket access followed by property access
   template: |
     hash[key].first:{{- hash[key].first }}
     hash[key].last:{{- hash[key].last }}
     hash[key].size:{{- hash[key].size }}
   environment:
     hash:
-      arr: [100, 200, 300]
-    key: "arr"
+      arr:
+      - 100
+      - 200
+      - 300
+    key: arr
   expected: |
     hash[key].first:100
     hash[key].last:300
     hash[key].size:3
-
-# =============================================================================
-# NESTED DYNAMIC LOOKUPS
-# =============================================================================
-
 - name: lax_nested_dynamic_lookup
   complexity: 530
-  hint: "Nested dynamic lookup: [[key]] resolves key, then resolves that result"
+  hint: 'Nested dynamic lookup: [[key]] resolves key, then resolves that result'
   template: "{{ [[key]] }}"
   environment:
-    key: "middle"
-    middle: "target"
-    target: "final value"
-  expected: "final value"
-
+    key: middle
+    middle: target
+    target: final value
+  expected: final value
 - name: lax_hash_nested_bracket_access
   complexity: 530
-  hint: "Nested bracket access: hash[hash2[key]]"
+  hint: 'Nested bracket access: hash[hash2[key]]'
   template: "{{ hash[lookup[key]] }}"
   environment:
     hash:
-      x: "found x"
-      y: "found y"
+      x: found x
+      "y": found y
     lookup:
-      a: "x"
+      a: x
       b: "y"
-    key: "a"
-  expected: "found x"
+    key: a
+  expected: found x

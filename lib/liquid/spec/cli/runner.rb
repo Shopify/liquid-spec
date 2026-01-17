@@ -1091,7 +1091,9 @@ module Liquid
 
           def compare_single_spec(spec, _config)
             required_opts = spec.source_required_options || {}
-            render_errors = spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
+            # Note: expects_render_error? means we want strict_errors: true (throw exceptions)
+            # So we DON'T include it in render_errors calculation
+            render_errors = spec.render_errors || required_opts[:render_errors]
 
             compile_options = {
               line_numbers: true,
@@ -1123,7 +1125,9 @@ module Liquid
             else
               { status: :different, reference: reference_result, reference_error: nil, adapter: adapter_result, adapter_error: nil }
             end
-          rescue StandardError => e
+          rescue SystemExit, Interrupt, SignalException
+            raise
+          rescue Exception => e
             { status: :error, error: e }
           end
 
@@ -1158,7 +1162,9 @@ module Liquid
 
           def run_single_spec(spec, _config)
             required_opts = spec.source_required_options || {}
-            render_errors = spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
+            # Note: expects_render_error? means we want strict_errors: true (throw exceptions)
+            # So we DON'T include it in render_errors calculation
+            render_errors = spec.render_errors || required_opts[:render_errors]
 
             # Build filesystem first so it can be passed to compile
             filesystem = spec.instantiate_filesystem
@@ -1206,7 +1212,12 @@ module Liquid
 
             begin
               actual = LiquidSpec.do_render(assigns, render_options, context)
-            rescue StandardError => e
+            rescue SystemExit, Interrupt, SignalException
+              # Re-raise system exceptions
+              raise
+            rescue Exception => e
+              # Catch all other exceptions (including Liquid errors which may not
+              # properly inherit from StandardError in some Ruby environments)
               if spec.expects_render_error?
                 return check_error_patterns(e, spec.error_patterns(:render_error), "render_error")
               end
@@ -1226,8 +1237,14 @@ module Liquid
               return check_output_patterns(actual, spec.error_patterns(:output))
             end
 
+            if spec.expects_pattern?
+              return compare_result_pattern(actual, spec)
+            end
+
             compare_result(actual, spec.expected)
-          rescue StandardError => e
+          rescue SystemExit, Interrupt, SignalException
+            raise
+          rescue Exception => e
             { status: :error, expected: spec.expected, actual: nil, error: e }
           end
 
@@ -1282,6 +1299,15 @@ module Liquid
               { status: :pass }
             else
               { status: :fail, expected: expected, actual: actual }
+            end
+          end
+
+          def compare_result_pattern(actual, spec)
+            pattern = spec.expected_pattern_regex
+            if pattern && actual.match?(pattern)
+              { status: :pass }
+            else
+              { status: :fail, expected: "output matching /#{spec.expected_pattern}/", actual: actual }
             end
           end
 

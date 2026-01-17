@@ -453,10 +453,12 @@ module Liquid
             required_opts = spec.source_required_options || {}
 
             # Use forced render_errors if provided, otherwise use spec's setting
+            # Note: expects_render_error? means we want strict_errors: true (throw exceptions)
+            # So we DON'T include it in render_errors calculation
             render_errors = if options.key?(:force_render_errors)
               options[:force_render_errors]
             else
-              spec.render_errors || required_opts[:render_errors] || spec.expects_render_error?
+              spec.render_errors || required_opts[:render_errors]
             end
 
             # Build filesystem first so it can be passed to compile

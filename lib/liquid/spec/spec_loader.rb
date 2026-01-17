@@ -53,9 +53,9 @@ module Liquid
     module SpecLoader
       # Valid keys at each level - unknown keys raise errors
       VALID_FILE_KEYS = %w[_metadata specs].freeze
-      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity].freeze
+      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity required_features].freeze
       VALID_SPEC_KEYS = %w[
-        name template expected environment filesystem complexity hint doc
+        name template expected expected_pattern environment filesystem complexity hint doc
         error_mode render_errors required_features errors template_name
       ].freeze
 
@@ -239,6 +239,7 @@ module Liquid
               template: spec_data["template"],
               template_name: spec_data["template_name"],
               expected: spec_expected,
+              expected_pattern: spec_data["expected_pattern"],
               errors: spec_data["errors"] || {},
               hint: spec_data["hint"],
               doc: spec_data["doc"] || source_doc,

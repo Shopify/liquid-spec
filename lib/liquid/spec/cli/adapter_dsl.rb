@@ -57,6 +57,8 @@ module LiquidSpec
   FEATURES = {
     core: "Full Liquid implementation with runtime drop support",
     runtime_drops: "Supports bidirectional communication for drop callbacks",
+    inline_errors: "Supports render_errors mode (errors rendered inline instead of raised)",
+    ruby_types: "Supports Ruby-specific types (symbols in hash keys/output)",
     lax_parsing: "Supports error_mode: :lax for lenient parsing",
     shopify_tags: "Shopify-specific tags (schema, style, section, etc.)",
     shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
@@ -68,11 +70,11 @@ module LiquidSpec
   # :core is the "full implementation" feature that includes runtime drop support
   # JSON-RPC adapters that can't support runtime drops should not declare :core
   FEATURE_EXPANSIONS = {
-    core: [:runtime_drops],
+    core: [:runtime_drops, :inline_errors],
   }.freeze
 
   # Default features when no config is set (matches Configuration defaults after expansion)
-  DEFAULT_FEATURES = [:core, :runtime_drops].freeze
+  DEFAULT_FEATURES = [:core, :runtime_drops, :inline_errors].freeze
 
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only

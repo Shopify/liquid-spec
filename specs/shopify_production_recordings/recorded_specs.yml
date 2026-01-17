@@ -4977,6 +4977,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_05fff3843
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5022,6 +5023,7 @@
     b: a
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_07a79164e
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5045,6 +5047,7 @@
     b: 1.0
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_0e4b4dde0
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5068,6 +5071,7 @@
     b:
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_ba4c0069b
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5098,6 +5102,7 @@
     b: false
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_0ce277577
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5135,6 +5140,7 @@
     b: true
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_750a27a39
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5254,6 +5260,7 @@
     b: a
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_624e423c0
+  required_features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -12494,6 +12501,7 @@
     - bro
   filesystem: {}
 - name: RecordedTest#test_for_loop_on_object_with_limit_a6030f943
+  required_features: [ruby_types]
   expected: 'foobarbazqux
 
     '
@@ -12505,6 +12513,7 @@
       :hello: world
   filesystem: {}
 - name: RecordedTest#test_for_loop_on_object_with_offset_f66369261
+  required_features: [ruby_types]
   expected: 'helloworld
 
     '

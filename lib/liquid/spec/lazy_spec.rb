@@ -27,7 +27,7 @@ module Liquid
     class LazySpec
       VALID_ERROR_KEYS = ["parse_error", "render_error", "output"].freeze
 
-      attr_reader :name, :template, :template_name, :expected, :errors, :hint, :doc, :complexity
+      attr_reader :name, :template, :template_name, :expected, :expected_pattern, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :render_errors, :required_features
       attr_reader :source_file, :line_number
       attr_reader :raw_environment, :raw_filesystem, :raw_template_factory
@@ -37,6 +37,7 @@ module Liquid
         template:,
         template_name: nil,
         expected: nil,
+        expected_pattern: nil,
         errors: {},
         hint: nil,
         doc: nil,
@@ -56,6 +57,7 @@ module Liquid
         @template = template
         @template_name = template_name
         @expected = expected
+        @expected_pattern = expected_pattern
         @errors = errors || {}
         @hint = hint
         @doc = doc
@@ -122,10 +124,23 @@ module Liquid
         errors.key?("output") || errors.key?(:output)
       end
 
+      # Check if this spec uses expected_pattern for regex matching
+      def expects_pattern?
+        !expected_pattern.nil?
+      end
+
+      # Get the expected pattern as a Regexp
+      def expected_pattern_regex
+        return unless expected_pattern
+        expected_pattern.is_a?(Regexp) ? expected_pattern : Regexp.new(expected_pattern)
+      end
+
       # Get patterns for a specific error type
+      # String patterns are escaped (literal match) and case-insensitive
+      # Regex patterns are used as-is
       def error_patterns(type)
         patterns = errors[type.to_s] || errors[type.to_sym] || []
-        Array(patterns).map { |p| p.is_a?(Regexp) ? p : Regexp.new(p.to_s, Regexp::IGNORECASE) }
+        Array(patterns).map { |p| p.is_a?(Regexp) ? p : Regexp.new(Regexp.escape(p.to_s), Regexp::IGNORECASE) }
       end
 
       # Returns the effective hint (spec-level hint takes precedence over source-level)
@@ -160,9 +175,14 @@ module Liquid
           validation_errors << "missing required field 'template'"
         end
 
-        # Rule 3: Must have either expected or errors
-        if expected.nil? && (errors.nil? || errors.empty?)
-          validation_errors << "must have either 'expected' or 'errors' (got neither)"
+        # Rule 3: Must have either expected, expected_pattern, or errors
+        if expected.nil? && expected_pattern.nil? && (errors.nil? || errors.empty?)
+          validation_errors << "must have either 'expected', 'expected_pattern', or 'errors' (got neither)"
+        end
+
+        # Rule 3b: Cannot have both expected and expected_pattern
+        if expected && expected_pattern
+          validation_errors << "cannot have both 'expected' and 'expected_pattern' (use one or the other)"
         end
 
         # Rule 4: Check for unknown error keys

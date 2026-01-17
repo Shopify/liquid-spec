@@ -1,85 +1,50 @@
 ---
-# =============================================================================
-# COMPLEXITY 200-300: Partials - include vs render
-# =============================================================================
-#
-# These specs test the two partial rendering mechanisms in Liquid:
-# - `include` (deprecated): Shared scope, dynamic names, leaky behavior
-# - `render` (recommended): Isolated scope, static names, predictable behavior
-#
-# Complexity levels:
-#   200: Basic render/include usage, parameters, with/for variants
-#   210: break/continue behavior, increment/decrement isolation
-#   220: The include prohibition inside render
-#   300: Edge cases, complex nested scenarios
-#
-# Key differences tested:
-# - Variable scope isolation
-# - break/continue containment
-# - increment/decrement counter isolation
-# - forloop availability in `render for`
-# - The `include` prohibition inside `render`
-#
-# =============================================================================
-
 _metadata:
   doc: implementers/partials.md
-
 specs:
-# =============================================================================
-# RENDER: Basic Usage
-# =============================================================================
-
 - name: render_basic
   template: "{% render 'snippet' %}"
   filesystem:
-    snippet: "hello from snippet"
-  expected: "hello from snippet"
+    snippet: hello from snippet
+  expected: hello from snippet
   complexity: 200
   hint: |
     The render tag includes a partial template. The partial name must be a
     string literal (not a variable). This is the recommended way to include
     partials in modern Liquid.
-
 - name: render_with_parameter
   template: "{% render 'greeting', name: 'World' %}"
   filesystem:
-    greeting: "Hello {{ name }}!"
-  expected: "Hello World!"
+    greeting: Hello {{ name }}!
+  expected: Hello World!
   complexity: 200
   hint: |
     Parameters are passed to the partial as local variables. The partial
     can access 'name' but nothing else from the outer scope.
-
 - name: render_with_multiple_parameters
   template: "{% render 'card', title: 'Product', price: 99, active: true %}"
   filesystem:
     card: "{{ title }}: ${{ price }} ({{ active }})"
-  expected: "Product: $99 (true)"
+  expected: 'Product: $99 (true)'
   complexity: 200
-  hint: |
-    Multiple parameters can be passed, separated by commas.
+  hint: 'Multiple parameters can be passed, separated by commas.
 
+    '
 - name: render_with_variable_expression
   template: "{% assign count = items | size %}{% render 'show', value: count %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
-    show: "Count: {{ value }}"
-  expected: "Count: 3"
+    show: 'Count: {{ value }}'
+  expected: 'Count: 3'
   complexity: 200
   hint: |
     Parameter values can be variable expressions. Use assign first if you need
     to apply filters, then pass the result. Direct filter expressions in render
     arguments may not be evaluated (implementation-dependent).
-
-# =============================================================================
-# RENDER: Variable Isolation
-# =============================================================================
-
 - name: render_isolated_from_outer_variables
   template: "{% assign outer = 'visible' %}{% render 'snippet' %}"
   filesystem:
@@ -90,77 +55,62 @@ specs:
     Variables assigned outside are NOT visible inside a rendered partial.
     This is the key difference from include - render creates an isolated scope.
     The partial cannot "see" outer variables unless explicitly passed.
-
 - name: render_does_not_leak_variables
   template: "{% render 'snippet' %}[{{ inner }}]"
   filesystem:
     snippet: "{% assign inner = 'leaked' %}"
   expected: "[]"
-  complexity: 200
+  complexity: 100
   hint: |
     Variables assigned inside a rendered partial are NOT visible outside.
     The partial's scope is completely isolated - assignments don't leak.
-
 - name: render_explicit_passing_required
   template: "{% assign product = 'Widget' %}{% render 'show', item: product %}"
   filesystem:
-    show: "Item: {{ item }}"
-  expected: "Item: Widget"
+    show: 'Item: {{ item }}'
+  expected: 'Item: Widget'
   complexity: 200
   hint: |
     To pass data to a rendered partial, you must explicitly pass it as a
     parameter. Here 'product' is passed as 'item' to the partial.
-
-# =============================================================================
-# RENDER: with Variant
-# =============================================================================
-
 - name: render_with_binds_to_partial_name
   template: "{% render 'product' with featured %}"
   environment:
-    featured: "Widget"
+    featured: Widget
   filesystem:
-    product: "Product: {{ product }}"
-  expected: "Product: Widget"
+    product: 'Product: {{ product }}'
+  expected: 'Product: Widget'
   complexity: 200
   hint: |
     The 'with' variant binds a value to a variable named after the partial.
     {% render 'product' with x %} makes 'product' available inside the partial.
-
 - name: render_with_alias
   template: "{% render 'card' with featured as item %}"
   environment:
-    featured: "Widget"
+    featured: Widget
   filesystem:
-    card: "Card: {{ item }}"
-  expected: "Card: Widget"
+    card: 'Card: {{ item }}'
+  expected: 'Card: Widget'
   complexity: 200
   hint: |
     The 'as' keyword provides an alias - the value is bound to 'item'
     instead of the partial name.
-
 - name: render_with_and_parameters
   template: "{% render 'card' with featured as item, price: 99 %}"
   environment:
-    featured: "Widget"
+    featured: Widget
   filesystem:
     card: "{{ item }}: ${{ price }}"
-  expected: "Widget: $99"
+  expected: 'Widget: $99'
   complexity: 200
-  hint: |
-    'with' can be combined with additional parameters.
-
-# =============================================================================
-# RENDER: for Variant (Iteration)
-# =============================================================================
-
+  hint: "'with' can be combined with additional parameters.\n"
 - name: render_for_iterates
   template: "{% render 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "[{{ item }}]"
   expected: "[a][b][c]"
@@ -168,104 +118,103 @@ specs:
   hint: |
     The 'for' variant iterates over a collection, rendering the partial
     once per element. Each element is bound to a variable named after the partial.
-
 - name: render_for_with_alias
   template: "{% render 'card' for products as product %}"
   environment:
     products:
-      - Widget
-      - Gadget
+    - Widget
+    - Gadget
   filesystem:
     card: "[{{ product }}]"
   expected: "[Widget][Gadget]"
   complexity: 200
-  hint: |
-    The 'as' keyword provides an alias for the iteration variable.
+  hint: 'The ''as'' keyword provides an alias for the iteration variable.
 
+    '
 - name: render_for_provides_forloop
   template: "{% render 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "{{ forloop.index }}"
-  expected: "123"
+  expected: '123'
   complexity: 200
   hint: |
     IMPORTANT: render with 'for' provides a forloop object inside the partial.
     This is different from include, which does NOT provide forloop.
-
 - name: render_for_forloop_first_last
   template: "{% render 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
-    item: "{% if forloop.first %}[{% endif %}{{ item }}{% if forloop.last %}]{% endif %}"
+    item: "{% if forloop.first %}[{% endif %}{{ item }}{% if forloop.last %}]{% endif
+      %}"
   expected: "[abc]"
   complexity: 200
-  hint: |
-    forloop.first and forloop.last work as expected in render for.
+  hint: 'forloop.first and forloop.last work as expected in render for.
 
+    '
 - name: render_for_forloop_index0
   template: "{% render 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "{{ forloop.index0 }}"
-  expected: "012"
+  expected: '012'
   complexity: 200
-  hint: |
-    forloop.index0 provides 0-based index in render for.
+  hint: 'forloop.index0 provides 0-based index in render for.
 
+    '
 - name: render_for_forloop_length
   template: "{% render 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "{{ forloop.length }}"
-  expected: "333"
+  expected: '333'
   complexity: 200
-  hint: |
-    forloop.length is available and constant throughout iteration.
+  hint: 'forloop.length is available and constant throughout iteration.
 
+    '
 - name: render_for_forloop_rindex
   template: "{% render 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "{{ forloop.rindex }}"
-  expected: "321"
+  expected: '321'
   complexity: 200
-  hint: |
-    forloop.rindex counts down from the end (1-based).
+  hint: 'forloop.rindex counts down from the end (1-based).
 
+    '
 - name: render_for_with_parameters
   template: "{% render 'item' for items, prefix: '>' %}"
   environment:
     items:
-      - a
-      - b
+    - a
+    - b
   filesystem:
     item: "{{ prefix }}{{ item }}"
   expected: ">a>b"
   complexity: 200
-  hint: |
-    Additional parameters can be passed alongside 'for' iteration.
+  hint: 'Additional parameters can be passed alongside ''for'' iteration.
 
+    '
 - name: render_for_empty_array
   template: "[{% render 'item' for items %}]"
   environment:
@@ -274,120 +223,100 @@ specs:
     item: "{{ item }}"
   expected: "[]"
   complexity: 200
-  hint: |
-    When iterating over an empty array, the partial is never rendered.
+  hint: 'When iterating over an empty array, the partial is never rendered.
 
+    '
 - name: render_for_fresh_scope_each_iteration
   template: "{% render 'counter' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     counter: "{% assign x = counter %}{{ x }}"
-  expected: "abc"
+  expected: abc
   complexity: 200
   hint: |
     Each iteration of render for gets a fresh isolated scope.
     Variables assigned in one iteration don't persist to the next.
     Note: without 'as', the variable is named after the partial ('counter').
-
-# =============================================================================
-# RENDER: break/continue Containment (Complexity 210)
-# =============================================================================
-
 - name: render_contains_break
-  template: "{% for i in (1..3) %}{{ i }}{% render 'break_partial' %}{{ i }}{% endfor %}"
+  template: "{% for i in (1..3) %}{{ i }}{% render 'break_partial' %}{{ i }}{% endfor
+    %}"
   filesystem:
     break_partial: "{% break %}"
-  expected: "112233"
+  expected: '112233'
   complexity: 210
   hint: |
     CRITICAL: A break inside a rendered partial does NOT affect the outer loop.
     The break is contained within the partial's isolated context. All three
     iterations complete normally.
-
 - name: render_contains_continue
-  template: "{% for i in (1..3) %}{{ i }}{% render 'continue_partial' %}{{ i }}{% endfor %}"
+  template: "{% for i in (1..3) %}{{ i }}{% render 'continue_partial' %}{{ i }}{%
+    endfor %}"
   filesystem:
     continue_partial: "{% continue %}"
-  expected: "112233"
+  expected: '112233'
   complexity: 210
   hint: |
     Similarly, continue inside a rendered partial has no effect on outer loops.
     The interrupt is discarded when the partial returns.
-
 - name: render_break_in_partial_for_loop
   template: "{% render 'loop' %}"
   filesystem:
-    loop: "{% for i in (1..5) %}{% if i == 3 %}{% break %}{% endif %}{{ i }}{% endfor %}"
-  expected: "12"
+    loop: "{% for i in (1..5) %}{% if i == 3 %}{% break %}{% endif %}{{ i }}{% endfor
+      %}"
+  expected: '12'
   complexity: 210
   hint: |
     break works normally WITHIN a for loop inside the partial itself.
     It just doesn't escape the partial boundary.
-
-# =============================================================================
-# RENDER: increment/decrement Isolation (Complexity 210)
-# =============================================================================
-
 - name: render_isolates_increment
   template: "{% increment x %}{% increment x %}{% render 'incr' %}{% increment x %}"
   filesystem:
     incr: "{% increment x %}"
-  expected: "0102"
+  expected: '0102'
   complexity: 210
   hint: |
     increment/decrement counters are isolated in render. The outer context
     has its own counter (0, 1, 2) and the partial has its own (starts at 0).
-
 - name: render_isolates_decrement
   template: "{% decrement x %}{% decrement x %}{% render 'decr' %}{% decrement x %}"
   filesystem:
     decr: "{% decrement x %}"
   expected: "-1-2-1-3"
   complexity: 210
-  hint: |
-    decrement counters are also isolated. The partial's counter is independent.
+  hint: 'decrement counters are also isolated. The partial''s counter is independent.
 
+    '
 - name: render_counter_resets_each_call
   template: "{% render 'incr' %}{% render 'incr' %}{% render 'incr' %}"
   filesystem:
     incr: "{% increment x %}"
-  expected: "000"
+  expected: '000'
   complexity: 210
   hint: |
     Each render call gets a fresh counter state. The counter doesn't persist
     between render calls.
-
-# =============================================================================
-# INCLUDE: Basic Usage (Deprecated)
-# =============================================================================
-
 - name: include_basic
   template: "{% include 'snippet' %}"
   filesystem:
-    snippet: "hello from snippet"
-  expected: "hello from snippet"
+    snippet: hello from snippet
+  expected: hello from snippet
   complexity: 200
   hint: |
     The include tag is the older, deprecated way to include partials.
     Basic usage looks similar to render.
-
 - name: include_with_parameter
   template: "{% include 'greeting', name: 'World' %}"
   filesystem:
-    greeting: "Hello {{ name }}!"
-  expected: "Hello World!"
+    greeting: Hello {{ name }}!
+  expected: Hello World!
   complexity: 200
-  hint: |
-    Parameters work similarly to render.
+  hint: 'Parameters work similarly to render.
 
-# =============================================================================
-# INCLUDE: Shared Scope (Leaky Behavior)
-# =============================================================================
-
+    '
 - name: include_sees_outer_variables
   template: "{% assign outer = 'visible' %}{% include 'snippet' %}"
   filesystem:
@@ -397,7 +326,6 @@ specs:
   hint: |
     CRITICAL DIFFERENCE: Variables assigned outside ARE visible inside an
     included partial. This is the "leaky" behavior that makes include problematic.
-
 - name: include_leaks_variables
   template: "{% include 'snippet' %}[{{ inner }}]"
   filesystem:
@@ -407,107 +335,90 @@ specs:
   hint: |
     Variables assigned inside an included partial ARE visible outside.
     This side-effect behavior is why include is deprecated.
-
 - name: include_auto_binds_by_name
   template: "{% assign product = 'Widget' %}{% include 'product' %}"
   filesystem:
-    product: "Product: {{ product }}"
-  expected: "Product: Widget"
+    product: 'Product: {{ product }}'
+  expected: 'Product: Widget'
   complexity: 200
   hint: |
     include has automatic variable binding: if a variable exists with the
     same name as the partial, it's automatically bound. This is implicit
     and can lead to confusing behavior.
-
 - name: include_overwrites_outer_variable
   template: "{% assign x = 'outer' %}{% include 'snippet' %}{{ x }}"
   filesystem:
     snippet: "{% assign x = 'inner' %}"
-  expected: "inner"
+  expected: inner
   complexity: 200
   hint: |
     Because scope is shared, assignments in partials can overwrite outer
     variables. This is a dangerous side effect of include.
-
-# =============================================================================
-# INCLUDE: Dynamic Template Names
-# =============================================================================
-
 - name: include_dynamic_name_variable
   template: "{% assign template_name = 'greeting' %}{% include template_name %}"
   filesystem:
-    greeting: "Hello!"
-  expected: "Hello!"
+    greeting: Hello!
+  expected: Hello!
   complexity: 200
   hint: |
     include allows dynamic template names via variables. This is powerful
     but makes static analysis impossible - you can't know at parse time
     which template will be included.
-
 - name: include_dynamic_name_from_object
   template: "{% include item.template %}"
   environment:
     item:
-      template: "card"
+      template: card
   filesystem:
-    card: "Card content"
-  expected: "Card content"
+    card: Card content
+  expected: Card content
   complexity: 200
-  hint: |
-    The template name can come from an object property.
+  hint: 'The template name can come from an object property.
 
-# =============================================================================
-# INCLUDE: with Variant
-# =============================================================================
-
+    '
 - name: include_with_binds_to_partial_name
   template: "{% include 'product' with featured %}"
   environment:
-    featured: "Widget"
+    featured: Widget
   filesystem:
-    product: "Product: {{ product }}"
-  expected: "Product: Widget"
+    product: 'Product: {{ product }}'
+  expected: 'Product: Widget'
   complexity: 200
   hint: |
     The 'with' variant works similarly to render, binding the value to
     a variable named after the partial.
-
 - name: include_with_alias
   template: "{% include 'card' with featured as item %}"
   environment:
-    featured: "Widget"
+    featured: Widget
   filesystem:
-    card: "Card: {{ item }}"
-  expected: "Card: Widget"
+    card: 'Card: {{ item }}'
+  expected: 'Card: Widget'
   complexity: 200
-  hint: |
-    The 'as' keyword provides an alias in include as well.
+  hint: 'The ''as'' keyword provides an alias in include as well.
 
-# =============================================================================
-# INCLUDE: for Variant
-# =============================================================================
-
+    '
 - name: include_for_iterates
   template: "{% include 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "[{{ item }}]"
   expected: "[a][b][c]"
   complexity: 200
-  hint: |
-    The 'for' variant iterates over a collection in include.
+  hint: 'The ''for'' variant iterates over a collection in include.
 
+    '
 - name: include_for_no_forloop
   template: "{% include 'item' for items %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     item: "[{{ forloop.index }}]"
   expected: "[][][]"
@@ -515,278 +426,252 @@ specs:
   hint: |
     IMPORTANT DIFFERENCE: include with 'for' does NOT provide a forloop object.
     forloop.index is nil (outputs empty). This is different from render.
-
 - name: include_for_shared_scope
   template: "{% include 'counter' for items %}{{ count }}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     counter: "{% assign count = count | default: 0 | plus: 1 %}"
-  expected: "3"
+  expected: '3'
   complexity: 200
   hint: |
     include for shares scope across iterations. Variables persist and
     accumulate, unlike render for which resets each iteration.
-
-# =============================================================================
-# INCLUDE: break/continue Propagation (Complexity 210)
-# =============================================================================
-
 - name: include_propagates_break
-  template: "{% for i in (1..3) %}{{ i }}{% include 'break_partial' %}{{ i }}{% endfor %}"
+  template: "{% for i in (1..3) %}{{ i }}{% include 'break_partial' %}{{ i }}{% endfor
+    %}"
   filesystem:
     break_partial: "{% break %}"
-  expected: "1"
+  expected: '1'
   complexity: 210
   hint: |
     CRITICAL DIFFERENCE: A break inside an included partial DOES affect
     the outer loop. The break propagates up, exiting the caller's loop.
     Only "1" is output before the loop exits.
-
 - name: include_propagates_continue
-  template: "{% for i in (1..3) %}{{ i }}{% include 'continue_partial' %}{{ i }}{% endfor %}"
+  template: "{% for i in (1..3) %}{{ i }}{% include 'continue_partial' %}{{ i }}{%
+    endfor %}"
   filesystem:
     continue_partial: "{% continue %}"
-  expected: "123"
+  expected: '123'
   complexity: 210
   hint: |
     continue also propagates, skipping the rest of each outer iteration.
     The second {{ i }} is never reached in any iteration.
-
 - name: include_break_exits_innermost_for_loop
-  template: "{% for i in (1..3) %}{% for j in (1..3) %}{% include 'breaker' %}{{ i }}{{ j }}{% endfor %}{% endfor %}"
+  template: "{% for i in (1..3) %}{% for j in (1..3) %}{% include 'breaker' %}{{ i
+    }}{{ j }}{% endfor %}{% endfor %}"
   filesystem:
     breaker: "{% if j == 2 %}{% break %}{% endif %}"
-  expected: "112131"
+  expected: '112131'
   complexity: 210
   hint: |
     break from include exits the INNERMOST for loop of the caller.
     For each i (1,2,3), the inner j loop breaks when j==2, outputting only j==1.
-
-# =============================================================================
-# INCLUDE: increment/decrement Sharing (Complexity 210)
-# =============================================================================
-
 - name: include_shares_increment
   template: "{% increment x %}{% increment x %}{% include 'incr' %}"
   filesystem:
     incr: "{% increment x %}"
-  expected: "012"
+  expected: '012'
   complexity: 210
   hint: |
     increment/decrement counters are SHARED with include. The partial
     continues the counter from 2, outputting 2.
-
 - name: include_shares_decrement
   template: "{% decrement x %}{% decrement x %}{% include 'decr' %}"
   filesystem:
     decr: "{% decrement x %}"
   expected: "-1-2-3"
   complexity: 210
-  hint: |
-    decrement counters are also shared. The partial continues from -3.
+  hint: 'decrement counters are also shared. The partial continues from -3.
 
-# =============================================================================
-# RENDER: The include Prohibition (Complexity 220)
-# =============================================================================
-
+    '
 - name: render_prohibits_include
   template: "{% render 'outer' %}"
   filesystem:
     outer: "{% include 'inner' %}"
-    inner: "should not render"
+    inner: should not render
   errors:
     output:
-      - include usage is not allowed in this context
+    - include usage is not allowed in this context
   render_errors: true
+  required_features: [inline_errors]
   complexity: 220
   hint: |
     Using include inside a rendered partial is an ERROR. This prevents
     the scope isolation of render from being bypassed.
-
 - name: render_prohibits_include_nested
   template: "{% render 'level1' %}"
   filesystem:
     level1: "{% render 'level2' %}"
     level2: "{% include 'inner' %}"
-    inner: "should not render"
+    inner: should not render
   errors:
     output:
-      - include usage is not allowed in this context
+    - include usage is not allowed in this context
   render_errors: true
+  required_features: [inline_errors]
   complexity: 220
   hint: |
     The include prohibition applies transitively. Even deeply nested
     render calls cannot use include.
-
 - name: render_allows_nested_render
   template: "{% render 'outer' %}"
   filesystem:
     outer: "{% render 'inner' %}"
-    inner: "nested render works"
-  expected: "nested render works"
+    inner: nested render works
+  expected: nested render works
   complexity: 220
-  hint: |
-    render CAN nest other render calls - only include is prohibited.
+  hint: 'render CAN nest other render calls - only include is prohibited.
 
-# =============================================================================
-# Edge Cases and Complex Scenarios (Complexity 300)
-# =============================================================================
-
+    '
 - name: render_parameter_evaluated_in_outer_context
   template: "{% assign x = 'outer' %}{% render 'show', value: x %}"
   filesystem:
     show: "{% assign x = 'inner' %}{{ value }}"
-  expected: "outer"
+  expected: outer
   complexity: 300
   hint: |
     Parameter expressions are evaluated in the OUTER context before the
     partial runs. Even though the partial reassigns x, the parameter
     was already evaluated to 'outer'.
-
 - name: render_nil_value_with
   template: "{% render 'product' with missing %}"
   filesystem:
     product: "[{{ product }}]"
   expected: "[]"
   complexity: 300
-  hint: |
-    When 'with' passes nil/undefined, the variable is nil inside the partial.
+  hint: 'When ''with'' passes nil/undefined, the variable is nil inside the partial.
 
+    '
 - name: include_nested_both_share_scope
   template: "{% assign x = 1 %}{% include 'outer' %}{{ x }}"
   filesystem:
     outer: "{% assign x = 2 %}{% include 'inner' %}"
     inner: "{% assign x = 3 %}"
-  expected: "3"
+  expected: '3'
   complexity: 300
   hint: |
     Nested includes all share the same scope. Each can see and modify
     the same variables.
-
 - name: render_for_with_objects
   template: "{% render 'card' for products as product %}"
   environment:
     products:
-      - name: Widget
-        price: 10
-      - name: Gadget
-        price: 20
+    - name: Widget
+      price: 10
+    - name: Gadget
+      price: 20
   filesystem:
     card: "{{ product.name }}:${{ product.price }} "
-  expected: "Widget:$10 Gadget:$20 "
+  expected: 'Widget:$10 Gadget:$20 '
   complexity: 300
-  hint: |
-    render for works with arrays of objects. Property access works as expected.
+  hint: 'render for works with arrays of objects. Property access works as expected.
 
+    '
 - name: include_modify_environment_object
   template: "{% include 'modifier' %}{{ user.name }}"
   environment:
     user:
-      name: "Alice"
+      name: Alice
   filesystem:
     modifier: "{% assign user = nil %}"
-  expected: ""
+  expected: ''
   complexity: 300
   hint: |
     include can even overwrite environment variables due to shared scope.
     This demonstrates why include is dangerous.
-
 - name: render_cannot_modify_environment
   template: "{% render 'modifier' %}{{ user.name }}"
   environment:
     user:
-      name: "Alice"
+      name: Alice
   filesystem:
     modifier: "{% assign user = nil %}"
-  expected: "Alice"
-  complexity: 300
-  hint: |
-    render cannot affect the outer environment - isolation is complete.
+  expected: Alice
+  complexity: 100
+  hint: 'render cannot affect the outer environment - isolation is complete.
 
+    '
 - name: render_static_name_only
   template: "{% assign name = 'snippet' %}{% render name %}"
   filesystem:
-    snippet: "hello"
-    name: "wrong"
+    snippet: hello
+    name: wrong
   errors:
     parse_error:
-      - syntax error
-      - Template name must be a quoted string
+    - syntax error
+    - Template name must be a quoted string
   complexity: 300
   hint: |
     render requires a STRING LITERAL for the partial name. Using a variable
     is a syntax error. This enables static analysis of templates.
-
 - name: render_for_non_iterable_nil
   template: "[{% render 'item' for missing %}]"
   filesystem:
     item: "{{ item }}"
   expected: "[]"
-  complexity: 300
-  hint: |
-    When the collection is nil/undefined, no iterations occur.
+  complexity: 100
+  hint: 'When the collection is nil/undefined, no iterations occur.
 
+    '
 - name: include_for_propagates_break_to_outer
-  template: "{% for outer in (1..2) %}{% include 'iterator' for items as item %}{{ outer }}{% endfor %}"
+  template: "{% for outer in (1..2) %}{% include 'iterator' for items as item %}{{
+    outer }}{% endfor %}"
   environment:
     items:
-      - a
-      - b
-      - c
+    - a
+    - b
+    - c
   filesystem:
     iterator: "{% if item == 'b' %}{% break %}{% endif %}{{ item }}"
-  expected: "a"
+  expected: a
   complexity: 300
   hint: |
     break inside include for propagates to the OUTER for loop, not just
     the include's implicit loop. This is consistent with include's
     interrupt propagation behavior.
-
-# =============================================================================
-# INFINITE RECURSION: Stack Level Too Deep
-# =============================================================================
-
 - name: render_infinite_recursion
   template: "{% render 'recursive' %}"
   filesystem:
     recursive: "{% render 'recursive' %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
-      - nesting too deep
+    - nesting too deep
   complexity: 300
   hint: |
     A template that renders itself infinitely must be caught and produce
     a "nesting too deep" error. Implementations should track render depth
     and fail when it exceeds a limit (typically 100).
-
 - name: include_infinite_recursion
   template: "{% include 'recursive' %}"
   filesystem:
     recursive: "{% include 'recursive' %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
-      - nesting too deep
+    - nesting too deep
   complexity: 300
   hint: |
     A template that includes itself infinitely must be caught and produce
     a "nesting too deep" error. Same depth limiting as render.
-
 - name: render_mutual_recursion
   template: "{% render 'a' %}"
   filesystem:
     a: "{% render 'b' %}"
     b: "{% render 'a' %}"
   render_errors: true
+  required_features: [inline_errors]
   errors:
     output:
-      - nesting too deep
+    - nesting too deep
   complexity: 300
-  hint: |
+  hint: |-
     Mutual recursion (a renders b, b renders a) must also be caught.
     The depth limit applies to total nesting, not just self-recursion.

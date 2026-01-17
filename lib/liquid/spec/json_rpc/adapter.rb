@@ -9,6 +9,14 @@ module Liquid
     module JsonRpc
       # JSON-RPC adapter for liquid-spec
       # Communicates with a subprocess that implements the Liquid JSON-RPC protocol
+      #
+      # Protocol design principles:
+      # - Liquid errors are NOT protocol errors (they're part of render output)
+      # - Compile returns {template_id, error} - error is nil on success
+      # - Render returns {output, errors} - always succeeds, errors are informational
+      # - Time freezing is supported via frozen_time parameter
+      #
+      # See docs/json-rpc-protocol.md for the full specification.
       class Adapter
         attr_reader :subprocess
 
@@ -42,14 +50,23 @@ module Liquid
 
           response = @subprocess.send_request("compile", params)
 
+          # Handle protocol-level errors (invalid params, etc.)
           if Protocol.error?(response)
-            raise_liquid_error(response)
+            raise_protocol_error(response)
           end
 
-          response.dig("result", "template_id")
+          result = response["result"]
+
+          # Handle parse errors (returned in result.error, not as protocol error)
+          if result && result["error"]
+            raise_compile_error(result["error"])
+          end
+
+          result&.dig("template_id")
         end
 
         # Render a compiled template
+        # Returns the output string - Liquid errors are rendered inline, not raised
         def render(template_id, environment, options = {})
           @subprocess.initialize! unless @subprocess.running?
 
@@ -65,12 +82,21 @@ module Liquid
             "options" => serialize_render_options(options),
           }
 
-          response = @subprocess.send_request("render", params)
-
-          if Protocol.error?(response)
-            raise_liquid_error(response)
+          # Pass frozen time if set (for deterministic date/time tests)
+          frozen_time = TimeFreezer.frozen_time rescue nil
+          if frozen_time
+            params["frozen_time"] = frozen_time.iso8601
           end
 
+          response = @subprocess.send_request("render", params)
+
+          # Handle protocol-level errors (invalid params, unknown template_id, etc.)
+          if Protocol.error?(response)
+            raise_protocol_error(response)
+          end
+
+          # Return output - Liquid errors are already rendered inline
+          # The errors array is informational for test assertions
           response.dig("result", "output") || ""
         end
 
@@ -115,48 +141,51 @@ module Liquid
         def serialize_render_options(options)
           result = {}
 
-          render_errors = options[:render_errors] || options["render_errors"]
-          result["render_errors"] = !!render_errors if render_errors != nil
-
           strict_errors = options[:strict_errors] || options["strict_errors"]
           result["strict_errors"] = !!strict_errors if strict_errors != nil
 
           result
         end
 
-        def raise_liquid_error(response)
-          error = Protocol.extract_error(response)
-          data = error[:data] || {}
-          error_type = data["type"] || "error"
-          message = data["message"] || error[:message]
-          line = data["line"]
+        # Raise error for compile failures (parse errors)
+        def raise_compile_error(error)
+          message = error["message"] || "Parse error"
 
-          # Format error message like Liquid does
+          # Don't double-wrap if message already has Liquid prefix
+          if message.start_with?("Liquid")
+            raise LiquidSyntaxError, message
+          end
+
+          line = error["line"]
           full_message = if line
-            "Liquid error (line #{line}): #{message}"
+            "Liquid syntax error (line #{line}): #{message}"
           else
-            "Liquid error: #{message}"
+            "Liquid syntax error: #{message}"
           end
 
-          case error_type
-          when "parse_error"
-            raise LiquidParseError, full_message
-          when "render_error"
-            raise LiquidRenderError, full_message
-          else
-            raise LiquidError, full_message
+          raise LiquidSyntaxError, full_message
+        end
+
+        # Raise error for protocol-level failures
+        def raise_protocol_error(response)
+          error = Protocol.extract_error(response)
+          message = error[:message] || "Unknown error"
+          data = error[:data]
+
+          # Include helpful context if available
+          if data.is_a?(Hash) && data["message"]
+            message = "#{message}: #{data["message"]}"
           end
+
+          raise ProtocolError, message
         end
       end
 
-      # Base error for Liquid errors from subprocess
-      class LiquidError < StandardError; end
+      # Protocol-level error (invalid params, method not found, etc.)
+      class ProtocolError < StandardError; end
 
-      # Parse error from subprocess
-      class LiquidParseError < LiquidError; end
-
-      # Render error from subprocess
-      class LiquidRenderError < LiquidError; end
+      # Parse/syntax error from subprocess (class name must contain "SyntaxError" for runner detection)
+      class LiquidSyntaxError < StandardError; end
     end
   end
 end
