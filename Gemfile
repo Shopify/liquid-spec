@@ -24,3 +24,5 @@ group :development do
 end
 
 gem "base64", "~> 0.3.0"
+
+gem "bigdecimal", "~> 4.0"
