@@ -169,6 +169,7 @@ module Liquid
         # Raise error for protocol-level failures
         def raise_protocol_error(response)
           error = Protocol.extract_error(response)
+          code = error[:code]
           message = error[:message] || "Unknown error"
           data = error[:data]
 
@@ -177,7 +178,25 @@ module Liquid
             message = "#{message}: #{data["message"]}"
           end
 
-          raise ProtocolError, message
+          # Determine error type based on error code or data type
+          error_type = data.is_a?(Hash) ? data["type"] : nil
+
+          case error_type
+          when "parse_error"
+            raise LiquidSyntaxError, message
+          when "render_error"
+            raise LiquidRenderError, message
+          else
+            # Check error codes as fallback
+            case code
+            when -32000
+              raise LiquidSyntaxError, message
+            when -32001
+              raise LiquidRenderError, message
+            else
+              raise ProtocolError, message
+            end
+          end
         end
       end
 
@@ -186,6 +205,12 @@ module Liquid
 
       # Parse/syntax error from subprocess (class name must contain "SyntaxError" for runner detection)
       class LiquidSyntaxError < StandardError; end
+
+      # Alias for LiquidSyntaxError (for clearer test semantics)
+      LiquidParseError = LiquidSyntaxError
+
+      # Render-time error from subprocess (missing include, etc.)
+      class LiquidRenderError < StandardError; end
     end
   end
 end

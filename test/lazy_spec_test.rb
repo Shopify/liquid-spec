@@ -32,7 +32,7 @@ class LazySpecTest < Minitest::Test
   def test_validation_requires_expected_or_errors
     spec = create_spec(expected: nil, errors: {})
     refute spec.valid?
-    assert_includes spec.validation_errors, "must have either 'expected' or 'errors' (got neither)"
+    assert_includes spec.validation_errors, "must have either 'expected', 'expected_pattern', or 'errors' (got neither)"
   end
 
   def test_validation_accepts_errors_without_expected
