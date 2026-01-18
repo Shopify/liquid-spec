@@ -19,8 +19,6 @@ module Liquid
             -n, --name PATTERN    Filter specs by name pattern
             -s, --suite SUITE     Spec suite: all, basics, liquid_ruby, etc.
             -b, --bench           Run timing suites as benchmarks, compare across adapters
-            --compare-yjit        Run benchmarks with and without YJIT, show comparison
-            --compare-zjit        Run benchmarks with and without ZJIT, show comparison
             --profile             Profile with StackProf (use with --bench), outputs to /tmp/
             --max-failures N      Stop after N differences (default: 10)
             --no-max-failures     Show all differences (not recommended)
@@ -87,12 +85,6 @@ module Liquid
                 options[:suite] = ::Regexp.last_match(1).to_sym
               when "-b", "--bench"
                 options[:bench] = true
-              when "--compare-yjit"
-                options[:bench] = true
-                options[:compare_jit] = :yjit
-              when "--compare-zjit"
-                options[:bench] = true
-                options[:compare_jit] = :zjit
               when "--profile"
                 options[:profile] = true
               when "--max-failures"
@@ -335,12 +327,6 @@ module Liquid
           end
 
           def run_benchmarks(adapters, options)
-            # Handle JIT comparison mode
-            if options[:compare_jit]
-              run_jit_comparison(adapters, options)
-              return
-            end
-
             # Find timing suites
             timing_suites = Liquid::Spec::Suite.all.select(&:timings?)
 
@@ -821,88 +807,6 @@ module Liquid
               "yjit"
             else
               "off"
-            end
-          end
-
-          def run_jit_comparison(adapters, options)
-            jit_type = options[:compare_jit]
-
-            # Check if JIT is available
-            jit_module = jit_type == :yjit ? "RubyVM::YJIT" : "RubyVM::ZJIT"
-            jit_available = jit_type == :yjit ? defined?(RubyVM::YJIT) : defined?(RubyVM::ZJIT)
-
-            unless jit_available
-              $stderr.puts "Error: #{jit_module} is not available in this Ruby build"
-              $stderr.puts "Ruby version: #{RUBY_VERSION}"
-              exit(1)
-            end
-
-            # Find timing suites
-            timing_suites = Liquid::Spec::Suite.all.select(&:timings?)
-            if options[:suite] != :all
-              timing_suites = timing_suites.select { |s| s.id == options[:suite] }
-            end
-
-            if timing_suites.empty?
-              $stderr.puts "Error: No timing suites found"
-              exit(1)
-            end
-
-            timing_suites.each do |suite|
-              specs = Liquid::Spec::SpecLoader.load_suite(suite)
-              specs = filter_specs_by_pattern(specs, options[:filter]) if options[:filter]
-              next if specs.empty?
-
-              puts "=" * 70
-              puts "Benchmark: #{suite.name}"
-              puts "Comparing: #{jit_type.upcase} vs off"
-              puts "Duration: #{suite.default_iteration_seconds}s per spec"
-              puts "=" * 70
-              puts ""
-
-              adapters.each do |adapter_name, adapter|
-                puts "Adapter: #{adapter_name}"
-                puts ""
-
-                specs.each do |spec|
-                  next unless adapter.can_run?(spec)
-
-                  puts "  #{spec.name}"
-
-                  # Run without JIT
-                  result_off = run_single_benchmark(spec, adapter, suite.default_iteration_seconds)
-
-                  # Enable JIT and run again
-                  if jit_type == :yjit
-                    RubyVM::YJIT.enable
-                  else
-                    RubyVM::ZJIT.enable
-                  end
-
-                  result_jit = run_single_benchmark(spec, adapter, suite.default_iteration_seconds)
-
-                  if result_off[:error] || result_jit[:error]
-                    puts "    \e[31m✗ Error\e[0m"
-                    puts "    off: #{result_off[:error]&.message || 'OK'}"
-                    puts "    #{jit_type}: #{result_jit[:error]&.message || 'OK'}"
-                  else
-                    off_total = result_off[:compile_mean] + result_off[:render_mean]
-                    jit_total = result_jit[:compile_mean] + result_jit[:render_mean]
-                    speedup = off_total / jit_total
-
-                    off_ms = off_total * 1000
-                    jit_ms = jit_total * 1000
-
-                    speedup_color = speedup >= 1.0 ? "\e[32m" : "\e[31m"
-                    speedup_str = speedup >= 1.0 ? "#{format("%.2f", speedup)}x faster" : "#{format("%.2f", 1.0 / speedup)}x slower"
-
-                    puts "    off:  #{format_time(off_ms)}  \e[2m(compile: #{result_off[:compile_runs]} iters, render: #{result_off[:render_runs]} iters)\e[0m"
-                    puts "    #{jit_type}:  #{format_time(jit_ms)}  \e[2m(compile: #{result_jit[:compile_runs]} iters, render: #{result_jit[:render_runs]} iters)\e[0m"
-                    puts "    #{speedup_color}#{speedup_str}\e[0m"
-                  end
-                  puts ""
-                end
-              end
             end
           end
 
