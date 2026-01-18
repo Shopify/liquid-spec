@@ -57,6 +57,16 @@ module Liquid
             recommendation: :optional,
             note: "Only needed for Shopify production compatibility.",
           },
+          shopify_blank: {
+            description: "Shopify-specific blank keyword with Rails-like semantics",
+            recommendation: :optional,
+            note: "Shopify's blank matches false, [], {}, whitespace. Standard blank calls blank?.",
+          },
+          shopify_string_access: {
+            description: "Shopify-specific string.first/last character access",
+            recommendation: :optional,
+            note: "In Shopify, first/last work on strings. Standard liquid-ruby doesn't support this.",
+          },
           shopify_error_format: {
             description: "Shopify-specific error message formatting",
             recommendation: :optional,
@@ -71,6 +81,21 @@ module Liquid
             description: "Tests requiring Ruby drop objects with specific behavior",
             recommendation: :unnecessary,
             note: "Ruby implementation detail. Tests internal drop mechanics.",
+          },
+          drop_class_output: {
+            description: "Tests expecting drop class name in output (Liquid::Drop)",
+            recommendation: :unnecessary,
+            note: "Ruby-specific. JSON-RPC renders drops as class name string.",
+          },
+          template_factory: {
+            description: "Tests using custom template factories for partial lookup",
+            recommendation: :unnecessary,
+            note: "Ruby-specific. JSON-RPC doesn't support custom template factories.",
+          },
+          binary_data: {
+            description: "Tests with binary/non-UTF8 data",
+            recommendation: :unnecessary,
+            note: "Binary data can't be transmitted in JSON without base64 encoding.",
           },
           activesupport: {
             description: "Tests requiring ActiveSupport (Rails) extensions",

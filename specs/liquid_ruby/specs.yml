@@ -861,6 +861,7 @@
   expected: pass
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/context_test.rb#L220
 - name: ContextTest#test_length_query_294fd3e7
+  required_features: [ruby_types]
   template: "{% if numbers.size == 1000 %}true{% endif %}"
   environment:
     numbers:
@@ -873,6 +874,7 @@
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/context_test.rb#L154
 - name: ContextTest#test_length_query_8ee139be
+  required_features: [ruby_types]
   template: "{% if numbers.size == 4 %}true{% endif %}"
   environment:
     numbers:
@@ -900,6 +902,7 @@
   expected: 1..5
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/context_test.rb#L370
 - name: ContextTest#test_ranges_46e8b42a
+  required_features: [ruby_types]
   template: "{% if (1..5) == expect %}pass{% endif %}"
   environment:
     expect:
@@ -1292,6 +1295,7 @@
   expected: pass
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/expression_test.rb#L188
 - name: ExpressionTest#test_range_2c5ffd3f
+  required_features: [ruby_types]
   template: "{% if expect == (1..2) %}pass{% else %}got {{ (1..2) }}{% endif %}"
   environment:
     expect:
@@ -2409,6 +2413,7 @@
   expected: '{"numbers"=>[{:foo=>42}]}'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L77
 - name: HashRenderingTest#test_render_hash_with_hash_key_e0cefbd9
+  required_features: [ruby_types]
   template: "{{ my_hash }}"
   environment:
     my_hash:
@@ -2446,6 +2451,7 @@
   expected: '{"outer"=>{"inner"=>"value"}}'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L19
 - name: HashRenderingTest#test_render_recursive_hash_9ab3d795
+  required_features: [ruby_types]
   template: "{{ my_hash }}"
   environment:
     my_hash: &1
@@ -2455,6 +2461,7 @@
   expected: '{"self"=>{"self"=>{...}}}'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L29
 - name: HashRenderingTest#test_rendering_hash_with_custom_to_s_method_uses_custom_to_s_c2ef71b8
+  required_features: [ruby_drops]
   template: "{{ my_hash }}"
   environment:
     my_hash: {! 'instantiate:HashWithCustomToS': {}}
@@ -4178,6 +4185,7 @@
   expected: Alpine jacket
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L982
 - name: StandardFiltersTest#test_first_and_last_call_to_liquid_7044a2b9
+  required_features: [ruby_drops]
   template: "{{ foo | first }}"
   environment:
     foo:
@@ -4186,6 +4194,7 @@
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L584
 - name: StandardFiltersTest#test_first_and_last_call_to_liquid_80b59c79
+  required_features: [ruby_drops]
   template: "{{ foo | last }}"
   environment:
     foo:
@@ -4770,6 +4779,7 @@
   expected: '7.25'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L720
 - name: StandardFiltersTest#test_truncate_calls_to_liquid_0fbde2bf
+  required_features: [ruby_drops]
   template: "{{ foo | truncate: 5 }}"
   environment:
     foo:
@@ -6893,6 +6903,7 @@
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L70
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_00c93c8b
+  required_features: [ruby_types]
   template: "{{ list[foo] }}"
   environment:
     foo:
@@ -6944,6 +6955,7 @@
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L19
 - name: VariableTest#test_variable_render_calls_to_liquid_0a0a68b2
+  required_features: [ruby_drops]
   template: "{{ foo }}"
   environment:
     foo: {! 'instantiate:ThingWithToLiquid': {}}

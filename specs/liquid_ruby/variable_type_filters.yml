@@ -74,8 +74,9 @@ specs:
 - name: filter_string_global_first_last_size
   complexity: 300
   hint: |
-    first/last filters on strings should return the first/last character.
-    size returns the string length.
+    QUIRK: first/last filters do NOT work on strings in liquid-ruby.
+    They return empty string because strings don't respond to first/last.
+    size works correctly and returns the string length.
   template: |
     string, first:{{- s | first }}
     string, last:{{- s | last }}
@@ -83,8 +84,8 @@ specs:
   environment:
     s: hello
   expected: |
-    string, first:h
-    string, last:o
+    string, first:
+    string, last:
     string, size:5
 - name: filter_nil_global_first_last_size
   complexity: 300
@@ -173,7 +174,9 @@ specs:
     drop, size:0
 - name: filter_hash_properties_first_last_size
   complexity: 300
-  hint: Tests accessing various types as hash properties and applying filters
+  hint: |
+    Tests first/last/size on various types as hash properties.
+    Note: first/last do NOT work on strings in liquid-ruby - they return empty string.
   template: |
     hash.f, first:{{- hash.f | first }}
     hash.f, last:{{- hash.f | last }}
@@ -215,8 +218,8 @@ specs:
     hash.b, first:
     hash.b, last:
     hash.b, size:0
-    hash.s, first:h
-    hash.s, last:o
+    hash.s, first:
+    hash.s, last:
     hash.s, size:5
     hash.arr, first:1
     hash.arr, last:3
@@ -457,7 +460,9 @@ specs:
     filter size:2, property size:2
 - name: filter_vs_property_string_equivalence
   complexity: 300
-  hint: Verify filter and property access return identical results for strings
+  hint: |
+    first/last don't work on strings (return empty).
+    size works and returns string length via both filter and property access.
   template: |
     filter first:{{- s | first }}, property first:{{- s.first }}
     filter last:{{- s | last }}, property last:{{- s.last }}
@@ -465,8 +470,8 @@ specs:
   environment:
     s: hello
   expected: |
-    filter first:h, property first:h
-    filter last:o, property last:o
+    filter first:, property first:
+    filter last:, property last:
     filter size:5, property size:5
 - name: filter_vs_property_int_equivalence
   complexity: 300

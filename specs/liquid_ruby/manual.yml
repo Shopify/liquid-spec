@@ -19,7 +19,7 @@
   name: Rendering include tag with variables and file does not exist
   filesystem: {}
   render_errors: true
-  required_features: [inline_errors]
+  required_features: [inline_errors, shopify_error_format]
   errors:
     output:
       - "Could not find asset locale_variables"
@@ -29,7 +29,7 @@
   name: Rendering include tag with file does not exist does not repeat .liquid extension
   filesystem: {}
   render_errors: true
-  required_features: [inline_errors]
+  required_features: [inline_errors, shopify_error_format]
   errors:
     output:
       - "Could not find asset foo.liquid"
@@ -40,7 +40,7 @@
   filesystem:
     foo: "{% include 'bar' %}"
   render_errors: true
-  required_features: [inline_errors]
+  required_features: [inline_errors, shopify_error_format]
   errors:
     output:
       - "Could not find asset bar"

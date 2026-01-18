@@ -185,7 +185,7 @@
   error_mode: lax
   expected: HELLO
   hint: |
-    WART: Double pipes (||) in lax mode are treated as a single pipe followed
+    QUIRK: Double pipes (||) in lax mode are treated as a single pipe followed
     by a blank token, then another filter. The lexer interprets '||' as '|'
     followed by '|upcase'. This quirky behavior is specific to lax mode.
 - name: very_long_string_filter
@@ -303,7 +303,7 @@
   error_mode: lax
   expected: hello
   hint: |
-    WART: A trailing pipe with no filter name is silently ignored in lax mode.
+    QUIRK: A trailing pipe with no filter name is silently ignored in lax mode.
     The parser treats the empty filter chain as a no-op, passing through the
     original value unchanged.
 - name: recursive_variable_reference

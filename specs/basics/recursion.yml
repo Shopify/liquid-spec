@@ -21,7 +21,7 @@ specs:
   errors:
     output:
       - start
-      - "100|"
+      - "99|"
       - Nesting too deep
       - done
   filesystem:
@@ -32,6 +32,7 @@ specs:
     Include has a stack limit of 100. When recursion exceeds this limit,
     an inline error is rendered containing "Nesting too deep". Template
     execution continues after the error, so "done" still appears.
+    The counter reaches 99 before the error because we start at depth 1.
 
 - name: recursion_render_error_inline
   template: |
@@ -44,7 +45,7 @@ specs:
   errors:
     output:
       - start
-      - "100|"
+      - "99|"
       - Nesting too deep
       - done
   filesystem:
@@ -67,7 +68,7 @@ specs:
   errors:
     output:
       - start
-      - "100|"
+      - "99|"
       - Nesting too deep
       - done
   filesystem:

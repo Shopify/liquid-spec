@@ -77,7 +77,7 @@ specs:
 
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_c92c1757
   complexity: 320
-  required_features: [runtime_drops, inline_errors]
+  required_features: [runtime_drops, inline_errors, template_factory]
   template: "{% include 'foo' with errors %}"
   environment:
     errors:
@@ -110,7 +110,7 @@ specs:
 
 - name: RenderTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_8dab9308
   complexity: 320
-  required_features: [runtime_drops, inline_errors]
+  required_features: [runtime_drops, inline_errors, template_factory]
   template: "{% render 'foo' with errors %}"
   environment:
     errors:

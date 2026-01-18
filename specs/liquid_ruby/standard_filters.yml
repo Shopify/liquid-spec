@@ -39,6 +39,7 @@
     - bar
   expected: '0'
 - name: StandardFilterTest#test_abs_64927044
+  required_features: [ruby_drops]
   template: "{{ a0 | abs }}"
   environment:
     a0:
@@ -46,6 +47,7 @@
         foo: 8
   expected: '0'
 - name: StandardFilterTest#test_abs_6ba1148f
+  required_features: [ruby_drops]
   template: "{{ a0 | abs }}"
   environment:
     a0:
@@ -86,6 +88,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_abs_d684b86e
+  required_features: [ruby_types]
   template: "{{ a0 | abs }}"
   environment:
     a0:
@@ -107,6 +110,7 @@
     a0: foo
   expected: '0'
 - name: StandardFilterTest#test_base64_decode_0524bc39
+  required_features: [ruby_types]
   template: "{{ a0 | base64_decode }}"
   environment:
     a0: true
@@ -118,6 +122,7 @@
     a0:
   expected: ''
 - name: StandardFilterTest#test_base64_decode_3a53835f
+  required_features: [ruby_types]
   template: "{{ a0 | base64_decode }}"
   environment:
     a0: "/w=="
@@ -134,6 +139,7 @@
     a0: b25lIHR3byB0aHJlZQ==
   expected: one two three
 - name: StandardFilterTest#test_base64_encode_05ef1d71
+  required_features: [ruby_drops]
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
@@ -147,6 +153,7 @@
     - :foo: bar
   expected: WyJmb28iLCAxMjMsIG5pbCwgdHJ1ZSwgZmFsc2UsIExpcXVpZDo6RHJvcCwgWyJmb28iXSwgezpmb289PiJiYXIifV0=
 - name: StandardFilterTest#test_base64_encode_1107ae74
+  required_features: [ruby_types]
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
@@ -191,6 +198,7 @@
       foo: bar
   expected: eyJmb28iPT4iYmFyIn0=
 - name: StandardFilterTest#test_base64_encode_64a30b5f
+  required_features: [ruby_drops]
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
@@ -235,6 +243,7 @@
     a0: true
   expected: dHJ1ZQ==
 - name: StandardFilterTest#test_base64_encode_ede76037
+  required_features: [ruby_types]
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
@@ -261,18 +270,21 @@
     a0: 4pyF
   expected: "✅"
 - name: StandardFilterTest#test_base64_url_safe_decode_57dc2594
+  required_features: [ruby_types]
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: true
   expected: !binary |-
     true
 - name: StandardFilterTest#test_base64_url_safe_decode_5de5c9e0
+  required_features: [ruby_types]
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: _w==
   expected: !binary |-
     /w==
 - name: StandardFilterTest#test_base64_url_safe_decode_844ec741
+  required_features: [ruby_types]
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: foo
@@ -284,6 +296,7 @@
     a0: 0.0
   expected: MC4w
 - name: StandardFilterTest#test_base64_url_safe_encode_266d1c9e
+  required_features: [ruby_drops]
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
@@ -324,12 +337,14 @@
       - bar
   expected: W3siZm9vIj0-ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0-bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
 - name: StandardFilterTest#test_base64_url_safe_encode_4b6afce9
+  required_features: [ruby_types]
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
       1: bar
   expected: ezE9PiJiYXIifQ==
 - name: StandardFilterTest#test_base64_url_safe_encode_4ceee13e
+  required_features: [ruby_drops]
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
@@ -370,6 +385,7 @@
     a0: -99999999
   expected: LTk5OTk5OTk5
 - name: StandardFilterTest#test_base64_url_safe_encode_9475bdaf
+  required_features: [ruby_types]
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
@@ -396,6 +412,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_capitalize_0d6f28a1
+  required_features: [ruby_types]
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
@@ -412,12 +429,14 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_capitalize_223a986d
+  required_features: [ruby_types]
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
 - name: StandardFilterTest#test_capitalize_38a9a61f
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
@@ -467,6 +486,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_capitalize_a26924ba
+  required_features: [ruby_drops]
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
@@ -499,6 +519,7 @@
     a0: 0.0
   expected: '0.0'
 - name: StandardFilterTest#test_ceil_1f10ca85
+  required_features: [ruby_types]
   template: "{{ a0 | ceil }}"
   environment:
     a0:
@@ -526,6 +547,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_ceil_3ca96ef2
+  required_features: [ruby_drops]
   template: "{{ a0 | ceil }}"
   environment:
     a0:
@@ -577,6 +599,7 @@
     a0: foo
   expected: '0'
 - name: StandardFilterTest#test_ceil_ec54a0f9
+  required_features: [ruby_drops]
   template: "{{ a0 | ceil }}"
   environment:
     a0:
@@ -616,6 +639,7 @@
     a0: foo
   expected: foo
 - name: StandardFilterTest#test_compact_2b01e238
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | compact }}"
   environment:
     a0:
@@ -656,6 +680,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_compact_4b7213b2
+  required_features: [ruby_types]
   template: "{{ a0 | compact }}"
   environment:
     a0:
@@ -667,6 +692,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_compact_9232fc40
+  required_features: [ruby_drops]
   template: "{{ a0 | compact }}"
   environment:
     a0:
@@ -707,6 +733,7 @@
     a0: true
   expected: 'true'
 - name: StandardFilterTest#test_compact_e0dc2496
+  required_features: [ruby_types]
   template: "{{ a0 | compact }}"
   environment:
     a0:
@@ -747,6 +774,7 @@
     - 10
   expected: '1210'
 - name: StandardFilterTest#test_date_1b4f436a
+  required_features: [ruby_types]
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 2006-07-05 10:00:00.000000000 -04:00
@@ -759,6 +787,7 @@
     a1: "%m/%d/%Y"
   expected: 07/05/2006
 - name: StandardFilterTest#test_date_26252a9b
+  required_features: [ruby_types]
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-05-05 10:00:00'
@@ -783,6 +812,7 @@
     a1: "%Y"
   expected: '2024'
 - name: StandardFilterTest#test_date_5bc100c3
+  required_features: [ruby_types]
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-06-05 10:00:00'
@@ -825,12 +855,14 @@
     a1: "%m/%d/%Y"
   expected: 07/05/2006
 - name: StandardFilterTest#test_date_917287b4
+  required_features: [ruby_types]
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 2006-06-05 10:00:00.000000000 -04:00
     a1: "%B"
   expected: June
 - name: StandardFilterTest#test_date_b43c9613
+  required_features: [ruby_types]
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 2006-05-05 10:00:00.000000000 -04:00
@@ -879,6 +911,7 @@
       allow_false: true
   expected: bar
 - name: StandardFilterTest#test_default_2858b76a
+  required_features: [ruby_types]
   template: "{{ a0 | default }}"
   environment:
     a0:
@@ -927,6 +960,7 @@
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
 - name: StandardFilterTest#test_default_46899810
+  required_features: [ruby_types]
   template: "{{ a0 | default }}"
   environment:
     a0:
@@ -1009,6 +1043,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_default_a1eb15d1
+  required_features: [ruby_drops]
   template: "{{ a0 | default }}"
   environment:
     a0:
@@ -1016,6 +1051,7 @@
         foo: 7
   expected: 'woot: 7'
 - name: StandardFilterTest#test_default_a8c7a8f0
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | default }}"
   environment:
     a0:
@@ -1040,6 +1076,7 @@
       foo: bar
   expected: '{"foo"=>"bar"}'
 - name: StandardFilterTest#test_downcase_0d719d03
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | downcase }}"
   environment:
     a0:
@@ -1078,6 +1115,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_downcase_5e65ea15
+  required_features: [ruby_drops]
   template: "{{ a0 | downcase }}"
   environment:
     a0:
@@ -1100,6 +1138,7 @@
     a0: -1234.003030303
   expected: "-1234.003030303"
 - name: StandardFilterTest#test_downcase_86297cb2
+  required_features: [ruby_types]
   template: "{{ a0 | downcase }}"
   environment:
     a0:
@@ -1147,6 +1186,7 @@
     a0: foo
   expected: foo
 - name: StandardFilterTest#test_downcase_f801a0a9
+  required_features: [ruby_types]
   template: "{{ a0 | downcase }}"
   environment:
     a0:
@@ -1158,6 +1198,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_escape_23020003
+  required_features: [ruby_types]
   template: "{{ a0 | escape }}"
   environment:
     a0:
@@ -1169,6 +1210,7 @@
     a0: foo
   expected: foo
 - name: StandardFilterTest#test_escape_37b22d4f
+  required_features: [ruby_types]
   template: "{{ a0 | escape }}"
   environment:
     a0:
@@ -1201,6 +1243,7 @@
     a0: 0.0
   expected: '0.0'
 - name: StandardFilterTest#test_escape_80764d48
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | escape }}"
   environment:
     a0:
@@ -1232,6 +1275,7 @@
     - bar
   expected: "[&quot;foo&quot;, &quot;bar&quot;]"
 - name: StandardFilterTest#test_escape_a1eaa413
+  required_features: [ruby_drops]
   template: "{{ a0 | escape }}"
   environment:
     a0:
@@ -1301,6 +1345,7 @@
     a0: false
   expected: 'false'
 - name: StandardFilterTest#test_escape_once_23d17827
+  required_features: [ruby_types]
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
@@ -1322,6 +1367,7 @@
     a0: foo
   expected: foo
 - name: StandardFilterTest#test_escape_once_697ef598
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
@@ -1363,6 +1409,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_escape_once_a7f64e39
+  required_features: [ruby_types]
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
@@ -1379,6 +1426,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_escape_once_ce7e2aaa
+  required_features: [ruby_drops]
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
@@ -1408,8 +1456,10 @@
   template: "{{ a0 | first }}"
   environment:
     a0: foo
-  expected: 'f'
+  expected: ''
+  hint: "QUIRK: first filter does not work on strings in liquid-ruby"
 - name: StandardFilterTest#test_first_1067f918
+  required_features: [ruby_types]
   template: "{{ a0 | first }}"
   environment:
     a0:
@@ -1443,6 +1493,7 @@
     a0: -1234.003030303
   expected: ''
 - name: StandardFilterTest#test_first_86e07180
+  required_features: [ruby_drops]
   template: "{{ a0 | first }}"
   environment:
     a0:
@@ -1456,6 +1507,7 @@
       foo: bar
   expected: foobar
 - name: StandardFilterTest#test_first_916bafce
+  required_features: [ruby_drops]
   template: "{{ a0 | first }}"
   environment:
     a0:
@@ -1530,6 +1582,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_floor_10598ecd
+  required_features: [ruby_drops]
   template: "{{ a0 | floor }}"
   environment:
     a0:
@@ -1537,6 +1590,7 @@
         foo: 3
   expected: '0'
 - name: StandardFilterTest#test_floor_1efc10a5
+  required_features: [ruby_drops]
   template: "{{ a0 | floor }}"
   environment:
     a0:
@@ -1626,12 +1680,14 @@
     a0: true
   expected: '0'
 - name: StandardFilterTest#test_floor_f89d3c3b
+  required_features: [ruby_types]
   template: "{{ a0 | floor }}"
   environment:
     a0:
       1: bar
   expected: '0'
 - name: StandardFilterTest#test_h_15d599cb
+  required_features: [ruby_types]
   template: "{{ a0 | h }}"
   environment:
     a0:
@@ -1648,6 +1704,7 @@
     a0:
   expected: ''
 - name: StandardFilterTest#test_h_1a4be4f2
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | h }}"
   environment:
     a0:
@@ -1687,6 +1744,7 @@
     a0: 0.0
   expected: '0.0'
 - name: StandardFilterTest#test_h_60dd6e2d
+  required_features: [ruby_types]
   template: "{{ a0 | h }}"
   environment:
     a0:
@@ -1723,6 +1781,7 @@
     a0: 2001-02-03
   expected: '2001-02-03'
 - name: StandardFilterTest#test_h_ac11d3d3
+  required_features: [ruby_drops]
   template: "{{ a0 | h }}"
   environment:
     a0:
@@ -1789,6 +1848,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_join_137f0e43
+  required_features: [ruby_drops]
   template: "{{ a0 | join }}"
   environment:
     a0:
@@ -1796,6 +1856,7 @@
         foo: 4
   expected: 'woot: 4'
 - name: StandardFilterTest#test_join_2b25189e
+  required_features: [ruby_drops]
   template: "{{ a0 | join: a1 }}"
   environment:
     a0:
@@ -1870,12 +1931,14 @@
     a1: " - "
   expected: 1 - 2 - 3 - 4
 - name: StandardFilterTest#test_join_a2cdd87d
+  required_features: [ruby_types]
   template: "{{ a0 | join }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
 - name: StandardFilterTest#test_join_a43bcd49
+  required_features: [ruby_types]
   template: "{{ a0 | join }}"
   environment:
     a0:
@@ -1892,6 +1955,7 @@
     a0: -1234.003030303
   expected: "-1234.003030303"
 - name: StandardFilterTest#test_join_cb69175e
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | join }}"
   environment:
     a0:
@@ -1932,12 +1996,14 @@
       - bar
   expected: '{"foo"=>["foo", "bar"]}'
 - name: StandardFilterTest#test_last_1aad0557
+  required_features: [ruby_types]
   template: "{{ a0 | last }}"
   environment:
     a0:
       1: bar
   expected: ''
 - name: StandardFilterTest#test_last_1b048787
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | last }}"
   environment:
     a0:
@@ -1967,6 +2033,7 @@
     a0: -1234.003030303
   expected: ''
 - name: StandardFilterTest#test_last_7e00a30f
+  required_features: [ruby_drops]
   template: "{{ a0 | last }}"
   environment:
     a0:
@@ -2028,8 +2095,10 @@
   template: "{{ a0 | last }}"
   environment:
     a0: foo
-  expected: o
+  expected: ''
+  hint: "QUIRK: last filter does not work on strings in liquid-ruby"
 - name: StandardFilterTest#test_lstrip_1db23b1b
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
@@ -2059,6 +2128,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_lstrip_65d1c7bc
+  required_features: [ruby_types]
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
@@ -2087,6 +2157,7 @@
     a0: true
   expected: 'true'
 - name: StandardFilterTest#test_lstrip_9ec243f3
+  required_features: [ruby_drops]
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
@@ -2117,6 +2188,7 @@
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
 - name: StandardFilterTest#test_lstrip_f2105bdc
+  required_features: [ruby_types]
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
@@ -2183,6 +2255,7 @@
     a0: -1234.003030303
   expected: "-1234.003030303"
 - name: StandardFilterTest#test_newline_to_br_5b36a66d
+  required_features: [ruby_types]
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
@@ -2196,6 +2269,7 @@
     - bar
   expected: '["foo", "bar"]'
 - name: StandardFilterTest#test_newline_to_br_83ccb915
+  required_features: [ruby_types]
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
@@ -2220,6 +2294,7 @@
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
 - name: StandardFilterTest#test_newline_to_br_8eedc515
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
@@ -2244,6 +2319,7 @@
       foo: bar
   expected: '{"foo"=>"bar"}'
 - name: StandardFilterTest#test_newline_to_br_d8817509
+  required_features: [ruby_drops]
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
@@ -2391,6 +2467,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_reverse_3f288885
+  required_features: [ruby_types]
   template: "{{ a0 | reverse }}"
   environment:
     a0:
@@ -2402,6 +2479,7 @@
     a0: false
   expected: 'false'
 - name: StandardFilterTest#test_reverse_594e414a
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | reverse }}"
   environment:
     a0:
@@ -2442,6 +2520,7 @@
     a0: 0.0
   expected: '0.0'
 - name: StandardFilterTest#test_reverse_ba0393d8
+  required_features: [ruby_drops]
   template: "{{ a0 | reverse }}"
   environment:
     a0:
@@ -2449,6 +2528,7 @@
         foo: 3
   expected: 'woot: 3'
 - name: StandardFilterTest#test_reverse_d714ad07
+  required_features: [ruby_types]
   template: "{{ a0 | reverse }}"
   environment:
     a0:
@@ -2474,6 +2554,7 @@
     - 4
   expected: '4321'
 - name: StandardFilterTest#test_reverse_fd89e13b
+  required_features: [ruby_types]
   template: "{{ a0 | reverse }}"
   environment:
     a0:
@@ -2491,6 +2572,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_round_48ec110c
+  required_features: [ruby_drops]
   template: "{{ a0 | round }}"
   environment:
     a0:
@@ -2498,6 +2580,7 @@
         foo: -1
   expected: '0'
 - name: StandardFilterTest#test_round_5ddf32ab
+  required_features: [ruby_drops]
   template: "{{ a0 | round }}"
   environment:
     a0:
@@ -2511,6 +2594,7 @@
     - :foo: bar
   expected: '0'
 - name: StandardFilterTest#test_round_64f03f6e
+  required_features: [ruby_types]
   template: "{{ a0 | round }}"
   environment:
     a0:
@@ -2588,6 +2672,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_rstrip_0e32369a
+  required_features: [ruby_types]
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
@@ -2627,6 +2712,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_rstrip_7ad0647f
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
@@ -2673,6 +2759,7 @@
     - bar
   expected: '["foo", "bar"]'
 - name: StandardFilterTest#test_rstrip_d19b6c35
+  required_features: [ruby_drops]
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
@@ -2690,6 +2777,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_rstrip_f0082356
+  required_features: [ruby_types]
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
@@ -2711,6 +2799,7 @@
     a0: foo
   expected: '3'
 - name: StandardFilterTest#test_size_195c1efe
+  required_features: [ruby_drops]
   template: "{{ a0 | size }}"
   environment:
     a0:
@@ -2729,6 +2818,7 @@
     a0: []
   expected: '0'
 - name: StandardFilterTest#test_size_49e60ac9
+  required_features: [ruby_drops]
   template: "{{ a0 | size }}"
   environment:
     a0:
@@ -2736,6 +2826,7 @@
         foo: 3
   expected: '0'
 - name: StandardFilterTest#test_size_4b6a3ab5
+  required_features: [ruby_types]
   template: "{{ a0 | size }}"
   environment:
     a0:
@@ -3107,6 +3198,7 @@
     a2: 6
   expected: ''
 - name: StandardFilterTest#test_sort_024d7e26
+  required_features: [ruby_types]
   template: "{{ a0 | sort }}"
   environment:
     a0:
@@ -3174,6 +3266,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_sort_46b0f3a8
+  required_features: [ruby_types]
   template: "{{ a0 | sort }}"
   environment:
     a0:
@@ -3190,6 +3283,7 @@
     - 1
   expected: '1234'
 - name: StandardFilterTest#test_sort_67c8dccb
+  required_features: [ruby_drops]
   template: "{{ a0 | sort }}"
   environment:
     a0:
@@ -3281,6 +3375,7 @@
     a0: false
   expected: 'false'
 - name: StandardFilterTest#test_sort_fb1e1cd5
+  required_features: [ruby_types]
   template: "{{ a0 | sort }}"
   environment:
     a0:
@@ -3342,6 +3437,7 @@
     a0: true
   expected: 'true'
 - name: StandardFilterTest#test_sort_natural_48a5142c
+  required_features: [ruby_types]
   template: "{{ a0 | sort_natural }}"
   environment:
     a0:
@@ -3368,12 +3464,14 @@
     a1: a
   expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
 - name: StandardFilterTest#test_sort_natural_7fd0dce9
+  required_features: [ruby_types]
   template: "{{ a0 | sort_natural }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
 - name: StandardFilterTest#test_sort_natural_889ad3ca
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | sort_natural }}"
   environment:
     a0:
@@ -3472,6 +3570,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_sort_natural_f7755ae6
+  required_features: [ruby_drops]
   template: "{{ a0 | sort_natural }}"
   environment:
     a0:
@@ -3509,6 +3608,7 @@
     a1: "~"
   expected: A?Z
 - name: StandardFilterTest#test_strip_1a8b7162
+  required_features: [ruby_types]
   template: "{{ a0 | strip }}"
   environment:
     a0:
@@ -3543,6 +3643,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_strip_8bb8481a
+  required_features: [ruby_types]
   template: "{{ a0 | strip }}"
   environment:
     a0:
@@ -3587,6 +3688,7 @@
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
 - name: StandardFilterTest#test_strip_cc6a0931
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | strip }}"
   environment:
     a0:
@@ -3600,6 +3702,7 @@
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
 - name: StandardFilterTest#test_strip_cfecc86f
+  required_features: [ruby_drops]
   template: "{{ a0 | strip }}"
   environment:
     a0:
@@ -3630,6 +3733,7 @@
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
 - name: StandardFilterTest#test_strip_html_191b8e92
+  required_features: [ruby_drops]
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
@@ -3657,6 +3761,7 @@
     a0: 0.0
   expected: '0.0'
 - name: StandardFilterTest#test_strip_html_40ce4cd8
+  required_features: [ruby_types]
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
@@ -3715,6 +3820,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_strip_html_9cd554a9
+  required_features: [ruby_types]
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
@@ -3733,6 +3839,7 @@
     a0:
   expected: ''
 - name: StandardFilterTest#test_strip_html_da209c4c
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
@@ -3787,6 +3894,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_strip_newlines_4bf7cfaa
+  required_features: [ruby_drops]
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
@@ -3799,6 +3907,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_strip_newlines_69934cfc
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
@@ -3824,6 +3933,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_strip_newlines_971cf58c
+  required_features: [ruby_types]
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
@@ -3841,6 +3951,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_strip_newlines_cb41d77d
+  required_features: [ruby_types]
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
@@ -3912,6 +4023,7 @@
     - -0.3
   expected: '0.0'
 - name: StandardFilterTest#test_sum_39b21d10
+  required_features: [ruby_drops]
   template: "{{ a0 | sum }}"
   environment:
     a0:
@@ -3986,6 +4098,7 @@
     a0:
   expected: '0'
 - name: StandardFilterTest#test_sum_7973916b
+  required_features: [ruby_types]
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
@@ -4007,12 +4120,14 @@
     - -0.3
   expected: "-0.4"
 - name: StandardFilterTest#test_sum_819995f4
+  required_features: [ruby_types]
   template: "{{ a0 | sum }}"
   environment:
     a0:
       1: bar
   expected: '0'
 - name: StandardFilterTest#test_sum_81cb6a64
+  required_features: [ruby_types]
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
@@ -4066,6 +4181,7 @@
         - 4
   expected: '10'
 - name: StandardFilterTest#test_sum_9c500553
+  required_features: [ruby_types]
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
@@ -4093,6 +4209,7 @@
     - quantity: 3
   expected: '3'
 - name: StandardFilterTest#test_sum_a7ee6ebb
+  required_features: [ruby_types]
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
@@ -4128,6 +4245,7 @@
     - quantity: 2
   expected: '1'
 - name: StandardFilterTest#test_sum_bd1b8229
+  required_features: [ruby_types]
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
@@ -4161,6 +4279,7 @@
     a1: subtotal
   expected: '0'
 - name: StandardFilterTest#test_sum_e7abf7a6
+  required_features: [ruby_drops]
   template: "{{ a0 | sum }}"
   environment:
     a0:
@@ -4190,6 +4309,7 @@
     - 2
   expected: '3'
 - name: StandardFilterTest#test_sum_f2dd6156
+  required_features: [ruby_types]
   template: "{{ a0 | sum: a1 }}"
   environment:
     a0:
@@ -4283,6 +4403,7 @@
     a1: 5
   expected: 测试...
 - name: StandardFilterTest#test_truncate_ad1f50ca
+  required_features: [ruby_types]
   template: "{{ a0 | truncate }}"
   environment:
     a0:
@@ -4311,6 +4432,7 @@
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
 - name: StandardFilterTest#test_truncate_e6da582c
+  required_features: [ruby_drops]
   template: "{{ a0 | truncate }}"
   environment:
     a0:
@@ -4323,6 +4445,7 @@
     a0: -1234.003030303
   expected: "-1234.003030303"
 - name: StandardFilterTest#test_truncate_f061a4c6
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | truncate }}"
   environment:
     a0:
@@ -4360,6 +4483,7 @@
     a2: 1
   expected: '12341'
 - name: StandardFilterTest#test_truncate_f929a304
+  required_features: [ruby_types]
   template: "{{ a0 | truncate }}"
   environment:
     a0:
@@ -4397,6 +4521,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_truncatewords_465cd907
+  required_features: [ruby_drops]
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
@@ -4423,6 +4548,7 @@
     a1: 0
   expected: one...
 - name: StandardFilterTest#test_truncatewords_51d418ae
+  required_features: [ruby_types]
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
@@ -4434,6 +4560,7 @@
     a0: 0.0
   expected: '0.0'
 - name: StandardFilterTest#test_truncatewords_562358d6
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
@@ -4520,6 +4647,7 @@
     a1: 4
   expected: one two three
 - name: StandardFilterTest#test_truncatewords_e98ee040
+  required_features: [ruby_types]
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
@@ -4596,6 +4724,7 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_uniq_7a8a52d6
+  required_features: [ruby_types]
   template: "{{ a0 | uniq }}"
   environment:
     a0:
@@ -4617,6 +4746,7 @@
     - 1
   expected: '1324'
 - name: StandardFilterTest#test_uniq_7c8b4bc8
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | uniq }}"
   environment:
     a0:
@@ -4640,6 +4770,7 @@
     - foo
   expected: foobar
 - name: StandardFilterTest#test_uniq_9c0e7ae6
+  required_features: [ruby_types]
   template: "{{ a0 | uniq }}"
   environment:
     a0:
@@ -4651,6 +4782,7 @@
     a0: -1234.003030303
   expected: "-1234.003030303"
 - name: StandardFilterTest#test_uniq_ab04c3ff
+  required_features: [ruby_drops]
   template: "{{ a0 | uniq }}"
   environment:
     a0:
@@ -4680,6 +4812,7 @@
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
 - name: StandardFilterTest#test_uniq_dcc88f46
+  required_features: [ruby_types]
   template: "{{ a0 | uniq: a1 }}"
   environment:
     a0:
@@ -4720,12 +4853,14 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_upcase_292e3d8c
+  required_features: [ruby_types]
   template: "{{ a0 | upcase }}"
   environment:
     a0:
       :foo: bar
   expected: '{:FOO=>"BAR"}'
 - name: StandardFilterTest#test_upcase_2a366551
+  required_features: [ruby_types]
   template: "{{ a0 | upcase }}"
   environment:
     a0:
@@ -4745,6 +4880,7 @@
   expected: '[{"FOO"=>"BAR"}, {"FOO"=>123}, {"FOO"=>NIL}, {"FOO"=>TRUE}, {"FOO"=>["FOO",
     "BAR"]}]'
 - name: StandardFilterTest#test_upcase_2e46f4ea
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | upcase }}"
   environment:
     a0:
@@ -4758,6 +4894,7 @@
     - :foo: bar
   expected: '["FOO", 123, NIL, TRUE, FALSE, LIQUID::DROP, ["FOO"], {:FOO=>"BAR"}]'
 - name: StandardFilterTest#test_upcase_37e9f356
+  required_features: [ruby_drops]
   template: "{{ a0 | upcase }}"
   environment:
     a0:
@@ -4887,6 +5024,7 @@
     a0: false
   expected: 'false'
 - name: StandardFilterTest#test_url_decode_77b13aa7
+  required_features: [ruby_types]
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
@@ -4898,6 +5036,7 @@
     a0: foo+bar
   expected: foo bar
 - name: StandardFilterTest#test_url_decode_8ba01dcc
+  required_features: [ruby_types]
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
@@ -4909,6 +5048,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_url_decode_b76522ca
+  required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
@@ -4922,6 +5062,7 @@
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
 - name: StandardFilterTest#test_url_decode_bb3ad179
+  required_features: [ruby_drops]
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
@@ -4976,6 +5117,7 @@
     a0: 0
   expected: '0'
 - name: StandardFilterTest#test_url_encode_250a9d9c
+  required_features: [ruby_drops]
   template: "{{ a0 | url_encode }}"
   environment:
     a0:
@@ -5027,6 +5169,7 @@
     a0: 123
   expected: '123'
 - name: StandardFilterTest#test_url_encode_8bf99cb9
+  required_features: [ruby_drops]
   template: "{{ a0 | url_encode }}"
   environment:
     a0:
@@ -5066,12 +5209,14 @@
     a0: true
   expected: 'true'
 - name: StandardFilterTest#test_url_encode_de0e4741
+  required_features: [ruby_types]
   template: "{{ a0 | url_encode }}"
   environment:
     a0:
       :foo: bar
   expected: "%7B%3Afoo%3D%3E%22bar%22%7D"
 - name: StandardFilterTest#test_url_encode_eb214d0d
+  required_features: [ruby_types]
   template: "{{ a0 | url_encode }}"
   environment:
     a0:
