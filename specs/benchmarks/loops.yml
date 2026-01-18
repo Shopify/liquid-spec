@@ -1,193 +1,156 @@
 ---
 _metadata:
-  hint: Loop performance benchmarks
+  hint: Loop performance benchmarks with realistic data
 specs:
-- name: bench_multiplication_table
+- name: bench_product_grid
   template: |
-    {% comment %}Combined loop benchmark: range loops, nested loops, forloop object{% endcomment %}
-    <table class="multiplication">
-    {% for i in (1..12) %}
-      <tr class="row-{{ forloop.index }}{% if forloop.first %} first{% endif %}{% if forloop.last %} last{% endif %}">
-      {% for j in (1..12) %}
-        {% assign product = i | times: j %}
-        <td class="col-{{ forloop.index }}{% if product > 100 %} large{% endif %}">
-          {{ i }}×{{ j }}={{ product }}
-        </td>
+    {% comment %}Realistic loop: product grid with nested variants, pagination{% endcomment %}
+    <div class="product-grid">
+      {% for product in products %}
+        <div class="product-card{% if forloop.first %} featured{% endif %}{% cycle ' odd', ' even' %}">
+          <h3>{{ product.title | escape }}</h3>
+          <p class="description">{{ product.description | truncate: 80 }}</p>
+          <div class="pricing">
+            {% if product.compare_at_price > product.price %}
+              <span class="original">${{ product.compare_at_price }}</span>
+              <span class="sale">${{ product.price }}</span>
+              {% assign savings = product.compare_at_price | minus: product.price %}
+              <span class="savings">Save ${{ savings }}</span>
+            {% else %}
+              <span class="price">${{ product.price }}</span>
+            {% endif %}
+          </div>
+          {% if product.variants.size > 1 %}
+            <div class="variants">
+              {% for variant in product.variants %}
+                <button class="variant{% if variant.available %} available{% else %} sold-out{% endif %}"
+                        data-sku="{{ variant.sku }}">
+                  {{ variant.title }}
+                  {% if variant.price != product.price %} (+${{ variant.price | minus: product.price }}){% endif %}
+                </button>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <div class="tags">
+            {% for tag in product.tags limit:3 %}
+              <span class="tag">{{ tag | downcase | replace: " ", "-" }}</span>
+            {% endfor %}
+            {% if product.tags.size > 3 %}
+              <span class="more">+{{ product.tags.size | minus: 3 }} more</span>
+            {% endif %}
+          </div>
+        </div>
       {% endfor %}
-      </tr>
-    {% endfor %}
-    </table>
-  expected: "\n<table class=\"multiplication\">\n\n  <tr class=\"row-1 first\">\n
-    \ \n    \n    <td class=\"col-1\">\n      1×1=1\n    </td>\n  \n    \n    <td
-    class=\"col-2\">\n      1×2=2\n    </td>\n  \n    \n    <td class=\"col-3\">\n
-    \     1×3=3\n    </td>\n  \n    \n    <td class=\"col-4\">\n      1×4=4\n    </td>\n
-    \ \n    \n    <td class=\"col-5\">\n      1×5=5\n    </td>\n  \n    \n    <td
-    class=\"col-6\">\n      1×6=6\n    </td>\n  \n    \n    <td class=\"col-7\">\n
-    \     1×7=7\n    </td>\n  \n    \n    <td class=\"col-8\">\n      1×8=8\n    </td>\n
-    \ \n    \n    <td class=\"col-9\">\n      1×9=9\n    </td>\n  \n    \n    <td
-    class=\"col-10\">\n      1×10=10\n    </td>\n  \n    \n    <td class=\"col-11\">\n
-    \     1×11=11\n    </td>\n  \n    \n    <td class=\"col-12\">\n      1×12=12\n
-    \   </td>\n  \n  </tr>\n\n  <tr class=\"row-2\">\n  \n    \n    <td class=\"col-1\">\n
-    \     2×1=2\n    </td>\n  \n    \n    <td class=\"col-2\">\n      2×2=4\n    </td>\n
-    \ \n    \n    <td class=\"col-3\">\n      2×3=6\n    </td>\n  \n    \n    <td
-    class=\"col-4\">\n      2×4=8\n    </td>\n  \n    \n    <td class=\"col-5\">\n
-    \     2×5=10\n    </td>\n  \n    \n    <td class=\"col-6\">\n      2×6=12\n    </td>\n
-    \ \n    \n    <td class=\"col-7\">\n      2×7=14\n    </td>\n  \n    \n    <td
-    class=\"col-8\">\n      2×8=16\n    </td>\n  \n    \n    <td class=\"col-9\">\n
-    \     2×9=18\n    </td>\n  \n    \n    <td class=\"col-10\">\n      2×10=20\n
-    \   </td>\n  \n    \n    <td class=\"col-11\">\n      2×11=22\n    </td>\n  \n
-    \   \n    <td class=\"col-12\">\n      2×12=24\n    </td>\n  \n  </tr>\n\n  <tr
-    class=\"row-3\">\n  \n    \n    <td class=\"col-1\">\n      3×1=3\n    </td>\n
-    \ \n    \n    <td class=\"col-2\">\n      3×2=6\n    </td>\n  \n    \n    <td
-    class=\"col-3\">\n      3×3=9\n    </td>\n  \n    \n    <td class=\"col-4\">\n
-    \     3×4=12\n    </td>\n  \n    \n    <td class=\"col-5\">\n      3×5=15\n    </td>\n
-    \ \n    \n    <td class=\"col-6\">\n      3×6=18\n    </td>\n  \n    \n    <td
-    class=\"col-7\">\n      3×7=21\n    </td>\n  \n    \n    <td class=\"col-8\">\n
-    \     3×8=24\n    </td>\n  \n    \n    <td class=\"col-9\">\n      3×9=27\n    </td>\n
-    \ \n    \n    <td class=\"col-10\">\n      3×10=30\n    </td>\n  \n    \n    <td
-    class=\"col-11\">\n      3×11=33\n    </td>\n  \n    \n    <td class=\"col-12\">\n
-    \     3×12=36\n    </td>\n  \n  </tr>\n\n  <tr class=\"row-4\">\n  \n    \n    <td
-    class=\"col-1\">\n      4×1=4\n    </td>\n  \n    \n    <td class=\"col-2\">\n
-    \     4×2=8\n    </td>\n  \n    \n    <td class=\"col-3\">\n      4×3=12\n    </td>\n
-    \ \n    \n    <td class=\"col-4\">\n      4×4=16\n    </td>\n  \n    \n    <td
-    class=\"col-5\">\n      4×5=20\n    </td>\n  \n    \n    <td class=\"col-6\">\n
-    \     4×6=24\n    </td>\n  \n    \n    <td class=\"col-7\">\n      4×7=28\n    </td>\n
-    \ \n    \n    <td class=\"col-8\">\n      4×8=32\n    </td>\n  \n    \n    <td
-    class=\"col-9\">\n      4×9=36\n    </td>\n  \n    \n    <td class=\"col-10\">\n
-    \     4×10=40\n    </td>\n  \n    \n    <td class=\"col-11\">\n      4×11=44\n
-    \   </td>\n  \n    \n    <td class=\"col-12\">\n      4×12=48\n    </td>\n  \n
-    \ </tr>\n\n  <tr class=\"row-5\">\n  \n    \n    <td class=\"col-1\">\n      5×1=5\n
-    \   </td>\n  \n    \n    <td class=\"col-2\">\n      5×2=10\n    </td>\n  \n    \n
-    \   <td class=\"col-3\">\n      5×3=15\n    </td>\n  \n    \n    <td class=\"col-4\">\n
-    \     5×4=20\n    </td>\n  \n    \n    <td class=\"col-5\">\n      5×5=25\n    </td>\n
-    \ \n    \n    <td class=\"col-6\">\n      5×6=30\n    </td>\n  \n    \n    <td
-    class=\"col-7\">\n      5×7=35\n    </td>\n  \n    \n    <td class=\"col-8\">\n
-    \     5×8=40\n    </td>\n  \n    \n    <td class=\"col-9\">\n      5×9=45\n    </td>\n
-    \ \n    \n    <td class=\"col-10\">\n      5×10=50\n    </td>\n  \n    \n    <td
-    class=\"col-11\">\n      5×11=55\n    </td>\n  \n    \n    <td class=\"col-12\">\n
-    \     5×12=60\n    </td>\n  \n  </tr>\n\n  <tr class=\"row-6\">\n  \n    \n    <td
-    class=\"col-1\">\n      6×1=6\n    </td>\n  \n    \n    <td class=\"col-2\">\n
-    \     6×2=12\n    </td>\n  \n    \n    <td class=\"col-3\">\n      6×3=18\n    </td>\n
-    \ \n    \n    <td class=\"col-4\">\n      6×4=24\n    </td>\n  \n    \n    <td
-    class=\"col-5\">\n      6×5=30\n    </td>\n  \n    \n    <td class=\"col-6\">\n
-    \     6×6=36\n    </td>\n  \n    \n    <td class=\"col-7\">\n      6×7=42\n    </td>\n
-    \ \n    \n    <td class=\"col-8\">\n      6×8=48\n    </td>\n  \n    \n    <td
-    class=\"col-9\">\n      6×9=54\n    </td>\n  \n    \n    <td class=\"col-10\">\n
-    \     6×10=60\n    </td>\n  \n    \n    <td class=\"col-11\">\n      6×11=66\n
-    \   </td>\n  \n    \n    <td class=\"col-12\">\n      6×12=72\n    </td>\n  \n
-    \ </tr>\n\n  <tr class=\"row-7\">\n  \n    \n    <td class=\"col-1\">\n      7×1=7\n
-    \   </td>\n  \n    \n    <td class=\"col-2\">\n      7×2=14\n    </td>\n  \n    \n
-    \   <td class=\"col-3\">\n      7×3=21\n    </td>\n  \n    \n    <td class=\"col-4\">\n
-    \     7×4=28\n    </td>\n  \n    \n    <td class=\"col-5\">\n      7×5=35\n    </td>\n
-    \ \n    \n    <td class=\"col-6\">\n      7×6=42\n    </td>\n  \n    \n    <td
-    class=\"col-7\">\n      7×7=49\n    </td>\n  \n    \n    <td class=\"col-8\">\n
-    \     7×8=56\n    </td>\n  \n    \n    <td class=\"col-9\">\n      7×9=63\n    </td>\n
-    \ \n    \n    <td class=\"col-10\">\n      7×10=70\n    </td>\n  \n    \n    <td
-    class=\"col-11\">\n      7×11=77\n    </td>\n  \n    \n    <td class=\"col-12\">\n
-    \     7×12=84\n    </td>\n  \n  </tr>\n\n  <tr class=\"row-8\">\n  \n    \n    <td
-    class=\"col-1\">\n      8×1=8\n    </td>\n  \n    \n    <td class=\"col-2\">\n
-    \     8×2=16\n    </td>\n  \n    \n    <td class=\"col-3\">\n      8×3=24\n    </td>\n
-    \ \n    \n    <td class=\"col-4\">\n      8×4=32\n    </td>\n  \n    \n    <td
-    class=\"col-5\">\n      8×5=40\n    </td>\n  \n    \n    <td class=\"col-6\">\n
-    \     8×6=48\n    </td>\n  \n    \n    <td class=\"col-7\">\n      8×7=56\n    </td>\n
-    \ \n    \n    <td class=\"col-8\">\n      8×8=64\n    </td>\n  \n    \n    <td
-    class=\"col-9\">\n      8×9=72\n    </td>\n  \n    \n    <td class=\"col-10\">\n
-    \     8×10=80\n    </td>\n  \n    \n    <td class=\"col-11\">\n      8×11=88\n
-    \   </td>\n  \n    \n    <td class=\"col-12\">\n      8×12=96\n    </td>\n  \n
-    \ </tr>\n\n  <tr class=\"row-9\">\n  \n    \n    <td class=\"col-1\">\n      9×1=9\n
-    \   </td>\n  \n    \n    <td class=\"col-2\">\n      9×2=18\n    </td>\n  \n    \n
-    \   <td class=\"col-3\">\n      9×3=27\n    </td>\n  \n    \n    <td class=\"col-4\">\n
-    \     9×4=36\n    </td>\n  \n    \n    <td class=\"col-5\">\n      9×5=45\n    </td>\n
-    \ \n    \n    <td class=\"col-6\">\n      9×6=54\n    </td>\n  \n    \n    <td
-    class=\"col-7\">\n      9×7=63\n    </td>\n  \n    \n    <td class=\"col-8\">\n
-    \     9×8=72\n    </td>\n  \n    \n    <td class=\"col-9\">\n      9×9=81\n    </td>\n
-    \ \n    \n    <td class=\"col-10\">\n      9×10=90\n    </td>\n  \n    \n    <td
-    class=\"col-11\">\n      9×11=99\n    </td>\n  \n    \n    <td class=\"col-12
-    large\">\n      9×12=108\n    </td>\n  \n  </tr>\n\n  <tr class=\"row-10\">\n
-    \ \n    \n    <td class=\"col-1\">\n      10×1=10\n    </td>\n  \n    \n    <td
-    class=\"col-2\">\n      10×2=20\n    </td>\n  \n    \n    <td class=\"col-3\">\n
-    \     10×3=30\n    </td>\n  \n    \n    <td class=\"col-4\">\n      10×4=40\n
-    \   </td>\n  \n    \n    <td class=\"col-5\">\n      10×5=50\n    </td>\n  \n
-    \   \n    <td class=\"col-6\">\n      10×6=60\n    </td>\n  \n    \n    <td class=\"col-7\">\n
-    \     10×7=70\n    </td>\n  \n    \n    <td class=\"col-8\">\n      10×8=80\n
-    \   </td>\n  \n    \n    <td class=\"col-9\">\n      10×9=90\n    </td>\n  \n
-    \   \n    <td class=\"col-10\">\n      10×10=100\n    </td>\n  \n    \n    <td
-    class=\"col-11 large\">\n      10×11=110\n    </td>\n  \n    \n    <td class=\"col-12
-    large\">\n      10×12=120\n    </td>\n  \n  </tr>\n\n  <tr class=\"row-11\">\n
-    \ \n    \n    <td class=\"col-1\">\n      11×1=11\n    </td>\n  \n    \n    <td
-    class=\"col-2\">\n      11×2=22\n    </td>\n  \n    \n    <td class=\"col-3\">\n
-    \     11×3=33\n    </td>\n  \n    \n    <td class=\"col-4\">\n      11×4=44\n
-    \   </td>\n  \n    \n    <td class=\"col-5\">\n      11×5=55\n    </td>\n  \n
-    \   \n    <td class=\"col-6\">\n      11×6=66\n    </td>\n  \n    \n    <td class=\"col-7\">\n
-    \     11×7=77\n    </td>\n  \n    \n    <td class=\"col-8\">\n      11×8=88\n
-    \   </td>\n  \n    \n    <td class=\"col-9\">\n      11×9=99\n    </td>\n  \n
-    \   \n    <td class=\"col-10 large\">\n      11×10=110\n    </td>\n  \n    \n
-    \   <td class=\"col-11 large\">\n      11×11=121\n    </td>\n  \n    \n    <td
-    class=\"col-12 large\">\n      11×12=132\n    </td>\n  \n  </tr>\n\n  <tr class=\"row-12
-    last\">\n  \n    \n    <td class=\"col-1\">\n      12×1=12\n    </td>\n  \n    \n
-    \   <td class=\"col-2\">\n      12×2=24\n    </td>\n  \n    \n    <td class=\"col-3\">\n
-    \     12×3=36\n    </td>\n  \n    \n    <td class=\"col-4\">\n      12×4=48\n
-    \   </td>\n  \n    \n    <td class=\"col-5\">\n      12×5=60\n    </td>\n  \n
-    \   \n    <td class=\"col-6\">\n      12×6=72\n    </td>\n  \n    \n    <td class=\"col-7\">\n
-    \     12×7=84\n    </td>\n  \n    \n    <td class=\"col-8\">\n      12×8=96\n
-    \   </td>\n  \n    \n    <td class=\"col-9 large\">\n      12×9=108\n    </td>\n
-    \ \n    \n    <td class=\"col-10 large\">\n      12×10=120\n    </td>\n  \n    \n
-    \   <td class=\"col-11 large\">\n      12×11=132\n    </td>\n  \n    \n    <td
-    class=\"col-12 large\">\n      12×12=144\n    </td>\n  \n  </tr>\n\n</table>\n"
-- name: bench_sorted_list_with_pagination
-  template: |
-    {% comment %}Combined loop benchmark: arrays, limit/offset, cycle, tablerow{% endcomment %}
-    {% assign all_items = items | sort: "score" | reverse %}
-
-    <h2>Top 5 Items:</h2>
-    <ol>
-    {% for item in all_items limit:5 %}
-      <li class="{% cycle "odd", "even" %}">
-        {{ forloop.index }}. {{ item.name }} (Score: {{ item.score }})
-        {% if forloop.first %}<span class="badge">Top!</span>{% endif %}
-      </li>
-    {% endfor %}
-    </ol>
-
-    <h2>Remaining Items (from 6th):</h2>
-    {% tablerow item in all_items cols:3 offset:5 %}
-      {{ item.name }}: {{ item.score }}
-    {% endtablerow %}
-
-    <p>Showing {{ all_items | size }} total items</p>
+    </div>
+    <nav class="pagination">
+      {% if current_page > 1 %}
+        <a href="?page={{ current_page | minus: 1 }}">&laquo; Prev</a>
+      {% endif %}
+      {% for i in (1..total_pages) %}
+        {% if i == current_page %}
+          <span class="current">{{ i }}</span>
+        {% else %}
+          <a href="?page={{ i }}">{{ i }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if current_page < total_pages %}
+        <a href="?page={{ current_page | plus: 1 }}">Next &raquo;</a>
+      {% endif %}
+    </nav>
   environment:
-    items:
-    - name: Alpha
-      score: 85
-    - name: Beta
-      score: 92
-    - name: Gamma
-      score: 78
-    - name: Delta
-      score: 95
-    - name: Epsilon
-      score: 88
-    - name: Zeta
-      score: 73
-    - name: Eta
-      score: 91
-    - name: Theta
-      score: 82
-    - name: Iota
-      score: 76
-    - name: Kappa
-      score: 89
-    - name: Lambda
-      score: 94
-    - name: Mu
-      score: 71
-  expected: "\n\n\n<h2>Top 5 Items:</h2>\n<ol>\n\n  <li class=\"odd\">\n    1. Delta
-    (Score: 95)\n    <span class=\"badge\">Top!</span>\n  </li>\n\n  <li class=\"even\">\n
-    \   2. Lambda (Score: 94)\n    \n  </li>\n\n  <li class=\"odd\">\n    3. Beta
-    (Score: 92)\n    \n  </li>\n\n  <li class=\"even\">\n    4. Eta (Score: 91)\n
-    \   \n  </li>\n\n  <li class=\"odd\">\n    5. Kappa (Score: 89)\n    \n  </li>\n\n</ol>\n\n<h2>Remaining
-    Items (from 6th):</h2>\n<tr class=\"row1\">\n<td class=\"col1\">\n  Epsilon: 88\n</td><td
-    class=\"col2\">\n  Alpha: 85\n</td><td class=\"col3\">\n  Theta: 82\n</td></tr>\n<tr
-    class=\"row2\"><td class=\"col1\">\n  Gamma: 78\n</td><td class=\"col2\">\n  Iota:
-    76\n</td><td class=\"col3\">\n  Zeta: 73\n</td></tr>\n<tr class=\"row3\"><td class=\"col1\">\n
-    \ Mu: 71\n</td></tr>\n\n\n<p>Showing 12 total items</p>\n"
+    current_page: 2
+    total_pages: 5
+    products:
+    - title: "Wireless Bluetooth Headphones Pro"
+      description: "Premium noise-cancelling headphones with 40-hour battery life and crystal clear audio"
+      price: 199
+      compare_at_price: 249
+      variants:
+      - title: "Black"
+        sku: "WBH-BLK"
+        price: 199
+        available: true
+      - title: "White"
+        sku: "WBH-WHT"
+        price: 199
+        available: true
+      - title: "Rose Gold"
+        sku: "WBH-RG"
+        price: 219
+        available: false
+      tags: ["electronics", "audio", "wireless", "noise-cancelling", "premium"]
+    - title: "Smart Watch Series 5"
+      description: "Track your fitness, receive notifications, and stay connected with our latest smartwatch"
+      price: 399
+      compare_at_price: 399
+      variants:
+      - title: "40mm Silver"
+        sku: "SW5-40S"
+        price: 399
+        available: true
+      - title: "44mm Silver"
+        sku: "SW5-44S"
+        price: 429
+        available: true
+      - title: "40mm Space Gray"
+        sku: "SW5-40G"
+        price: 399
+        available: true
+      - title: "44mm Space Gray"
+        sku: "SW5-44G"
+        price: 429
+        available: false
+      tags: ["electronics", "wearable", "fitness"]
+    - title: "Ergonomic Office Chair"
+      description: "Adjustable lumbar support, breathable mesh, perfect for long work sessions"
+      price: 349
+      compare_at_price: 449
+      variants:
+      - title: "Standard"
+        sku: "EOC-STD"
+        price: 349
+        available: true
+      tags: ["furniture", "office", "ergonomic"]
+    - title: "Mechanical Keyboard RGB"
+      description: "Cherry MX switches, full RGB backlighting, programmable macros"
+      price: 149
+      compare_at_price: 149
+      variants:
+      - title: "Blue Switches"
+        sku: "MK-BLUE"
+        price: 149
+        available: true
+      - title: "Brown Switches"
+        sku: "MK-BROWN"
+        price: 149
+        available: true
+      - title: "Red Switches"
+        sku: "MK-RED"
+        price: 149
+        available: true
+      tags: ["electronics", "gaming", "keyboard", "rgb"]
+    - title: "4K Webcam Pro"
+      description: "Crystal clear video calls with autofocus and low-light correction"
+      price: 129
+      compare_at_price: 179
+      variants:
+      - title: "Standard"
+        sku: "WC4K-STD"
+        price: 129
+        available: true
+      tags: ["electronics", "video", "streaming"]
+    - title: "USB-C Hub 7-in-1"
+      description: "HDMI, USB 3.0, SD card reader, ethernet - all in one compact hub"
+      price: 59
+      compare_at_price: 79
+      variants:
+      - title: "Space Gray"
+        sku: "HUB7-GRY"
+        price: 59
+        available: true
+      - title: "Silver"
+        sku: "HUB7-SLV"
+        price: 59
+        available: true
+      tags: ["electronics", "accessories", "usb-c"]
+  expected_pattern: "product-grid.*pagination"

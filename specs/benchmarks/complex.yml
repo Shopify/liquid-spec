@@ -1,224 +1,563 @@
 ---
 _metadata:
-  hint: Complex template performance benchmarks
+  hint: Complex template benchmarks with partials and chained filters
 specs:
-- name: bench_product_listing
+- name: bench_online_store_page
   template: |
-    <div class="products">
-    {% for product in products %}
-      <div class="product">
-        <h2>{{ product.title }}</h2>
-        <p>{{ product.description | truncate: 100 }}</p>
-        <span class="price">${{ product.price }}</span>
-        {% if product.on_sale %}
-          <span class="sale">SALE!</span>
-        {% endif %}
-        {% if product.variants.size > 1 %}
-          <select>
-          {% for variant in product.variants %}
-            <option>{{ variant.name }} - ${{ variant.price }}</option>
-          {% endfor %}
-          </select>
-        {% endif %}
-      </div>
-    {% endfor %}
-    </div>
-  environment:
-    products:
-    - title: Widget A
-      description: A fantastic widget that does amazing things for your home and office
-      price: 19.99
-      on_sale: true
-      variants:
-      - name: Small
-        price: 14.99
-      - name: Medium
-        price: 19.99
-      - name: Large
-        price: 24.99
-    - title: Widget B
-      description: Another great widget with premium features
-      price: 29.99
-      on_sale: false
-      variants:
-      - name: Standard
-        price: 29.99
-    - title: Widget C
-      description: Budget-friendly widget for everyday use
-      price: 9.99
-      on_sale: true
-      variants:
-      - name: Single
-        price: 9.99
-      - name: Pack of 3
-        price: 24.99
-  expected: "<div class=\"products\">\n\n  <div class=\"product\">\n    <h2>Widget
-    A</h2>\n    <p>A fantastic widget that does amazing things for your home and office</p>\n
-    \   <span class=\"price\">$19.99</span>\n    \n      <span class=\"sale\">SALE!</span>\n
-    \   \n    \n      <select>\n      \n        <option>Small - $14.99</option>\n
-    \     \n        <option>Medium - $19.99</option>\n      \n        <option>Large
-    - $24.99</option>\n      \n      </select>\n    \n  </div>\n\n  <div class=\"product\">\n
-    \   <h2>Widget B</h2>\n    <p>Another great widget with premium features</p>\n
-    \   <span class=\"price\">$29.99</span>\n    \n    \n  </div>\n\n  <div class=\"product\">\n
-    \   <h2>Widget C</h2>\n    <p>Budget-friendly widget for everyday use</p>\n    <span
-    class=\"price\">$9.99</span>\n    \n      <span class=\"sale\">SALE!</span>\n
-    \   \n    \n      <select>\n      \n        <option>Single - $9.99</option>\n
-    \     \n        <option>Pack of 3 - $24.99</option>\n      \n      </select>\n
-    \   \n  </div>\n\n</div>\n"
-- name: bench_navigation_menu
-  template: |
-    <nav>
-      <ul>
-      {% for item in menu %}
-        <li>
-          <a href="{{ item.url }}">{{ item.title }}</a>
-          {% if item.children.size > 0 %}
-            <ul>
-            {% for child in item.children %}
-              <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+    {% comment %}Full online store product page with partials{% endcomment %}
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>{{ product.title | escape }} | {{ shop.name }}</title>
+      <meta name="description" content="{{ product.description | strip_html | truncate: 160 }}">
+    </head>
+    <body>
+      {% render 'header' %}
+
+      <main class="product-page">
+        <nav class="breadcrumb">
+          <a href="/">Home</a> &rsaquo;
+          <a href="/collections/{{ product.collection | handleize }}">{{ product.collection }}</a> &rsaquo;
+          <span>{{ product.title }}</span>
+        </nav>
+
+        <div class="product-detail">
+          <div class="gallery">
+            {% for image in product.images %}
+              <img src="{{ image.src }}"
+                   alt="{{ image.alt | default: product.title | escape }}"
+                   class="{% if forloop.first %}main{% else %}thumbnail{% endif %}"
+                   loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
             {% endfor %}
-            </ul>
-          {% endif %}
-        </li>
-      {% endfor %}
-      </ul>
-    </nav>
-  environment:
-    menu:
-    - title: Home
-      url: "/"
-      children: []
-    - title: Products
-      url: "/products"
-      children:
-      - title: Widgets
-        url: "/products/widgets"
-      - title: Gadgets
-        url: "/products/gadgets"
-      - title: Tools
-        url: "/products/tools"
-    - title: About
-      url: "/about"
-      children:
-      - title: Team
-        url: "/about/team"
-      - title: History
-        url: "/about/history"
-  expected: "<nav>\n  <ul>\n  \n    <li>\n      <a href=\"/\">Home</a>\n      \n    </li>\n
-    \ \n    <li>\n      <a href=\"/products\">Products</a>\n      \n        <ul>\n
-    \       \n          <li><a href=\"/products/widgets\">Widgets</a></li>\n        \n
-    \         <li><a href=\"/products/gadgets\">Gadgets</a></li>\n        \n          <li><a
-    href=\"/products/tools\">Tools</a></li>\n        \n        </ul>\n      \n    </li>\n
-    \ \n    <li>\n      <a href=\"/about\">About</a>\n      \n        <ul>\n        \n
-    \         <li><a href=\"/about/team\">Team</a></li>\n        \n          <li><a
-    href=\"/about/history\">History</a></li>\n        \n        </ul>\n      \n    </li>\n
-    \ \n  </ul>\n</nav>\n"
-- name: bench_data_table
-  template: |
-    <table>
-      <thead>
-        <tr>
-        {% for header in headers %}
-          <th>{{ header | capitalize }}</th>
-        {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-      {% for row in rows %}
-        <tr>
-        {% for header in headers %}
-          <td>{{ row[header] }}</td>
-        {% endfor %}
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  environment:
-    headers:
-    - name
-    - email
-    - role
-    - status
-    rows:
-    - name: Alice
-      email: alice@example.com
-      role: Admin
-      status: Active
-    - name: Bob
-      email: bob@example.com
-      role: User
-      status: Active
-    - name: Charlie
-      email: charlie@example.com
-      role: User
-      status: Inactive
-    - name: Diana
-      email: diana@example.com
-      role: Editor
-      status: Active
-    - name: Eve
-      email: eve@example.com
-      role: User
-      status: Pending
-  expected: "<table>\n  <thead>\n    <tr>\n    \n      <th>Name</th>\n    \n      <th>Email</th>\n
-    \   \n      <th>Role</th>\n    \n      <th>Status</th>\n    \n    </tr>\n  </thead>\n
-    \ <tbody>\n  \n    <tr>\n    \n      <td>Alice</td>\n    \n      <td>alice@example.com</td>\n
-    \   \n      <td>Admin</td>\n    \n      <td>Active</td>\n    \n    </tr>\n  \n
-    \   <tr>\n    \n      <td>Bob</td>\n    \n      <td>bob@example.com</td>\n    \n
-    \     <td>User</td>\n    \n      <td>Active</td>\n    \n    </tr>\n  \n    <tr>\n
-    \   \n      <td>Charlie</td>\n    \n      <td>charlie@example.com</td>\n    \n
-    \     <td>User</td>\n    \n      <td>Inactive</td>\n    \n    </tr>\n  \n    <tr>\n
-    \   \n      <td>Diana</td>\n    \n      <td>diana@example.com</td>\n    \n      <td>Editor</td>\n
-    \   \n      <td>Active</td>\n    \n    </tr>\n  \n    <tr>\n    \n      <td>Eve</td>\n
-    \   \n      <td>eve@example.com</td>\n    \n      <td>User</td>\n    \n      <td>Pending</td>\n
-    \   \n    </tr>\n  \n  </tbody>\n</table>\n"
-- name: bench_comment_thread
-  template: |
-    {% for comment in comments %}
-    <div class="comment">
-      <strong>{{ comment.author }}</strong>
-      <span class="date">{{ comment.date }}</span>
-      <p>{{ comment.body | newline_to_br }}</p>
-      {% if comment.replies.size > 0 %}
-        <div class="replies">
-        {% for reply in comment.replies %}
-          <div class="reply">
-            <strong>{{ reply.author }}</strong>: {{ reply.body }}
           </div>
-        {% endfor %}
+
+          <div class="info">
+            <h1>{{ product.title }}</h1>
+            {% if product.vendor %}
+              <p class="vendor">By {{ product.vendor }}</p>
+            {% endif %}
+
+            <div class="price">
+              {% if product.compare_at_price > product.price %}
+                <span class="original">${{ product.compare_at_price | money }}</span>
+                <span class="sale">${{ product.price | money }}</span>
+                {% assign discount = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price %}
+                <span class="badge">{{ discount }}% OFF</span>
+              {% else %}
+                <span class="current">${{ product.price | money }}</span>
+              {% endif %}
+            </div>
+
+            {% render 'product-options', product: product %}
+
+            <div class="description">
+              {{ product.description }}
+            </div>
+
+            {% if product.tags.size > 0 %}
+              <div class="tags">
+                {% for tag in product.tags %}
+                  <a href="/collections/all/{{ tag | handleize }}" class="tag">{{ tag }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
         </div>
+
+        {% if related_products.size > 0 %}
+          <section class="related">
+            <h2>You May Also Like</h2>
+            <div class="products">
+              {% for item in related_products limit:4 %}
+                {% render 'product-card', product: item %}
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+      </main>
+
+      {% render 'footer' %}
+    </body>
+    </html>
+  filesystem:
+    header.liquid: |
+      <header class="site-header">
+        <a href="/" class="logo">{{ shop.name }}</a>
+        <nav>
+          {% for link in navigation %}
+            <a href="{{ link.url }}" {% if link.active %}class="active"{% endif %}>{{ link.title }}</a>
+          {% endfor %}
+        </nav>
+        <div class="cart-icon">Cart ({{ cart.item_count }})</div>
+      </header>
+    footer.liquid: |
+      <footer class="site-footer">
+        <div class="footer-content">
+          <div class="column">
+            <h4>{{ shop.name }}</h4>
+            <p>{{ shop.description | truncate: 100 }}</p>
+          </div>
+          <div class="column">
+            <h4>Quick Links</h4>
+            <ul>
+              {% for link in footer_links %}
+                <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="column">
+            <h4>Contact</h4>
+            <p>{{ shop.email }}</p>
+            <p>{{ shop.phone }}</p>
+          </div>
+        </div>
+        <p class="copyright">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
+      </footer>
+    product-options.liquid: |
+      {% if product.variants.size > 1 %}
+        <div class="product-options">
+          {% for option in product.options %}
+            <div class="option">
+              <label>{{ option.name }}</label>
+              <select name="{{ option.name | handleize }}">
+                {% for value in option.values %}
+                  <option value="{{ value | handleize }}">{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+        </div>
+        <button class="add-to-cart">Add to Cart - ${{ product.price }}</button>
+      {% else %}
+        <button class="add-to-cart">Add to Cart - ${{ product.price }}</button>
+      {% endif %}
+    product-card.liquid: |
+      <div class="product-card">
+        <a href="/products/{{ product.handle }}">
+          <img src="{{ product.featured_image }}" alt="{{ product.title | escape }}">
+          <h3>{{ product.title | truncate: 40 }}</h3>
+          <p class="price">${{ product.price }}</p>
+          {% if product.compare_at_price > product.price %}
+            <span class="sale-badge">Sale</span>
+          {% endif %}
+        </a>
+      </div>
+  environment:
+    shop:
+      name: "TechGear Store"
+      description: "Your one-stop shop for premium technology accessories and gadgets"
+      email: "support@techgear.example.com"
+      phone: "1-800-TECH-GEAR"
+    navigation:
+    - title: "Home"
+      url: "/"
+      active: false
+    - title: "Products"
+      url: "/collections/all"
+      active: true
+    - title: "About"
+      url: "/about"
+      active: false
+    - title: "Contact"
+      url: "/contact"
+      active: false
+    footer_links:
+    - title: "Privacy Policy"
+      url: "/privacy"
+    - title: "Terms of Service"
+      url: "/terms"
+    - title: "Shipping"
+      url: "/shipping"
+    - title: "Returns"
+      url: "/returns"
+    cart:
+      item_count: 3
+    product:
+      title: "Premium Wireless Earbuds Pro"
+      handle: "premium-wireless-earbuds-pro"
+      description: "<p>Experience crystal-clear sound with our Premium Wireless Earbuds Pro. Featuring active noise cancellation, 30-hour battery life, and seamless connectivity.</p><p>Perfect for commutes, workouts, and everyday listening.</p>"
+      vendor: "AudioTech"
+      collection: "Headphones"
+      price: 149
+      compare_at_price: 199
+      tags: ["wireless", "earbuds", "noise-cancelling", "premium", "bluetooth"]
+      images:
+      - src: "/images/earbuds-1.jpg"
+        alt: "Premium Wireless Earbuds - Front View"
+      - src: "/images/earbuds-2.jpg"
+        alt: "Premium Wireless Earbuds - Case"
+      - src: "/images/earbuds-3.jpg"
+        alt: "Premium Wireless Earbuds - In Use"
+      options:
+      - name: "Color"
+        values: ["Black", "White", "Navy Blue"]
+      - name: "Ear Tip Size"
+        values: ["Small", "Medium", "Large"]
+      variants:
+      - title: "Black / Medium"
+        price: 149
+        available: true
+      - title: "White / Medium"
+        price: 149
+        available: true
+      - title: "Navy Blue / Medium"
+        price: 159
+        available: false
+    related_products:
+    - title: "Wireless Charging Pad"
+      handle: "wireless-charging-pad"
+      featured_image: "/images/charger.jpg"
+      price: 39
+      compare_at_price: 39
+    - title: "Premium Headphone Stand"
+      handle: "premium-headphone-stand"
+      featured_image: "/images/stand.jpg"
+      price: 49
+      compare_at_price: 59
+    - title: "USB-C Audio Adapter"
+      handle: "usb-c-audio-adapter"
+      featured_image: "/images/adapter.jpg"
+      price: 19
+      compare_at_price: 19
+    - title: "Carrying Case"
+      handle: "carrying-case"
+      featured_image: "/images/case.jpg"
+      price: 29
+      compare_at_price: 35
+  expected_pattern: "TechGear Store.*Premium Wireless Earbuds.*Add to Cart.*You May Also Like"
+
+- name: bench_collection_with_filters
+  template: |
+    {% comment %}Collection page with heavy filter usage{% endcomment %}
+    {% assign sorted_products = products | sort: sort_by %}
+    {% if sort_order == 'desc' %}
+      {% assign sorted_products = sorted_products | reverse %}
+    {% endif %}
+
+    {% if price_min %}
+      {% assign sorted_products = sorted_products | where_exp: "p", "p.price >= price_min" %}
+    {% endif %}
+    {% if price_max %}
+      {% assign sorted_products = sorted_products | where_exp: "p", "p.price <= price_max" %}
+    {% endif %}
+
+    {% assign total_count = sorted_products | size %}
+    {% assign page_size = 12 %}
+    {% assign total_pages = total_count | divided_by: page_size | ceil %}
+    {% assign offset = current_page | minus: 1 | times: page_size %}
+
+    <div class="collection">
+      <header>
+        <h1>{{ collection.title }}</h1>
+        <p>{{ collection.description | strip_html | truncate: 200 }}</p>
+        <p class="count">Showing {{ sorted_products | size }} products</p>
+      </header>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>Sort by:</label>
+          <select>
+            <option value="title"{% if sort_by == 'title' %} selected{% endif %}>Name</option>
+            <option value="price"{% if sort_by == 'price' %} selected{% endif %}>Price</option>
+            <option value="created_at"{% if sort_by == 'created_at' %} selected{% endif %}>Newest</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Price:</label>
+          {% for range in price_ranges %}
+            <label>
+              <input type="checkbox" name="price" value="{{ range.min }}-{{ range.max }}">
+              ${{ range.min }} - ${{ range.max }}
+            </label>
+          {% endfor %}
+        </div>
+
+        <div class="filter-group">
+          <label>Tags:</label>
+          {% assign all_tags = products | map: 'tags' | flatten | uniq | sort %}
+          {% for tag in all_tags limit:10 %}
+            <a href="?tag={{ tag | url_encode }}" class="tag-filter">{{ tag | capitalize }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="products">
+        {% for product in sorted_products limit:page_size offset:offset %}
+          <article class="product">
+            <a href="/products/{{ product.handle }}">
+              <img src="{{ product.image }}" alt="{{ product.title | escape }}">
+              <h3>{{ product.title | truncate: 50 }}</h3>
+              <div class="meta">
+                <span class="price">${{ product.price }}</span>
+                {% if product.compare_at_price > product.price %}
+                  <span class="compare">${{ product.compare_at_price }}</span>
+                  {% assign savings = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price | round %}
+                  <span class="savings">-{{ savings }}%</span>
+                {% endif %}
+              </div>
+              <div class="tags">
+                {{ product.tags | join: ', ' | truncate: 30 }}
+              </div>
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if total_pages > 1 %}
+        <nav class="pagination">
+          {% if current_page > 1 %}
+            <a href="?page={{ current_page | minus: 1 }}">&laquo;</a>
+          {% endif %}
+          {% for i in (1..total_pages) %}
+            {% if i == current_page %}
+              <span class="current">{{ i }}</span>
+            {% else %}
+              <a href="?page={{ i }}">{{ i }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if current_page < total_pages %}
+            <a href="?page={{ current_page | plus: 1 }}">&raquo;</a>
+          {% endif %}
+        </nav>
       {% endif %}
     </div>
-    {% endfor %}
   environment:
-    comments:
-    - author: User1
-      date: '2024-01-01'
-      body: |-
-        This is a great post!
-        Really enjoyed reading it.
-      replies:
-      - author: Author
-        body: Thanks!
-      - author: User2
-        body: I agree!
-    - author: User3
-      date: '2024-01-02'
-      body: Interesting perspective.
-      replies: []
-    - author: User4
-      date: '2024-01-03'
-      body: Could you expand on point 2?
-      replies:
-      - author: Author
-        body: Sure, I'll write a follow-up post.
-  expected: "\n<div class=\"comment\">\n  <strong>User1</strong>\n  <span class=\"date\">2024-01-01</span>\n
-    \ <p>This is a great post!<br />\nReally enjoyed reading it.</p>\n  \n    <div
-    class=\"replies\">\n    \n      <div class=\"reply\">\n        <strong>Author</strong>:
-    Thanks!\n      </div>\n    \n      <div class=\"reply\">\n        <strong>User2</strong>:
-    I agree!\n      </div>\n    \n    </div>\n  \n</div>\n\n<div class=\"comment\">\n
-    \ <strong>User3</strong>\n  <span class=\"date\">2024-01-02</span>\n  <p>Interesting
-    perspective.</p>\n  \n</div>\n\n<div class=\"comment\">\n  <strong>User4</strong>\n
-    \ <span class=\"date\">2024-01-03</span>\n  <p>Could you expand on point 2?</p>\n
-    \ \n    <div class=\"replies\">\n    \n      <div class=\"reply\">\n        <strong>Author</strong>:
-    Sure, I'll write a follow-up post.\n      </div>\n    \n    </div>\n  \n</div>\n\n"
+    collection:
+      title: "Electronics & Accessories"
+      description: "<p>Browse our complete selection of electronics and accessories. From headphones to chargers, we have everything you need.</p>"
+    sort_by: "price"
+    sort_order: "asc"
+    current_page: 1
+    price_min: 20
+    price_max: 500
+    price_ranges:
+    - min: 0
+      max: 50
+    - min: 50
+      max: 100
+    - min: 100
+      max: 200
+    - min: 200
+      max: 500
+    products:
+    - title: "USB-C Charging Cable 6ft"
+      handle: "usb-c-cable-6ft"
+      price: 15
+      compare_at_price: 15
+      image: "/images/cable.jpg"
+      tags: ["cables", "usb-c", "charging"]
+      created_at: "2024-01-15"
+    - title: "Wireless Mouse"
+      handle: "wireless-mouse"
+      price: 45
+      compare_at_price: 59
+      image: "/images/mouse.jpg"
+      tags: ["mouse", "wireless", "ergonomic"]
+      created_at: "2024-01-10"
+    - title: "Mechanical Keyboard"
+      handle: "mechanical-keyboard"
+      price: 129
+      compare_at_price: 149
+      image: "/images/keyboard.jpg"
+      tags: ["keyboard", "mechanical", "rgb"]
+      created_at: "2024-01-05"
+    - title: "4K Webcam"
+      handle: "4k-webcam"
+      price: 99
+      compare_at_price: 99
+      image: "/images/webcam.jpg"
+      tags: ["webcam", "video", "streaming"]
+      created_at: "2024-01-12"
+    - title: "USB Hub 7-Port"
+      handle: "usb-hub-7port"
+      price: 49
+      compare_at_price: 69
+      image: "/images/hub.jpg"
+      tags: ["hub", "usb", "accessories"]
+      created_at: "2024-01-08"
+    - title: "Laptop Stand Adjustable"
+      handle: "laptop-stand"
+      price: 79
+      compare_at_price: 79
+      image: "/images/stand.jpg"
+      tags: ["stand", "laptop", "ergonomic"]
+      created_at: "2024-01-20"
+    - title: "Noise Cancelling Headphones"
+      handle: "nc-headphones"
+      price: 249
+      compare_at_price: 299
+      image: "/images/headphones.jpg"
+      tags: ["headphones", "audio", "noise-cancelling"]
+      created_at: "2024-01-02"
+    - title: "Portable SSD 1TB"
+      handle: "portable-ssd-1tb"
+      price: 119
+      compare_at_price: 139
+      image: "/images/ssd.jpg"
+      tags: ["storage", "ssd", "portable"]
+      created_at: "2024-01-18"
+  expected_pattern: "Electronics.*Showing.*products.*pagination"
+
+- name: bench_order_confirmation
+  template: |
+    {% comment %}Order confirmation email template{% endcomment %}
+    <div class="email-container" style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+      <header style="background: #333; color: white; padding: 20px; text-align: center;">
+        <h1>{{ shop.name }}</h1>
+      </header>
+
+      <div class="content" style="padding: 20px;">
+        <h2>Order Confirmation</h2>
+        <p>Thank you for your order, {{ customer.first_name }}!</p>
+
+        <div class="order-info" style="background: #f5f5f5; padding: 15px; margin: 20px 0;">
+          <p><strong>Order Number:</strong> {{ order.name }}</p>
+          <p><strong>Order Date:</strong> {{ order.created_at | date: "%B %d, %Y" }}</p>
+          <p><strong>Payment Status:</strong> {{ order.financial_status | capitalize }}</p>
+        </div>
+
+        <h3>Items Ordered</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #eee;">
+              <th style="padding: 10px; text-align: left;">Product</th>
+              <th style="padding: 10px; text-align: center;">Qty</th>
+              <th style="padding: 10px; text-align: right;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.line_items %}
+              <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px;">
+                  {{ item.title }}
+                  {% if item.variant_title %}
+                    <br><small style="color: #666;">{{ item.variant_title }}</small>
+                  {% endif %}
+                  {% if item.properties.size > 0 %}
+                    <br>
+                    {% for prop in item.properties %}
+                      <small style="color: #666;">{{ prop.name }}: {{ prop.value }}</small>
+                    {% endfor %}
+                  {% endif %}
+                </td>
+                <td style="padding: 10px; text-align: center;">{{ item.quantity }}</td>
+                <td style="padding: 10px; text-align: right;">
+                  ${{ item.price | times: item.quantity }}
+                  {% if item.original_price > item.price %}
+                    <br><small style="text-decoration: line-through; color: #999;">${{ item.original_price | times: item.quantity }}</small>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="totals" style="margin-top: 20px; text-align: right;">
+          <p>Subtotal: ${{ order.subtotal_price }}</p>
+          {% if order.total_discounts > 0 %}
+            <p style="color: green;">Discount: -${{ order.total_discounts }}</p>
+          {% endif %}
+          <p>Shipping ({{ order.shipping_method }}): ${{ order.shipping_price }}</p>
+          <p>Tax: ${{ order.total_tax }}</p>
+          <p style="font-size: 1.2em; font-weight: bold;">Total: ${{ order.total_price }}</p>
+        </div>
+
+        <div class="addresses" style="display: flex; margin-top: 30px;">
+          <div style="flex: 1;">
+            <h4>Shipping Address</h4>
+            <p>
+              {{ order.shipping_address.name }}<br>
+              {{ order.shipping_address.address1 }}<br>
+              {% if order.shipping_address.address2 %}{{ order.shipping_address.address2 }}<br>{% endif %}
+              {{ order.shipping_address.city }}, {{ order.shipping_address.province_code }} {{ order.shipping_address.zip }}<br>
+              {{ order.shipping_address.country }}
+            </p>
+          </div>
+          <div style="flex: 1;">
+            <h4>Billing Address</h4>
+            <p>
+              {{ order.billing_address.name }}<br>
+              {{ order.billing_address.address1 }}<br>
+              {% if order.billing_address.address2 %}{{ order.billing_address.address2 }}<br>{% endif %}
+              {{ order.billing_address.city }}, {{ order.billing_address.province_code }} {{ order.billing_address.zip }}<br>
+              {{ order.billing_address.country }}
+            </p>
+          </div>
+        </div>
+
+        {% if order.note %}
+          <div class="order-note" style="margin-top: 20px; padding: 10px; background: #fffde7;">
+            <strong>Order Note:</strong> {{ order.note }}
+          </div>
+        {% endif %}
+      </div>
+
+      <footer style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        <p>Questions? Contact us at {{ shop.email }}</p>
+        <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
+      </footer>
+    </div>
+  environment:
+    shop:
+      name: "TechGear Store"
+      email: "support@techgear.example.com"
+    customer:
+      first_name: "John"
+      last_name: "Smith"
+      email: "john.smith@example.com"
+    order:
+      name: "#TG-12345"
+      created_at: "2024-01-15T10:30:00Z"
+      financial_status: "paid"
+      subtotal_price: 327
+      total_discounts: 32
+      shipping_price: 0
+      shipping_method: "Free Shipping"
+      total_tax: 23
+      total_price: 318
+      note: "Please leave at the door"
+      line_items:
+      - title: "Wireless Earbuds Pro"
+        variant_title: "Black"
+        quantity: 1
+        price: 149
+        original_price: 199
+        properties: []
+      - title: "USB-C Hub 7-in-1"
+        variant_title: "Space Gray"
+        quantity: 2
+        price: 49
+        original_price: 49
+        properties: []
+      - title: "Premium Charging Cable"
+        variant_title: "6ft White"
+        quantity: 2
+        price: 15
+        original_price: 15
+        properties:
+        - name: "Engraving"
+          value: "JohnS"
+      - title: "Laptop Stand"
+        variant_title: ""
+        quantity: 1
+        price: 79
+        original_price: 89
+        properties: []
+      shipping_address:
+        name: "John Smith"
+        address1: "123 Tech Lane"
+        address2: "Apt 4B"
+        city: "San Francisco"
+        province_code: "CA"
+        zip: "94102"
+        country: "United States"
+      billing_address:
+        name: "John Smith"
+        address1: "123 Tech Lane"
+        address2: "Apt 4B"
+        city: "San Francisco"
+        province_code: "CA"
+        zip: "94102"
+        country: "United States"
+  expected_pattern: "Order Confirmation.*TG-12345.*Wireless Earbuds.*Total.*318"

@@ -67,6 +67,8 @@ module Liquid
             --adapter-timeout=SECS Adapter compile/render timeout in seconds (default: #{LiquidSpec::DEFAULT_ADAPTER_TIMEOUT})
             -c, --compare         Compare adapter output against reference liquid-ruby
             -b, --bench           Run timing suites as benchmarks (measure iterations/second)
+            --compare-yjit        Run benchmarks with and without YJIT, show comparison
+            --compare-zjit        Run benchmarks with and without ZJIT, show comparison
             --profile             Profile with StackProf (use with --bench), outputs to /tmp/
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
@@ -173,6 +175,12 @@ module Liquid
                 options[:compare] = true
               when "-b", "--bench"
                 options[:bench] = true
+              when "--compare-yjit"
+                options[:bench] = true
+                options[:compare_jit] = :yjit
+              when "--compare-zjit"
+                options[:bench] = true
+                options[:compare_jit] = :zjit
               when "--profile"
                 options[:profile] = true
               when "-v", "--verbose"
@@ -557,6 +565,12 @@ module Liquid
               puts ""
             end
 
+            # Handle JIT comparison mode
+            if options[:compare_jit]
+              run_jit_comparison(suites, config, options)
+              return
+            end
+
             suites.each do |suite|
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
@@ -565,6 +579,7 @@ module Liquid
               next if suite_specs.empty?
 
               puts "Benchmark: #{suite.name}"
+              puts "JIT: #{jit_status}"
               puts "Duration: #{suite.default_iteration_seconds}s per spec"
               puts ""
 
@@ -641,11 +656,13 @@ module Liquid
                   render_ms = result[:render_mean] * 1000
                   total_ms = compile_ms + render_ms
                   total_allocs = (result[:compile_allocs] || 0) + (result[:render_allocs] || 0)
+                  compile_iters = result[:compile_iterations] || 0
+                  render_iters = result[:render_iterations] || 0
 
                   puts "  \e[32m✓\e[0m #{spec.name}"
-                  puts "    Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}    \e[2m(#{format_time(result[:compile_min] * 1000)} … #{format_time(result[:compile_max] * 1000)})  #{result[:compile_allocs]} allocs\e[0m"
-                  puts "    Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}    \e[2m(#{format_time(result[:render_min] * 1000)} … #{format_time(result[:render_max] * 1000)})  #{result[:render_allocs]} allocs\e[0m"
-                  puts "    Total:   #{format_time(total_ms)}    \e[2m#{result[:iterations]} runs, #{total_allocs} allocs\e[0m"
+                  puts "    Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}    \e[2m#{compile_iters} iters, #{result[:compile_allocs]} allocs\e[0m"
+                  puts "    Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}    \e[2m#{render_iters} iters, #{result[:render_allocs]} allocs\e[0m"
+                  puts "    Total:   #{format_time(total_ms)}    \e[2m#{total_allocs} allocs\e[0m"
                 end
                 puts ""
               end
@@ -764,6 +781,8 @@ module Liquid
             {
               name: spec.name,
               iterations: compile_times[:iterations] + render_times[:iterations],
+              compile_iterations: compile_times[:iterations],
+              render_iterations: render_times[:iterations],
               compile_mean: compile_times[:mean],
               compile_stddev: compile_times[:stddev],
               compile_min: compile_times[:min],
@@ -855,6 +874,82 @@ module Liquid
             # a different template, so comparing them doesn't make sense.
             # Comparisons are only meaningful in matrix mode where we compare
             # the same benchmark across different implementations.
+          end
+
+          def jit_status
+            if defined?(RubyVM::ZJIT) && RubyVM::ZJIT.enabled?
+              "zjit"
+            elsif defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+              "yjit"
+            else
+              "off"
+            end
+          end
+
+          def run_jit_comparison(suites, config, options)
+            jit_type = options[:compare_jit]
+            features = config.features
+
+            # Check if JIT is available
+            jit_module = jit_type == :yjit ? "RubyVM::YJIT" : "RubyVM::ZJIT"
+            jit_available = jit_type == :yjit ? defined?(RubyVM::YJIT) : defined?(RubyVM::ZJIT)
+
+            unless jit_available
+              puts "Error: #{jit_module} is not available in this Ruby build"
+              puts "Ruby version: #{RUBY_VERSION}"
+              exit(1)
+            end
+
+            suites.each do |suite|
+              suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
+              suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+              suite_specs = filter_by_features(suite_specs, features)
+
+              next if suite_specs.empty?
+
+              puts "Benchmark: #{suite.name}"
+              puts "Comparing: #{jit_type.upcase} vs off"
+              puts "Duration: #{suite.default_iteration_seconds}s per spec"
+              puts ""
+
+              suite_specs.each do |spec|
+                puts "  #{spec.name}"
+
+                # Run without JIT
+                result_off = run_benchmark_spec(spec, config, suite.default_iteration_seconds)
+
+                # Enable JIT and run again
+                if jit_type == :yjit
+                  RubyVM::YJIT.enable
+                else
+                  RubyVM::ZJIT.enable
+                end
+
+                result_jit = run_benchmark_spec(spec, config, suite.default_iteration_seconds)
+
+                if result_off[:error] || result_jit[:error]
+                  puts "    \e[31m✗ Error\e[0m"
+                  puts "    off: #{result_off[:error]&.message || 'OK'}"
+                  puts "    #{jit_type}: #{result_jit[:error]&.message || 'OK'}"
+                else
+                  # Calculate speedup
+                  off_total = result_off[:compile_mean] + result_off[:render_mean]
+                  jit_total = result_jit[:compile_mean] + result_jit[:render_mean]
+                  speedup = off_total / jit_total
+
+                  off_ms = off_total * 1000
+                  jit_ms = jit_total * 1000
+
+                  speedup_color = speedup >= 1.0 ? "\e[32m" : "\e[31m"
+                  speedup_str = speedup >= 1.0 ? "#{format("%.2f", speedup)}x faster" : "#{format("%.2f", 1.0 / speedup)}x slower"
+
+                  puts "    off:  #{format_time(off_ms)}  \e[2m(compile: #{result_off[:compile_iterations]} iters, render: #{result_off[:render_iterations]} iters)\e[0m"
+                  puts "    #{jit_type}:  #{format_time(jit_ms)}  \e[2m(compile: #{result_jit[:compile_iterations]} iters, render: #{result_jit[:render_iterations]} iters)\e[0m"
+                  puts "    #{speedup_color}#{speedup_str}\e[0m"
+                end
+                puts ""
+              end
+            end
           end
 
           def determine_suites(config, features)
