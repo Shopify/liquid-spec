@@ -1,0 +1,335 @@
+---
+# =============================================================================
+# COMPLEXITY 250-350: Tablerow Tag
+# =============================================================================
+#
+# The tablerow tag generates HTML table rows automatically. It's similar to
+# a for loop but outputs <tr> and <td> tags with row/column classes.
+#
+# Basic usage is covered in specs.yml at complexity 180. These specs cover
+# advanced tablerow features.
+#
+# Complexity levels:
+#   250: tablerowloop object, limit/offset
+#   280: cols with uneven items, empty collections
+#   310: nested tablerow, tablerow with other tags
+#   340: tablerowloop properties in complex scenarios
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/tablerow.md
+
+specs:
+# =============================================================================
+# tablerowloop Object (Complexity 250)
+# =============================================================================
+
+- name: tablerowloop_index
+  template: "{% tablerow item in items %}{{ tablerowloop.index }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.index is the 1-based iteration index, like forloop.index.
+
+- name: tablerowloop_index0
+  template: "{% tablerow item in items %}{{ tablerowloop.index0 }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">0</td><td class="col2">1</td><td class="col3">2</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.index0 is the 0-based iteration index.
+
+- name: tablerowloop_first_last
+  template: "{% tablerow item in items %}{% if tablerowloop.first %}F{% endif %}{{ item }}{% if tablerowloop.last %}L{% endif %}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">Fa</td><td class="col2">b</td><td class="col3">cL</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.first and .last work like forloop.first and .last.
+
+- name: tablerowloop_length
+  template: "{% tablerow item in items %}{{ tablerowloop.length }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d]
+  expected: |
+    <tr class="row1">
+    <td class="col1">4</td><td class="col2">4</td><td class="col3">4</td><td class="col4">4</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.length is the total number of items.
+
+- name: tablerowloop_col
+  template: "{% tablerow item in items cols:2 %}c{{ tablerowloop.col }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d]
+  expected: |
+    <tr class="row1">
+    <td class="col1">c1</td><td class="col2">c2</td></tr>
+    <tr class="row2"><td class="col1">c1</td><td class="col2">c2</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.col is the current column (1-based), resets each row.
+
+- name: tablerowloop_col0
+  template: "{% tablerow item in items cols:2 %}c{{ tablerowloop.col0 }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d]
+  expected: |
+    <tr class="row1">
+    <td class="col1">c0</td><td class="col2">c1</td></tr>
+    <tr class="row2"><td class="col1">c0</td><td class="col2">c1</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.col0 is 0-based column index.
+
+- name: tablerowloop_row
+  template: "{% tablerow item in items cols:2 %}r{{ tablerowloop.row }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">r1</td><td class="col2">r1</td></tr>
+    <tr class="row2"><td class="col1">r2</td><td class="col2">r2</td></tr>
+    <tr class="row3"><td class="col1">r3</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.row is the current row number (1-based).
+
+- name: tablerowloop_row_first_last
+  template: "{% tablerow item in items cols:2 %}{% if tablerowloop.col_first %}[{% endif %}{{ item }}{% if tablerowloop.col_last %}]{% endif %}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">[a</td><td class="col2">b]</td></tr>
+    <tr class="row2"><td class="col1">[c</td><td class="col2">d]</td></tr>
+    <tr class="row3"><td class="col1">[e</td></tr>
+  complexity: 250
+  hint: |
+    tablerowloop.col_first is true at the first column of each row.
+    tablerowloop.col_last is true at the final column position (cols:2 means col 2).
+    Single item 'e' in last row is at col 1, so col_last is false.
+
+# =============================================================================
+# Limit/Offset (Complexity 260)
+# =============================================================================
+
+- name: tablerow_limit
+  template: "{% tablerow item in items limit:2 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">a</td><td class="col2">b</td></tr>
+  complexity: 260
+  hint: |
+    limit restricts how many items to process.
+
+- name: tablerow_offset
+  template: "{% tablerow item in items offset:2 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">c</td><td class="col2">d</td><td class="col3">e</td></tr>
+  complexity: 260
+  hint: |
+    offset skips the first N items.
+
+- name: tablerow_limit_offset
+  template: "{% tablerow item in items limit:2 offset:1 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">b</td><td class="col2">c</td></tr>
+  complexity: 260
+  hint: |
+    limit and offset work together.
+
+- name: tablerow_cols_limit
+  template: "{% tablerow item in items cols:2 limit:3 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">a</td><td class="col2">b</td></tr>
+    <tr class="row2"><td class="col1">c</td></tr>
+  complexity: 260
+  hint: |
+    cols and limit work together. Only 3 items, split into 2 rows.
+
+# =============================================================================
+# Edge Cases (Complexity 280)
+# =============================================================================
+
+- name: tablerow_empty_collection
+  template: "{% tablerow item in items %}{{ item }}{% endtablerow %}"
+  environment:
+    items: []
+  expected: |
+    <tr class="row1">
+    </tr>
+  complexity: 280
+  hint: |
+    WART: Empty collection still produces tr tags with no td content.
+    This is surprising but matches liquid-ruby behavior.
+
+- name: tablerow_single_item
+  template: "{% tablerow item in items %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [only]
+  expected: |
+    <tr class="row1">
+    <td class="col1">only</td></tr>
+  complexity: 280
+  hint: |
+    Single item still produces full tr/td structure.
+
+- name: tablerow_cols_uneven
+  template: "{% tablerow item in items cols:3 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">a</td><td class="col2">b</td><td class="col3">c</td></tr>
+    <tr class="row2"><td class="col1">d</td><td class="col2">e</td></tr>
+  complexity: 280
+  hint: |
+    When items don't divide evenly, last row has fewer columns.
+
+- name: tablerow_cols_one
+  template: "{% tablerow item in items cols:1 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">a</td></tr>
+    <tr class="row2"><td class="col1">b</td></tr>
+    <tr class="row3"><td class="col1">c</td></tr>
+  complexity: 280
+  hint: |
+    cols:1 creates one row per item.
+
+- name: tablerow_range
+  template: "{% tablerow n in (1..4) %}{{ n }}{% endtablerow %}"
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td><td class="col4">4</td></tr>
+  complexity: 280
+  hint: |
+    tablerow works with ranges, not just arrays.
+
+# =============================================================================
+# Complex Scenarios (Complexity 310)
+# =============================================================================
+
+- name: tablerow_with_conditional
+  template: "{% tablerow item in items %}{% if item > 2 %}big{% else %}small{% endif %}{% endtablerow %}"
+  environment:
+    items: [1, 2, 3, 4]
+  expected: |
+    <tr class="row1">
+    <td class="col1">small</td><td class="col2">small</td><td class="col3">big</td><td class="col4">big</td></tr>
+  complexity: 310
+  hint: |
+    Conditionals work normally inside tablerow.
+
+- name: tablerow_with_filter
+  template: "{% tablerow item in items %}{{ item | upcase }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">A</td><td class="col2">B</td><td class="col3">C</td></tr>
+  complexity: 310
+  hint: |
+    Filters work on the item variable.
+
+- name: tablerow_nested_in_for
+  template: "{% for group in groups %}Group {{ forloop.index }}:{% tablerow item in group cols:2 %}{{ item }}{% endtablerow %}{% endfor %}"
+  environment:
+    groups:
+      - [a, b, c]
+      - [x, y]
+  expected: |
+    Group 1:<tr class="row1">
+    <td class="col1">a</td><td class="col2">b</td></tr>
+    <tr class="row2"><td class="col1">c</td></tr>
+    Group 2:<tr class="row1">
+    <td class="col1">x</td><td class="col2">y</td></tr>
+  complexity: 310
+  hint: |
+    tablerow can be nested inside for loops. Each tablerow starts fresh.
+
+- name: tablerow_with_assign
+  template: "{% tablerow item in items %}{% assign doubled = item | times: 2 %}{{ doubled }}{% endtablerow %}"
+  environment:
+    items: [1, 2, 3]
+  expected: |
+    <tr class="row1">
+    <td class="col1">2</td><td class="col2">4</td><td class="col3">6</td></tr>
+  complexity: 310
+  hint: |
+    assign works inside tablerow, creating/updating variables.
+
+# =============================================================================
+# tablerowloop in Complex Scenarios (Complexity 340)
+# =============================================================================
+
+- name: tablerowloop_length_with_limit
+  template: "{% tablerow item in items limit:3 %}{{ tablerowloop.length }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">3</td><td class="col2">3</td><td class="col3">3</td></tr>
+  complexity: 340
+  hint: |
+    tablerowloop.length reflects the segment size (after limit/offset).
+
+- name: tablerowloop_rindex
+  template: "{% tablerow item in items %}{{ tablerowloop.rindex }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">3</td><td class="col2">2</td><td class="col3">1</td></tr>
+  complexity: 340
+  hint: |
+    tablerowloop.rindex is the reverse index (items remaining including current).
+
+- name: tablerowloop_rindex0
+  template: "{% tablerow item in items %}{{ tablerowloop.rindex0 }}{% endtablerow %}"
+  environment:
+    items: [a, b, c]
+  expected: |
+    <tr class="row1">
+    <td class="col1">2</td><td class="col2">1</td><td class="col3">0</td></tr>
+  complexity: 340
+  hint: |
+    tablerowloop.rindex0 is 0-based reverse index.
+
+- name: tablerowloop_all_properties
+  template: "{% tablerow item in items cols:2 %}{{ tablerowloop.row }}.{{ tablerowloop.col }}{% if tablerowloop.first %}F{% endif %}{% if tablerowloop.last %}L{% endif %}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: |
+    <tr class="row1">
+    <td class="col1">1.1F</td><td class="col2">1.2</td></tr>
+    <tr class="row2"><td class="col1">2.1</td><td class="col2">2.2</td></tr>
+    <tr class="row3"><td class="col1">3.1L</td></tr>
+  complexity: 340
+  hint: |
+    Combining multiple tablerowloop properties. row.col with first/last markers.

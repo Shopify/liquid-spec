@@ -1,0 +1,307 @@
+---
+# =============================================================================
+# COMPLEXITY 300-400: Filter Chains
+# =============================================================================
+#
+# These specs test complex filter chains - multiple filters applied in
+# sequence. Filter chains are a powerful Liquid feature but can have
+# subtle edge cases with nil handling, type coercion, and order of operations.
+#
+# Basic filter usage is covered throughout other files. These specs focus on
+# the interaction between multiple filters.
+#
+# Complexity levels:
+#   300: Basic chains (2-3 filters)
+#   330: Longer chains (4+ filters)
+#   360: Chains with nil/empty handling
+#   390: Complex chains with conditionals
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/filter-chains.md
+
+specs:
+# =============================================================================
+# Basic Filter Chains (Complexity 300)
+# =============================================================================
+
+- name: chain_string_transforms
+  template: "{{ text | downcase | capitalize }}"
+  environment:
+    text: "HELLO WORLD"
+  expected: "Hello world"
+  complexity: 300
+  hint: |
+    downcase converts to "hello world", then capitalize uppercases first letter.
+
+- name: chain_array_transforms
+  template: "{{ items | sort | reverse | join: ', ' }}"
+  environment:
+    items: [3, 1, 4, 1, 5]
+  expected: "5, 4, 3, 1, 1"
+  complexity: 300
+  hint: |
+    sort -> reverse -> join. Order matters.
+
+- name: chain_string_and_array
+  template: "{{ text | split: ' ' | sort | join: '-' }}"
+  environment:
+    text: "cherry apple banana"
+  expected: "apple-banana-cherry"
+  complexity: 300
+  hint: |
+    split creates array, sort orders it, join combines back to string.
+
+- name: chain_math_filters
+  template: "{{ num | plus: 5 | times: 2 | minus: 3 }}"
+  environment:
+    num: 10
+  expected: "27"
+  complexity: 300
+  hint: |
+    Math filters chain left to right: (10 + 5) * 2 - 3 = 27.
+
+- name: chain_truncate_upcase
+  template: "{{ text | truncate: 10 | upcase }}"
+  environment:
+    text: "hello world and more"
+  expected: "HELLO W..."
+  complexity: 300
+  hint: |
+    truncate first (to 10 chars including ...), then upcase.
+
+- name: chain_replace_multiple
+  template: "{{ text | replace: 'a', 'X' | replace: 'e', 'Y' }}"
+  environment:
+    text: "abracadabra"
+  expected: "XbrXcXdXbrX"
+  complexity: 300
+  hint: |
+    First replace all 'a' with 'X', then replace all 'e' with 'Y'.
+    No 'e' in input so second replace has no effect.
+
+# =============================================================================
+# Longer Chains (Complexity 330)
+# =============================================================================
+
+- name: chain_four_string_filters
+  template: "{{ text | strip | downcase | split: ' ' | first }}"
+  environment:
+    text: "  HELLO WORLD  "
+  expected: "hello"
+  complexity: 330
+  hint: |
+    strip -> downcase -> split -> first. Progressively transforms string.
+
+- name: chain_array_to_count
+  template: "{{ items | compact | uniq | sort | size }}"
+  environment:
+    items: [3, null, 1, 3, null, 2, 1]
+  expected: "3"
+  complexity: 330
+  hint: |
+    compact removes nils, uniq removes duplicates, sort orders,
+    size counts. Result: 3 unique non-nil items.
+
+- name: chain_complex_string_processing
+  template: "{{ text | strip | downcase | replace: ' ', '-' | prepend: 'slug-' }}"
+  environment:
+    text: "  Hello World  "
+  expected: "slug-hello-world"
+  complexity: 330
+  hint: |
+    Common pattern for creating URL slugs.
+
+- name: chain_nested_property_map
+  template: "{{ products | map: 'price' | sort | reverse | first }}"
+  environment:
+    products:
+      - name: "Widget"
+        price: 25
+      - name: "Gadget"
+        price: 50
+      - name: "Gizmo"
+        price: 15
+  expected: "50"
+  complexity: 330
+  hint: |
+    Extract prices, sort ascending, reverse to descending, take first (max).
+
+- name: chain_where_map_join
+  template: "{{ items | where: 'active' | map: 'name' | join: ', ' }}"
+  environment:
+    items:
+      - name: "Alice"
+        active: true
+      - name: "Bob"
+        active: false
+      - name: "Carol"
+        active: true
+  expected: "Alice, Carol"
+  complexity: 330
+  hint: |
+    Filter to active items, extract names, join with comma.
+
+- name: chain_split_slice_join
+  template: "{{ text | split: ',' | slice: 1, 3 | join: '-' }}"
+  environment:
+    text: "a,b,c,d,e,f"
+  expected: "b-c-d"
+  complexity: 330
+  hint: |
+    Split by comma, take 3 items starting at index 1, join with dash.
+
+# =============================================================================
+# Chains with Nil/Empty (Complexity 360)
+# =============================================================================
+
+- name: chain_default_in_middle
+  template: "{{ val | default: 'fallback' | upcase }}"
+  environment:
+    val: null
+  expected: "FALLBACK"
+  complexity: 360
+  hint: |
+    default provides fallback for nil, then upcase transforms it.
+
+- name: chain_compact_then_process
+  template: "{{ items | compact | map: 'name' | sort | first }}"
+  environment:
+    items:
+      - name: "Zeta"
+      - null
+      - name: "Alpha"
+      - null
+  expected: "Alpha"
+  complexity: 360
+  hint: |
+    compact removes nulls first, then map/sort/first works on clean array.
+
+- name: chain_where_empty_result
+  template: "{{ items | where: 'active' | map: 'name' | default: 'none' | upcase }}"
+  environment:
+    items:
+      - name: "Alice"
+        active: false
+      - name: "Bob"
+        active: false
+  expected: "NONE"
+  complexity: 360
+  hint: |
+    where returns empty array, map returns empty, default activates, upcase applies.
+
+- name: chain_nil_safe_with_size
+  template: "{{ items | compact | size | default: 0 }}"
+  environment:
+    items: null
+  expected: "0"
+  complexity: 360
+  hint: |
+    nil | compact may return nil or empty. size of nil is often empty string.
+    default: 0 ensures numeric output.
+
+- name: chain_first_of_empty_default
+  template: "{{ items | first | default: 'empty' }}"
+  environment:
+    items: []
+  expected: "empty"
+  complexity: 360
+  hint: |
+    first of empty array is nil, default provides fallback.
+
+- name: chain_uniq_on_nils
+  template: "{{ items | uniq | compact | join: ',' }}"
+  environment:
+    items: [1, null, 2, null, 1, null]
+  expected: "1,2"
+  complexity: 360
+  hint: |
+    uniq keeps one null, compact removes it, join combines remaining.
+
+# =============================================================================
+# Complex Chains with Mixed Types (Complexity 390)
+# =============================================================================
+
+- name: chain_math_with_coercion
+  template: "{{ price | times: quantity | plus: shipping | round: 2 }}"
+  environment:
+    price: "19.99"
+    quantity: 3
+    shipping: "5.50"
+  expected: "65.47"
+  complexity: 390
+  hint: |
+    String prices coerced to numbers for math operations.
+    19.99 * 3 + 5.50 = 65.47
+
+- name: chain_array_math_aggregation
+  template: "{{ prices | map: 'amount' | sum | divided_by: prices.size | round: 2 }}"
+  environment:
+    prices:
+      - amount: 10
+      - amount: 20
+      - amount: 30
+  expected: "20"
+  complexity: 390
+  hint: |
+    Map amounts, sum them, divide by count for average.
+    60 / 3 = 20 (integer division). sum filter may not exist in all implementations.
+
+- name: chain_conditional_filter_result
+  template: "{% assign filtered = items | where: 'stock', true %}{{ filtered | map: 'name' | sort | first | default: 'None in stock' }}"
+  environment:
+    items:
+      - name: "Widget"
+        stock: false
+      - name: "Gadget"
+        stock: true
+      - name: "Alpha"
+        stock: true
+  expected: "Alpha"
+  complexity: 390
+  hint: |
+    where filters by stock=true, then processes the result chain.
+
+- name: chain_nested_objects
+  template: "{{ orders | map: 'items' | flatten | map: 'price' | sum }}"
+  environment:
+    orders:
+      - items:
+          - price: 10
+          - price: 20
+      - items:
+          - price: 30
+  expected: "60"
+  complexity: 390
+  hint: |
+    Flatten nested arrays before aggregating. Total: 10 + 20 + 30 = 60.
+    flatten filter required.
+
+- name: chain_string_to_array_to_string
+  template: "{{ text | split: '' | reverse | join: '' }}"
+  environment:
+    text: "hello"
+  expected: "olleh"
+  complexity: 390
+  hint: |
+    Split into characters, reverse array, join back. String reversal pattern.
+
+- name: chain_complex_transformation
+  template: "{{ products | where: 'available' | sort: 'price' | map: 'name' | first | default: 'No products' | append: ' is cheapest' }}"
+  environment:
+    products:
+      - name: "Expensive"
+        price: 100
+        available: true
+      - name: "Cheap"
+        price: 10
+        available: true
+      - name: "Unavailable"
+        price: 5
+        available: false
+  expected: "Cheap is cheapest"
+  complexity: 390
+  hint: |
+    Filter available, sort by price, get first name, append message.
+    Full transformation pipeline.

@@ -1,0 +1,451 @@
+---
+# =============================================================================
+# COMPLEXITY 225-290: String Filter Edge Cases
+# =============================================================================
+#
+# These specs cover edge cases and advanced usage of string filters.
+# Basic string filter usage is covered in specs.yml at lower complexity.
+#
+# Complexity levels:
+#   225: strip variants (lstrip, rstrip)
+#   240: truncate edge cases
+#   255: split/join edge cases
+#   270: replace edge cases
+#   285: slice edge cases
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/string-filters.md
+
+specs:
+# =============================================================================
+# Strip Variants (Complexity 225)
+# =============================================================================
+
+- name: lstrip_leading_spaces
+  template: "'{{ text | lstrip }}'"
+  environment:
+    text: "   hello   "
+  expected: "'hello   '"
+  complexity: 225
+  hint: |
+    lstrip removes leading whitespace only.
+
+- name: rstrip_trailing_spaces
+  template: "'{{ text | rstrip }}'"
+  environment:
+    text: "   hello   "
+  expected: "'   hello'"
+  complexity: 225
+  hint: |
+    rstrip removes trailing whitespace only.
+
+- name: strip_newlines_only
+  template: "'{{ text | strip_newlines }}'"
+  environment:
+    text: "hello\nworld\n"
+  expected: "'helloworld'"
+  complexity: 225
+  hint: |
+    strip_newlines removes all newlines (not just leading/trailing).
+
+- name: strip_html_basic
+  template: "{{ text | strip_html }}"
+  environment:
+    text: "<p>Hello <b>World</b></p>"
+  expected: "Hello World"
+  complexity: 225
+  hint: |
+    strip_html removes all HTML tags.
+
+- name: strip_html_attributes
+  template: "{{ text | strip_html }}"
+  environment:
+    text: "<a href='test' class='link'>Click</a>"
+  expected: "Click"
+  complexity: 225
+  hint: |
+    strip_html removes tags with attributes too.
+
+- name: strip_empty_string
+  template: "'{{ text | strip }}'"
+  environment:
+    text: "   "
+  expected: "''"
+  complexity: 225
+  hint: |
+    strip on whitespace-only returns empty string.
+
+# =============================================================================
+# Truncate Edge Cases (Complexity 240)
+# =============================================================================
+
+- name: truncate_exact_length
+  template: "{{ text | truncate: 5 }}"
+  environment:
+    text: "hello"
+  expected: "hello"
+  complexity: 240
+  hint: |
+    When text equals truncate length, no ellipsis added.
+
+- name: truncate_shorter_than_limit
+  template: "{{ text | truncate: 20 }}"
+  environment:
+    text: "hello"
+  expected: "hello"
+  complexity: 240
+  hint: |
+    Shorter text is returned unchanged.
+
+- name: truncate_custom_ellipsis
+  template: "{{ text | truncate: 10, '---' }}"
+  environment:
+    text: "hello world and more"
+  expected: "hello w---"
+  complexity: 240
+  hint: |
+    Custom ellipsis replaces default "...".
+
+- name: truncate_no_ellipsis
+  template: "{{ text | truncate: 8, '' }}"
+  environment:
+    text: "hello world"
+  expected: "hello wo"
+  complexity: 240
+  hint: |
+    Empty ellipsis means just cut off at limit.
+
+- name: truncate_very_short
+  template: "{{ text | truncate: 3 }}"
+  environment:
+    text: "hello"
+  expected: "..."
+  complexity: 240
+  hint: |
+    When limit is shorter than ellipsis, return just ellipsis.
+
+- name: truncatewords_basic
+  template: "{{ text | truncatewords: 3 }}"
+  environment:
+    text: "one two three four five"
+  expected: "one two three..."
+  complexity: 240
+  hint: |
+    truncatewords limits by word count.
+
+- name: truncatewords_exact
+  template: "{{ text | truncatewords: 3 }}"
+  environment:
+    text: "one two three"
+  expected: "one two three"
+  complexity: 240
+  hint: |
+    Exact word count - no ellipsis.
+
+- name: truncatewords_custom_ellipsis
+  template: "{{ text | truncatewords: 2, ' [more]' }}"
+  environment:
+    text: "one two three four"
+  expected: "one two [more]"
+  complexity: 240
+  hint: |
+    Custom ellipsis for truncatewords.
+
+# =============================================================================
+# Split/Join Edge Cases (Complexity 255)
+# =============================================================================
+
+- name: split_empty_delimiter
+  template: "{{ text | split: '' | join: '-' }}"
+  environment:
+    text: "abc"
+  expected: "a-b-c"
+  complexity: 255
+  hint: |
+    Empty delimiter splits into characters.
+
+- name: split_not_found
+  template: "{{ text | split: 'X' | size }}"
+  environment:
+    text: "hello"
+  expected: "1"
+  complexity: 255
+  hint: |
+    Delimiter not found returns array with original string.
+
+- name: split_at_start
+  template: "{{ text | split: 'a' | join: '-' }}"
+  environment:
+    text: "abc"
+  expected: "-bc"
+  complexity: 255
+  hint: |
+    Split at start creates empty first element.
+
+- name: split_at_end
+  template: "{{ text | split: 'c' | join: '-' }}"
+  environment:
+    text: "abc"
+  expected: "ab"
+  complexity: 255
+  hint: |
+    Split at end - trailing empty strings are stripped by Ruby's split.
+
+- name: split_multiple
+  template: "{{ text | split: 'a' | size }}"
+  environment:
+    text: "banana"
+  expected: "3"
+  complexity: 255
+  hint: |
+    "banana" split on 'a' gives ["b", "n", "n"] - trailing empty string
+    is stripped by Ruby's split behavior.
+
+- name: join_empty_array
+  template: "'{{ items | join: '-' }}'"
+  environment:
+    items: []
+  expected: "''"
+  complexity: 255
+  hint: |
+    Joining empty array returns empty string.
+
+- name: join_single_item
+  template: "{{ items | join: '-' }}"
+  environment:
+    items: [only]
+  expected: "only"
+  complexity: 255
+  hint: |
+    Single item - no delimiter in output.
+
+- name: join_empty_delimiter
+  template: "{{ items | join: '' }}"
+  environment:
+    items: [a, b, c]
+  expected: "abc"
+  complexity: 255
+  hint: |
+    Empty delimiter concatenates directly.
+
+# =============================================================================
+# Replace Edge Cases (Complexity 270)
+# =============================================================================
+
+- name: replace_all_occurrences
+  template: "{{ text | replace: 'a', 'X' }}"
+  environment:
+    text: "banana"
+  expected: "bXnXnX"
+  complexity: 270
+  hint: |
+    replace replaces ALL occurrences, not just first.
+
+- name: replace_first_only
+  template: "{{ text | replace_first: 'a', 'X' }}"
+  environment:
+    text: "banana"
+  expected: "bXnana"
+  complexity: 270
+  hint: |
+    replace_first only replaces first occurrence.
+
+- name: replace_not_found
+  template: "{{ text | replace: 'X', 'Y' }}"
+  environment:
+    text: "hello"
+  expected: "hello"
+  complexity: 270
+  hint: |
+    No match returns original unchanged.
+
+- name: replace_with_empty
+  template: "{{ text | replace: 'l', '' }}"
+  environment:
+    text: "hello"
+  expected: "heo"
+  complexity: 270
+  hint: |
+    Replace with empty string removes occurrences.
+
+- name: replace_overlapping
+  template: "{{ text | replace: 'aa', 'X' }}"
+  environment:
+    text: "aaaa"
+  expected: "XX"
+  complexity: 270
+  hint: |
+    Overlapping matches - each match is replaced once.
+    "aaaa" has two non-overlapping "aa".
+
+- name: replace_case_sensitive
+  template: "{{ text | replace: 'A', 'X' }}"
+  environment:
+    text: "aAaA"
+  expected: "aXaX"
+  complexity: 270
+  hint: |
+    replace is case-sensitive.
+
+- name: remove_filter
+  template: "{{ text | remove: 'l' }}"
+  environment:
+    text: "hello"
+  expected: "heo"
+  complexity: 270
+  hint: |
+    remove is shorthand for replace with empty string.
+
+- name: remove_first_filter
+  template: "{{ text | remove_first: 'l' }}"
+  environment:
+    text: "hello"
+  expected: "helo"
+  complexity: 270
+  hint: |
+    remove_first removes only first occurrence.
+
+# =============================================================================
+# Slice Edge Cases (Complexity 285)
+# =============================================================================
+
+- name: slice_single_char
+  template: "{{ text | slice: 0 }}"
+  environment:
+    text: "hello"
+  expected: "h"
+  complexity: 285
+  hint: |
+    slice with single argument returns one character.
+
+- name: slice_negative_index
+  template: "{{ text | slice: -1 }}"
+  environment:
+    text: "hello"
+  expected: "o"
+  complexity: 285
+  hint: |
+    Negative index counts from end.
+
+- name: slice_with_length
+  template: "{{ text | slice: 1, 3 }}"
+  environment:
+    text: "hello"
+  expected: "ell"
+  complexity: 285
+  hint: |
+    slice(start, length) returns substring.
+
+- name: slice_negative_with_length
+  template: "{{ text | slice: -3, 2 }}"
+  environment:
+    text: "hello"
+  expected: "ll"
+  complexity: 285
+  hint: |
+    Negative start with length.
+
+- name: slice_beyond_end
+  template: "{{ text | slice: 3, 10 }}"
+  environment:
+    text: "hello"
+  expected: "lo"
+  complexity: 285
+  hint: |
+    Length extending past end returns available characters.
+
+- name: slice_out_of_bounds
+  template: "'{{ text | slice: 10 }}'"
+  environment:
+    text: "hello"
+  expected: "''"
+  complexity: 285
+  hint: |
+    Index out of bounds returns nil/empty.
+
+- name: slice_zero_length
+  template: "'{{ text | slice: 1, 0 }}'"
+  environment:
+    text: "hello"
+  expected: "''"
+  complexity: 285
+  hint: |
+    Zero length returns empty string.
+
+- name: slice_on_array
+  template: "{{ items | slice: 1, 2 | join: '-' }}"
+  environment:
+    items: [a, b, c, d, e]
+  expected: "b-c"
+  complexity: 285
+  hint: |
+    slice also works on arrays.
+
+# =============================================================================
+# Escape Filters (Complexity 290)
+# =============================================================================
+
+- name: escape_html_entities
+  template: "{{ text | escape }}"
+  environment:
+    text: "<script>alert('xss')</script>"
+  expected: "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;"
+  complexity: 290
+  hint: |
+    escape converts <, >, &, ', " to HTML entities.
+
+- name: escape_already_escaped
+  template: "{{ text | escape }}"
+  environment:
+    text: "&lt;already&gt;"
+  expected: "&amp;lt;already&amp;gt;"
+  complexity: 290
+  hint: |
+    escape escapes existing entities (double-escape).
+
+- name: escape_once_no_double
+  template: "{{ text | escape_once }}"
+  environment:
+    text: "&lt;already&gt; and <new>"
+  expected: "&lt;already&gt; and &lt;new&gt;"
+  complexity: 290
+  hint: |
+    escape_once escapes new entities but not already-escaped ones.
+
+- name: url_encode_spaces
+  template: "{{ text | url_encode }}"
+  environment:
+    text: "hello world"
+  expected: "hello+world"
+  complexity: 290
+  hint: |
+    url_encode converts spaces to + (application/x-www-form-urlencoded format).
+
+- name: url_encode_special
+  template: "{{ text | url_encode }}"
+  environment:
+    text: "a=b&c=d"
+  expected: "a%3Db%26c%3Dd"
+  complexity: 290
+  hint: |
+    url_encode escapes = and &.
+
+- name: url_decode_basic
+  template: "{{ text | url_decode }}"
+  environment:
+    text: "hello%20world"
+  expected: "hello world"
+  complexity: 290
+  hint: |
+    url_decode reverses url_encode.
+
+- name: newline_to_br_basic
+  template: "{{ text | newline_to_br }}"
+  environment:
+    text: "line1\nline2"
+  expected: "line1<br />\nline2"
+  complexity: 290
+  hint: |
+    newline_to_br inserts <br /> before each newline.
