@@ -453,7 +453,7 @@ module RemoteLiquid
     end
 
     def log(message)
-      $stderr.puts "[remote-liquid] #{message}"
+      $stderr.puts "[remote-liquid] #{message}" if ENV["VERBOSE"]
     end
   end
 end
