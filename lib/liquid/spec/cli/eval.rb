@@ -242,6 +242,7 @@ module Liquid
                 assigns: assigns,
                 expected: expected || actual,
                 passed: test_passed,
+                adapter: File.basename(adapter_file),
               )
 
               append_to_daily_file(final_spec, has_difference)
@@ -278,6 +279,7 @@ module Liquid
                 assigns: assigns,
                 expected: expected,
                 passed: false,
+                adapter: File.basename(adapter_file),
                 error: e,
               )
 
@@ -486,7 +488,7 @@ module Liquid
             spec
           end
 
-          def build_final_spec(name:, hint:, complexity:, template:, assigns:, expected:, passed:, error: nil)
+          def build_final_spec(name:, hint:, complexity:, template:, assigns:, expected:, passed:, adapter: nil, error: nil)
             spec = {}
             spec["name"] = name
             spec["hint"] = hint if hint
@@ -502,6 +504,7 @@ module Liquid
             end
 
             spec["_passed"] = passed
+            spec["_adapter"] = adapter if adapter
             spec
           end
 
@@ -529,7 +532,7 @@ module Liquid
             output_spec.delete("stdin_yaml")
 
             ordered_spec = {}
-            ["name", "hint", "complexity", "template", "expected", "environment", "errors", "_passed"].each do |key|
+            ["name", "hint", "complexity", "template", "expected", "environment", "errors", "_passed", "_adapter"].each do |key|
               ordered_spec[key] = output_spec[key] if output_spec.key?(key)
             end
             output_spec.each { |k, v| ordered_spec[k] = v unless ordered_spec.key?(k) }

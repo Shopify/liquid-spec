@@ -1,0 +1,461 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "yaml"
+require "date"
+
+HELP = <<~HELP
+  Usage: liquid-spec-browse [command] [options]
+
+  Browse saved eval specs from /tmp/liquid-spec-*.yml
+
+  Commands:
+    list, ls              List available spec files
+    show [file] [index]   Show specs from a file (default: today's file)
+    search, grep PATTERN  Search specs by name or template content
+    tail [n]              Show last n specs (default: 10)
+    tags [file]           List all tags used across specs
+    filters [file]        List all filters used across specs
+    stats [file]          Show tag/filter usage statistics
+    cat [file]            Output raw YAML for piping
+
+  Options:
+    -a, --all             Show all files, not just recent
+    -v, --verbose         Show full spec details (template, expected, etc.)
+
+  Examples:
+    liquid-spec-browse ls
+    liquid-spec-browse show
+    liquid-spec-browse show 3
+    liquid-spec-browse tail 5
+    liquid-spec-browse search upcase
+    liquid-spec-browse tags
+    liquid-spec-browse filters
+    liquid-spec-browse stats
+    liquid-spec-browse cat | yq '.[] | .name'
+
+HELP
+
+def spec_files
+  Dir.glob("/tmp/liquid-spec-*.yml").sort.reverse
+end
+
+def load_specs(file)
+  return [] unless File.exist?(file)
+
+  content = File.read(file)
+  return [] if content.strip.empty?
+
+  # Handle multiple YAML documents (specs appended over time)
+  specs = []
+  YAML.load_stream(content) do |doc|
+    if doc.is_a?(Array)
+      specs.concat(doc)
+    elsif doc.is_a?(Hash)
+      specs << doc
+    end
+  end
+  specs
+rescue Psych::SyntaxError => e
+  $stderr.puts "Warning: YAML parse error in #{file}: #{e.message}"
+  []
+end
+
+def today_file
+  "/tmp/liquid-spec-#{Date.today}.yml"
+end
+
+def format_spec_brief(spec, index)
+  name = spec["name"] || "(unnamed)"
+  adapter = spec["_adapter"] ? " \e[2m[#{spec["_adapter"]}]\e[0m" : ""
+  template = spec["template"].to_s.gsub(/\s+/, " ").strip[0..60]
+  "  #{index.to_s.rjust(3)}. #{name}#{adapter}\n       #{template}#{"..." if spec["template"].to_s.length > 60}"
+end
+
+def format_spec_full(spec, index)
+  lines = []
+  lines << "=" * 70
+  header = "Spec ##{index}: #{spec["name"] || "(unnamed)"}"
+  header += " \e[2m[#{spec["_adapter"]}]\e[0m" if spec["_adapter"]
+  lines << header
+  lines << "=" * 70
+
+  if spec["hint"]
+    lines << "\e[33mHint:\e[0m #{spec["hint"].strip}"
+    lines << ""
+  end
+
+  if spec["template"]
+    lines << "\e[36mTemplate:\e[0m"
+    lines << spec["template"].gsub(/^/, "  ")
+    lines << ""
+  end
+
+  if spec["environment"] && !spec["environment"].empty?
+    lines << "\e[36mEnvironment:\e[0m"
+    lines << spec["environment"].to_yaml.gsub(/^/, "  ").strip
+    lines << ""
+  end
+
+  if spec["expected"]
+    lines << "\e[32mExpected:\e[0m"
+    lines << spec["expected"].to_s.gsub(/^/, "  ")
+    lines << ""
+  end
+
+  if spec["actual"]
+    lines << "\e[31mActual:\e[0m"
+    lines << spec["actual"].to_s.gsub(/^/, "  ")
+    lines << ""
+  end
+
+  meta = []
+  meta << "Complexity: #{spec["complexity"]}" if spec["complexity"]
+  meta << spec["_passed"] ? "PASS" : "FAIL" if spec.key?("_passed")
+  lines << "\e[2m#{meta.join(" | ")}\e[0m" unless meta.empty?
+
+  lines.join("\n")
+end
+
+def cmd_list(all: false)
+  files = spec_files
+  files = files.first(7) unless all
+
+  if files.empty?
+    puts "No spec files found in /tmp/"
+    return
+  end
+
+  puts "Saved spec files:"
+  puts ""
+  files.each do |f|
+    specs = load_specs(f)
+    date = File.basename(f, ".yml").sub("liquid-spec-", "")
+    size = File.size(f)
+    puts "  #{date}  #{specs.size.to_s.rjust(4)} specs  (#{human_size(size)})"
+  end
+  puts ""
+  puts "Use: liquid-spec-browse show [date]" if files.any?
+end
+
+def cmd_show(file, index, verbose: false)
+  file = resolve_file(file)
+
+  unless File.exist?(file)
+    $stderr.puts "File not found: #{file}"
+    exit 1
+  end
+
+  specs = load_specs(file)
+
+  if specs.empty?
+    puts "No specs in #{file}"
+    return
+  end
+
+  if index
+    idx = index.to_i
+    if idx < 1 || idx > specs.size
+      $stderr.puts "Index out of range. File has #{specs.size} specs."
+      exit 1
+    end
+    puts format_spec_full(specs[idx - 1], idx)
+  else
+    puts "#{File.basename(file)}: #{specs.size} specs"
+    puts ""
+    specs.each_with_index do |spec, i|
+      if verbose
+        puts format_spec_full(spec, i + 1)
+        puts ""
+      else
+        puts format_spec_brief(spec, i + 1)
+      end
+    end
+  end
+end
+
+def cmd_tail(n, verbose: false)
+  file = today_file
+
+  unless File.exist?(file)
+    $stderr.puts "No specs today: #{file}"
+    exit 1
+  end
+
+  specs = load_specs(file)
+  last_n = specs.last(n)
+
+  puts "Last #{last_n.size} specs from today:"
+  puts ""
+
+  start_idx = specs.size - last_n.size + 1
+  last_n.each_with_index do |spec, i|
+    if verbose
+      puts format_spec_full(spec, start_idx + i)
+      puts ""
+    else
+      puts format_spec_brief(spec, start_idx + i)
+    end
+  end
+end
+
+def cmd_search(pattern, verbose: false)
+  regex = Regexp.new(pattern, Regexp::IGNORECASE)
+
+  matches = []
+  spec_files.each do |file|
+    specs = load_specs(file)
+    specs.each_with_index do |spec, i|
+      searchable = [
+        spec["name"],
+        spec["template"],
+        spec["hint"],
+        spec["expected"],
+      ].compact.join("\n")
+
+      if searchable.match?(regex)
+        matches << { file: file, index: i + 1, spec: spec }
+      end
+    end
+  end
+
+  if matches.empty?
+    puts "No matches for: #{pattern}"
+    return
+  end
+
+  puts "Found #{matches.size} match(es):"
+  puts ""
+
+  matches.each do |m|
+    date = File.basename(m[:file], ".yml").sub("liquid-spec-", "")
+    if verbose
+      puts "\e[2m[#{date} ##{m[:index]}]\e[0m"
+      puts format_spec_full(m[:spec], m[:index])
+      puts ""
+    else
+      puts "\e[2m[#{date} ##{m[:index]}]\e[0m"
+      puts format_spec_brief(m[:spec], m[:index])
+    end
+  end
+end
+
+def cmd_cat(file)
+  file = resolve_file(file)
+
+  unless File.exist?(file)
+    $stderr.puts "File not found: #{file}"
+    exit 1
+  end
+
+  specs = load_specs(file)
+  puts YAML.dump(specs)
+end
+
+# Extract Liquid tags from a template string
+def extract_tags(template)
+  return [] unless template
+
+  tags = []
+  # Match {% tag_name ... %}
+  template.scan(/\{%[-~]?\s*(\w+)/) do |match|
+    tags << match[0]
+  end
+  tags
+end
+
+# Extract Liquid filters from a template string
+def extract_filters(template)
+  return [] unless template
+
+  filters = []
+  # Match | filter_name (possibly with arguments)
+  template.scan(/\|\s*(\w+)/) do |match|
+    filters << match[0]
+  end
+  filters
+end
+
+def cmd_tags(file)
+  file = resolve_file(file)
+  specs = load_specs(file)
+
+  if specs.empty?
+    puts "No specs found"
+    return
+  end
+
+  tag_counts = Hash.new(0)
+  specs.each do |spec|
+    extract_tags(spec["template"]).each { |t| tag_counts[t] += 1 }
+  end
+
+  if tag_counts.empty?
+    puts "No tags found in #{specs.size} specs"
+    return
+  end
+
+  puts "Tags in #{File.basename(file)} (#{specs.size} specs):"
+  puts ""
+  tag_counts.sort_by { |_, count| -count }.each do |tag, count|
+    puts "  #{tag.ljust(20)} #{count}"
+  end
+end
+
+def cmd_filters(file)
+  file = resolve_file(file)
+  specs = load_specs(file)
+
+  if specs.empty?
+    puts "No specs found"
+    return
+  end
+
+  filter_counts = Hash.new(0)
+  specs.each do |spec|
+    extract_filters(spec["template"]).each { |f| filter_counts[f] += 1 }
+  end
+
+  if filter_counts.empty?
+    puts "No filters found in #{specs.size} specs"
+    return
+  end
+
+  puts "Filters in #{File.basename(file)} (#{specs.size} specs):"
+  puts ""
+  filter_counts.sort_by { |_, count| -count }.each do |filter, count|
+    puts "  #{filter.ljust(20)} #{count}"
+  end
+end
+
+def cmd_stats(file)
+  file = resolve_file(file)
+  specs = load_specs(file)
+
+  if specs.empty?
+    puts "No specs found"
+    return
+  end
+
+  tag_counts = Hash.new(0)
+  filter_counts = Hash.new(0)
+  adapter_counts = Hash.new(0)
+  pass_count = 0
+  fail_count = 0
+
+  specs.each do |spec|
+    extract_tags(spec["template"]).each { |t| tag_counts[t] += 1 }
+    extract_filters(spec["template"]).each { |f| filter_counts[f] += 1 }
+    adapter_counts[spec["_adapter"] || "(unknown)"] += 1
+
+    if spec.key?("_passed")
+      spec["_passed"] ? pass_count += 1 : fail_count += 1
+    end
+  end
+
+  puts "Stats for #{File.basename(file)}"
+  puts "=" * 50
+  puts ""
+  puts "  Total specs:     #{specs.size}"
+  puts "  Passed:          #{pass_count}" if pass_count > 0
+  puts "  Failed:          #{fail_count}" if fail_count > 0
+  puts "  Unique tags:     #{tag_counts.size}"
+  puts "  Unique filters:  #{filter_counts.size}"
+  puts ""
+
+  if adapter_counts.size > 1 || (adapter_counts.size == 1 && !adapter_counts.key?("(unknown)"))
+    puts "Adapters:"
+    adapter_counts.sort_by { |_, count| -count }.each do |adapter, count|
+      puts "  #{adapter.ljust(30)} #{count}"
+    end
+    puts ""
+  end
+
+  if tag_counts.any?
+    puts "Top 10 tags:"
+    tag_counts.sort_by { |_, count| -count }.first(10).each do |tag, count|
+      puts "  #{tag.ljust(20)} #{count}"
+    end
+    puts ""
+  end
+
+  if filter_counts.any?
+    puts "Top 10 filters:"
+    filter_counts.sort_by { |_, count| -count }.first(10).each do |filter, count|
+      puts "  #{filter.ljust(20)} #{count}"
+    end
+  end
+end
+
+def resolve_file(file)
+  return today_file if file.nil?
+  return file if File.exist?(file)
+
+  # Try as date
+  candidate = "/tmp/liquid-spec-#{file}.yml"
+  return candidate if File.exist?(candidate)
+
+  file
+end
+
+def human_size(bytes)
+  if bytes < 1024
+    "#{bytes}B"
+  elsif bytes < 1024 * 1024
+    "#{(bytes / 1024.0).round(1)}K"
+  else
+    "#{(bytes / 1024.0 / 1024.0).round(1)}M"
+  end
+end
+
+# Parse args
+args = ARGV.dup
+verbose = args.delete("-v") || args.delete("--verbose")
+all = args.delete("-a") || args.delete("--all")
+
+if args.empty? || args.first == "-h" || args.first == "--help"
+  puts HELP
+  exit 0
+end
+
+command = args.shift
+
+case command
+when "list", "ls"
+  cmd_list(all: all)
+when "show"
+  file = args.shift
+  index = args.shift
+  # If file looks like an index, treat it as such
+  if file && file.match?(/^\d+$/) && index.nil?
+    index = file
+    file = nil
+  end
+  cmd_show(file, index, verbose: verbose)
+when "tail"
+  n = (args.shift || 10).to_i
+  cmd_tail(n, verbose: verbose)
+when "search", "grep"
+  pattern = args.shift
+  unless pattern
+    $stderr.puts "Usage: liquid-spec-browse search PATTERN"
+    exit 1
+  end
+  cmd_search(pattern, verbose: verbose)
+when "tags"
+  file = args.shift
+  cmd_tags(file)
+when "filters"
+  file = args.shift
+  cmd_filters(file)
+when "stats"
+  file = args.shift
+  cmd_stats(file)
+when "cat"
+  file = args.shift
+  cmd_cat(file)
+else
+  $stderr.puts "Unknown command: #{command}"
+  $stderr.puts "Run with --help for usage"
+  exit 1
+end
