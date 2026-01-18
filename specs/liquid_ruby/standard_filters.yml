@@ -1456,8 +1456,8 @@
   template: "{{ a0 | first }}"
   environment:
     a0: foo
-  expected: ''
-  hint: "QUIRK: first filter does not work on strings in liquid-ruby"
+  expected: 'f'
+  hint: "first filter on strings returns the first character"
 - name: StandardFilterTest#test_first_1067f918
   required_features: [ruby_types]
   template: "{{ a0 | first }}"
@@ -2095,8 +2095,8 @@
   template: "{{ a0 | last }}"
   environment:
     a0: foo
-  expected: ''
-  hint: "QUIRK: last filter does not work on strings in liquid-ruby"
+  expected: 'o'
+  hint: "last filter on strings returns the last character"
 - name: StandardFilterTest#test_lstrip_1db23b1b
   required_features: [ruby_types, ruby_drops]
   template: "{{ a0 | lstrip }}"

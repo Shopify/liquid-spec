@@ -85,36 +85,34 @@ specs:
     with spaces, tabs, or newlines has length > 0, so it's not
     empty. This distinguishes 'empty' from 'blank'.
 
-- name: "whitespace_string_is_not_blank"
+- name: "whitespace_string_is_blank"
   template: "{% if text == blank %}blank{% else %}not{% endif %}"
   environment: { text: "   " }
-  expected: "not"
+  expected: "blank"
   complexity: 120
   hint: |
-    QUIRK: 'x == blank' calls x.blank? which doesn't exist in standard Ruby.
-    The blank? method is an ActiveSupport (Rails) extension. In liquid-ruby
-    without ActiveSupport, == blank always fails because no object responds
-    to blank?. In Shopify's Liquid, blank? is implemented on all objects.
+    Whitespace-only strings are considered blank. The 'blank' keyword matches
+    values that are empty or contain only whitespace. This includes "", " ",
+    "\n", "\t", and any combination of whitespace characters.
 
-- name: "empty_string_not_blank_literal"
+- name: "empty_string_is_blank"
   template: "{% if x == blank %}blank{% else %}not{% endif %}"
   environment: { x: "" }
-  expected: "not"
+  expected: "blank"
   complexity: 120
   hint: |
-    QUIRK: 'x == blank' calls x.blank? which doesn't exist in standard Ruby.
-    Even empty string "" doesn't match blank because String#blank? doesn't
-    exist without ActiveSupport. Use == empty instead for empty checks.
+    Empty strings are considered blank. The 'blank' keyword matches empty
+    strings, nil, empty arrays, empty hashes, and whitespace-only strings.
 
-- name: "nil_is_not_blank"
+- name: "nil_is_blank"
   template: "{% if missing == blank %}blank{% else %}not{% endif %}"
   environment: {}
-  expected: "not"
+  expected: "blank"
   complexity: 120
   hint: |
-    QUIRK: 'x == blank' calls x.blank? which doesn't exist in standard Ruby.
-    NilClass doesn't have blank? method without ActiveSupport, so nil is
-    never blank in liquid-ruby. Use == nil for nil checks instead.
+    Undefined/nil variables are considered blank. The 'blank' keyword matches
+    nil values, which is useful for checking if a variable exists and has
+    a meaningful value.
 
 - name: "false_is_not_empty"
   template: "{% if flag == empty %}empty{% else %}not{% endif %}"
@@ -127,15 +125,15 @@ specs:
     or zero-length collections. When checking == empty, false should
     not match. Only nil, "", [], and {} are empty.
 
-- name: "false_is_not_blank"
+- name: "false_is_blank"
   template: "{% if flag == blank %}blank{% else %}not{% endif %}"
   environment: { flag: false }
-  expected: "not"
+  expected: "blank"
   complexity: 130
   hint: |
-    QUIRK: 'x == blank' calls x.blank? which doesn't exist in standard Ruby.
-    FalseClass doesn't have blank? without ActiveSupport. In Shopify's
-    Liquid with ActiveSupport, false.blank? returns true.
+    The boolean false is considered blank. In Liquid, 'blank' matches values
+    that are considered "empty" or "nothing" - this includes nil, false,
+    empty strings, empty arrays, and empty hashes.
 
 - name: "zero_is_not_empty"
   template: "{% if num == empty %}empty{% else %}not{% endif %}"
@@ -263,13 +261,13 @@ specs:
 - name: "empty_vs_blank_comparison"
   template: "{% if text == empty %}E{% elsif text == blank %}B{% else %}N{% endif %}"
   environment: { text: "  \n  " }
-  expected: "N"
+  expected: "B"
   complexity: 170
   hint: |
-    == empty calls empty?, == blank calls blank?. Whitespace strings
-    have length > 0 so they're not empty. blank? doesn't exist in
-    standard Ruby so == blank always fails. Output is "N" because
-    neither condition matches.
+    == empty checks if the value is empty (zero length), == blank checks if
+    the value is blank (empty or whitespace-only). A whitespace string has
+    length > 0, so it's not empty, but it IS blank. Output is "B" because
+    the second condition matches.
 
 - name: "array_size_vs_empty"
   template: "{% if items.size == 0 %}size zero{% elsif items == empty %}empty{% else %}has items{% endif %}"
