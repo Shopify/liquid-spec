@@ -84,6 +84,19 @@ module RemoteLiquid
       @server.request_drop_iterate(@drop_id) || []
     end
 
+    # Liquid's render tag checks respond_to?(:count) to determine iterability
+    # We must define count explicitly since we don't include Enumerable
+    # Only return a count if the drop is actually iterable (has items)
+    def count
+      items = @server.request_drop_iterate(@drop_id)
+      items&.count || 0
+    end
+
+    # Note: We deliberately do NOT define size here.
+    # - For the `size` filter, Liquid::Drop returns 0 when size isn't defined
+    # - For iterability checks, `count` is what matters
+    # - If the real drop has a `size` method, it will be called via [] or liquid_method_missing
+
     def to_s
       result = fetch_property("to_s")
       result.nil? ? "[RpcDrop:#{@type}]" : result.to_s
@@ -113,7 +126,10 @@ module RemoteLiquid
 
     def fetch_property(property)
       return @cache[property] if @cache.key?(property)
-      @cache[property] = @server.request_drop_property(@drop_id, property)
+      result = @server.request_drop_property(@drop_id, property)
+      # Don't cache errors - they shouldn't be cached anyway
+      @cache[property] = result unless result.nil?
+      result
     end
   end
 
@@ -146,8 +162,19 @@ module RemoteLiquid
         "drop_id" => drop_id,
         "property" => property,
       })
-      return nil if response.nil? || response["error"]
-      unwrap_value(response.dig("result", "value"))
+      return nil if response.nil?
+
+      result = response["result"]
+      return nil if result.nil?
+
+      # If the callback returned an error (e.g., the drop method raised), propagate it
+      # Error is in result.error, not response.error (JSON-RPC success with error payload)
+      if result["error"]
+        error_message = result.dig("error", "message") || "Drop error"
+        raise Liquid::Error, error_message
+      end
+
+      unwrap_value(result["value"])
     end
 
     # Drop callback: iterate
