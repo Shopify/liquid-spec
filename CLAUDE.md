@@ -297,17 +297,33 @@ LiquidSpec.configure do |config|
 end
 ```
 
-**Feature expansion:** `:core` automatically expands to include `:runtime_drops`. This means full Liquid implementations that declare `:core` get all features needed for runtime drop callbacks.
+### Available Features
 
-**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should declare `features = []` to opt out of `:core` and `:runtime_drops`. They will still run all specs except those requiring `:runtime_drops`.
+The `:core` feature is the recommended target for most implementations. It's an alias that automatically expands to include other essential features:
 
-Common features:
-- `:core` - Full Liquid implementation (includes `:runtime_drops`)
-- `:runtime_drops` - Supports bidirectional communication for drop callbacks
+```ruby
+# From lib/liquid/spec/cli/adapter_dsl.rb
+FEATURE_EXPANSIONS = {
+  core: [:runtime_drops, :inline_errors],
+}
+```
+
+**Core features (most implementations should declare `:core`):**
+- `:core` - Full Liquid implementation. Expands to include `:runtime_drops` and `:inline_errors`
+- `:runtime_drops` - Supports bidirectional communication for drop callbacks (test harness invokes adapter to access drop properties)
+- `:inline_errors` - Errors are rendered inline in output rather than raised as exceptions
+- `:strict_parsing` - Supports error_mode: :strict (default for most implementations)
+
+**Optional features:**
 - `:lax_parsing` - Supports error_mode: :lax for lenient parsing
+- `:ruby_types` - Supports Ruby-specific types in environment (Integer, Float, Range, etc.)
+
+**Shopify-specific features:**
 - `:shopify_tags` - Shopify-specific tags (schema, style, section)
 - `:shopify_objects` - Shopify-specific objects (section, block)
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
+
+**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should declare `features = []` to opt out of `:core` and `:runtime_drops`. They will still run all specs except those requiring `:runtime_drops`.
 
 ## The Eval Tool
 
