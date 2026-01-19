@@ -1183,10 +1183,11 @@ module Liquid
             ref_compile_options = compile_options.merge(error_mode: :strict)
             template = Liquid::Template.parse(spec.template, **ref_compile_options)
 
+            # Use strict_errors from render_options to match adapter behavior
             context = Liquid::Context.build(
               static_environments: assigns,
               registers: Liquid::Registers.new(render_options[:registers] || {}),
-              rethrow_errors: true,
+              rethrow_errors: render_options.fetch(:strict_errors, false),
             )
 
             ref_result = template.render(context)
