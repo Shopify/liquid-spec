@@ -47,6 +47,9 @@ module Liquid
           When using --compare, 'expected' and 'errors' can be omitted - they will
           be filled in from the reference implementation output.
 
+          Tip: Create a local ./specs/ folder with your own .yml spec files.
+          These are automatically included when running 'liquid-spec run'.
+
         HELP
 
         class << self
@@ -564,6 +567,7 @@ module Liquid
 
             puts ""
             puts "\e[2mSaved to: #{daily_file}\e[0m"
+            puts "\e[2mTip: Move useful specs to ./specs/*.yml for automatic inclusion.\e[0m"
           end
 
           def show_contribution_message(has_difference)

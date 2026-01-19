@@ -274,17 +274,38 @@ module Liquid
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
 
-            specs = load_specs(config)
-            specs = filter_specs(specs, config.filter) if config.filter
-            specs = filter_strict_only(specs) if config.strict_only
+            features = config.features
+            puts "Features: #{features.join(", ")}"
 
-            if specs.empty?
+            # Count available specs from all sources
+            has_prioritized = options[:add_specs] && !options[:add_specs].empty?
+            prioritized_specs = has_prioritized ? load_additional_specs(options[:add_specs]) : []
+            prioritized_specs = filter_specs(prioritized_specs, config.filter) if config.filter && prioritized_specs.any?
+            prioritized_specs = filter_by_features(prioritized_specs, features) if prioritized_specs.any?
+
+            # Auto-discover local specs from ./specs/*.yml
+            local_specs = discover_local_specs
+            local_specs = filter_specs(local_specs, config.filter) if config.filter && local_specs.any?
+            local_specs = filter_by_features(local_specs, features) if local_specs.any?
+            if local_specs.any?
+              puts "Auto-including: #{local_specs.size} specs from ./specs/*.yml"
+            end
+
+            # Group specs by suite
+            suites_to_run = determine_suites(config, features)
+
+            # Check if there's anything to run
+            suite_specs_exist = suites_to_run.any? do |suite|
+              suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
+              suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+              suite_specs = filter_by_features(suite_specs, features)
+              suite_specs.any?
+            end
+
+            if prioritized_specs.empty? && local_specs.empty? && !suite_specs_exist
               puts "No specs to run"
               return
             end
-
-            features = config.features
-            puts "Features: #{features.join(", ")}"
 
             # Initialize known failures matcher
             known_failures = KnownFailures.new
@@ -295,9 +316,6 @@ module Liquid
               puts "Known failures: #{known_failures.size} patterns loaded"
             end
             puts ""
-
-            # Group specs by suite
-            suites_to_run = determine_suites(config, features)
 
             # Check if --bench flag is provided and any suite has timings enabled
             if options[:bench]
@@ -323,9 +341,28 @@ module Liquid
             # Open log file for appending results
             log_file = File.open(results_log_path, "a")
 
+            # Run explicitly added specs FIRST (--add-specs), before suites
+            if prioritized_specs.any?
+              add_passed, add_failed, add_errors, add_known_failed, add_known_fixed =
+                run_prioritized_specs(prioritized_specs, known_failures, all_failures, all_known_failures, all_known_fixed, results_by_complexity, log_file, run_id, config)
+              total_passed += add_passed
+              total_failed += add_failed
+              total_errors += add_errors
+              total_known_failed += add_known_failed
+              total_known_fixed += add_known_fixed
+            end
+
             suites_to_run.each do |suite|
 
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
+
+              # Mix in auto-discovered local specs (sorted by complexity with suite specs)
+              # Note: local_specs already filtered above
+              unless local_specs.empty?
+                suite_specs = suite_specs + local_specs
+                local_specs = [] # Only add once (to first suite)
+              end
+
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
               suite_specs = filter_by_features(suite_specs, features)
               suite_specs = sort_by_complexity(suite_specs)
@@ -403,15 +440,6 @@ module Liquid
             end
 
             log_file.close
-
-            # Run additional specs if provided
-            add_passed, add_failed, add_errors, add_known_failed, add_known_fixed =
-              run_additional_specs(options, config, features, known_failures, all_failures, all_known_failures, all_known_fixed)
-            total_passed += add_passed
-            total_failed += add_failed
-            total_errors += add_errors
-            total_known_failed += add_known_failed
-            total_known_fixed += add_known_fixed
 
             # Show skipped suites
             show_skipped_suites(config, features)
@@ -1431,6 +1459,97 @@ module Liquid
 
           def sort_by_complexity(specs)
             specs.sort_by { |s| s.complexity || Float::INFINITY }
+          end
+
+          # Discover local spec files from ./specs/*.yml
+          # Returns specs with default complexity 100 if not specified
+          def discover_local_specs
+            local_path = File.join(Dir.pwd, "specs")
+            return [] unless File.directory?(local_path)
+
+            specs = []
+            Dir[File.join(local_path, "*.yml")].each do |path|
+              file_specs = Liquid::Spec::SpecLoader.load_file(path)
+              # Set default complexity 100 for local specs without explicit complexity
+              file_specs.each do |spec|
+                spec.instance_variable_set(:@complexity, 100) if spec.complexity.nil? || spec.complexity == 1000
+              end
+              specs.concat(file_specs)
+            rescue => e
+              $stderr.puts "Warning: Could not load local spec #{path}: #{e.message}"
+            end
+            specs
+          end
+
+          # Run explicitly added specs (--add-specs) FIRST, before suites
+          def run_prioritized_specs(specs, known_failures, all_failures, all_known_failures, all_known_fixed, results_by_complexity, log_file, run_id, config)
+            additional_specs = sort_by_complexity(specs)
+
+            return [0, 0, 0, 0, 0] if additional_specs.empty?
+
+            suite_name_padded = "Prioritized Specs ".ljust(40, ".")
+            print("#{suite_name_padded} ")
+            $stdout.flush
+
+            passed = 0
+            failed = 0
+            errors = 0
+            known_failed = 0
+            known_fixed = 0
+
+            additional_specs.each do |spec|
+              complexity = spec.complexity || 1000
+              is_known = known_failures.known_failure?(spec.name)
+
+              begin
+                result = run_single_spec(spec, config)
+              rescue SystemExit, Interrupt, SignalException
+                raise
+              rescue Exception => e
+                result = { status: :error, error: e }
+              end
+
+              case result[:status]
+              when :pass
+                if is_known
+                  known_fixed += 1
+                  all_known_fixed << { spec: spec, result: result }
+                end
+                passed += 1
+                results_by_complexity[complexity][:pass] += 1
+                log_result(log_file, run_id, spec, :success)
+              when :fail
+                if is_known
+                  known_failed += 1
+                  all_known_failures << { spec: spec, result: result }
+                  log_result(log_file, run_id, spec, :known_fail)
+                else
+                  failed += 1
+                  all_failures << { spec: spec, result: result }
+                  log_result(log_file, run_id, spec, :fail)
+                end
+                results_by_complexity[complexity][:fail] += 1
+              when :error
+                if is_known
+                  known_failed += 1
+                  all_known_failures << { spec: spec, result: result }
+                  log_result(log_file, run_id, spec, :known_error)
+                else
+                  errors += 1
+                  all_failures << { spec: spec, result: result }
+                  log_result(log_file, run_id, spec, :error)
+                end
+                results_by_complexity[complexity][:error] += 1
+              end
+            end
+
+            parts = ["#{passed}/#{additional_specs.size} passed"]
+            parts << "#{failed} failed" if failed > 0
+            parts << "#{errors} errors" if errors > 0
+            parts << "#{known_failed} known" if known_failed > 0
+            puts parts.join(", ")
+
+            [passed, failed, errors, known_failed, known_fixed]
           end
 
           def results_log_path
