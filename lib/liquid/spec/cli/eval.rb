@@ -168,7 +168,7 @@ module Liquid
             # Info messages for missing metadata
             if spec_data
               infos = []
-              infos << "No 'complexity' set. Add: complexity: <number> (see COMPLEXITY.md)" unless complexity
+              infos << "No 'complexity' set. Add: complexity: <number> (see `liquid-spec docs complexity`)" unless complexity
               infos << "Add a 'hint' field to explain what this spec tests" unless hint
               infos.each { |msg| $stderr.puts "\e[36mInfo: #{msg}\e[0m" }
               puts "" unless infos.empty?

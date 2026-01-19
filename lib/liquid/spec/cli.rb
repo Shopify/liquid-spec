@@ -70,7 +70,7 @@ module Liquid
               expected: "HELLO"
             YAML
 
-        Complexity Scoring (see COMPLEXITY.md for full guide):
+        Complexity Scoring (see `liquid-spec docs complexity` for full guide):
           Specs have a complexity score indicating implementation difficulty.
           Lower = simpler features to implement first.
 

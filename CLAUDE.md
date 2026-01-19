@@ -249,7 +249,7 @@ hint: |
 required_features:
   - core
 
-# Default complexity for specs without explicit complexity (see COMPLEXITY.md)
+# Default complexity for specs without explicit complexity (see `liquid-spec docs complexity`)
 # Specs without complexity default to 1000 unless this is set
 minimum_complexity: 1000
 
@@ -275,7 +275,7 @@ Each spec should have a `complexity` field indicating implementation difficulty.
 | 300-500 | Edge cases, deprecated features |
 | 1000+ | Production recordings, unscored specs (default) |
 
-See [COMPLEXITY.md](COMPLEXITY.md) for the full guide with examples.
+See [`liquid-spec docs complexity`](`liquid-spec docs complexity`) for the full guide with examples.
 See [SPECS.md](SPECS.md) for guidelines on writing effective specs.
 
 ### Available Suites
@@ -397,7 +397,7 @@ liquid-spec eval adapter.rb --spec=my_test.yml --compare
 ```yaml
 name: test_descriptive_name          # Required: unique identifier
 hint: "Explain what this tests"      # Recommended: helps debug failures
-complexity: 75                       # Recommended: see COMPLEXITY.md
+complexity: 75                       # Recommended: see `liquid-spec docs complexity`
 template: "{{ x | upcase }}"         # Required: the Liquid template
 expected: "HELLO"                    # Optional with --compare: auto-filled from reference
 environment:                         # Optional: variables available to template

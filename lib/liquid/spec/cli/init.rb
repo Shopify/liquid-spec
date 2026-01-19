@@ -385,7 +385,7 @@ module Liquid
 
             - [Liquid Documentation](https://shopify.github.io/liquid/)
             - [liquid-spec repository](https://github.com/Shopify/liquid-spec)
-            - See `COMPLEXITY.md` in liquid-spec for full complexity scoring guide
+            - Run `liquid-spec docs complexity` for the full complexity scoring guide
           MARKDOWN
         end
 

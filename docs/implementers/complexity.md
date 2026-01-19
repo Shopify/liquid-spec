@@ -1,3 +1,9 @@
+---
+title: Complexity Scoring
+description: How spec complexity scores work and how to assign them. Specs run in complexity order - lower scores first.
+order: 5
+---
+
 # Complexity Scoring Guide
 
 This document defines the complexity scoring system used in liquid-spec to order and prioritize test specs. Complexity scores help implementers build Liquid parsers incrementally by tackling simpler features first.
