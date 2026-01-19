@@ -1138,15 +1138,19 @@ module Liquid
             # So we DON'T include it in render_errors calculation
             render_errors = spec.render_errors || required_opts[:render_errors]
 
+            # Build filesystem first so it can be passed to compile
+            filesystem = spec.instantiate_filesystem
+
             compile_options = {
               line_numbers: true,
               error_mode: spec.error_mode&.to_sym || required_opts[:error_mode],
+              file_system: filesystem,
               template_name: spec.template_name,
             }.compact
 
             assigns = deep_copy(spec.instantiate_environment)
             render_options = {
-              registers: build_registers(spec),
+              registers: build_registers(spec, filesystem),
               strict_errors: !render_errors,
             }.compact
 
