@@ -19,6 +19,11 @@
 
 _metadata:
   doc: implementers/tablerow.md
+  hint: |
+    Tablerow generates HTML table rows. It's NOT just a for loop - it outputs
+    <tr> and <td> tags with specific whitespace and class names.
+
+    Run: liquid-spec docs tablerow
 
 specs:
 # =============================================================================

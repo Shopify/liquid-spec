@@ -261,20 +261,18 @@ module Liquid
 
             This document guides AI agents through implementing a Liquid template engine using liquid-spec for verification.
 
+            #{json_rpc ? non_ruby_notice : ""}
             ## Quick Start
 
             ```bash
             # Run your adapter against the spec suite
-            liquid-spec run #{filename}
+            liquid-spec #{filename}
 
             # Run with verbose output to see each test
-            liquid-spec run #{filename} -v
+            liquid-spec #{filename} -v
 
             # Filter tests by name pattern
-            liquid-spec run #{filename} -n assign
-
-            # Show all failures (default stops at 10)
-            liquid-spec run #{filename} --no-max-failures
+            liquid-spec #{filename} -n assign
             ```
 
             ## How It Works
@@ -282,6 +280,59 @@ module Liquid
             1. **Your adapter** defines `compile` and `render` blocks that bridge liquid-spec to your implementation
             2. **liquid-spec** runs test cases in **complexity order** (simplest features first)
             3. **You implement features** incrementally, fixing failing specs from lowest to highest complexity
+
+            ## Documentation Resources
+
+            liquid-spec includes comprehensive implementation guides in the `docs/implementers/` directory:
+
+            | Document | Purpose |
+            |----------|---------|
+            | `complexity.md` | Full complexity scoring guide with all features ranked |
+            | `core-abstractions.md` | Truthy/falsy, nil handling, type coercion |
+            | `for-loops.md` | For loop implementation details, forloop object |
+            | `tablerow.md` | Tablerow tag (HTML table generation) |
+            | `filters.md` | Filter implementation guide |
+            | `partials.md` | Include/render tag implementation |
+            | `interrupts.md` | Break/continue implementation |
+            | `scopes.md` | Variable scoping rules |
+            #{json_rpc ? "| `../json-rpc-protocol.md` | Full JSON-RPC protocol specification |" : ""}
+
+            **Read these docs!** They explain the "why" behind Liquid's behavior and save hours of debugging.
+
+            ## Local Specs for Development
+
+            Create a `specs/` directory in your project to add custom test cases:
+
+            ```bash
+            mkdir -p specs/local
+            ```
+
+            Any `.yml` files in `specs/` are automatically included when running liquid-spec. This is useful for:
+
+            1. **Debugging specific behaviors** - Write a focused spec for what you're implementing
+            2. **Regression tests** - Add specs for bugs you've fixed
+            3. **Edge cases** - Test your implementation's unique behaviors
+
+            Example `specs/local/my_tests.yml`:
+            ```yaml
+            ---
+            specs:
+            - name: my_assign_test
+              template: "{% assign x = 'hello' %}{{ x }}"
+              expected: "hello"
+              complexity: 50
+              hint: "Test basic assign functionality"
+
+            - name: my_filter_test
+              template: "{{ 'hello' | upcase }}"
+              expected: "HELLO"
+              complexity: 40
+            ```
+
+            **Tip**: Use `liquid-spec eval` to quickly test templates before adding them as specs:
+            ```bash
+            liquid-spec eval #{filename} -n test --liquid="{{ 'hello' | upcase }}" --compare
+            ```
 
             ## Complexity-Ordered Implementation
 
@@ -437,6 +488,24 @@ module Liquid
               template.render(assigns)
             end
             ```
+          MARKDOWN
+        end
+
+        def self.non_ruby_notice
+          <<~MARKDOWN
+            ## Not Using Ruby?
+
+            **This adapter uses JSON-RPC** to communicate with your Liquid implementation over stdin/stdout.
+            You can implement your Liquid engine in **any language** (Rust, Go, Python, Node.js, etc.).
+
+            See `docs/json-rpc-protocol.md` for the full protocol specification, or check the comments
+            in your adapter file for a quick reference.
+
+            **Key points:**
+            - Your server reads JSON-RPC requests from stdin, writes responses to stdout
+            - Debug output goes to stderr (liquid-spec forwards it to the terminal)
+            - Implement 4 methods: `initialize`, `compile`, `render`, `quit`
+
           MARKDOWN
         end
 

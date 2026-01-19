@@ -31,7 +31,15 @@ module Liquid
         def start
           return if running?
 
-          @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(@command)
+          begin
+            @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(@command)
+          rescue Errno::ENOENT => e
+            raise SubprocessError, <<~ERROR
+              Command not found: #{@command}
+
+              #{protocol_doc_reference}
+            ERROR
+          end
 
           # Set streams to non-blocking where possible
           @stdout.sync = true
@@ -63,10 +71,34 @@ module Liquid
           start unless running?
           return if @initialized
 
-          response = send_request("initialize", { "version" => "1.0" })
+          begin
+            response = send_request("initialize", { "version" => "1.0" })
+          rescue SubprocessError => e
+            if e.message.include?("closed stdout") || e.message.include?("timeout")
+              raise SubprocessError, <<~ERROR
+                Failed to initialize: #{executable_name} didn't respond to handshake
+
+                Your server must respond to the 'initialize' request within #{@timeout} seconds.
+                Make sure your server:
+                1. Reads JSON-RPC requests from stdin
+                2. Writes JSON-RPC responses to stdout
+                3. Responds to the 'initialize' method
+
+                #{protocol_doc_reference}
+              ERROR
+            else
+              raise
+            end
+          end
 
           unless response["result"]
-            raise SubprocessError, "Failed to initialize: #{response["error"]&.dig("message") || "unknown error"}"
+            raise SubprocessError, <<~ERROR
+              Failed to initialize: #{response["error"]&.dig("message") || "invalid response"}
+
+              Your server must respond to 'initialize' with: {"jsonrpc":"2.0","id":N,"result":{"version":"1.0","features":[]}}
+
+              #{protocol_doc_reference}
+            ERROR
           end
 
           @features = response["result"]["features"] || []
@@ -252,6 +284,17 @@ module Liquid
           @stderr_thread = nil
           @wait_thr = nil
           @initialized = false
+        end
+
+        def protocol_doc_reference
+          gem_root = File.expand_path("../../../../..", __FILE__)
+          doc_path = File.join(gem_root, "docs", "json-rpc-protocol.md")
+
+          if File.exist?(doc_path)
+            "See: #{doc_path}"
+          else
+            "See: https://github.com/Shopify/liquid-spec/blob/main/docs/json-rpc-protocol.md"
+          end
         end
       end
 

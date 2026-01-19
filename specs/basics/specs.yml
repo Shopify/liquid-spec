@@ -1694,9 +1694,11 @@ specs:
     <td class="col1">a</td><td class="col2">b</td><td class="col3">c</td></tr>
   complexity: 180
   hint: |
-    tablerow generates HTML table rows. It wraps items in <tr> and <td> tags
-    with row and column classes. Note the newline after the opening <tr> tag.
-    You must wrap in <table> tags yourself.
+    tablerow generates HTML table rows - it's NOT just a for loop! It outputs
+    <tr> and <td> tags with row/column classes, specific whitespace, and provides
+    a tablerowloop object (not forloop) with extra properties like col, row.
+
+    Run: liquid-spec docs tablerow
 - name: tablerow_cols
   template: "{% tablerow item in items cols:2 %}{{ item }}{% endtablerow %}"
   environment:
