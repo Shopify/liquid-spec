@@ -1138,7 +1138,7 @@ module Liquid
             # So we DON'T include it in render_errors calculation
             render_errors = spec.render_errors || required_opts[:render_errors]
 
-            # Build filesystem first so it can be passed to compile
+            # Build filesystem first so it can be passed to compile and render
             filesystem = spec.instantiate_filesystem
 
             compile_options = {
@@ -1178,9 +1178,10 @@ module Liquid
             { status: :error, error: e }
           end
 
-          def run_reference_spec(spec, _compile_options, assigns, render_options)
-            strict_compile_options = { line_numbers: true, error_mode: :strict }
-            template = Liquid::Template.parse(spec.template, **strict_compile_options)
+          def run_reference_spec(spec, compile_options, assigns, render_options)
+            # Use passed compile_options but force strict mode for reference
+            ref_compile_options = compile_options.merge(error_mode: :strict)
+            template = Liquid::Template.parse(spec.template, **ref_compile_options)
 
             context = Liquid::Context.build(
               static_environments: assigns,
