@@ -44,6 +44,11 @@ task :run do
   system("bundle", "exec", "ruby", "bin/liquid-spec", "examples/liquid_ruby.rb", "--no-max-failures") || abort
 end
 
+desc "Run liquid-spec matrix across all adapters"
+task :matrix do
+  system("bundle", "exec", "ruby", "bin/liquid-spec", "matrix", "--all") || abort
+end
+
 # Spec generation tasks (only needed for development)
 import("tasks/liquid_ruby.rake")
 import("tasks/standard_filters.rake")

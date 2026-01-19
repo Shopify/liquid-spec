@@ -138,6 +138,7 @@ module Liquid
             hint = spec_data["hint"]
             complexity = spec_data["complexity"]
             name = spec_data["name"]
+            raw_filesystem = spec_data["filesystem"]
 
             # Require name
             unless name
@@ -178,7 +179,7 @@ module Liquid
             reference_error = nil
             if compare_mode
               reference_output, reference_error =
-                run_reference_implementation(template_source, assigns, verbose, compare_mode, context_overrides)
+                run_reference_implementation(template_source, assigns, verbose, compare_mode, context_overrides, raw_filesystem)
 
               if reference_error
                 spec_data ||= {}
@@ -196,11 +197,16 @@ module Liquid
             LiquidSpec.run_setup!
             adapter_context = LiquidSpec.adapter_context(nil, context_overrides)
 
+            # Build filesystem if present
+            filesystem = build_filesystem(raw_filesystem)
+
             test_passed = true
             has_difference = false
 
             begin
-              LiquidSpec.do_compile(template_source, { line_numbers: true }, adapter_context)
+              compile_options = { line_numbers: true }
+              compile_options[:file_system] = filesystem if filesystem
+              LiquidSpec.do_compile(template_source, compile_options, adapter_context)
               template = LiquidSpec.ctx[:template]
 
               if verbose && template.respond_to?(:source)
@@ -209,7 +215,9 @@ module Liquid
                 puts ""
               end
 
-              render_options = { registers: {}, strict_errors: false }
+              registers = {}
+              registers[:file_system] = filesystem if filesystem
+              render_options = { registers: registers, strict_errors: false }
               actual = LiquidSpec.do_render(assigns, render_options, adapter_context)
 
               if compare_mode && reference_error
@@ -402,7 +410,7 @@ module Liquid
             lax: File.expand_path("../../../../examples/liquid_ruby_lax.rb", __dir__),
           }.freeze
 
-          def run_reference_implementation(template_source, assigns, _verbose, mode = :strict, context_overrides = {})
+          def run_reference_implementation(template_source, assigns, _verbose, mode = :strict, context_overrides = {}, raw_filesystem = nil)
             adapter_file = REFERENCE_ADAPTERS[mode]
             puts "\e[2mComparing against reference (#{File.basename(adapter_file)})...\e[0m"
 
@@ -418,12 +426,19 @@ module Liquid
                 load(adapter_file)
                 LiquidSpec.run_setup!
 
+                # Build filesystem if present
+                filesystem = build_filesystem(raw_filesystem)
+
                 reference_context = LiquidSpec.adapter_context(
                   nil,
                   context_overrides.merge(adapter_timeout: nil)
                 )
-                LiquidSpec.do_compile(template_source, { line_numbers: true }, reference_context)
-                render_options = { registers: {}, strict_errors: false }
+                compile_options = { line_numbers: true }
+                compile_options[:file_system] = filesystem if filesystem
+                LiquidSpec.do_compile(template_source, compile_options, reference_context)
+                registers = {}
+                registers[:file_system] = filesystem if filesystem
+                render_options = { registers: registers, strict_errors: false }
                 output = LiquidSpec.do_render(assigns, render_options, reference_context)
 
                 Marshal.dump({ output: output, error: nil }, writer)
@@ -569,6 +584,21 @@ module Liquid
           rescue ArgumentError => e
             $stderr.puts "Error: #{e.message}"
             exit(1)
+          end
+
+          # Build a SimpleFileSystem from raw filesystem hash
+          def build_filesystem(raw_filesystem)
+            return nil if raw_filesystem.nil?
+
+            files = case raw_filesystem
+            when Hash
+              raw_filesystem.reject { |k, _| k.to_s == "instantiate" }
+            else
+              {}
+            end
+
+            error_message = files.delete("_error-message")
+            Liquid::Spec::LazySpec::SimpleFileSystem.new(files, error_message: error_message)
           end
         end
       end

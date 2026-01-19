@@ -35,9 +35,6 @@ liquid-spec my_adapter.rb -l
 
 # List available suites
 liquid-spec my_adapter.rb --list-suites
-
-# Show all failures (default stops at 10)
-liquid-spec my_adapter.rb --no-max-failures
 ```
 
 ### Result Logging
