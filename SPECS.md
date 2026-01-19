@@ -1,12 +1,93 @@
 # Writing Great Specs
 
-This guide explains what makes a liquid-spec test valuable. A great spec doesn't just verify correctness—it teaches implementers what to build next and helps them understand *why* Liquid behaves the way it does.
+This guide explains how to write specs that help implementers build correct Liquid implementations. A great spec doesn't just verify correctness—it teaches implementers what to build and helps them understand *why* Liquid behaves the way it does.
+
+## Why Specs Matter More Than Ad-hoc Testing
+
+Ad-hoc testing answers: "Does this work?"
+Specs answer: "What should I build next, and how?"
+
+When you write a spec, you're not just testing—you're creating a curriculum. Each spec is a lesson that teaches one concept. The complexity score determines when that lesson appears. The hint explains what to implement.
+
+**Bad approach:** Run random templates, check if output looks right
+**Good approach:** Write specs that progressively teach the language
+
+## The Spec Writing Workflow
+
+### Step 1: Identify What to Test
+
+Before writing a spec, ask:
+
+1. **Is this novel?** Does an existing spec already cover this?
+2. **Is this a real behavior?** Test against liquid-ruby first
+3. **Where does this fit?** What complexity makes sense?
+
+Use the tools to explore existing coverage:
+
+```bash
+# Search existing specs for a concept
+grep -r "offset:continue" specs/
+
+# Check what's covered at a complexity level
+./bin/complexity-ramp -g 25 -t | grep "190 -" -A 50
+
+# See what filters/tags are tested
+./bin/liquid-spec-browse tags
+./bin/liquid-spec-browse filters
+```
+
+### Step 2: Verify Against Reference
+
+**Always test against liquid-ruby first.** Never guess what the output should be.
+
+```bash
+# Quick inline test with automatic comparison
+liquid-spec eval examples/liquid_ruby.rb --compare <<EOF
+name: test_my_feature
+template: "{{ items | sort | first }}"
+environment:
+  items: [3, 1, 2]
+EOF
+```
+
+The `--compare` flag runs your template against the reference implementation and shows the actual output. Use this to discover the correct expected value.
+
+### Step 3: Write the Spec
+
+Once you know the correct behavior, write the full spec:
+
+```yaml
+- name: sort_then_first
+  template: "{{ items | sort | first }}"
+  environment:
+    items: [3, 1, 2]
+  expected: "1"
+  complexity: 85
+  hint: |
+    Filter chains apply left-to-right. sort orders the array [1, 2, 3],
+    then first takes the first element. Implement filter chaining by
+    passing each filter's output as the next filter's input.
+```
+
+### Step 4: Verify Placement
+
+Run the complexity ramp analysis to verify your spec fits:
+
+```bash
+# Does this complexity make sense?
+./bin/complexity-ramp -t | grep "85"
+
+# Are there gaps this spec could fill?
+./bin/complexity-ramp -g 10
+```
+
+---
 
 ## The Three Pillars of a Great Spec
 
 ### 1. Test Something Novel
 
-Every spec should teach the implementer something new. Ask yourself: "If an implementer passes all specs with lower complexity, what new concept does this spec introduce?"
+Every spec should teach the implementer something new. Ask: "If an implementer passes all lower-complexity specs, what new concept does this spec introduce?"
 
 **Good:** Tests a new feature, edge case, or interaction
 ```yaml
@@ -20,38 +101,42 @@ Every spec should teach the implementer something new. Ask yourself: "If an impl
     First loop takes 1,2,3. Second loop continues with 4,5,6.
 ```
 
-**Bad:** Redundant with other specs at the same complexity
+**Bad:** Redundant with other specs
 ```yaml
-# If you already have a spec for {{ 'hello' | upcase }}, you don't need
+# If you already have {{ 'hello' | upcase }}, you don't need
 # separate specs for {{ 'world' | upcase }} and {{ 'foo' | upcase }}
 ```
 
 ### 2. Well-Chosen Complexity
 
-Specs run in complexity order. An implementer working through specs should encounter exactly what they need to implement next—not features that depend on unimplemented prerequisites.
-
-**Complexity determines learning order.** A spec at complexity 70 (for loops) should not require understanding features at complexity 140 (array filters). If it does, the spec's complexity is wrong.
+Complexity determines learning order. A spec at complexity 70 (for loops) should not require understanding features at complexity 140 (array filters).
 
 | Range | What It Should Test |
 |-------|---------------------|
-| 10-20 | Literals, raw text—no logic needed |
-| 30-50 | Variables, filters, assign |
-| 55-60 | Whitespace control, if/else/unless |
-| 70-80 | For loops, operators, filter chains |
-| 85-100 | Math filters, forloop object, capture, case/when |
-| 105-130 | String filters, increment, comment, raw, echo |
-| 140-180 | Array filters, property access, truthy/falsy edge cases |
-| 190-220 | offset:continue, parentloop, partials |
-| 300-500 | Edge cases, deprecated features |
-| 1000+ | Production recordings, unscored specs |
+| 0-20 | Literals, raw text output—no logic needed |
+| 25-50 | Variables, basic output, simple filters |
+| 55-70 | Whitespace control, if/else/unless, basic operators |
+| 75-90 | For loops, forloop object, filter arguments |
+| 95-130 | Math filters, capture, case/when, string filters |
+| 140-180 | Array filters, property access, truthy/falsy, tablerow |
+| 190-220 | offset:continue, parentloop, partials (render/include) |
+| 225-290 | String filter edge cases, advanced filter usage |
+| 300-400 | Filter chains, complex transformations, edge cases |
+| 500+ | Advanced drops, recursion, deprecated features |
+| 1000 | Unscored specs, production recordings |
 
-**Rule of thumb:** If your spec fails for an implementer who has passed all lower-complexity specs, your complexity is too low. If it passes trivially without implementing anything new, your complexity is too high.
+**Rule:** If your spec fails for an implementer who passed all lower-complexity specs, your complexity is too low. If it passes without implementing anything new, it's too high.
 
 ### 3. Actionable Hints
 
-Hints are displayed when a spec fails. They should tell the implementer exactly what to do—not just describe the expected behavior.
+Hints appear when a spec fails. They must tell the implementer **what to implement**, not just describe the behavior.
 
-**Good hint:** Explains what to implement
+**Bad hint:** Just restates the expected output
+```yaml
+hint: "The template should output 'empty' when the string is empty."
+```
+
+**Good hint:** Explains the implementation
 ```yaml
 hint: |
   Recognize 'empty' as a keyword representing the empty state.
@@ -61,11 +146,7 @@ hint: |
   arrays, and empty hashes all equal 'empty'.
 ```
 
-**Bad hint:** Just restates the expected output
-```yaml
-hint: |
-  The template should output "empty" when the string is empty.
-```
+---
 
 ## Hint Writing Guide
 
@@ -75,9 +156,17 @@ hint: |
 2. **Explain the implementation** (what code to write)
 3. **Clarify edge cases** (what makes this tricky)
 
-### When to Flag Warts
+```yaml
+hint: |
+  The `first` filter returns the first element of an array or string.
+  For arrays, return index 0. For strings, return the first character.
+  For nil or empty collections, return nil (renders as empty string).
+  Numbers and other types return nil—only arrays and strings work.
+```
 
-Some Liquid behaviors are surprising or counterintuitive. Flag these with `WART:` so implementers know the behavior is intentional, not a bug in the spec:
+### Flag Surprising Behaviors with WART
+
+Some Liquid behaviors are counterintuitive. Flag these so implementers know the spec is correct:
 
 ```yaml
 - name: int_size_returns_byte_size
@@ -91,9 +180,11 @@ Some Liquid behaviors are surprising or counterintuitive. Flag these with `WART:
     the number of digits. This is surprising but matches liquid-ruby.
 ```
 
-### When to Link Documentation
+See [WARTS.md](WARTS.md) for a catalog of known surprising behaviors.
 
-For complex concepts that can't fit in a hint, link to a doc file:
+### Link to Documentation for Complex Topics
+
+For concepts too large for a hint:
 
 ```yaml
 _metadata:
@@ -101,22 +192,14 @@ _metadata:
 
 specs:
 - name: forloop_parentloop_chain
-  # ...
   hint: |
     parentloop can be chained for deeply nested loops. For full
     details on forloop scope and nesting, see the linked doc.
 ```
 
-Available documentation:
-- `implementers/core-abstractions.md` - Empty, blank, nil, truthy/falsy
-- `implementers/for-loops.md` - Loops, forloop object, parentloop
-- `implementers/scopes.md` - Variable scoping rules
-- `implementers/partials.md` - Include/render behavior
-- `implementers/interrupts.md` - Break/continue semantics
-- `implementers/cycle.md` - Cycle tag behavior
-- `implementers/parsing.md` - Parser implementation details
+---
 
-## Spec Structure
+## Spec Structure Reference
 
 ### Basic Spec
 
@@ -127,9 +210,7 @@ Available documentation:
   expected: "HELLO"
   complexity: 40
   hint: |
-    The upcase filter converts a string to uppercase. Implement a
-    filter registry and add 'upcase' that calls the string's
-    uppercase method.
+    The upcase filter converts a string to uppercase.
 ```
 
 ### Spec with Filesystem (for partials)
@@ -146,6 +227,18 @@ Available documentation:
     Variables are scoped—the partial cannot access outer variables.
 ```
 
+### Spec Expecting Errors
+
+```yaml
+- name: undefined_variable_strict
+  template: "{{ undefined_var }}"
+  errors:
+    render_error: ["undefined"]
+  complexity: 120
+  hint: |
+    In strict mode, accessing undefined variables raises an error.
+```
+
 ### Source-Level Metadata
 
 Apply settings to all specs in a file:
@@ -159,16 +252,14 @@ _metadata:
 
 specs:
 - name: first_spec
-  # ...
+  # inherits metadata settings
 ```
 
-## Valid Keys (Strict Validation)
+---
 
-Spec files are strictly validated. Unknown keys cause errors with helpful suggestions.
+## Valid Keys Reference
 
 ### File-Level Keys
-
-When a YAML file is a hash (not an array), only these keys are allowed:
 
 | Key | Description |
 |-----|-------------|
@@ -190,7 +281,7 @@ When a YAML file is a hash (not an array), only these keys are allowed:
 
 | Key | Required | Description |
 |-----|----------|-------------|
-| `name` | Yes | Unique identifier for the spec |
+| `name` | Yes | Unique identifier (snake_case) |
 | `template` | Yes | The Liquid template to render |
 | `expected` | * | Expected output (required unless `errors` is set) |
 | `errors` | * | Error patterns to match (required unless `expected` is set) |
@@ -203,16 +294,11 @@ When a YAML file is a hash (not an array), only these keys are allowed:
 | `render_errors` | No | If true, errors render inline instead of throwing |
 | `required_features` | No | Features needed to run this spec |
 
-### Common Typos Caught
-
-The validator catches common mistakes:
-- `tests` → Did you mean `specs`?
-- `expect` → Did you mean `expected`?
-- `topic`, `description` → Use `_metadata` with `hint`
+---
 
 ## Common Mistakes
 
-### Wrong Complexity
+### 1. Wrong Complexity
 
 **Problem:** Spec requires features not yet introduced
 ```yaml
@@ -222,113 +308,200 @@ The validator catches common mistakes:
   complexity: 40  # Should be 80+
 ```
 
-### Redundant Specs
+### 2. Redundant Specs
 
 **Problem:** Multiple specs testing the same concept
 ```yaml
-# BAD: These are all testing the same thing (basic filter application)
+# BAD: All testing basic filter application
 - name: upcase_hello
   template: "{{ 'hello' | upcase }}"
 - name: upcase_world
   template: "{{ 'world' | upcase }}"
-- name: upcase_foo
-  template: "{{ 'foo' | upcase }}"
 ```
 
-**Better:** One spec for the basic case, additional specs only for edge cases
+**Better:** One basic case, additional specs for edge cases
 ```yaml
 - name: filter_upcase_basic
   template: "{{ 'hello' | upcase }}"
   complexity: 40
 - name: filter_upcase_empty_string
   template: "{{ '' | upcase }}"
-  complexity: 45  # Edge case
-- name: filter_upcase_with_unicode
+  complexity: 45
+- name: filter_upcase_unicode
   template: "{{ 'café' | upcase }}"
-  complexity: 50  # Unicode edge case
+  complexity: 50
 ```
 
-### Unhelpful Hints
+### 3. Unhelpful Hints
 
 **Problem:** Hint doesn't explain implementation
 ```yaml
-# BAD: Just describes the behavior
+# BAD
 hint: "Empty arrays should be considered empty."
 
-# GOOD: Explains what to implement
+# GOOD
 hint: |
   Arrays with no elements should equal 'empty'. When evaluating
-  the comparison, check if the array's length is zero. An empty
-  array [] is considered empty. This is distinct from an array
-  containing empty strings, which would not be empty.
+  the comparison, check if the array's length is zero.
 ```
 
-### Missing Context for Surprising Behavior
+### 4. Guessing Expected Values
 
-**Problem:** Implementer assumes the spec is wrong
+**Problem:** Expected value wasn't verified against liquid-ruby
 ```yaml
-# BAD: No explanation for surprising behavior
-- name: false_is_blank
-  template: "{% if false == blank %}yes{% else %}no{% endif %}"
-  expected: "yes"
-  hint: "false equals blank"
-
-# GOOD: Explains why
-- name: false_is_blank
-  template: "{% if flag == blank %}blank{% else %}not{% endif %}"
-  environment: { flag: false }
-  expected: "blank"
-  hint: |
-    The boolean false is blank. The blank keyword matches values that
-    are nil, false, empty strings, whitespace-only strings, and empty
-    collections. False is considered blank because it represents a
-    falsy/absent value.
+# BAD: Assumed behavior
+- name: split_at_end
+  expected: "ab-"  # WRONG - Ruby's split strips trailing empties
 ```
 
-## Testing Your Specs
+**Solution:** Always use `--compare` first
+```bash
+liquid-spec eval examples/liquid_ruby.rb --compare <<EOF
+name: split_at_end
+template: "{{ 'abc' | split: 'c' | join: '-' }}"
+EOF
+# Shows actual output: "ab"
+```
 
-Before submitting specs, verify them against liquid-ruby:
+### 5. Missing WART Flag
+
+**Problem:** Surprising behavior without explanation
+```yaml
+# BAD: Implementer will think spec is wrong
+- name: false_is_blank
+  template: "{% if false == blank %}yes{% endif %}"
+  expected: "yes"
+
+# GOOD: Explains the surprise
+- name: false_is_blank
+  template: "{% if false == blank %}yes{% endif %}"
+  expected: "yes"
+  hint: |
+    WART: The boolean false is considered blank. The blank keyword
+    matches nil, false, empty strings, whitespace-only strings, and
+    empty collections.
+```
+
+---
+
+## Using the Tools
+
+### liquid-spec eval
+
+Quick testing with automatic comparison:
 
 ```bash
-# Test a single spec
+# Inline template
 liquid-spec eval examples/liquid_ruby.rb --compare <<EOF
-name: my_new_spec
-template: "{{ x | upcase }}"
-environment: { x: "hello" }
-expected: "HELLO"
-complexity: 40
-hint: |
-  Upcase converts to uppercase.
+name: my_test
+template: "{{ x | size }}"
+environment: { x: [1, 2, 3] }
 EOF
 
-# Run all specs and check for regressions
-bundle exec rake run
+# From file
+liquid-spec eval examples/liquid_ruby.rb --spec=my_test.yml --compare
 ```
+
+Saved specs go to `/tmp/liquid-spec-{date}.yml`. Browse them:
+
+```bash
+./bin/liquid-spec-browse ls           # List saved files
+./bin/liquid-spec-browse show         # Show today's specs
+./bin/liquid-spec-browse stats        # Tag/filter statistics
+./bin/liquid-spec-browse search sort  # Find specs by content
+```
+
+### Complexity Analysis
+
+```bash
+# See the complexity ramp
+./bin/complexity-ramp -g 25
+
+# Find misordered specs
+./bin/fix-misordered -o summary
+
+# Score unscored specs
+./bin/score-unscored -o summary
+
+# Calibrate based on pass/fail data
+./bin/calibrate-complexity -m suggest
+```
+
+### Running Specs
+
+```bash
+# Run all specs
+bundle exec rake run
+
+# Run specific suite
+liquid-spec examples/liquid_ruby.rb -s basics
+
+# Filter by name pattern
+liquid-spec examples/liquid_ruby.rb -n tablerow
+
+# Compare multiple adapters
+liquid-spec matrix --adapters=a.rb,b.rb -s basics
+```
+
+---
 
 ## Spec File Organization
 
-- `specs/basics/` - Core Liquid features every implementation needs
-- `specs/liquid_ruby/` - Specs extracted from Shopify/liquid tests
-- `specs/shopify_production_recordings/` - Real-world behaviors from production
-- `specs/shopify_theme_dawn/` - Shopify-specific features (tags, objects, filters)
+```
+specs/
+├── basics/                    # Core Liquid features
+│   ├── specs.yml             # Variables, filters, control flow
+│   ├── for-loops.yml         # Advanced for loop features
+│   ├── tablerow.yml          # Tablerow tag
+│   ├── filter-chains.yml     # Multi-filter combinations
+│   ├── string-filters.yml    # String filter edge cases
+│   └── ...
+├── liquid_ruby/              # Specs from Shopify/liquid tests
+├── liquid_ruby_lax/          # Lax mode specs
+├── shopify_production_recordings/  # Real-world behaviors
+├── shopify_theme_dawn/       # Shopify-specific features
+└── benchmarks/               # Performance benchmarks
+```
 
-Each directory contains a `suite.yml` with suite-level configuration:
+Each suite has a `suite.yml`:
 
 ```yaml
-name: "Liquid Ruby"
-description: "Core Liquid template engine behavior"
+name: "Basics"
+description: "Core Liquid features every implementation needs"
 default: true
 required_features: [core]
 minimum_complexity: 1000
 ```
 
-## Summary Checklist
+---
 
-Before submitting a spec, verify:
+## Submitting Specs
 
-- [ ] **Novel:** Tests something not covered by existing specs
-- [ ] **Correct complexity:** Doesn't require features above its complexity level
-- [ ] **Actionable hint:** Tells implementers what to build, not just what's expected
-- [ ] **Warts flagged:** Surprising behaviors marked with `WART:`
-- [ ] **Docs linked:** Complex concepts reference documentation
+### Checklist
+
+- [ ] **Novel:** Not covered by existing specs
 - [ ] **Verified:** Passes against liquid-ruby with `--compare`
+- [ ] **Correct complexity:** Doesn't require higher-complexity features
+- [ ] **Actionable hint:** Explains what to implement
+- [ ] **Warts flagged:** Surprising behaviors marked with `WART:`
+- [ ] **Fits the ramp:** Checked with `./bin/complexity-ramp`
+
+### Process
+
+1. Write spec and verify with `liquid-spec eval --compare`
+2. Add to appropriate file in `specs/basics/` or create new file
+3. Run `bundle exec rake run` to verify no regressions
+4. Submit PR with description of what the spec teaches
+
+---
+
+## Philosophy
+
+The goal of liquid-spec is to make implementing Liquid straightforward. An implementer should be able to:
+
+1. Start at complexity 0
+2. Run specs in complexity order
+3. Implement whatever each failing spec needs
+4. End up with a complete, correct implementation
+
+Every spec you write is a step in that curriculum. Make each step clear, necessary, and actionable.
