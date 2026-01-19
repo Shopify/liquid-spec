@@ -200,7 +200,7 @@ Hints are displayed in yellow when the spec fails, making them the first thing i
   expected: "8"
   complexity: 150
   hint: |
-    WART: int | size returns 8 because Ruby's Integer#size returns
+    QUIRK: int | size returns 8 because Ruby's Integer#size returns
     the byte representation size (8 bytes on 64-bit systems), NOT
     the number of digits. This is surprising but matches liquid-ruby.
 ```
@@ -208,13 +208,13 @@ Hints are displayed in yellow when the spec fails, making them the first thing i
 **What makes a good hint:**
 - **Actionable** - Tells implementers what code to write or what behavior to implement
 - **Explains "why"** - For quirky behavior, explains why Liquid works this way
-- **Flags warts** - Marks surprising behavior with "WART:" prefix so implementers know it's intentional
+- **Flags quirks** - Marks surprising behavior with "QUIRK:" prefix so implementers know it's intentional
 - **Progressive** - For complex features, hints guide through the implementation steps
 
 Use hints to communicate:
 - Dependencies that must be loaded (e.g., ActiveSupport)
 - Implementation-specific behaviors being tested
-- Known edge cases or platform differences (mark with "WART:")
+- Known edge cases or platform differences (mark with "QUIRK:")
 - Step-by-step guidance for implementing the feature
 - Why a spec exists and what behavior it validates
 

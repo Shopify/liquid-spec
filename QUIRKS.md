@@ -1,4 +1,4 @@
-# Liquid Warts
+# Liquid Quirks
 
 A collection of surprising, inconsistent, or quirky behaviors in Liquid that implementers should be aware of. These are documented here to help alternative implementations match the reference behavior, even when that behavior is counterintuitive.
 
@@ -15,7 +15,7 @@ A collection of surprising, inconsistent, or quirky behaviors in Liquid that imp
 **Severity:** Surprising
 **Discovered:** Testing `| size` filter across types
 
-### The Wart
+### The Quirk
 
 `int | size` returns `8` (Ruby's byte representation size), while `float | size` returns `0` (because Float doesn't respond to `.size`).
 
@@ -37,7 +37,7 @@ The `size` filter in Ruby Liquid calls `input.respond_to?(:size) ? input.size : 
 - This is *not* the number of digits
 - Implementers might expect `size` to fail or return `nil` for numbers, not return arbitrary values
 
-### Related Wart: Property Access
+### Related Quirk: Property Access
 
 Using `.size` property access differs from the filter:
 
@@ -60,7 +60,7 @@ But with the filter:
 **Severity:** Inconsistent
 **Discovered:** Testing `first`/`last` on hashes
 
-### The Wart
+### The Quirk
 
 `hash | first` returns the first key+value concatenated, but `hash | last` returns empty string.
 
@@ -91,7 +91,7 @@ Hashes in Ruby respond to `first` (returns `[key, value]`) but not to `last` in 
 **Severity:** Inconsistent
 **Discovered:** Comparing `| filter` vs `.property` behavior
 
-### The Wart
+### The Quirk
 
 The `| size` filter and `.size` property access behave differently for types without a native `.size` method.
 
@@ -117,9 +117,9 @@ The `| size` filter and `.size` property access behave differently for types wit
 
 ---
 
-## Contributing Warts
+## Contributing Quirks
 
-When you discover a new Liquid wart, document it here with:
+When you discover a new Liquid quirk, document it here with:
 
 1. **Severity:** How surprising/problematic is this?
 2. **Example:** Minimal reproduction showing the unexpected behavior

@@ -164,7 +164,7 @@ hint: |
   Numbers and other types return nil—only arrays and strings work.
 ```
 
-### Flag Surprising Behaviors with WART
+### Flag Surprising Behaviors with QUIRK
 
 Some Liquid behaviors are counterintuitive. Flag these so implementers know the spec is correct:
 
@@ -175,12 +175,12 @@ Some Liquid behaviors are counterintuitive. Flag these so implementers know the 
   expected: "8"
   complexity: 150
   hint: |
-    WART: int | size returns 8 because Ruby's Integer#size returns
+    QUIRK: int | size returns 8 because Ruby's Integer#size returns
     the byte representation size (8 bytes on 64-bit systems), NOT
     the number of digits. This is surprising but matches liquid-ruby.
 ```
 
-See [WARTS.md](WARTS.md) for a catalog of known surprising behaviors.
+See [QUIRKS.md](QUIRKS.md) for a catalog of known surprising behaviors.
 
 ### Link to Documentation for Complex Topics
 
@@ -363,7 +363,7 @@ EOF
 # Shows actual output: "ab"
 ```
 
-### 5. Missing WART Flag
+### 5. Missing QUIRK Flag
 
 **Problem:** Surprising behavior without explanation
 ```yaml
@@ -377,7 +377,7 @@ EOF
   template: "{% if false == blank %}yes{% endif %}"
   expected: "yes"
   hint: |
-    WART: The boolean false is considered blank. The blank keyword
+    QUIRK: The boolean false is considered blank. The blank keyword
     matches nil, false, empty strings, whitespace-only strings, and
     empty collections.
 ```
@@ -483,7 +483,7 @@ minimum_complexity: 1000
 - [ ] **Verified:** Passes against liquid-ruby with `--compare`
 - [ ] **Correct complexity:** Doesn't require higher-complexity features
 - [ ] **Actionable hint:** Explains what to implement
-- [ ] **Warts flagged:** Surprising behaviors marked with `WART:`
+- [ ] **Quirks flagged:** Surprising behaviors marked with `QUIRK:`
 - [ ] **Fits the ramp:** Checked with `./bin/complexity-ramp`
 
 ### Process

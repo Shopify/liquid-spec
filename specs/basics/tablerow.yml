@@ -183,7 +183,7 @@ specs:
     </tr>
   complexity: 280
   hint: |
-    WART: Empty collection still produces tr tags with no td content.
+    QUIRK: Empty collection still produces tr tags with no td content.
     This is surprising but matches liquid-ruby behavior.
 
 - name: tablerow_single_item
