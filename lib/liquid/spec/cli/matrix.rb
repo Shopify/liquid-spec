@@ -510,43 +510,61 @@ module Liquid
           end
 
           def print_progress_header(adapter_names)
+            @progress_lines = adapter_names.size
             puts ""
             adapter_names.each do |name|
-              print "#{name[0..12].ljust(13)} "
-            end
-            puts ""
-            adapter_names.each do |_|
-              print "------------- "
-            end
-            puts ""
-            # Print initial progress line
-            adapter_names.each do |_|
-              print "waiting...    "
+              puts "#{name.ljust(40)} waiting..."
             end
             $stdout.flush
           end
 
           def update_progress(adapter_names, results_by_adapter)
-            # Move cursor to beginning of line and redraw
-            print "\r"
+            # Move cursor up to redraw all adapter lines
+            print "\e[#{@progress_lines}A"
+
             adapter_names.each do |name|
               results = results_by_adapter[name] || []
-              successful = results.count { |r| r[:status] == "success" }
-              failed = results.count { |r| r[:status] != "success" }
-              total = successful + failed
-              if failed > 0
-                status = "\e[32m#{successful}\e[0m/\e[31m#{failed}\e[0m"
-                # Account for ANSI codes in padding
-                print status + " " * (14 - successful.to_s.length - failed.to_s.length - 1)
+              successful = results.select { |r| r[:status] == "success" }
+              failed = results.select { |r| r[:status] != "success" }
+              total = successful.size + failed.size
+
+              # Build status string
+              if total == 0
+                status = "waiting..."
+              elsif failed.any?
+                status = "\e[32m#{successful.size} passed\e[0m, \e[31m#{failed.size} failed\e[0m"
               else
-                print "\e[32m#{total} passed\e[0m".ljust(23)
+                status = "\e[32m#{total} passed\e[0m"
               end
+
+              # Add timing stats if we have successful results
+              if successful.any?
+                parse_total = successful.sum { |r| ((r[:parse_mean] || r[:compile_mean]) || 0) * 1000 }
+                render_total = successful.sum { |r| (r[:render_mean] || 0) * 1000 }
+                parse_avg = parse_total / successful.size
+                render_avg = render_total / successful.size
+                status += "  (parse: #{format_time_compact(parse_avg)}, render: #{format_time_compact(render_avg)})"
+              end
+
+              # Clear line and print
+              print "\e[2K"  # Clear entire line
+              puts "#{name.ljust(40)} #{status}"
             end
             $stdout.flush
           end
 
+          def format_time_compact(ms)
+            if ms >= 1000
+              "%.1fs" % (ms / 1000.0)
+            elsif ms >= 1
+              "%.1fms" % ms
+            else
+              "%.0fµs" % (ms * 1000)
+            end
+          end
+
           def print_parallel_summary(adapter_names, results_by_adapter)
-            jit_info = jit_info_hash
+            jit_info = Config.jit_info
             jit_label = jit_info[:enabled] ? jit_info[:engine] : "no-jit"
 
             puts "-" * 70
