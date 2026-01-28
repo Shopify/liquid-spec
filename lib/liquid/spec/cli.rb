@@ -21,6 +21,7 @@ module Liquid
 
         Commands:
           run ADAPTER         Run specs using the specified adapter file
+          bench               Run benchmarks across adapters (alias for: matrix --bench)
           test                Run specs against all available example adapters
           matrix              Run specs across multiple adapters and compare results
           report              Analyze and compare benchmark results
@@ -101,6 +102,9 @@ module Liquid
           Init.run(args)
         when "run"
           Runner.run(args)
+        when "bench"
+          # bench is an alias for matrix --bench
+          Matrix.run(["--bench"] + args)
         when "test"
           Test.run(args)
         when "matrix"

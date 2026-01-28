@@ -3,27 +3,28 @@
 require "json"
 require "fileutils"
 require "time"
+require_relative "config"
 
 module Liquid
   module Spec
     module CLI
       # Report command - analyze and compare benchmark results across adapters
       module Report
-        BENCHMARK_DIR = "/tmp/liquid-spec"
-
         HELP = <<~HELP
           Usage: liquid-spec report [options]
 
           Analyze and compare benchmark results across adapters.
-          Reads JSONL files from #{BENCHMARK_DIR}/
+          Reads JSONL files from $LIQUID_SPEC_REPORTS (default: #{Config::DEFAULT_REPORTS_DIR}/)
 
           Results are grouped by: adapter, ruby_version, jit_engine
           Shows the latest run for each unique combination.
 
           Options:
+            -o, --output=DIR      Reports directory (default: $LIQUID_SPEC_REPORTS or #{Config::DEFAULT_REPORTS_DIR})
             --adapter=NAME        Filter to specific adapter(s) (can be used multiple times)
             --spec=PATTERN        Filter specs by name pattern
-            --compare             Side-by-side comparison across groups
+            --summary             Show individual group summaries (default: comparison mode)
+            --compare             Force comparison mode even with single group
             --trend               Show performance trends over time for each group
             --json                Output raw JSON data
             --detail              Show per-spec details
@@ -48,13 +49,15 @@ module Liquid
 
             options = parse_options(args)
 
-            unless Dir.exist?(BENCHMARK_DIR)
-              puts "No benchmark data found at #{BENCHMARK_DIR}"
+            reports_dir = Config.reports_dir(options[:output])
+
+            unless Dir.exist?(reports_dir)
+              puts "No benchmark data found at #{reports_dir}"
               puts "Run benchmarks first with: liquid-spec run adapter.rb -s benchmarks --bench"
               return
             end
 
-            data = load_benchmark_data(options)
+            data = load_benchmark_data(reports_dir, options)
 
             if data.empty?
               puts "No benchmark data found"
@@ -66,10 +69,15 @@ module Liquid
               output_json(data, options)
             elsif options[:trend]
               show_trends(data, options)
-            elsif options[:compare]
-              show_comparison(data, options)
+            elsif options[:summary]
+              # Explicit summary mode
+              show_summary(data, reports_dir, options)
+            elsif data.size >= 2 || options[:compare]
+              # Default to comparison when multiple groups exist
+              show_comparison(data, reports_dir, options)
             else
-              show_summary(data, options)
+              # Single group - show detailed summary
+              show_summary(data, reports_dir, options)
             end
           end
 
@@ -77,8 +85,10 @@ module Liquid
 
           def parse_options(args)
             options = {
+              output: nil,
               adapters: [],
               spec_filter: nil,
+              summary: false,
               compare: false,
               trend: false,
               json: false,
@@ -89,6 +99,14 @@ module Liquid
             while args.any?
               arg = args.shift
               case arg
+              when /\A-o=?(.+)\z/
+                options[:output] = ::Regexp.last_match(1)
+              when "-o"
+                options[:output] = args.shift
+              when /\A--output=(.+)\z/
+                options[:output] = ::Regexp.last_match(1)
+              when "--output"
+                options[:output] = args.shift
               when /\A--adapter=(.+)\z/
                 options[:adapters] << ::Regexp.last_match(1)
               when "--adapter"
@@ -97,6 +115,8 @@ module Liquid
                 options[:spec_filter] = ::Regexp.last_match(1)
               when "--spec"
                 options[:spec_filter] = args.shift
+              when "--summary"
+                options[:summary] = true
               when "--compare"
                 options[:compare] = true
               when "--trend"
@@ -113,11 +133,11 @@ module Liquid
             options
           end
 
-          def load_benchmark_data(options)
+          def load_benchmark_data(reports_dir, options)
             # Load all JSONL files, group by (adapter, ruby_version, jit_engine)
             groups = Hash.new { |h, k| h[k] = { metadata: [], results: [] } }
 
-            Dir[File.join(BENCHMARK_DIR, "*.jsonl")].each do |path|
+            Dir[File.join(reports_dir, "*.jsonl")].each do |path|
               adapter_from_filename = File.basename(path, ".jsonl")
               next if options[:adapters].any? && !options[:adapters].include?(adapter_from_filename)
 
@@ -211,11 +231,11 @@ module Liquid
             puts JSON.pretty_generate(data)
           end
 
-          def show_summary(data, options)
+          def show_summary(data, reports_dir, options)
             puts "=" * 70
             puts "BENCHMARK REPORT"
             puts "=" * 70
-            puts "Data: #{BENCHMARK_DIR}/"
+            puts "Data: #{reports_dir}/"
             puts ""
 
             data.each do |group_key_str, group_data|
@@ -350,7 +370,7 @@ module Liquid
             puts ""
           end
 
-          def show_comparison(data, options)
+          def show_comparison(data, _reports_dir, options)
             if data.size < 2
               puts "Need at least 2 groups to compare"
               puts "Found: #{data.keys.join(", ")}"

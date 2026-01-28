@@ -2,13 +2,13 @@
 
 require "json"
 require "fileutils"
+require_relative "config"
 
 module Liquid
   module Spec
     module CLI
       # Matrix command - run specs across multiple adapters and compare results
       module Matrix
-        BENCHMARK_DIR = "/tmp/liquid-spec"
         HELP = <<~HELP
           Usage: liquid-spec matrix [options]
 
@@ -16,6 +16,7 @@ module Liquid
           Shows differences between implementations.
 
           Options:
+            -o, --output=DIR      Reports directory (default: $LIQUID_SPEC_REPORTS or #{Config::DEFAULT_REPORTS_DIR})
             --all                 Run all available adapters from examples/
             --adapter=PATH        Add a local adapter (can be used multiple times)
             --adapters=LIST       Comma-separated list of adapters to run
@@ -62,11 +63,20 @@ module Liquid
               max_failures: 10,
               verbose: false,
               bench: false,
+              output: nil,
             }
 
             while args.any?
               arg = args.shift
               case arg
+              when /\A-o=?(.+)\z/
+                options[:output] = ::Regexp.last_match(1)
+              when "-o"
+                options[:output] = args.shift
+              when /\A--output=(.+)\z/
+                options[:output] = ::Regexp.last_match(1)
+              when "--output"
+                options[:output] = args.shift
               when "--all"
                 options[:all] = true
               when /\A--adapter=(.+)\z/
@@ -344,10 +354,8 @@ module Liquid
               exit(1)
             end
 
-            run_id = Time.now.strftime("%Y%m%d_%H%M%S")
-
-            # Ensure benchmark directory exists
-            FileUtils.mkdir_p(BENCHMARK_DIR)
+            run_id = Config.generate_run_id
+            reports_dir = Config.reports_dir(options[:output])
 
             # Get spec count for progress tracking
             total_specs = timing_suites.sum do |suite|
@@ -364,17 +372,17 @@ module Liquid
             puts ""
 
             # Run benchmarks in parallel using forked processes
-            run_parallel_benchmarks(adapters, timing_suites, options, run_id)
+            run_parallel_benchmarks(adapters, timing_suites, options, run_id, reports_dir)
 
             # Show saved files
             puts ""
-            puts "Results saved to: #{BENCHMARK_DIR}/"
+            puts "Results saved to: #{reports_dir}/"
 
             puts ""
             puts "Run \e[1mliquid-spec report --compare\e[0m to analyze results"
           end
 
-          def run_parallel_benchmarks(adapters, timing_suites, options, run_id)
+          def run_parallel_benchmarks(adapters, timing_suites, options, run_id, reports_dir)
             adapter_names = adapters.keys
             gem_root = File.expand_path("../../../../..", __FILE__)
             examples_dir = File.join(gem_root, "examples")
@@ -491,7 +499,7 @@ module Liquid
             # Write results to JSONL files
             results_by_adapter.each do |adapter_name, results|
               next if results.empty?
-              log_path = File.join(BENCHMARK_DIR, "#{adapter_name}.jsonl")
+              log_path = File.join(reports_dir, "#{adapter_name}.jsonl")
               File.open(log_path, "a") do |f|
                 results.each { |r| f.puts(JSON.generate(r)) }
               end
@@ -771,13 +779,13 @@ module Liquid
           end
 
           def save_matrix_benchmark_result(adapter_name, run_id, spec, result)
-            log_path = File.join(BENCHMARK_DIR, "#{adapter_name}.jsonl")
-            jit_info = jit_info_hash
+            log_path = Config.adapter_jsonl_path(adapter_name)
+            jit_info = Config.jit_info
 
             entry = {
               type: "result",
               run_id: run_id,
-              timestamp: real_time.iso8601,
+              timestamp: Config.real_time.iso8601,
 
               # Grouping dimensions
               adapter: adapter_name,
@@ -816,21 +824,6 @@ module Liquid
             File.open(log_path, "a") do |f|
               f.puts(JSON.generate(entry))
             end
-          end
-
-          def jit_info_hash
-            if defined?(RubyVM::ZJIT) && RubyVM::ZJIT.enabled?
-              { enabled: true, engine: "zjit" }
-            elsif defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
-              { enabled: true, engine: "yjit" }
-            else
-              { enabled: false, engine: "none" }
-            end
-          end
-
-          # Get real wall-clock time, bypassing TimeFreezer
-          def real_time
-            Process.clock_gettime(Process::CLOCK_REALTIME).then { |t| Time.at(t) }
           end
 
           def run_single_benchmark(spec, adapter, duration_seconds)

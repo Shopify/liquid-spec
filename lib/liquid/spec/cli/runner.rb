@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
+require_relative "config"
 require_relative "../time_freezer"
 require "json"
 require "set"
@@ -15,7 +16,6 @@ module Liquid
         TEST_TZ = "UTC"
         MAX_FAILURES_DEFAULT = 10
         RESULTS_LOG_DIR = "/tmp"
-        BENCHMARK_DIR = "/tmp/liquid-spec"
 
         # Manages known failure patterns (exact match only)
         class KnownFailures
@@ -596,10 +596,7 @@ module Liquid
             end
 
             # Ensure benchmark directory exists (not needed in jsonl mode - parent handles it)
-            unless jsonl_mode
-              FileUtils.mkdir_p(BENCHMARK_DIR)
-            end
-            benchmark_log_path = File.join(BENCHMARK_DIR, "#{adapter_name}.jsonl")
+            benchmark_log_path = Config.adapter_jsonl_path(adapter_name) unless jsonl_mode
 
             # Write run metadata as first entry
             if jsonl_mode
@@ -919,7 +916,7 @@ module Liquid
             total = all_results.size
             success_rate = total > 0 ? (successful.size.to_f / total * 100).round(0) : 0
 
-            jit_info = jit_info_hash
+            jit_info = Config.jit_info
             jit_label = jit_info[:enabled] ? jit_info[:engine] : "no-jit"
 
             puts "-" * 50
@@ -966,12 +963,12 @@ module Liquid
           end
 
           def build_benchmark_entry(run_id, adapter_name, spec, result)
-            jit_info = jit_info_hash
+            jit_info = Config.jit_info
 
             {
               type: "result",
               run_id: run_id,
-              timestamp: real_time.iso8601,
+              timestamp: Config.real_time.iso8601,
 
               # Grouping dimensions
               adapter: adapter_name,
@@ -1009,12 +1006,12 @@ module Liquid
           end
 
           def build_run_metadata(run_id, adapter_name)
-            jit_info = jit_info_hash
+            jit_info = Config.jit_info
 
             {
               type: "run_metadata",
               run_id: run_id,
-              started_at: real_time.iso8601,
+              started_at: Config.real_time.iso8601,
 
               # Grouping dimensions
               adapter: adapter_name,
@@ -1026,21 +1023,6 @@ module Liquid
 
               liquid_spec_version: Liquid::Spec::VERSION,
             }
-          end
-
-          def jit_info_hash
-            if defined?(RubyVM::ZJIT) && RubyVM::ZJIT.enabled?
-              { enabled: true, engine: "zjit" }
-            elsif defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
-              { enabled: true, engine: "yjit" }
-            else
-              { enabled: false, engine: "none" }
-            end
-          end
-
-          # Get real wall-clock time, bypassing TimeFreezer
-          def real_time
-            Process.clock_gettime(Process::CLOCK_REALTIME).then { |t| Time.at(t) }
           end
 
           def jit_status
