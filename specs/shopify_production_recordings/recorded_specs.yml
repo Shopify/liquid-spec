@@ -65,6 +65,8 @@
   template: "{% case blank %}{% when ' ' %}when{% else %}else{% endcase %}"
   expected: else
   environment: {}
+  required_features: [shopify_blank]
+  hint: "Shopify blank matches whitespace-only strings. Standard liquid blank is just ''."
 - name: RecordedTest#test_case_method_literal_3f10d7af
   template: "{% case ' ' %}{% when blank %}when{% else %}else{% endcase %}"
   expected: when
