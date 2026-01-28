@@ -3,6 +3,7 @@
 require "json"
 require "fileutils"
 require_relative "config"
+require_relative "runs"
 
 module Liquid
   module Spec
@@ -46,7 +47,12 @@ module Liquid
               return
             end
 
+            # Use Runs class for adapter resolution
+            runs = Runs.new
+            runs.parse_options!(args)
             options = parse_options(args)
+            options[:runs] = runs
+
             run_matrix(options)
           end
 
@@ -54,37 +60,17 @@ module Liquid
 
           def parse_options(args)
             options = {
-              all: false,
-              adapters: [],
-              extra_adapters: [],
               reference: "liquid_ruby",
               filter: nil,
               suite: :all,
               max_failures: 10,
               verbose: false,
               bench: false,
-              output: nil,
             }
 
             while args.any?
               arg = args.shift
               case arg
-              when /\A-o=?(.+)\z/
-                options[:output] = ::Regexp.last_match(1)
-              when "-o"
-                options[:output] = args.shift
-              when /\A--output=(.+)\z/
-                options[:output] = ::Regexp.last_match(1)
-              when "--output"
-                options[:output] = args.shift
-              when "--all"
-                options[:all] = true
-              when /\A--adapter=(.+)\z/
-                options[:extra_adapters] << ::Regexp.last_match(1)
-              when "--adapter"
-                options[:extra_adapters] << args.shift
-              when /\A--adapters=(.+)\z/
-                options[:adapters] = ::Regexp.last_match(1).split(",").map(&:strip)
               when "--reference"
                 options[:reference] = args.shift
               when /\A--reference=(.+)\z/
@@ -116,127 +102,86 @@ module Liquid
           end
 
           def run_matrix(options)
-            # Discover all adapters if --all specified
-            if options[:all]
-              options[:adapters] = discover_all_adapters
-            end
+            runs = options[:runs]
 
-            # Add any extra adapters specified with --adapter
-            if options[:extra_adapters].any?
-              options[:adapters].concat(options[:extra_adapters])
-            end
-
-            if options[:adapters].empty?
-              $stderr.puts "Error: Specify --all or --adapters=LIST"
-              $stderr.puts "Example: liquid-spec matrix --all"
-              $stderr.puts "Example: liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax"
+            if runs.empty?
+              $stderr.puts "Error: No adapters specified"
+              $stderr.puts ""
+              $stderr.puts "Usage:"
+              $stderr.puts "  liquid-spec matrix --all"
+              $stderr.puts "  liquid-spec matrix --adapters=liquid_ruby,liquid_c"
+              $stderr.puts "  liquid-spec matrix --adapter=./my_adapter.rb"
               exit(1)
             end
+
+            # Print summary of what we're running
+            runs.print_summary
 
             # Load liquid first, then spec infrastructure
             require "liquid"
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
 
-            # Load adapters
-            puts "Loading adapters..."
-            adapters = load_adapters(options[:adapters])
+            # Load adapters (for non-benchmark mode, we need them in-process)
+            unless options[:bench]
+              puts "Loading adapters..."
+              adapters = load_adapters_from_runs(runs)
 
-            if adapters.empty?
-              $stderr.puts "Error: No adapters loaded"
-              exit(1)
+              if adapters.empty?
+                $stderr.puts "Error: No adapters loaded"
+                exit(1)
+              end
+
+              # Load specs for comparison mode
+              puts "Loading specs..."
+              specs = Liquid::Spec::SpecLoader.load_all(
+                suite: options[:suite],
+                filter: options[:filter],
+              )
+
+              if specs.empty?
+                puts "No specs to run"
+                return
+              end
+
+              puts "Loaded #{specs.size} specs"
+              puts
+
+              # Verify reference adapter exists
+              reference_name = options[:reference]
+              unless adapters.key?(reference_name)
+                $stderr.puts "Error: Reference adapter '#{reference_name}' not found"
+                $stderr.puts "Available: #{adapters.keys.join(", ")}"
+                exit(1)
+              end
+
+              puts "Reference: #{reference_name}"
+              puts
+
+              # Run comparison
+              run_comparison(specs, adapters, reference_name, options)
+            else
+              # Benchmark mode - run in forked processes
+              run_benchmarks_with_runs(runs, options)
             end
-
-            puts "Loaded #{adapters.size} adapter(s): #{adapters.keys.join(", ")}"
-
-            # Dispatch to benchmark mode if --bench
-            if options[:bench]
-              run_benchmarks(adapters, options)
-              return
-            end
-
-            # Load specs for comparison mode
-            puts "Loading specs..."
-            specs = Liquid::Spec::SpecLoader.load_all(
-              suite: options[:suite],
-              filter: options[:filter],
-            )
-
-            if specs.empty?
-              puts "No specs to run"
-              return
-            end
-
-            puts "Loaded #{specs.size} specs"
-            puts
-
-            # Verify reference adapter exists
-            reference_name = options[:reference]
-            unless adapters.key?(reference_name)
-              $stderr.puts "Error: Reference adapter '#{reference_name}' not found"
-              $stderr.puts "Available: #{adapters.keys.join(", ")}"
-              exit(1)
-            end
-
-            puts "Reference: #{reference_name}"
-            puts
-
-            # Run comparison
-            run_comparison(specs, adapters, reference_name, options)
           end
 
-          def discover_all_adapters
-            gem_root = File.expand_path("../../../../..", __FILE__)
-            examples_dir = File.join(gem_root, "examples")
-
-            adapters = Dir[File.join(examples_dir, "*.rb")].map do |path|
-              File.basename(path, ".rb")
-            end.sort
-
-            # Ensure liquid_ruby is first (reference)
-            if adapters.include?("liquid_ruby")
-              adapters.delete("liquid_ruby")
-              adapters.unshift("liquid_ruby")
-            end
-
-            adapters
-          end
-
-          def load_adapters(adapter_names)
-            gem_root = File.expand_path("../../../../..", __FILE__)
-            examples_dir = File.join(gem_root, "examples")
-
+          def load_adapters_from_runs(runs)
             adapters = {}
-            adapter_names.each do |name|
-              # Support both short names (from examples/) and full paths
-              if File.exist?(name)
-                path = name
-                adapter_name = File.basename(name, ".rb")
-              elsif File.exist?(name + ".rb")
-                path = name + ".rb"
-                adapter_name = File.basename(name)
-              else
-                path = File.join(examples_dir, "#{name}.rb")
-                adapter_name = name
-              end
 
-              unless File.exist?(path)
-                $stderr.puts "Warning: Adapter not found: #{name}"
-                next
-              end
-
+            runs.adapters.each do |adapter_info|
               begin
                 # Reset LiquidSpec state before loading each adapter
                 reset_liquid_spec!
 
-                adapter = Liquid::Spec::AdapterRunner.new(name: adapter_name)
-                adapter.load_dsl(path)
+                adapter = Liquid::Spec::AdapterRunner.new(name: adapter_info.name)
+                adapter.load_dsl(adapter_info.path)
                 adapter.ensure_setup!
-                adapters[adapter_name] = adapter
+                adapters[adapter_info.name] = adapter
               rescue LiquidSpec::SkipAdapter => e
-                $stderr.puts "Skipping #{adapter_name}: #{e.message}"
+                $stderr.puts "Skipping #{adapter_info.name}: #{e.message}"
               rescue => e
-                $stderr.puts "Warning: Failed to load #{adapter_name}: #{e.message}"
+                $stderr.puts "Warning: Failed to load #{adapter_info.name}: #{e.message}"
               end
             end
 
@@ -340,7 +285,7 @@ module Liquid
             exit(1) if differences.any?
           end
 
-          def run_benchmarks(adapters, options)
+          def run_benchmarks_with_runs(runs, options)
             # Find timing suites
             timing_suites = Liquid::Spec::Suite.all.select(&:timings?)
 
@@ -355,7 +300,7 @@ module Liquid
             end
 
             run_id = Config.generate_run_id
-            reports_dir = Config.reports_dir(options[:output])
+            reports_dir = runs.reports_dir
 
             # Get spec count for progress tracking
             total_specs = timing_suites.sum do |suite|
@@ -364,28 +309,25 @@ module Liquid
               specs.size
             end
 
-            puts ""
-            puts "Matrix Benchmark"
+            puts "Benchmark"
             puts "JIT: #{jit_status}, Duration: #{timing_suites.first&.default_iteration_seconds || 5}s/spec"
-            puts "Adapters: #{adapters.keys.join(", ")}"
             puts "Specs: #{total_specs} per adapter"
             puts ""
 
             # Run benchmarks in parallel using forked processes
-            run_parallel_benchmarks(adapters, timing_suites, options, run_id, reports_dir)
+            run_parallel_benchmarks(runs, timing_suites, options, run_id, reports_dir)
 
             # Show saved files
             puts ""
             puts "Results saved to: #{reports_dir}/"
 
             puts ""
-            puts "Run \e[1mliquid-spec report --compare\e[0m to analyze results"
+            puts "Run \e[1mliquid-spec report\e[0m to analyze results"
           end
 
-          def run_parallel_benchmarks(adapters, timing_suites, options, run_id, reports_dir)
-            adapter_names = adapters.keys
+          def run_parallel_benchmarks(runs, timing_suites, options, run_id, reports_dir)
             gem_root = File.expand_path("../../../../..", __FILE__)
-            examples_dir = File.join(gem_root, "examples")
+            adapter_names = runs.adapter_names
 
             # Build suite/filter args
             suite_arg = options[:suite] != :all ? "-s #{options[:suite]}" : "-s benchmarks"
@@ -395,21 +337,10 @@ module Liquid
             processes = {}
             results_by_adapter = {}
 
-            # Spawn a process for each adapter
-            adapter_names.each do |adapter_name|
-              # Find adapter path
-              adapter_path = if File.exist?(adapter_name)
-                adapter_name
-              elsif File.exist?(adapter_name + ".rb")
-                adapter_name + ".rb"
-              else
-                File.join(examples_dir, "#{adapter_name}.rb")
-              end
-
-              unless File.exist?(adapter_path)
-                $stderr.puts "Warning: Adapter not found: #{adapter_name}"
-                next
-              end
+            # Spawn a process for each adapter using full resolved paths
+            runs.adapters.each do |adapter_info|
+              adapter_name = adapter_info.name
+              adapter_path = adapter_info.path  # Already resolved to full path
 
               # Spawn benchmark subprocess
               env = {
@@ -417,7 +348,7 @@ module Liquid
                 "LIQUID_SPEC_RUN_ID" => run_id,
               }
 
-              cmd = "bundle exec ruby -Ilib bin/liquid-spec run #{adapter_path} #{suite_arg} #{filter_arg} --bench 2>/dev/null"
+              cmd = "bundle exec ruby -Ilib bin/liquid-spec run '#{adapter_path}' #{suite_arg} #{filter_arg} --bench 2>/dev/null"
 
               rd, wr = IO.pipe
               pid = spawn(env, cmd, out: wr, chdir: gem_root)
