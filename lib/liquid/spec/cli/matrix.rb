@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+require "json"
+require "fileutils"
+
 module Liquid
   module Spec
     module CLI
       # Matrix command - run specs across multiple adapters and compare results
       module Matrix
+        BENCHMARK_DIR = "/tmp/liquid-spec"
         HELP = <<~HELP
           Usage: liquid-spec matrix [options]
 
@@ -340,91 +344,313 @@ module Liquid
               exit(1)
             end
 
-            profile_dir = nil
-            if options[:profile]
-              require "stackprof"
-              profile_dir = "/tmp/liquid-spec-profile-#{Time.now.strftime("%Y%m%d_%H%M%S")}"
-              Dir.mkdir(profile_dir)
-              puts "Profiling enabled, output: #{profile_dir}"
+            run_id = Time.now.strftime("%Y%m%d_%H%M%S")
+
+            # Ensure benchmark directory exists
+            FileUtils.mkdir_p(BENCHMARK_DIR)
+
+            # Get spec count for progress tracking
+            total_specs = timing_suites.sum do |suite|
+              specs = Liquid::Spec::SpecLoader.load_suite(suite)
+              specs = filter_specs_by_pattern(specs, options[:filter]) if options[:filter]
+              specs.size
             end
 
             puts ""
+            puts "Matrix Benchmark"
+            puts "JIT: #{jit_status}, Duration: #{timing_suites.first&.default_iteration_seconds || 5}s/spec"
+            puts "Adapters: #{adapters.keys.join(", ")}"
+            puts "Specs: #{total_specs} per adapter"
+            puts ""
 
-            # Collect all results across suites
-            all_results = []
+            # Run benchmarks in parallel using forked processes
+            run_parallel_benchmarks(adapters, timing_suites, options, run_id)
 
-            timing_suites.each do |suite|
-              specs = Liquid::Spec::SpecLoader.load_suite(suite)
-              specs = filter_specs_by_pattern(specs, options[:filter]) if options[:filter]
+            # Show saved files
+            puts ""
+            puts "Results saved to: #{BENCHMARK_DIR}/"
 
-              next if specs.empty?
+            puts ""
+            puts "Run \e[1mliquid-spec report --compare\e[0m to analyze results"
+          end
 
-              puts "=" * 70
-              puts "Benchmark: #{suite.name}"
-              puts "JIT: #{jit_status}"
-              puts "Duration: #{suite.default_iteration_seconds}s per spec"
-              puts "=" * 70
-              puts ""
+          def run_parallel_benchmarks(adapters, timing_suites, options, run_id)
+            adapter_names = adapters.keys
+            gem_root = File.expand_path("../../../../..", __FILE__)
+            examples_dir = File.join(gem_root, "examples")
 
-              # Profile each adapter separately
-              if profile_dir
-                adapters.each do |adapter_name, adapter|
-                  prepared = specs.map { |spec| prepare_matrix_spec(spec, adapter) }.compact
-                  next if prepared.empty?
+            # Build suite/filter args
+            suite_arg = options[:suite] != :all ? "-s #{options[:suite]}" : "-s benchmarks"
+            filter_arg = options[:filter] ? "-n '#{options[:filter]}'" : ""
 
-                  puts "  Profiling #{adapter_name}..."
-                  compile_profile = StackProf.run(mode: :cpu, raw: true) do
-                    prepared.each do |p|
-                      100.times { p[:compile_block].call(p[:ctx], p[:template], p[:compile_options]) }
+            # Track processes
+            processes = {}
+            results_by_adapter = {}
+
+            # Spawn a process for each adapter
+            adapter_names.each do |adapter_name|
+              # Find adapter path
+              adapter_path = if File.exist?(adapter_name)
+                adapter_name
+              elsif File.exist?(adapter_name + ".rb")
+                adapter_name + ".rb"
+              else
+                File.join(examples_dir, "#{adapter_name}.rb")
+              end
+
+              unless File.exist?(adapter_path)
+                $stderr.puts "Warning: Adapter not found: #{adapter_name}"
+                next
+              end
+
+              # Spawn benchmark subprocess
+              env = {
+                "LIQUID_SPEC_BENCHMARK_JSONL" => "1",
+                "LIQUID_SPEC_RUN_ID" => run_id,
+              }
+
+              cmd = "bundle exec ruby -Ilib bin/liquid-spec run #{adapter_path} #{suite_arg} #{filter_arg} --bench 2>/dev/null"
+
+              rd, wr = IO.pipe
+              pid = spawn(env, cmd, out: wr, chdir: gem_root)
+              wr.close
+
+              processes[adapter_name] = { pid: pid, reader: rd, output: [], done: false }
+              results_by_adapter[adapter_name] = []
+            end
+
+            # Collect results with progress display
+            print_progress_header(adapter_names)
+
+            until processes.values.all? { |p| p[:done] }
+              ready = IO.select(processes.values.reject { |p| p[:done] }.map { |p| p[:reader] }, nil, nil, 0.1)
+
+              if ready && ready[0]
+                ready[0].each do |reader|
+                  adapter_name = processes.find { |_, p| p[:reader] == reader }&.first
+                  next unless adapter_name
+
+                  begin
+                    line = reader.gets
+                    if line.nil?
+                      processes[adapter_name][:done] = true
+                      next
                     end
-                  end
-                  File.binwrite("#{profile_dir}/#{adapter_name}_compile_cpu.dump", Marshal.dump(compile_profile))
 
-                  compile_obj_profile = StackProf.run(mode: :object, raw: true) do
-                    prepared.each do |p|
-                      10.times { p[:compile_block].call(p[:ctx], p[:template], p[:compile_options]) }
-                    end
-                  end
-                  File.binwrite("#{profile_dir}/#{adapter_name}_compile_object.dump", Marshal.dump(compile_obj_profile))
+                    line = line.strip
+                    next if line.empty?
 
-                  render_profile = StackProf.run(mode: :cpu, raw: true) do
-                    prepared.each do |p|
-                      100.times { p[:render_block].call(p[:ctx], deep_copy(p[:environment]), p[:render_options]) }
+                    # Try to parse as JSON (benchmark result)
+                    begin
+                      data = JSON.parse(line, symbolize_names: true)
+                      if data[:spec_name]
+                        results_by_adapter[adapter_name] << data
+                        update_progress(adapter_names, results_by_adapter)
+                      end
+                    rescue JSON::ParserError
+                      # Not JSON, ignore
                     end
+                  rescue IOError
+                    processes[adapter_name][:done] = true
                   end
-                  File.binwrite("#{profile_dir}/#{adapter_name}_render_cpu.dump", Marshal.dump(render_profile))
-
-                  render_obj_profile = StackProf.run(mode: :object, raw: true) do
-                    prepared.each do |p|
-                      10.times { p[:render_block].call(p[:ctx], deep_copy(p[:environment]), p[:render_options]) }
-                    end
-                  end
-                  File.binwrite("#{profile_dir}/#{adapter_name}_render_object.dump", Marshal.dump(render_obj_profile))
                 end
-                puts ""
               end
 
-              specs.each do |spec|
-                results = run_benchmark_comparison(spec, adapters, suite.default_iteration_seconds)
-                all_results << { spec: spec, results: results }
+              # Check for finished processes
+              processes.each do |name, p|
+                next if p[:done]
+                pid_result = Process.waitpid(p[:pid], Process::WNOHANG)
+                if pid_result
+                  # Drain remaining output
+                  begin
+                    while (line = p[:reader].gets)
+                      line = line.strip
+                      next if line.empty?
+                      begin
+                        data = JSON.parse(line, symbolize_names: true)
+                        if data[:spec_name]
+                          results_by_adapter[name] << data
+                        end
+                      rescue JSON::ParserError
+                        # ignore
+                      end
+                    end
+                  rescue IOError
+                    # ignore
+                  end
+                  p[:reader].close rescue nil
+                  p[:done] = true
+                  update_progress(adapter_names, results_by_adapter)
+                end
               end
             end
 
-            # Print summary at end
-            print_benchmark_summaries(all_results, adapters)
+            puts ""
+            puts ""
 
-            if profile_dir
-              puts ""
-              puts "=" * 60
-              puts "StackProf profiles saved to: #{profile_dir}"
-              adapters.each_key do |name|
-                puts "  #{profile_dir}/#{name}_compile_cpu.dump"
-                puts "  #{profile_dir}/#{name}_render_cpu.dump"
+            # Write results to JSONL files
+            results_by_adapter.each do |adapter_name, results|
+              next if results.empty?
+              log_path = File.join(BENCHMARK_DIR, "#{adapter_name}.jsonl")
+              File.open(log_path, "a") do |f|
+                results.each { |r| f.puts(JSON.generate(r)) }
+              end
+            end
+
+            # Print summary
+            print_parallel_summary(adapter_names, results_by_adapter)
+          end
+
+          def print_progress_header(adapter_names)
+            puts ""
+            adapter_names.each do |name|
+              print "#{name[0..12].ljust(13)} "
+            end
+            puts ""
+            adapter_names.each do |_|
+              print "------------- "
+            end
+            puts ""
+            # Print initial progress line
+            adapter_names.each do |_|
+              print "waiting...    "
+            end
+            $stdout.flush
+          end
+
+          def update_progress(adapter_names, results_by_adapter)
+            # Move cursor to beginning of line and redraw
+            print "\r"
+            adapter_names.each do |name|
+              results = results_by_adapter[name] || []
+              successful = results.count { |r| r[:status] == "success" }
+              failed = results.count { |r| r[:status] != "success" }
+              total = successful + failed
+              if failed > 0
+                status = "\e[32m#{successful}\e[0m/\e[31m#{failed}\e[0m"
+                # Account for ANSI codes in padding
+                print status + " " * (14 - successful.to_s.length - failed.to_s.length - 1)
+              else
+                print "\e[32m#{total} passed\e[0m".ljust(23)
+              end
+            end
+            $stdout.flush
+          end
+
+          def print_parallel_summary(adapter_names, results_by_adapter)
+            jit_info = jit_info_hash
+            jit_label = jit_info[:enabled] ? jit_info[:engine] : "no-jit"
+
+            puts "-" * 70
+            puts "\e[1mSUMMARY\e[0m (Ruby #{RUBY_VERSION}, #{jit_label})"
+            puts "-" * 70
+            puts ""
+
+            # Per-adapter summary
+            adapter_names.each do |name|
+              results = results_by_adapter[name] || []
+              successful = results.select { |r| r[:status] == "success" }
+              failed = results.select { |r| r[:status] != "success" }
+              total = results.size
+              success_rate = total > 0 ? (successful.size.to_f / total * 100).round(0) : 0
+
+              puts "\e[1m#{name}\e[0m"
+              puts "  Tests: #{total} run, #{successful.size} passed, #{failed.size} failed (#{success_rate}%)"
+
+              if successful.any?
+                # Use parse_ fields if available, fall back to compile_ for consistency
+                total_parse_ms = successful.sum { |r| ((r[:parse_mean] || r[:compile_mean]) || 0) * 1000 }
+                total_render_ms = successful.sum { |r| (r[:render_mean] || 0) * 1000 }
+                total_allocs = successful.sum { |r| ((r[:parse_allocs] || r[:compile_allocs]) || 0) + (r[:render_allocs] || 0) }
+
+                puts "  Parse:  #{format_time(total_parse_ms)} total, #{format_time(total_parse_ms / successful.size)} avg"
+                puts "  Render: #{format_time(total_render_ms)} total, #{format_time(total_render_ms / successful.size)} avg"
+                puts "  Allocs: #{format_number(total_allocs)} total"
               end
               puts ""
-              puts "View with: stackprof #{profile_dir}/<adapter>_render_cpu.dump"
-              puts "=" * 60
             end
+
+            # Comparison if multiple adapters
+            if adapter_names.size >= 2
+              print_parallel_comparison(adapter_names, results_by_adapter)
+            end
+          end
+
+          def print_parallel_comparison(adapter_names, results_by_adapter)
+            # Find specs that exist in all adapters
+            common_specs = nil
+            adapter_names.each do |name|
+              specs = (results_by_adapter[name] || []).select { |r| r[:status] == "success" }.map { |r| r[:spec_name] }
+              common_specs = common_specs ? (common_specs & specs) : specs
+            end
+
+            return if common_specs.nil? || common_specs.empty?
+
+            reference = adapter_names.first
+            others = adapter_names[1..]
+
+            parse_ratios = Hash.new { |h, k| h[k] = [] }
+            render_ratios = Hash.new { |h, k| h[k] = [] }
+
+            common_specs.each do |spec_name|
+              ref_result = (results_by_adapter[reference] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
+              next unless ref_result
+
+              ref_parse = ref_result[:parse_mean] || ref_result[:compile_mean]
+              ref_render = ref_result[:render_mean]
+
+              others.each do |other|
+                other_result = (results_by_adapter[other] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
+                next unless other_result
+
+                other_parse = other_result[:parse_mean] || other_result[:compile_mean]
+                other_render = other_result[:render_mean]
+
+                parse_ratios[other] << other_parse / ref_parse if ref_parse && other_parse && ref_parse > 0
+                render_ratios[other] << other_render / ref_render if ref_render && other_render && ref_render > 0
+              end
+            end
+
+            puts "-" * 70
+            puts "\e[1mCOMPARISON\e[0m (#{common_specs.size} common specs)"
+            puts "-" * 70
+            puts ""
+            puts "Reference: #{reference}"
+            puts ""
+
+            puts "\e[1mParse (geometric mean):\e[0m"
+            parse_ratios.each do |adapter, ratios|
+              next if ratios.empty?
+              geomean = geometric_mean(ratios)
+              if geomean > 1
+                puts "  #{reference} is \e[32m%.2fx faster\e[0m than #{adapter}" % geomean
+              elsif geomean < 1
+                puts "  #{adapter} is \e[32m%.2fx faster\e[0m than #{reference}" % (1.0 / geomean)
+              else
+                puts "  #{adapter} is equal to #{reference}"
+              end
+            end
+
+            puts ""
+            puts "\e[1mRender (geometric mean):\e[0m"
+            render_ratios.each do |adapter, ratios|
+              next if ratios.empty?
+              geomean = geometric_mean(ratios)
+              if geomean > 1
+                puts "  #{reference} is \e[32m%.2fx faster\e[0m than #{adapter}" % geomean
+              elsif geomean < 1
+                puts "  #{adapter} is \e[32m%.2fx faster\e[0m than #{reference}" % (1.0 / geomean)
+              else
+                puts "  #{adapter} is equal to #{reference}"
+              end
+            end
+
+            puts ""
+          end
+
+          def format_number(num)
+            return "0" if num.nil? || num.zero?
+            num.to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
           end
 
           def prepare_matrix_spec(spec, adapter)
@@ -499,6 +725,112 @@ module Liquid
 
             puts ""
             results
+          end
+
+          def run_benchmark_comparison_compact(spec, adapters, duration_seconds, run_id)
+            # Print spec name inline
+            print "#{spec.name.split("#").last[0..25].ljust(26)} "
+
+            # Collect results from all adapters
+            results = {}
+
+            adapters.each do |name, adapter|
+              unless adapter.can_run?(spec)
+                print "\e[2m-\e[0m "
+                next
+              end
+
+              result = run_single_benchmark(spec, adapter, duration_seconds)
+              results[name] = result
+
+              # Save to JSONL
+              save_matrix_benchmark_result(name, run_id, spec, result)
+
+              if result[:error]
+                print "\e[31m✗\e[0m "
+              else
+                print "\e[32m✓\e[0m "
+              end
+              $stdout.flush
+            end
+
+            # Show quick comparison if multiple successful results
+            successful = results.select { |_, r| r[:error].nil? }
+            if successful.size >= 2
+              # Find fastest render
+              fastest_name, fastest = successful.min_by { |_, r| r[:render_mean] }
+              slowest_name, slowest = successful.max_by { |_, r| r[:render_mean] }
+              ratio = slowest[:render_mean] / fastest[:render_mean]
+              if ratio > 1.1
+                print "\e[2m#{fastest_name} %.1fx faster\e[0m" % ratio
+              end
+            end
+
+            puts ""
+            results
+          end
+
+          def save_matrix_benchmark_result(adapter_name, run_id, spec, result)
+            log_path = File.join(BENCHMARK_DIR, "#{adapter_name}.jsonl")
+            jit_info = jit_info_hash
+
+            entry = {
+              type: "result",
+              run_id: run_id,
+              timestamp: real_time.iso8601,
+
+              # Grouping dimensions
+              adapter: adapter_name,
+              ruby_version: RUBY_VERSION,
+              jit_enabled: jit_info[:enabled],
+              jit_engine: jit_info[:engine],
+              group_key: [adapter_name, RUBY_VERSION, jit_info[:engine]],
+
+              # Spec info
+              spec_name: spec.name,
+              source_file: spec.source_file,
+              complexity: spec.complexity || 1000,
+              template_size: spec.template.bytesize,
+
+              # Result
+              status: result[:error] ? "error" : "success",
+              error: result[:error]&.message,
+
+              # Parse timings
+              parse_mean: result[:compile_mean],
+              parse_stddev: result[:compile_stddev],
+              parse_min: result[:compile_min],
+              parse_max: result[:compile_max],
+              parse_iterations: result[:compile_runs],
+              parse_allocs: result[:compile_allocs],
+
+              # Render timings
+              render_mean: result[:render_mean],
+              render_stddev: result[:render_stddev],
+              render_min: result[:render_min],
+              render_max: result[:render_max],
+              render_iterations: result[:render_runs],
+              render_allocs: result[:render_allocs],
+            }
+
+            File.open(log_path, "a") do |f|
+              f.puts(JSON.generate(entry))
+            end
+          end
+
+          def jit_info_hash
+            if defined?(RubyVM::ZJIT) && RubyVM::ZJIT.enabled?
+              { enabled: true, engine: "zjit" }
+            elsif defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+              { enabled: true, engine: "yjit" }
+            else
+              { enabled: false, engine: "none" }
+            end
+          end
+
+          # Get real wall-clock time, bypassing TimeFreezer
+          def real_time
+            Process.clock_gettime(Process::CLOCK_REALTIME).then { |t| Time.at(t) }
           end
 
           def run_single_benchmark(spec, adapter, duration_seconds)

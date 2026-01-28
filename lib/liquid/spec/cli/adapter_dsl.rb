@@ -119,7 +119,7 @@ module LiquidSpec
 
   class << self
     attr_reader :compile_block, :render_block, :config, :setup_block, :ctx
-    attr_accessor :cli_options
+    attr_accessor :cli_options, :adapter_name
     attr_reader :adapter_timeout_seconds
 
     # Skip this adapter with a reason
@@ -164,6 +164,7 @@ module LiquidSpec
       @config = nil
       @ctx = {}
       @cli_options = {}
+      @adapter_name = nil
       @running_from_cli = false
       @setup_done = false
       env_timeout = ENV["LIQUID_SPEC_ADAPTER_TIMEOUT"]

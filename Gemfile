@@ -12,6 +12,14 @@ else
   gem "liquid", github: "Shopify/liquid", branch: "main"
 end
 
+# Use local liquid-c gem if available, otherwise use main from GitHub
+local_liquid_c_path = File.expand_path("../liquid-c", __dir__)
+if File.exist?(local_liquid_c_path)
+  gem "liquid-c", path: local_liquid_c_path, require: false
+else
+  gem "liquid-c", github: "Shopify/liquid-c", branch: "main", require: false
+end
+
 # Core test dependencies
 gem "minitest"
 gem "minitest-focus"
@@ -20,7 +28,6 @@ gem "minitest-focus"
 group :development do
   gem "rake"
   gem "activesupport", require: false
-  gem "liquid-c", require: false
 end
 
 gem "base64", "~> 0.3.0"

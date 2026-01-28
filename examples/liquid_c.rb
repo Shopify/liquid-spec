@@ -21,6 +21,18 @@ LiquidSpec.setup do |ctx|
 
   LiquidSpec.skip!("liquid-c not available") unless defined?(Liquid::C)
   LiquidSpec.skip!("liquid-c not enabled") unless Liquid::C.enabled
+
+  # Patch liquid-c to support the new `safe:` keyword argument added in liquid main.
+  # This can be removed once liquid-c is updated to support the new API.
+  # See: https://github.com/Shopify/liquid/blob/main/lib/liquid/tag.rb#L76
+  if Liquid::ParseContext.instance_method(:parse_expression).arity == 1
+    Liquid::ParseContext.class_eval do
+      alias_method :_original_parse_expression, :parse_expression
+      def parse_expression(markup, safe: false)
+        _original_parse_expression(markup)
+      end
+    end
+  end
 end
 
 LiquidSpec.configure do |config|
