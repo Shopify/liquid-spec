@@ -277,9 +277,20 @@ module Liquid
                 total_render_iters = successful.sum { |r| r[:render_iterations] || 0 }
 
                 puts ""
-                puts "  \e[1mParse:\e[0m  #{format_time(total_parse_ms)} total, #{format_time(total_parse_ms / successful.size)} avg (#{format_number(total_parse_iters)} iterations)"
-                puts "  \e[1mRender:\e[0m #{format_time(total_render_ms)} total, #{format_time(total_render_ms / successful.size)} avg (#{format_number(total_render_iters)} iterations)"
-                puts "  \e[1mAllocs:\e[0m #{format_number(total_parse_allocs)} parse, #{format_number(total_render_allocs)} render"
+                puts "  \e[1mParse:\e[0m  %12s total  %12s avg  (%s iterations)" % [
+                  format_time(total_parse_ms),
+                  format_time(total_parse_ms / successful.size),
+                  format_number(total_parse_iters),
+                ]
+                puts "  \e[1mRender:\e[0m %12s total  %12s avg  (%s iterations)" % [
+                  format_time(total_render_ms),
+                  format_time(total_render_ms / successful.size),
+                  format_number(total_render_iters),
+                ]
+                puts "  \e[1mAllocs:\e[0m %12s parse  %12s render" % [
+                  format_number(total_parse_allocs),
+                  format_number(total_render_allocs),
+                ]
               end
 
               if options[:detail] && successful.any?
@@ -323,10 +334,11 @@ module Liquid
               avg_parse = total_parse / successful.size
               avg_render = total_render / successful.size
 
+              jit_label = parts[2] == "none" ? "no-jit" : parts[2]
+              config = "#{parts[0]} (#{parts[1]}, #{jit_label})"
+
               {
-                adapter: parts[0],
-                ruby: parts[1],
-                jit: parts[2] == "none" ? "no-jit" : parts[2],
+                config: config,
                 tests: successful.size,
                 parse_avg: avg_parse,
                 render_avg: avg_render,
@@ -338,32 +350,44 @@ module Liquid
             # Find reference (first row)
             ref = rows.first
 
+            # Calculate column widths
+            max_config = [rows.map { |r| r[:config].length }.max, 13].max
+
             # Print header
-            puts "%-20s %8s %8s %12s %12s %10s %10s" % ["Configuration", "Tests", "JIT", "Parse avg", "Render avg", "Parse Δ", "Render Δ"]
-            puts "-" * 82
+            puts "\e[1m%-#{max_config}s  %6s  %12s  %12s  %12s  %12s\e[0m" % [
+              "Configuration", "Tests", "Parse avg", "Render avg", "Parse Δ", "Render Δ"
+            ]
+            puts "-" * (max_config + 62)
 
             rows.each do |row|
-              config = "#{row[:adapter]} (#{row[:ruby]})"
               parse_delta = ref[:parse_avg] > 0 ? ((row[:parse_avg] / ref[:parse_avg] - 1) * 100).round(1) : 0
               render_delta = ref[:render_avg] > 0 ? ((row[:render_avg] / ref[:render_avg] - 1) * 100).round(1) : 0
 
-              parse_delta_str = row == ref ? "-" : "%+.1f%%" % parse_delta
-              render_delta_str = row == ref ? "-" : "%+.1f%%" % render_delta
+              if row == ref
+                parse_delta_str = "(ref)"
+                render_delta_str = "(ref)"
+              else
+                parse_delta_str = "%+.1f%%" % parse_delta
+                render_delta_str = "%+.1f%%" % render_delta
 
-              # Color the deltas
-              if row != ref
+                # Color the deltas
                 parse_delta_str = parse_delta < -5 ? "\e[32m#{parse_delta_str}\e[0m" : (parse_delta > 5 ? "\e[31m#{parse_delta_str}\e[0m" : parse_delta_str)
                 render_delta_str = render_delta < -5 ? "\e[32m#{render_delta_str}\e[0m" : (render_delta > 5 ? "\e[31m#{render_delta_str}\e[0m" : render_delta_str)
               end
 
-              puts "%-20s %8d %8s %12s %12s %10s %10s" % [
-                config[0..19],
+              # Right-align numbers, account for ANSI codes
+              parse_delta_display = parse_delta_str.gsub(/\e\[[0-9;]*m/, "")
+              render_delta_display = render_delta_str.gsub(/\e\[[0-9;]*m/, "")
+              parse_delta_pad = 12 - parse_delta_display.length
+              render_delta_pad = 12 - render_delta_display.length
+
+              puts "%-#{max_config}s  %6d  %12s  %12s  %s%s  %s%s" % [
+                row[:config],
                 row[:tests],
-                row[:jit],
                 format_time(row[:parse_avg]),
                 format_time(row[:render_avg]),
-                parse_delta_str,
-                render_delta_str,
+                " " * [parse_delta_pad, 0].max, parse_delta_str,
+                " " * [render_delta_pad, 0].max, render_delta_str,
               ]
             end
 
@@ -453,49 +477,73 @@ module Liquid
             ref_parts = reference_key.split("|")
             ref_label = "#{ref_parts[0]} (#{ref_parts[1]}, #{ref_parts[2] == "none" ? "no-jit" : ref_parts[2]})"
 
-            puts "\e[1mParse (geometric mean):\e[0m"
-            other_keys.each_with_index do |key, idx|
-              ratios = parse_ratios[key]
-              next if ratios.empty?
-              geomean = geometric_mean(ratios)
+            # Build comparison table data
+            comparison_rows = []
+            group_keys.each_with_index do |key, idx|
               parts = key.split("|")
               label = "#{parts[0]} (#{parts[1]}, #{parts[2] == "none" ? "no-jit" : parts[2]})"
-              if geomean > 1.05
-                puts "  #{ref_label} is \e[32m%.2fx faster\e[0m than #{label}" % geomean
-              elsif geomean < 0.95
-                puts "  #{label} is \e[32m%.2fx faster\e[0m than #{ref_label}" % (1.0 / geomean)
-              else
-                puts "  #{label} ≈ #{ref_label} (%.2fx)" % geomean
-              end
-            end
 
-            puts ""
-            puts "\e[1mRender (geometric mean):\e[0m"
-            other_keys.each_with_index do |key, idx|
-              ratios = render_ratios[key]
-              next if ratios.empty?
-              geomean = geometric_mean(ratios)
-              parts = key.split("|")
-              label = "#{parts[0]} (#{parts[1]}, #{parts[2] == "none" ? "no-jit" : parts[2]})"
-              if geomean > 1.05
-                puts "  #{ref_label} is \e[32m%.2fx faster\e[0m than #{label}" % geomean
-              elsif geomean < 0.95
-                puts "  #{label} is \e[32m%.2fx faster\e[0m than #{ref_label}" % (1.0 / geomean)
-              else
-                puts "  #{label} ≈ #{ref_label} (%.2fx)" % geomean
-              end
-            end
-
-            # Total allocations
-            puts ""
-            puts "\e[1mTotal Allocations:\e[0m"
-            group_keys.each do |key|
               results = data[key][:results].select { |r| r[:status] == "success" && common_specs.include?(r[:spec_name]) }
-              total_parse = results.sum { |r| (r[:parse_allocs] || r[:compile_allocs]) || 0 }
-              total_render = results.sum { |r| r[:render_allocs] || 0 }
-              parts = key.split("|")
-              label = "#{parts[0]} (#{parts[1]}, #{parts[2] == "none" ? "no-jit" : parts[2]})"
-              puts "  #{label}: #{format_number(total_parse)} parse, #{format_number(total_render)} render"
+              total_parse_allocs = results.sum { |r| (r[:parse_allocs] || r[:compile_allocs]) || 0 }
+              total_render_allocs = results.sum { |r| r[:render_allocs] || 0 }
+
+              parse_geomean = idx == 0 ? 1.0 : geometric_mean(parse_ratios[key])
+              render_geomean = idx == 0 ? 1.0 : geometric_mean(render_ratios[key])
+
+              comparison_rows << {
+                label: label,
+                parse_ratio: parse_geomean,
+                render_ratio: render_geomean,
+                parse_allocs: total_parse_allocs,
+                render_allocs: total_render_allocs,
+                is_ref: idx == 0,
+              }
+            end
+
+            # Find max label width
+            max_label = comparison_rows.map { |r| r[:label].length }.max
+
+            # Print comparison table
+            puts "\e[1m%-#{max_label}s  %12s  %12s  %14s  %14s\e[0m" % ["Configuration", "Parse", "Render", "Parse Allocs", "Render Allocs"]
+            puts "-" * (max_label + 58)
+
+            comparison_rows.each do |row|
+              if row[:is_ref]
+                parse_str = "(ref)"
+                render_str = "(ref)"
+              else
+                # Parse comparison
+                if row[:parse_ratio] > 1.05
+                  parse_str = "\e[31m%.2fx slower\e[0m" % row[:parse_ratio]
+                elsif row[:parse_ratio] < 0.95
+                  parse_str = "\e[32m%.2fx faster\e[0m" % (1.0 / row[:parse_ratio])
+                else
+                  parse_str = "~same"
+                end
+
+                # Render comparison
+                if row[:render_ratio] > 1.05
+                  render_str = "\e[31m%.2fx slower\e[0m" % row[:render_ratio]
+                elsif row[:render_ratio] < 0.95
+                  render_str = "\e[32m%.2fx faster\e[0m" % (1.0 / row[:render_ratio])
+                else
+                  render_str = "~same"
+                end
+              end
+
+              # Right-align numbers, account for ANSI codes
+              parse_display = parse_str.gsub(/\e\[[0-9;]*m/, "")
+              render_display = render_str.gsub(/\e\[[0-9;]*m/, "")
+              parse_pad = 12 - parse_display.length
+              render_pad = 12 - render_display.length
+
+              puts "%-#{max_label}s  %s%s  %s%s  %14s  %14s" % [
+                row[:label],
+                " " * [parse_pad, 0].max, parse_str,
+                " " * [render_pad, 0].max, render_str,
+                format_number(row[:parse_allocs]),
+                format_number(row[:render_allocs]),
+              ]
             end
 
             puts ""
