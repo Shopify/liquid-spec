@@ -9,8 +9,9 @@ liquid-spec is a test suite and CLI for testing Liquid template implementations.
 ## CLI Usage
 
 ```bash
-# Install the gem
-gem install liquid-spec
+# Install the gem (from GitHub, not published to rubygems.org)
+gem install specific_install
+gem specific_install https://github.com/Shopify/liquid-spec
 
 # Run an example adapter
 liquid-spec examples/liquid_ruby.rb
