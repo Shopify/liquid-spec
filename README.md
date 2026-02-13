@@ -46,6 +46,20 @@ Building a Liquid implementation (compiler, interpreter, or transpiler)? liquid-
 
 ## Installation
 
+Add to your Gemfile:
+
+```ruby
+gem "liquid-spec", git: "https://github.com/Shopify/liquid-spec"
+```
+
+Then run:
+
+```bash
+bundle install
+```
+
+Or install directly from GitHub:
+
 ```bash
 gem install specific_install
 gem specific_install https://github.com/Shopify/liquid-spec
