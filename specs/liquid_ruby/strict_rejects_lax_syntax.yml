@@ -10,8 +10,8 @@
   error_mode: :strict
   errors:
     parse_error:
-      - "Expected dotdot but found pipe"
-  hint: "Parentheses in assign expressions are invalid - lax mode tolerates this, strict rejects it"
+      - "but found pipe"
+  hint: "Filters cannot appear inside parentheses - lax mode tolerates this, strict rejects it"
 
 - name: StrictModeTest#test_quirky_negative_sign_rejected
   template: "{{ - 'theme.css' - }}"

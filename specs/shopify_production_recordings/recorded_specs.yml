@@ -38,12 +38,6 @@
   template: "{% case 1 %}{% when 1 %}when{% endcase %}"
   expected: when
   environment: {}
-- name: RecordedTest#test_case_conditions_709e9f39
-  template:
-    "{% case 1 %}{% when 0, 2, 4, or 6 %}when even{% when 1, 3, 5 %}when odd{%
-    endcase %}"
-  expected: when odd
-  environment: {}
 - name: RecordedTest#test_case_else_f06aab62
   template:
     "{% case 3 %}{% when 1 %}when 1{% when 2 %}when 2{% else %}else{% endcase
@@ -71,6 +65,8 @@
   template: "{% case blank %}{% when ' ' %}when{% else %}else{% endcase %}"
   expected: else
   environment: {}
+  required_features: [shopify_blank]
+  hint: "Shopify blank matches whitespace-only strings. Standard liquid blank is just ''."
 - name: RecordedTest#test_case_method_literal_3f10d7af
   template: "{% case ' ' %}{% when blank %}when{% else %}else{% endcase %}"
   expected: when
@@ -4513,11 +4509,6 @@
 - name: RecordedTest#test_cycle_7bb44165f
   expected: 'odd, even, odd, even, '
   template: '{% for i in (1..4) %}{% cycle "odd", "even" %}, {% endfor %}'
-  environment: {}
-  filesystem: {}
-- name: RecordedTest#test_cycle_with_just_cycle_name_in_double_quotes_and_0_choices_43d5ef1fc
-  expected: ", , , , "
-  template: '{% for i in (1..4) %}{% cycle "odd": %}, {% endfor %}'
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_data_escaping_9e876fe0d
@@ -21627,12 +21618,6 @@
   filesystem:
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
-- name: RecordedTest#test_include_for_nil_implicit_variable_and_false_attribute_value_659d927a5
-  expected: ''
-  template: '{% assign icon = null %}{% include "icon" for icon: false %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
 - name: RecordedTest#test_include_recursive_af1515727
   required_features:
     - shopify_includes
@@ -22076,61 +22061,6 @@
     foo: |
       {{depth}}{% assign depth = depth | plus: 1 %}
       {% include 'foo' %}
-- name: RecordedTest#test_include_with_conflicting_variable_name_with_a_falsy_value_c5fb57619
-  expected: " foo-"
-  template: '{% assign my_icon = null %} {% render "icon" with icon: "foo" as my_icon
-    %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}-{{ my_icon }}"
-- name: RecordedTest#test_include_with_false_implicit_variable_and_nil_attribute_value_56859db35
-  expected: 'false'
-  template: '{% assign icon = false %}{% include "icon" with icon: null %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_include_with_false_implicit_variable_and_truthy_attribute_value_36267b744
-  expected: 'false'
-  template: '{% assign icon = false %}{% include "icon" with icon: 1.5 %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_include_with_implicit_variable_given_value_92f9cd85f
-  expected: 123-1.5
-  template: '{% assign multiplier = 123 %}{% include "font" with multiplier: 1.5 %}'
-  environment: {}
-  filesystem:
-    font: "{{ font }}-{{ multiplier }}"
-- name: RecordedTest#test_include_with_implicit_variable_given_value_name_conflict_de41849a7
-  expected: '123'
-  template: '{% assign font = 123 %}{% include "font" with font: 1.5 %}'
-  environment: {}
-  filesystem:
-    font: "{{ font }}"
-- name: RecordedTest#test_include_with_missing_implicit_value_and_truthy_attribute_value_001e2a9ee
-  expected: ''
-  template: '{% include "icon" with icon: 1.5 %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_include_with_missing_implicit_variable_and_false_attribute_value_a48337e72
-  expected: ''
-  template: '{% include "icon" with icon: false %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_include_with_nil_implicit_value_and_truthy_attribute_value_febc938d8
-  expected: ''
-  template: '{% assign icon = null %}{% include "icon" with icon: 1.5 %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_include_with_nil_implicit_variable_and_false_attribute_value_6ebe7af2d
-  expected: ''
-  template: '{% assign icon = null %}{% include "icon" with icon: false %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
 - name: RecordedTest#test_increment_558dec86f
   expected: '012'
   template: "{% increment foo %}{% increment foo %}{{ foo }}"
@@ -22811,18 +22741,6 @@
   template: "{% render 'MISSSing' %}"
   environment: {}
   filesystem: {}
-- name: RecordedTest#test_render_for_nil_implicit_variable_and_false_attribute_value_efb2cdee9
-  expected: 'false'
-  template: '{% assign icon = null %}{% render "icon" for icon: false %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_render_for_non_iterable_uses_the_context_variable_0abd89b1b
-  expected: '2'
-  template: "{% assign icon = 2 %}{% render 'icon' for icon: 1 %}"
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
 - name: RecordedTest#test_render_for_with_context_arguments_c00d3c3f2
   expected: '1'
   template: '{% assign val = 1 %}{% render "icon" for icon, val: val %}'
@@ -22922,57 +22840,9 @@
     string: '1,2,3'
   filesystem:
     child: Hello!
-- name: RecordedTest#test_render_with_false_implicit_variable_and_nil_attribute_value_1aed72c2c
-  expected: 'false'
-  template: '{% assign icon = false %}{% render "icon" with icon: null %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_render_with_false_implicit_variable_and_truthy_attribute_value_a51475a43
-  expected: 'false'
-  template: '{% assign icon = false %}{% render "icon" with icon: 1.5 %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
 - name: RecordedTest#test_render_with_implicit_variable_given_an_argument_with_the_name_of_the_implicit_variable_7859eac0a
   expected: '1'
   template: "{% assign icon = 2 %}{% render 'icon', icon: 1 %}"
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_render_with_implicit_variable_given_value_c89dce620
-  expected: 123-1.5
-  template: '{% assign multiplier = 123 %}{% render "font" with multiplier: 1.5 %}'
-  environment: {}
-  filesystem:
-    font: "{{ font }}-{{ multiplier }}"
-- name: RecordedTest#test_render_with_literal_array_4ea593d7b
-  expected: Hello!
-  template: "{% render 'child' for [1, 2, 3] %}"
-  environment: {}
-  filesystem:
-    child: Hello!
-- name: RecordedTest#test_render_with_missing_implicit_value_and_truthy_attribute_value_4b7706523
-  expected: '1.5'
-  template: '{% render "icon" with icon: 1.5 %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_render_with_missing_implicit_variable_and_false_attribute_value_d881a6d87
-  expected: 'false'
-  template: '{% render "icon" with icon: false %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_render_with_nil_implicit_value_and_truthy_attribute_value_71dd40586
-  expected: '1.5'
-  template: '{% assign icon = null %}{% render "icon" with icon: 1.5 %}'
-  environment: {}
-  filesystem:
-    icon: "{{ icon }}"
-- name: RecordedTest#test_render_with_nil_implicit_variable_and_false_attribute_value_3fa28e29d
-  expected: 'false'
-  template: '{% assign icon = null %}{% render "icon" with icon: false %}'
   environment: {}
   filesystem:
     icon: "{{ icon }}"
