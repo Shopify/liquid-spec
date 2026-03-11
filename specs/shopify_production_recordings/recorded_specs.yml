@@ -22685,9 +22685,9 @@
   environment:
     foo: -10
   filesystem: {}
-- name: RecordedTest#test_range_overflow_error_f2992c149
-  expected: "->2147483646->2147483647->2147483648"
-  template: "{%for item in (2147483646..2147483648) %}->{{item}}{%endfor%}"
+- name: RecordedTest#test_range_near_max_i32_f2992c149
+  expected: "->2147483645->2147483646->2147483647"
+  template: "{%for item in (2147483645..2147483647) %}->{{item}}{%endfor%}"
   filesystem: {}
 - name: RecordedTest#test_read_current_tags_correctly_6bb14e24f
   required_features: [shopify_filters]
