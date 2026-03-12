@@ -1,0 +1,62 @@
+---
+_metadata:
+  hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
+  doc: implementers/shopify-theme-filters.md
+  required_features:
+    - shopify_filters
+  data_files:
+    - _data/theme_database.yml
+specs:
+- name: shopify_theme_blog_page
+  template: |
+    <div class="template-blog">
+      <div class="container">
+        <h1 class="page-title">{{ blog.title }}</h1>
+
+        <div class="blog-articles">
+          {% assign _articles = blog.articles %}
+          {% paginate _articles by 6 %}
+            {% for article in _articles %}
+              <div class="article-card">
+                {% if article.image %}
+                  <div class="article-card__image">
+                    <a href="{{ article.url }}">
+                      <img src="{{ article.image.src | img_url: 'medium' }}" alt="{{ article.title | escape }}">
+                    </a>
+                  </div>
+                {% endif %}
+                <div class="article-card__content">
+                  <h2 class="article-card__title">
+                    <a href="{{ article.url }}">{{ article.title }}</a>
+                  </h2>
+                  <div class="article-card__meta">
+                    <span class="article-card__date">{{ article.published_at | date: "%B %d, %Y" }}</span>
+                    {% if article.author %}
+                      <span class="article-card__author">by {{ article.author }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="article-card__excerpt">
+                    {% if article.excerpt != blank %}
+                      {{ article.excerpt }}
+                    {% else %}
+                      {{ article.content | strip_html | truncatewords: 30 }}
+                    {% endif %}
+                  </div>
+                  <div class="article-card__action">
+                    <a href="{{ article.url }}" class="button button--text">Read More</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+            {% if paginate.pages > 1 %}
+              <div class="pagination">
+                {{ paginate | default_pagination }}
+              </div>
+            {% endif %}
+          {% endpaginate %}
+        </div>
+      </div>
+    </div>
+  environment: {}
+  expected_pattern: "(?m)template-blog.*News.*article-card.*Welcome.*Our New Store.*Top 10 Snowboards.*pagination"

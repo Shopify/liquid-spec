@@ -1036,10 +1036,13 @@ module Liquid
           end
 
           def determine_suites(config, features)
-            specific_suite = config.suite != :all ? Liquid::Spec::Suite.find(config.suite) : nil
-
-            if specific_suite
-              [specific_suite]
+            # Adapter can request specific suites via config.suites = [:benchmarks, ...]
+            if config.suites&.any?
+              config.suites.filter_map { |id| Liquid::Spec::Suite.find(id) }
+                .select { |s| s.runnable_with?(features) }
+            elsif config.suite != :all
+              specific_suite = Liquid::Spec::Suite.find(config.suite)
+              specific_suite ? [specific_suite] : []
             else
               Liquid::Spec::Suite.defaults
                 .select { |s| s.runnable_with?(features) }
@@ -1556,6 +1559,7 @@ module Liquid
           end
 
           def filter_specs(specs, pattern)
+            pattern = Regexp.new(pattern.to_s, Regexp::IGNORECASE) unless pattern.is_a?(Regexp)
             specs.select { |s| s.name =~ pattern }
           end
 

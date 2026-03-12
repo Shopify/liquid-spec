@@ -1,0 +1,247 @@
+---
+_metadata:
+  hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
+  doc: implementers/shopify-theme-filters.md
+  required_features:
+    - shopify_filters
+  data_files:
+    - _data/theme_database.yml
+specs:
+- name: shopify_theme_collection_page
+  template: |
+    <div class="template-collection">
+      <div class="collection-header">
+        <div class="container">
+          <h1 class="collection-header__title">{{ collection.title }}</h1>
+          {% if collection.description != blank %}
+            <div class="collection-header__description">
+              {{ collection.description }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="collection-toolbar">
+          <div class="collection-toolbar__count">
+            {% if collection.products_count > 0 %}
+              {{ collection.products_count }} products
+            {% else %}
+              No products found
+            {% endif %}
+          </div>
+          <div class="collection-toolbar__sort">
+            <label for="SortBy">Sort by:</label>
+            <select id="SortBy" class="collection-toolbar__select">
+              <option value="manual">Featured</option>
+              <option value="best-selling">Best Selling</option>
+              <option value="title-ascending">Alphabetically, A-Z</option>
+              <option value="title-descending">Alphabetically, Z-A</option>
+              <option value="price-ascending">Price, low to high</option>
+              <option value="price-descending">Price, high to low</option>
+              <option value="created-descending">Date, new to old</option>
+              <option value="created-ascending">Date, old to new</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="collection-products">
+          {% assign _products = collection.products %}
+          {% paginate _products by 12 %}
+            {% if _products.size > 0 %}
+              <div class="product-grid">
+                {% for product in _products %}
+                  {% include 'product-card' %}
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="collection-empty">
+                <p>No products found in this collection</p>
+              </div>
+            {% endif %}
+
+            {% if paginate.pages > 1 %}
+              <div class="pagination">
+                {{ paginate | default_pagination }}
+              </div>
+            {% endif %}
+          {% endpaginate %}
+        </div>
+      </div>
+    </div>
+  filesystem:
+    product-card.liquid: |
+      {% comment %}
+        Reusable product card for collection grids and featured products
+      {% endcomment %}
+      <div class="product-card">
+        <a href="{{ product.url }}" class="product-card__link">
+          <div class="product-card__image">
+            <img src="{{ product.featured_image | product_img_url: 'medium' }}" alt="{{ product.title | escape }}">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">{{ product.title }}</h3>
+            <div class="product-card__price">
+              {% if product.compare_at_price > product.price %}
+                <span class="product-card__price--sale">{{ product.price | money }}</span>
+                <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
+              {% else %}
+                <span class="product-card__price--regular">{{ product.price | money }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+        <form action="/cart/add" method="post" class="product-card__form">
+          <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+          <button type="submit" class="product-card__button">Add to Cart</button>
+        </form>
+      </div>
+  environment:
+    collection:
+      title: "All Products"
+      url: "/collections/all"
+      handle: "all"
+      description: "<p>Browse our complete catalog of 120 products.</p>"
+      products_count: 120
+      products:
+        - id: 1
+          title: "Arbor Pro Draft"
+          handle: "arbor-pro-draft"
+          url: "/products/arbor-pro-draft"
+          price: 2000
+          compare_at_price: 2800
+          featured_image: "products/arbor-pro-draft.jpg"
+          available: true
+          variants:
+            - id: 1
+        - id: 2
+          title: "Technine Elite Element"
+          handle: "technine-elite-element"
+          url: "/products/technine-elite-element"
+          price: 2700
+          compare_at_price:
+          featured_image: "products/technine-elite-element.jpg"
+          available: true
+          variants:
+            - id: 10
+        - id: 3
+          title: "Burton Premium Rider"
+          handle: "burton-premium-rider"
+          url: "/products/burton-premium-rider"
+          price: 3400
+          compare_at_price:
+          featured_image: "products/burton-premium-rider.jpg"
+          available: true
+          variants:
+            - id: 19
+        - id: 4
+          title: "Shopify Ultra Cruiser"
+          handle: "shopify-ultra-cruiser"
+          url: "/products/shopify-ultra-cruiser"
+          price: 4100
+          compare_at_price: 5740
+          featured_image: "products/shopify-ultra-cruiser.jpg"
+          available: true
+          variants:
+            - id: 28
+        - id: 5
+          title: "Stormtech Classic Carver"
+          handle: "stormtech-classic-carver"
+          url: "/products/stormtech-classic-carver"
+          price: 4800
+          compare_at_price:
+          featured_image: "products/stormtech-classic-carver.jpg"
+          available: true
+          variants:
+            - id: 37
+        - id: 6
+          title: "Ducati Vintage Shredder"
+          handle: "ducati-vintage-shredder"
+          url: "/products/ducati-vintage-shredder"
+          price: 5500
+          compare_at_price:
+          featured_image: "products/ducati-vintage-shredder.jpg"
+          available: true
+          variants:
+            - id: 46
+        - id: 7
+          title: "Nikon Modern Glider"
+          handle: "nikon-modern-glider"
+          url: "/products/nikon-modern-glider"
+          price: 6200
+          compare_at_price: 8680
+          featured_image: "products/nikon-modern-glider.jpg"
+          available: true
+          variants:
+            - id: 55
+        - id: 8
+          title: "Jones Swift Ranger"
+          handle: "jones-swift-ranger"
+          url: "/products/jones-swift-ranger"
+          price: 6900
+          compare_at_price:
+          featured_image: "products/jones-swift-ranger.jpg"
+          available: true
+          variants:
+            - id: 64
+        - id: 9
+          title: "Capita Storm Explorer"
+          handle: "capita-storm-explorer"
+          url: "/products/capita-storm-explorer"
+          price: 7600
+          compare_at_price:
+          featured_image: "products/capita-storm-explorer.jpg"
+          available: true
+          variants:
+            - id: 73
+        - id: 10
+          title: "Rome Thunder Nomad"
+          handle: "rome-thunder-nomad"
+          url: "/products/rome-thunder-nomad"
+          price: 8300
+          compare_at_price: 11620
+          featured_image: "products/rome-thunder-nomad.jpg"
+          available: true
+          variants:
+            - id: 82
+        - id: 11
+          title: "LibTech Shadow Voyager"
+          handle: "libtech-shadow-voyager"
+          url: "/products/libtech-shadow-voyager"
+          price: 9000
+          compare_at_price:
+          featured_image: "products/libtech-shadow-voyager.jpg"
+          available: true
+          variants:
+            - id: 91
+        - id: 12
+          title: "GNU Phantom Pioneer"
+          handle: "gnu-phantom-pioneer"
+          url: "/products/gnu-phantom-pioneer"
+          price: 9700
+          compare_at_price:
+          featured_image: "products/gnu-phantom-pioneer.jpg"
+          available: true
+          variants:
+            - id: 100
+        - id: 13
+          title: "Ride Apex Rebel"
+          handle: "ride-apex-rebel"
+          url: "/products/ride-apex-rebel"
+          price: 10400
+          compare_at_price: 14559
+          featured_image: "products/ride-apex-rebel.jpg"
+          available: true
+          variants:
+            - id: 109
+        - id: 14
+          title: "Nitro Summit Maverick"
+          handle: "nitro-summit-maverick"
+          url: "/products/nitro-summit-maverick"
+          price: 11100
+          compare_at_price:
+          featured_image: "products/nitro-summit-maverick.jpg"
+          available: true
+          variants:
+            - id: 118
+  expected_pattern: "(?m)template-collection.*All Products.*120 products.*product-grid.*product-card.*\\$.*pagination"

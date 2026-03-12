@@ -1,0 +1,269 @@
+---
+_metadata:
+  hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
+  doc: implementers/shopify-theme-filters.md
+  required_features:
+    - shopify_filters
+  data_files:
+    - _data/theme_database.yml
+specs:
+- name: shopify_theme_product_page
+  template: |
+    <div class="template-product">
+      <div class="container">
+        <nav class="breadcrumbs" aria-label="Breadcrumbs">
+          <ol class="breadcrumbs__list">
+            <li class="breadcrumbs__item"><a href="/">Home</a></li>
+            {% if collection %}
+              <li class="breadcrumbs__item"><a href="{{ collection.url }}">{{ collection.title }}</a></li>
+            {% endif %}
+            <li class="breadcrumbs__item"><span aria-current="page">{{ product.title }}</span></li>
+          </ol>
+        </nav>
+
+        <div class="product">
+          <div class="product__media">
+            <div class="product__gallery">
+              <div class="product__main-image">
+                <img src="{{ product.featured_image | product_img_url: 'large' }}" alt="{{ product.title | escape }}">
+              </div>
+              <div class="product__thumbnails">
+                {% for image in product.images %}
+                  <button class="product__thumbnail-item" data-image-index="{{ forloop.index }}">
+                    <img src="{{ image | product_img_url: 'small' }}" alt="{{ product.title | escape }} - {{ forloop.index }}">
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="product__details">
+            <h1 class="product__title">{{ product.title }}</h1>
+
+            <div class="product__pricing">
+              {% if product.compare_at_price > product.price %}
+                <span class="product__price product__price--sale">{{ product.price | money }}</span>
+                <span class="product__price product__price--compare">{{ product.compare_at_price | money }}</span>
+                <span class="product__badge">Sale</span>
+              {% else %}
+                <span class="product__price">{{ product.price | money }}</span>
+              {% endif %}
+            </div>
+
+            <div class="product__description">
+              {{ product.description }}
+            </div>
+
+            <form method="post" action="/cart/add" id="product-form" class="product-form">
+              {% if product.has_only_default_variant %}
+                <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+              {% else %}
+                <div class="product-form__variants">
+                  <select name="id" id="ProductSelect" class="product-form__select">
+                    {% for variant in product.variants %}
+                      <option value="{{ variant.id }}" {% if variant.available == false %}disabled{% endif %}>
+                        {{ variant.title }} - {{ variant.price | money }}{% if variant.available == false %} - Sold out{% endif %}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              {% endif %}
+
+              <div class="product-form__quantity">
+                <label for="Quantity">Quantity</label>
+                <input type="number" id="Quantity" name="quantity" value="1" min="1" class="product-form__input">
+              </div>
+
+              <div class="product-form__submit">
+                <button type="submit" name="add" class="button button--primary button--full product-form__add-to-cart">
+                  {% if product.available %}
+                    Add to Cart
+                  {% else %}
+                    Sold Out
+                  {% endif %}
+                </button>
+              </div>
+            </form>
+
+            <div class="product__meta">
+              {% if product.vendor %}
+                <div class="product__vendor">Vendor: {{ product.vendor }}</div>
+              {% endif %}
+              {% if product.type %}
+                <div class="product__type">Type: {{ product.type }}</div>
+              {% endif %}
+            </div>
+
+            <div class="product__tags">
+              <h3>Tags:</h3>
+              <ul class="tag-list">
+                {% for tag in product.tags %}
+                  <li class="tag-list__item">
+                    <a href="/collections/all/{{ tag | handle }}" class="tag">{{ tag }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-tabs">
+          <div class="tabs">
+            <button class="tab-button active" data-tab="description">Description</button>
+            <button class="tab-button" data-tab="details">Details</button>
+            <button class="tab-button" data-tab="shipping">Shipping</button>
+          </div>
+          <div class="tab-content">
+            <div id="description" class="tab-panel active">
+              {{ product.description }}
+            </div>
+            <div id="details" class="tab-panel">
+              <table class="product-details-table">
+                <tbody>
+                  {% for option in product.options_with_values %}
+                    <tr>
+                      <th>{{ option.name }}</th>
+                      <td>
+                        {% for value in option.values %}
+                          {{ value }}{% unless forloop.last %}, {% endunless %}
+                        {% endfor %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                  {% if product.vendor %}
+                    <tr>
+                      <th>Vendor</th>
+                      <td>{{ product.vendor }}</td>
+                    </tr>
+                  {% endif %}
+                  {% if product.type %}
+                    <tr>
+                      <th>Type</th>
+                      <td>{{ product.type }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div id="shipping" class="tab-panel">
+              <p>We ship worldwide. Standard shipping takes 3-7 business days. Express shipping is available.</p>
+              <p>Free shipping on orders over $100.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header">
+            <h2 class="section__title">You Might Also Like</h2>
+          </div>
+          <div class="product-grid">
+            {% assign current_product_handle = product.handle %}
+            {% for related_product in collections.all.products limit: 4 %}
+              {% if related_product.handle != current_product_handle %}
+                {% assign product = related_product %}
+                {% include 'product-card' %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  filesystem:
+    product-card.liquid: |
+      {% comment %}
+        Reusable product card for collection grids and featured products
+      {% endcomment %}
+      <div class="product-card">
+        <a href="{{ product.url }}" class="product-card__link">
+          <div class="product-card__image">
+            <img src="{{ product.featured_image | product_img_url: 'medium' }}" alt="{{ product.title | escape }}">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">{{ product.title }}</h3>
+            <div class="product-card__price">
+              {% if product.compare_at_price > product.price %}
+                <span class="product-card__price--sale">{{ product.price | money }}</span>
+                <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
+              {% else %}
+                <span class="product-card__price--regular">{{ product.price | money }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+        <form action="/cart/add" method="post" class="product-card__form">
+          <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+          <button type="submit" class="product-card__button">Add to Cart</button>
+        </form>
+      </div>
+  environment:
+    product:
+      id: 1
+      title: "Arbor Pro Draft"
+      handle: "arbor-pro-draft"
+      type: "Snowboards"
+      vendor: "Arbor"
+      price: 2000
+      compare_at_price: 2800
+      available: true
+      has_only_default_variant: false
+      url: "/products/arbor-pro-draft"
+      featured_image: "products/arbor-pro-draft.jpg"
+      images:
+        - "products/arbor-pro-draft_1.jpg"
+        - "products/arbor-pro-draft_2.jpg"
+      description: |
+        <p>The Arbor Pro Draft is our latest snowboard from Arbor. Designed for performance
+        and versatility, this snowboard delivers exceptional quality in any conditions.</p>
+        <p>Featuring advanced technology and a refined design. Perfect for beginners and
+        advanced riders. Available in 3 length options and 3 style choices.</p>
+      tags:
+        - "park"
+        - "freeride"
+        - "eco-friendly"
+        - "freestyle"
+      options_with_values:
+        - name: "Length"
+          values: ["157cm", "163cm", "154cm"]
+        - name: "Style"
+          values: ["Regular", "Wide", "Mid-Wide"]
+      variants:
+        - id: 1
+          title: "157cm / Regular"
+          price: 2000
+          available: true
+        - id: 2
+          title: "157cm / Wide"
+          price: 2500
+          available: true
+        - id: 3
+          title: "157cm / Mid-Wide"
+          price: 3000
+          available: true
+        - id: 4
+          title: "163cm / Regular"
+          price: 3500
+          available: true
+        - id: 5
+          title: "163cm / Wide"
+          price: 4000
+          available: false
+        - id: 6
+          title: "163cm / Mid-Wide"
+          price: 4500
+          available: true
+        - id: 7
+          title: "154cm / Regular"
+          price: 2000
+          available: true
+        - id: 8
+          title: "154cm / Wide"
+          price: 2500
+          available: true
+        - id: 9
+          title: "154cm / Mid-Wide"
+          price: 3000
+          available: true
+    collection:
+      title: "Snowboards"
+      url: "/collections/snowboards"
+  expected_pattern: "(?m)template-product.*Arbor Pro Draft.*product__pricing.*\\$.*Sale.*product-form.*variant.*You Might Also Like.*product-card"

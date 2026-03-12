@@ -53,7 +53,7 @@ module Liquid
     module SpecLoader
       # Valid keys at each level - unknown keys raise errors
       VALID_FILE_KEYS = %w[_metadata specs].freeze
-      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity required_features].freeze
+      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity required_features data_files].freeze
       VALID_SPEC_KEYS = %w[
         name template expected expected_pattern environment filesystem complexity hint doc
         error_mode render_errors required_features errors template_name
@@ -187,11 +187,15 @@ module Liquid
             end
           end
 
+          # Load shared data files referenced in metadata
+          shared_data = load_data_files(metadata["data_files"], File.dirname(path))
+
           # Build source-level defaults
           source_hint = metadata["hint"]
           source_doc = metadata["doc"]
           source_required_options = (metadata["required_options"] || {}).transform_keys(&:to_sym)
           minimum_complexity = suite&.minimum_complexity || metadata["minimum_complexity"] || metadata["complexity"] || 1000
+          source_required_features = (metadata["required_features"] || []).map(&:to_s)
 
           # Suite defaults
           suite_defaults = suite&.defaults || {}
@@ -225,6 +229,9 @@ module Liquid
             # Keep environment as-is (may contain tagged objects or plain data)
             raw_env = spec_data["environment"] || {}
 
+            # Deep merge shared data into environment (spec-level overrides shared)
+            raw_env = deep_merge_hashes(shared_data, raw_env) if shared_data
+
             # Process instantiate strings in environment
             raw_env = process_instantiate_strings(raw_env)
 
@@ -246,7 +253,7 @@ module Liquid
               complexity: spec_data["complexity"] || minimum_complexity,
               error_mode: spec_error_mode,
               render_errors: spec_render_errors || false,
-              required_features: spec_data["required_features"] || [],
+              required_features: (source_required_features + (spec_data["required_features"] || [])).uniq,
               source_file: path,
               line_number: spec_line_number,
               raw_environment: raw_env,
@@ -360,6 +367,40 @@ module Liquid
           spec_nodes.map do |node|
             (node.start_line + 1) if node.respond_to?(:start_line)
           end
+        end
+
+        # Load external YAML data files and merge them into a single hash
+        # data_files: array of paths relative to the spec file's directory
+        def load_data_files(data_files, base_dir)
+          return unless data_files.is_a?(Array) && data_files.any?
+
+          merged = {}
+          data_files.each do |relative_path|
+            file_path = File.expand_path(relative_path, base_dir)
+            unless File.exist?(file_path)
+              raise "Data file not found: #{file_path} (referenced from spec in #{base_dir})"
+            end
+            file_data = safe_load_with_permitted_classes(File.read(file_path))
+            next unless file_data.is_a?(Hash)
+
+            merged = deep_merge_hashes(merged, file_data)
+          end
+          merged
+        end
+
+        # Deep merge two hashes - right side wins on conflicts
+        def deep_merge_hashes(base, override)
+          return override unless base.is_a?(Hash) && override.is_a?(Hash)
+
+          result = base.dup
+          override.each do |key, value|
+            result[key] = if result.key?(key) && result[key].is_a?(Hash) && value.is_a?(Hash)
+              deep_merge_hashes(result[key], value)
+            else
+              value
+            end
+          end
+          result
         end
 
         # Placeholder - no instantiate processing needed yet

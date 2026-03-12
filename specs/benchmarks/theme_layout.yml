@@ -1,0 +1,294 @@
+---
+_metadata:
+  hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
+  doc: implementers/shopify-theme-filters.md
+  required_features:
+    - shopify_filters
+  data_files:
+    - _data/theme_database.yml
+specs:
+- name: shopify_theme_full_page
+  template: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{ page_title }}{% if page_title %} - {% endif %}{{ shop.name }}</title>
+
+      <link rel="canonical" href="{{ canonical_url }}">
+      <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+
+      {{ content_for_header }}
+    </head>
+    <body id="template-{{ template }}">
+      <div class="page-container">
+        <header class="site-header">
+          <div class="container">
+            <div class="site-header__top">
+              <div class="site-header__announcement">
+                <p>{{ shop.metafields.theme.announcement_text }}</p>
+              </div>
+            </div>
+            <div class="site-header__main">
+              <div class="site-header__logo">
+                <a href="/">
+                  <span class="site-header__logo-text">{{ shop.name }}</span>
+                </a>
+              </div>
+              <nav class="site-header__nav">
+                <ul class="site-nav">
+                  {% for link in linklists.main-menu.links %}
+                    <li class="site-nav__item">
+                      <a href="{{ link.url }}" class="site-nav__link">{{ link.title }}</a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </nav>
+              <div class="site-header__actions">
+                <a href="/search" class="site-header__icon">
+                  <span class="icon icon-search"></span>
+                </a>
+                <a href="/account" class="site-header__icon">
+                  <span class="icon icon-user"></span>
+                </a>
+                <a href="/cart" class="site-header__cart">
+                  <span class="icon icon-cart"></span>
+                  <span class="cart-count">{{ cart.item_count }}</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main id="main" role="main">
+          {{ content_for_layout }}
+        </main>
+
+        <footer class="site-footer">
+          <div class="container">
+            <div class="site-footer__grid">
+              <div class="site-footer__column">
+                <h3 class="site-footer__title">{{ shop.name }}</h3>
+                <div class="site-footer__content">
+                  <p>{{ shop.description }}</p>
+                </div>
+              </div>
+              <div class="site-footer__column">
+                <h3 class="site-footer__title">Quick Links</h3>
+                <ul class="site-footer__menu">
+                  {% for link in linklists.footer.links %}
+                    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="site-footer__column">
+                <h3 class="site-footer__title">Contact Us</h3>
+                <div class="site-footer__content">
+                  <p>{{ shop.address.street }}<br>
+                  {{ shop.address.city }}, {{ shop.address.province }} {{ shop.address.zip }}</p>
+                  <p>{{ shop.email }}</p>
+                  <p>{{ shop.phone }}</p>
+                </div>
+              </div>
+              <div class="site-footer__column">
+                <h3 class="site-footer__title">Newsletter</h3>
+                <form action="/contact#newsletter-signup" method="post" class="site-footer__form">
+                  <input type="email" name="contact[email]" placeholder="Your email">
+                  <button type="submit">Subscribe</button>
+                </form>
+              </div>
+            </div>
+            <div class="site-footer__bottom">
+              <p>&copy; {{ 'now' | date: "%Y" }} {{ shop.name }}. All rights reserved. <a href="{{ shop.url }}">Powered by Shopify</a></p>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <script src="{{ 'theme.js' | asset_url }}" defer></script>
+    </body>
+    </html>
+  environment:
+    content_for_layout: |
+      <div class="template-product">
+        <div class="container">
+          <nav class="breadcrumbs" aria-label="Breadcrumbs">
+            <ol class="breadcrumbs__list">
+              <li class="breadcrumbs__item"><a href="/">Home</a></li>
+              <li class="breadcrumbs__item"><a href="/collections/snowboards">Snowboards</a></li>
+              <li class="breadcrumbs__item"><span aria-current="page">Arbor Pro Draft</span></li>
+            </ol>
+          </nav>
+
+          <div class="product">
+            <div class="product__media">
+              <div class="product__gallery">
+                <div class="product__main-image">
+                  <img src="/products/arbor-pro-draft_large.jpg" alt="Arbor Pro Draft" loading="lazy">
+                </div>
+                <div class="product__thumbnails">
+                  <button class="product__thumbnail-item active" data-image-id="img-1">
+                    <img src="/products/arbor-pro-draft_1_small.jpg" alt="Arbor Pro Draft - Front" loading="lazy">
+                  </button>
+                  <button class="product__thumbnail-item" data-image-id="img-2">
+                    <img src="/products/arbor-pro-draft_2_small.jpg" alt="Arbor Pro Draft - Back" loading="lazy">
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="product__details">
+              <h1 class="product__title">Arbor Pro Draft</h1>
+              <div class="product__vendor">
+                <span class="product__vendor-label">By</span>
+                <a href="/collections/vendors?q=Arbor" class="product__vendor-link">Arbor</a>
+              </div>
+
+              <div class="product__pricing">
+                <span class="product__price product__price--sale">$20.00</span>
+                <span class="product__price product__price--compare"><s>$28.00</s></span>
+                <span class="product__badge product__badge--sale">Sale</span>
+              </div>
+
+              <div class="product__description">
+                <p>The Arbor Pro Draft is our latest snowboard from Arbor. Designed for performance
+                and versatility, this snowboard delivers exceptional quality in any conditions.</p>
+                <p>Featuring advanced technology and a refined design. Perfect for beginners and
+                advanced riders. Available in 3 length options and 3 style choices.</p>
+              </div>
+
+              <form method="post" action="/cart/add" id="product-form" class="product-form" data-product-id="1">
+                <div class="product-form__variants">
+                  <div class="product-form__option">
+                    <label for="Option-Length" class="product-form__label">Length</label>
+                    <select name="option-length" id="Option-Length" class="product-form__select">
+                      <option value="157cm">157cm</option>
+                      <option value="163cm">163cm</option>
+                      <option value="154cm">154cm</option>
+                    </select>
+                  </div>
+                  <div class="product-form__option">
+                    <label for="Option-Style" class="product-form__label">Style</label>
+                    <select name="option-style" id="Option-Style" class="product-form__select">
+                      <option value="Regular" selected>Regular</option>
+                      <option value="Wide">Wide</option>
+                      <option value="Mid-Wide">Mid-Wide</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="product-form__variant-select">
+                  <select name="id" id="ProductSelect" class="product-form__master-select">
+                    <option value="1" selected>157cm / Regular - $20.00</option>
+                    <option value="2">157cm / Wide - $25.00</option>
+                    <option value="3">157cm / Mid-Wide - $30.00</option>
+                    <option value="4">163cm / Regular - $35.00</option>
+                    <option value="5" disabled>163cm / Wide - $40.00 - Sold out</option>
+                    <option value="6">163cm / Mid-Wide - $45.00</option>
+                  </select>
+                </div>
+                <div class="product-form__quantity">
+                  <label for="Quantity" class="product-form__label">Quantity</label>
+                  <input type="number" id="Quantity" name="quantity" value="1" min="1" class="product-form__input">
+                </div>
+                <div class="product-form__submit">
+                  <button type="submit" name="add" class="button button--primary button--full product-form__add-to-cart">
+                    <span class="product-form__add-text">Add to Cart</span>
+                    <span class="product-form__price-text">$20.00</span>
+                  </button>
+                </div>
+              </form>
+
+              <div class="product__policies">
+                <div class="product__policy">
+                  <span class="product__policy-icon icon-shipping"></span>
+                  <span class="product__policy-text">Free shipping on orders over $100</span>
+                </div>
+                <div class="product__policy">
+                  <span class="product__policy-icon icon-return"></span>
+                  <span class="product__policy-text">30-day return policy</span>
+                </div>
+              </div>
+
+              <div class="product__meta">
+                <div class="product__type">Type: <a href="/collections/types?q=Snowboards">Snowboards</a></div>
+                <div class="product__vendor-meta">Vendor: <a href="/collections/vendors?q=Arbor">Arbor</a></div>
+              </div>
+
+              <div class="product__tags">
+                <h3 class="product__tags-title">Tags:</h3>
+                <ul class="tag-list">
+                  <li class="tag-list__item"><a href="/collections/all/park" class="tag">park</a></li>
+                  <li class="tag-list__item"><a href="/collections/all/freeride" class="tag">freeride</a></li>
+                  <li class="tag-list__item"><a href="/collections/all/eco-friendly" class="tag">eco-friendly</a></li>
+                  <li class="tag-list__item"><a href="/collections/all/freestyle" class="tag">freestyle</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section__header">
+              <h2 class="section__title">You Might Also Like</h2>
+            </div>
+            <div class="product-grid product-grid--4">
+              <div class="product-card">
+                <a href="/products/technine-elite-element" class="product-card__link">
+                  <div class="product-card__image">
+                    <img src="/products/technine-elite-element_medium.jpg" alt="Technine Elite Element" loading="lazy">
+                  </div>
+                  <div class="product-card__info">
+                    <h3 class="product-card__title">Technine Elite Element</h3>
+                    <div class="product-card__price">
+                      <span class="product-card__price--regular">$27.00</span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="product-card">
+                <a href="/products/burton-premium-rider" class="product-card__link">
+                  <div class="product-card__image">
+                    <img src="/products/burton-premium-rider_medium.jpg" alt="Burton Premium Rider" loading="lazy">
+                  </div>
+                  <div class="product-card__info">
+                    <h3 class="product-card__title">Burton Premium Rider</h3>
+                    <div class="product-card__price">
+                      <span class="product-card__price--regular">$34.00</span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="product-card">
+                <a href="/products/shopify-ultra-cruiser" class="product-card__link">
+                  <div class="product-card__image">
+                    <img src="/products/shopify-ultra-cruiser_medium.jpg" alt="Shopify Ultra Cruiser" loading="lazy">
+                  </div>
+                  <div class="product-card__info">
+                    <h3 class="product-card__title">Shopify Ultra Cruiser</h3>
+                    <div class="product-card__price">
+                      <span class="product-card__price--sale">$41.00</span>
+                      <span class="product-card__price--compare"><s>$57.40</s></span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="product-card">
+                <a href="/products/stormtech-classic-carver" class="product-card__link">
+                  <div class="product-card__image">
+                    <img src="/products/stormtech-classic-carver_medium.jpg" alt="Stormtech Classic Carver" loading="lazy">
+                  </div>
+                  <div class="product-card__info">
+                    <h3 class="product-card__title">Stormtech Classic Carver</h3>
+                    <div class="product-card__price">
+                      <span class="product-card__price--regular">$48.00</span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    template: "product"
+  expected_pattern: "(?m)DOCTYPE html.*Shopify Test Store.*assets.*Free shipping.*site-nav.*Catalog.*Snowboards.*Boots.*site-footer.*150 Elgin.*Newsletter.*Powered by Shopify"

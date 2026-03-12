@@ -78,16 +78,22 @@ module LiquidSpec
 
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
-    attr_reader :features, :known_failures
+    attr_reader :features, :known_failures, :suites
 
     def initialize
       @suite = :all
+      @suites = nil
       @filter = nil
       @verbose = false
       @strict_only = false
       @features = [:core]
       @known_failures = []
       expand_features!
+    end
+
+    # Set multiple suites to run (overrides suite)
+    def suites=(list)
+      @suites = Array(list).map(&:to_sym)
     end
 
     def features=(list)

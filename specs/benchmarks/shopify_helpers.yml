@@ -1,0 +1,296 @@
+---
+_metadata:
+  hint: |
+    These specs test Shopify-specific filters and tags needed by the theme benchmarks.
+    Implement each filter as described in the hints to pass the full theme benchmark suite.
+  doc: implementers/shopify-theme-filters.md
+  required_features:
+    - shopify_filters
+  data_files:
+    - _data/theme_database.yml
+specs:
+  # ── money filter ──────────────────────────────────────────────────────────────
+  - name: shopify_filter_money_basic
+    template: "{{ 19900 | money }}"
+    expected: "$199.00"
+    complexity: 1000
+    hint: |
+      Implement a 'money' filter that formats cents as dollars.
+      Input: integer representing cents (e.g., 19900).
+      Output: formatted string with $ prefix and 2 decimal places.
+      Algorithm: divide by 100.0, format as "$%.2f".
+      Return "" for nil input.
+
+  - name: shopify_filter_money_zero
+    template: "{{ 0 | money }}"
+    expected: "$0.00"
+    complexity: 1000
+    hint: |
+      The money filter should handle zero correctly.
+
+  - name: shopify_filter_money_large
+    template: "{{ 2179500 | money }}"
+    expected: "$21795.00"
+    complexity: 1000
+    hint: |
+      The money filter should handle large values (expensive products).
+
+  - name: shopify_filter_money_with_product
+    template: "{{ product.price | money }}"
+    environment:
+      product:
+        price: 29900
+    expected: "$299.00"
+    complexity: 1000
+    hint: |
+      The money filter works with product price fields (integer cents).
+
+  # ── product_img_url filter ────────────────────────────────────────────────────
+  - name: shopify_filter_product_img_url_small
+    template: '{{ "products/arbor_draft.jpg" | product_img_url: "small" }}'
+    expected: "/files/shops/random_number/products/arbor_draft_small.jpg"
+    complexity: 1000
+    hint: |
+      Implement a 'product_img_url' filter that generates product image URLs.
+      Input: image path string (e.g., "products/arbor_draft.jpg")
+      Argument: size string — one of: original, grande, large, medium, compact, small, thumb, icon
+      Output: URL with size suffix inserted before extension.
+
+      For size "original": "/files/shops/random_number/products/{filename}.{ext}"
+      For other sizes: "/files/shops/random_number/products/{filename}_{size}.{ext}"
+
+      Parse the input to extract filename and extension.
+      Default extension to "jpg" if none provided.
+
+  - name: shopify_filter_product_img_url_large
+    template: '{{ "products/arbor_draft.jpg" | product_img_url: "large" }}'
+    expected: "/files/shops/random_number/products/arbor_draft_large.jpg"
+    complexity: 1000
+    hint: |
+      product_img_url with "large" size inserts _large before the extension.
+
+  - name: shopify_filter_product_img_url_original
+    template: '{{ "products/arbor_draft.jpg" | product_img_url: "original" }}'
+    expected: "/files/shops/random_number/products/arbor_draft.jpg"
+    complexity: 1000
+    hint: |
+      product_img_url with "original" size returns the path without a size suffix.
+
+  # ── img_url filter (generic images) ──────────────────────────────────────────
+  - name: shopify_filter_img_url_medium
+    template: '{{ "blogs/news/article.jpg" | img_url: "medium" }}'
+    expected: "/assets/article_medium.jpg"
+    complexity: 1000
+    hint: |
+      Implement an 'img_url' filter for generic images (blogs, articles).
+      Input: image path string
+      Argument: size string (same sizes as product_img_url)
+      Output: "/assets/{filename}_{size}.{ext}"
+      For "original": "/assets/{filename}.{ext}"
+      Extract just the filename (last path segment) for the output.
+
+  - name: shopify_filter_img_url_from_hash
+    template: '{{ article.image | img_url: "medium" }}'
+    environment:
+      article:
+        image:
+          src: "blogs/news/my-post.jpg"
+    expected: "/assets/my-post_medium.jpg"
+    complexity: 1000
+    hint: |
+      img_url should also handle hash/object input with a "src" key.
+      If input responds to ["src"], extract the src value first, then process.
+
+  # ── asset_url filter ─────────────────────────────────────────────────────────
+  - name: shopify_filter_asset_url
+    template: '{{ "theme.css" | asset_url }}'
+    expected: "/files/1/[shop_id]/[shop_id]/assets/theme.css"
+    complexity: 1000
+    hint: |
+      Implement an 'asset_url' filter that generates asset URLs.
+      Input: filename string
+      Output: "/files/1/[shop_id]/[shop_id]/assets/{filename}"
+      This is a simple string prepend.
+
+  - name: shopify_filter_asset_url_js
+    template: '{{ "theme.js" | asset_url }}'
+    expected: "/files/1/[shop_id]/[shop_id]/assets/theme.js"
+    complexity: 1000
+    hint: |
+      asset_url works with any file type.
+
+  # ── handle filter (handleize) ────────────────────────────────────────────────
+  - name: shopify_filter_handle_basic
+    template: '{{ "Season 2005" | handle }}'
+    expected: "season-2005"
+    complexity: 1000
+    hint: |
+      Implement a 'handle' filter (also known as 'handleize').
+      Converts a string to a URL-safe handle:
+      1. Downcase the string
+      2. Remove quotes, parentheses, brackets: '"()[]
+      3. Replace any non-word characters (\W+) with hyphens
+      4. Strip leading/trailing hyphens
+
+      Example: "Season 2005" -> "season-2005"
+      Example: "Arbor Draft" -> "arbor-draft"
+
+  - name: shopify_filter_handle_special_chars
+    template: "{{ input | handle }}"
+    environment:
+      input: "It's a \"Test\" (Really)"
+    expected: "its-a-test-really"
+    complexity: 1000
+    hint: |
+      The handle filter removes quotes and parentheses before hyphenating.
+
+  # ── default_pagination filter ────────────────────────────────────────────────
+  - name: shopify_filter_default_pagination
+    template: "{{ paginate | default_pagination }}"
+    environment:
+      paginate:
+        current_page: 1
+        pages: 3
+        previous:
+        next:
+          title: "Next &raquo;"
+          url: "?page=2"
+          is_link: true
+        parts:
+          - title: "1"
+            is_link: false
+          - title: "2"
+            url: "?page=2"
+            is_link: true
+          - title: "3"
+            url: "?page=3"
+            is_link: true
+    expected_pattern: 'page.*current.*1.*page.*href.*page=2.*2.*page.*href.*page=3.*3.*next.*href.*page=2'
+    complexity: 1000
+    hint: |
+      Implement a 'default_pagination' filter that renders pagination HTML.
+      Input: paginate hash with keys: current_page, pages, previous, next, parts
+
+      Output HTML structure:
+      - If previous exists: <span class="prev"><a href="{url}" title="{title}">{title}</a></span>
+      - For each part:
+        - If is_link and url: <span class="page"><a href="{url}" title="{title}">{title}</a></span>
+        - If title matches current_page: <span class="page current">{title}</span>
+        - Otherwise: <span class="deco">{title}</span>
+      - If next exists: <span class="next"><a href="{url}" title="{title}">{title}</a></span>
+
+      Join all parts with spaces.
+
+  # ── paginate tag ─────────────────────────────────────────────────────────────
+  - name: shopify_tag_paginate_basic
+    template: |
+      {% paginate products by 3 %}
+      {% for product in products %}{{ product.title }}, {% endfor %}
+      Page {{ paginate.current_page }} of {{ paginate.pages }}
+      {% endpaginate %}
+    environment:
+      current_page: 1
+      products:
+        - title: A
+        - title: B
+        - title: C
+        - title: D
+        - title: E
+    expected_pattern: "(?m)A,.*B,.*C,.*Page 1 of 2"
+    complexity: 1000
+    hint: |
+      Implement a {% paginate %} block tag.
+      Syntax: {% paginate <collection> by <page_size> %}...{% endpaginate %}
+
+      Behavior:
+      1. Parse the collection variable name and page_size from markup
+      2. Read 'current_page' from context (default to 1)
+      3. Calculate total pages: ceil(collection.size / page_size)
+      4. Slice the collection for the current page: offset = (current_page - 1) * page_size
+      5. Replace the collection variable in context with the sliced version
+      6. Set context["paginate"] with:
+         - current_page, page_size, items (total count), pages (total pages)
+         - previous: {title: "&laquo; Previous", url: "?page=N", is_link: true} or nil
+         - next: {title: "Next &raquo;", url: "?page=N", is_link: true} or nil
+         - parts: array of page number objects with title, url, is_link, current flags
+      7. Render the block body with the modified context
+      8. Restore original context after endpaginate
+
+      This is the most complex Shopify extension. It requires:
+      - Custom block tag parsing
+      - Collection slicing
+      - Pagination metadata generation
+      - Context stack management
+
+  - name: shopify_tag_paginate_page_2
+    template: |
+      {% paginate items by 2 %}
+      {% for item in items %}{{ item.name }}, {% endfor %}
+      Page {{ paginate.current_page }} of {{ paginate.pages }}
+      {% endpaginate %}
+    environment:
+      current_page: 2
+      items:
+        - name: Alpha
+        - name: Beta
+        - name: Gamma
+        - name: Delta
+        - name: Epsilon
+    expected_pattern: "(?m)Gamma,.*Delta,.*Page 2 of 3"
+    complexity: 1000
+    hint: |
+      Test paginate on page 2. The collection should be sliced to items 3-4
+      (offset 2, limit 2). current_page comes from the context variable.
+
+  # ── pluralize filter ─────────────────────────────────────────────────────────
+  - name: shopify_filter_pluralize_singular
+    template: '{{ 1 | pluralize: "item", "items" }}'
+    expected: "item"
+    complexity: 1000
+    hint: |
+      Implement a 'pluralize' filter.
+      Arguments: singular form, plural form
+      Returns singular when input == 1, plural otherwise.
+
+  - name: shopify_filter_pluralize_plural
+    template: '{{ 5 | pluralize: "item", "items" }}'
+    expected: "items"
+    complexity: 1000
+    hint: |
+      pluralize returns the plural form when input != 1.
+
+  # ── money_with_currency filter ───────────────────────────────────────────────
+  - name: shopify_filter_money_with_currency
+    template: "{{ 19900 | money_with_currency }}"
+    expected: "$199.00 USD"
+    complexity: 1000
+    hint: |
+      Like money, but appends " USD" to the formatted amount.
+      Format: "$%.2f USD" where input is cents / 100.0.
+
+  # ── weight_with_unit filter ──────────────────────────────────────────────────
+  - name: shopify_filter_weight_with_unit
+    template: "{{ 1500 | weight_with_unit }}"
+    expected: "1.50 kg"
+    complexity: 1000
+    hint: |
+      Implement weight_with_unit: converts grams to kg.
+      Input: grams (integer). Output: "X.XX kg"
+      Algorithm: divide by 1000.0, format as "%.2f kg".
+
+  # ── script_tag / stylesheet_tag filters ──────────────────────────────────────
+  - name: shopify_filter_script_tag
+    template: '{{ "/assets/theme.js" | script_tag }}'
+    expected: '<script src="/assets/theme.js" type="text/javascript"></script>'
+    complexity: 1000
+    hint: |
+      Implement script_tag filter: wraps URL in a <script> tag.
+      HTML-escape the URL in the src attribute.
+
+  - name: shopify_filter_stylesheet_tag
+    template: '{{ "/assets/theme.css" | stylesheet_tag }}'
+    expected: '<link href="/assets/theme.css" rel="stylesheet" type="text/css"  media="all"  />'
+    complexity: 1000
+    hint: |
+      Implement stylesheet_tag filter: wraps URL in a <link> tag.
+      Default media is "all". HTML-escape the href.
