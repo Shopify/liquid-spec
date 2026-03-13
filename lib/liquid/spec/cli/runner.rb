@@ -771,17 +771,15 @@ module Liquid
 
             context = LiquidSpec.adapter_context(spec, adapter_timeout: nil)
             LiquidSpec.do_compile(spec.template, compile_options, context)
-            assigns = deep_copy(spec.instantiate_environment)
             render_options = {
               registers: build_registers(spec, filesystem),
               strict_errors: false,
             }.compact
 
-            # Deep copy once — reuse via shallow .dup per iteration
-            # This avoids O(n) deep_copy of large environments (e.g., 504KB theme database)
-            # on every benchmark iteration. Templates may mutate top-level keys via assign/include
-            # but won't mutate nested objects, so a shallow dup is safe for benchmarking.
-            assigns_snapshot = deep_copy(assigns)
+            # Deep copy the environment once up front. Reuse via shallow .dup per iteration.
+            # Templates may mutate top-level keys via assign/include but won't mutate nested
+            # objects, so a shallow dup is sufficient for benchmark isolation.
+            assigns_snapshot = deep_copy(spec.instantiate_environment)
 
             # Verify expected output first (warm up + validation)
             actual = LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
