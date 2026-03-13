@@ -777,8 +777,14 @@ module Liquid
               strict_errors: false,
             }.compact
 
+            # Deep copy once — reuse via shallow .dup per iteration
+            # This avoids O(n) deep_copy of large environments (e.g., 504KB theme database)
+            # on every benchmark iteration. Templates may mutate top-level keys via assign/include
+            # but won't mutate nested objects, so a shallow dup is safe for benchmarking.
+            assigns_snapshot = deep_copy(assigns)
+
             # Verify expected output first (warm up + validation)
-            actual = LiquidSpec.do_render(deep_copy(assigns), render_options, context)
+            actual = LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
             if spec.expected && actual != spec.expected
               return {
                 name: spec.name,
@@ -790,7 +796,7 @@ module Liquid
             # Warm up
             3.times do
               LiquidSpec.do_compile(spec.template, compile_options, context)
-              LiquidSpec.do_render(deep_copy(assigns), render_options, context)
+              LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
             end
 
             # Count allocations for a single compile+render cycle
@@ -800,7 +806,7 @@ module Liquid
             compile_allocs = GC.stat(:total_allocated_objects) - alloc_before
 
             alloc_before = GC.stat(:total_allocated_objects)
-            LiquidSpec.do_render(deep_copy(assigns), render_options, context)
+            LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
             render_allocs = GC.stat(:total_allocated_objects) - alloc_before
 
             # Disable GC for consistent timing
@@ -813,7 +819,7 @@ module Liquid
 
             # Benchmark render (half the duration)
             render_times = benchmark_operation(duration_seconds / 2.0) do
-              LiquidSpec.do_render(deep_copy(assigns), render_options, context)
+              LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
             end
 
             # Re-enable GC
