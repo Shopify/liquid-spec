@@ -1,0 +1,45 @@
+---
+_metadata:
+  doc: implementers/partials.md
+  hint: |
+    Benchmarks for dynamic partial runtime path. These cannot be inlined at parse time
+    because the partial name comes from data.
+specs:
+- name: bench_dynamic_include_switch
+  template: |
+    {% for t in template_names %}
+      {% assign tpl = t %}
+      {% include tpl %}
+    {% endfor %}
+  environment:
+    template_names: [row_a, row_b, row_c, row_a, row_b, row_c, row_a, row_b, row_c, row_a]
+    value: "X"
+  filesystem:
+    row_a: "<div class='a'>A{{ value }}</div>"
+    row_b: "<div class='b'>B{{ value }}</div>"
+    row_c: "<div class='c'>C{{ value }}</div>"
+  expected_pattern: "(?m).*A[X].*B[X].*C[X].*A[X].*"
+  complexity: 1000
+
+- name: bench_dynamic_include_for_loop
+  template: "{% include tpl for items %}"
+  environment:
+    tpl: "item_row"
+    items: [1,2,3,4,5,6,7,8,9,10]
+  filesystem:
+    item_row: "[{{ item_row }}]"
+  expected_pattern: "\\[1\\]\\[2\\]\\[3\\]\\[4\\]\\[5\\]\\[6\\]\\[7\\]\\[8\\]\\[9\\]\\[10\\]"
+  complexity: 1000
+
+- name: bench_dynamic_include_nested
+  template: |
+    {% assign tpl = 'outer' %}
+    {% include tpl %}
+  environment:
+    inner_tpl: "inner"
+    payload: "ok"
+  filesystem:
+    outer: "<section>{% include inner_tpl %}</section>"
+    inner: "<span>{{ payload }}</span>"
+  expected_pattern: "<section><span>ok</span></section>"
+  complexity: 1000

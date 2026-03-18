@@ -1,0 +1,50 @@
+---
+_metadata:
+  doc: implementers/partials.md
+  hint: |
+    Dynamic partial names are resolved at render time (not parse time).
+    These tests focus on include with variable template names.
+specs:
+- name: dynamic_include_switches_per_render
+  template: "{% include tpl %}"
+  filesystem:
+    a: "A"
+    b: "B"
+  environment:
+    tpl: "a"
+  expected: "A"
+
+- name: dynamic_include_for_iterates
+  template: "{% include tpl for items %}"
+  filesystem:
+    item: "[{{ item }}]"
+  environment:
+    tpl: "item"
+    items: [1, 2, 3, 4]
+  expected: "[1][2][3][4]"
+
+- name: dynamic_include_nested
+  template: "{% include tpl %}"
+  filesystem:
+    outer: "[OUT:{% include inner_tpl %}]"
+    inner: "{{ value }}"
+  environment:
+    tpl: "outer"
+    inner_tpl: "inner"
+    value: "ok"
+  expected: "[OUT:ok]"
+
+- name: dynamic_include_missing_partial_inline_error
+  template: "{% include tpl %}"
+  filesystem: {}
+  environment:
+    tpl: "missing"
+  expected: "render_error matching /Could\\ not\\ find\\ partial/i"
+
+- name: dynamic_include_illegal_name_inline_error
+  template: "{% include tpl %}"
+  filesystem:
+    x: "X"
+  environment:
+    tpl: 123
+  expected: "render_error matching /Illegal\\ template\\ name/i"
