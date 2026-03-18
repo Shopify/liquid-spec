@@ -30,7 +30,7 @@ module Liquid
       attr_reader :name, :template, :template_name, :expected, :expected_pattern, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :render_errors, :required_features
       attr_reader :source_file, :line_number
-      attr_reader :raw_environment, :raw_filesystem, :raw_template_factory
+      attr_reader :raw_environment, :raw_filesystem, :raw_template_factory, :raw_resource_limits
 
       def initialize(
         name:,
@@ -50,6 +50,7 @@ module Liquid
         raw_environment: {},
         raw_filesystem: {},
         raw_template_factory: nil,
+        raw_resource_limits: {},
         source_hint: nil,
         source_required_options: {}
       )
@@ -70,6 +71,7 @@ module Liquid
         @raw_environment = raw_environment || {}
         @raw_filesystem = raw_filesystem || {}
         @raw_template_factory = raw_template_factory
+        @raw_resource_limits = raw_resource_limits || {}
         @source_hint = source_hint
         @source_required_options = source_required_options || {}
 
