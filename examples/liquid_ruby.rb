@@ -19,12 +19,13 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :strict_parsing, :ruby_types]
+  config.features = [:core, :strict_parsing, :strict2_parsing, :ruby_types]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
-  # Force strict mode regardless of spec (override comes after splat)
-  ctx[:template] = Liquid::Template.parse(source, **parse_options, error_mode: :strict)
+  # Use spec's error_mode if provided, default to :strict
+  parse_options[:error_mode] ||= :strict
+  ctx[:template] = Liquid::Template.parse(source, **parse_options)
 end
 
 LiquidSpec.render do |ctx, assigns, render_options|

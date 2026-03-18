@@ -78,6 +78,8 @@ module Liquid
           @required_features << :lax_parsing
         elsif @error_mode == :strict && !@required_features.include?(:strict_parsing)
           @required_features << :strict_parsing
+        elsif @error_mode == :strict2 && !@required_features.include?(:strict2_parsing)
+          @required_features << :strict2_parsing
         end
       end
 
