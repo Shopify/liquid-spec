@@ -1,0 +1,756 @@
+---
+_metadata:
+  doc: implementers/partials.md
+  hint: |
+    DYNAMIC PARTIALS — Advanced feature requiring deferred compilation.
+
+    Only {% include %} supports dynamic partial names (via variable expressions).
+    {% render %} requires a static string literal and CANNOT use variables.
+
+      ✅  {% include template_name %}         — variable name, resolved at render time
+      ✅  {% include item.partial %}           — object property, resolved at render time
+      ✅  {% include names[0] %}               — array element, resolved at render time
+      ❌  {% render template_name %}           — SYNTAX ERROR, render requires a string literal
+
+    This distinction matters for compilation strategy:
+    - render partials can be compiled/analyzed at parse time (the name is known statically)
+    - include partials with variables MUST defer filesystem lookup and parsing to render time
+
+    Dynamic includes are the primary reason {% include %} cannot be fully deprecated.
+    Real-world CMS systems depend heavily on this pattern for:
+    - Type-based section/block rendering (each block specifies its own template)
+    - Configurable layouts (theme settings choose which header/footer partial to use)
+    - Form builders (each field type maps to a different partial)
+    - Email template systems (layout + content type are both configurable)
+  minimum_complexity: 500
+specs:
+
+# ── Basic dynamic include ──────────────────────────────────────────────────────
+
+- name: dynamic_include_from_variable
+  template: "{% assign tpl = 'greeting' %}{% include tpl %}"
+  filesystem:
+    greeting: Hello!
+  expected: Hello!
+  complexity: 500
+  hint: |
+    The simplest dynamic include: the partial name comes from an assigned variable.
+    At parse time, you don't know which partial will be included — you must
+    defer the filesystem lookup to render time. Parse the include tag, note
+    that the argument is a variable (not a quoted string), and resolve it
+    during rendering.
+
+- name: dynamic_include_from_environment
+  template: "{% include layout %}"
+  environment:
+    layout: page
+  filesystem:
+    page: Page content
+  expected: Page content
+  complexity: 500
+  hint: |
+    The partial name comes from the environment (context variables passed in).
+    This is the most common real-world pattern: a CMS stores which template
+    to use as a variable.
+
+- name: dynamic_include_from_object_property
+  template: "{% include item.template %}"
+  environment:
+    item:
+      template: card
+      title: Widget
+  filesystem:
+    card: "Card: {{ item.title }}"
+  expected: "Card: Widget"
+  complexity: 500
+  hint: |
+    The partial name comes from an object property (dot access). The include
+    tag must evaluate the full variable expression (item.template) at render
+    time to get the string "card", then load that partial.
+
+- name: dynamic_include_deeply_nested_property
+  template: "{% include settings.layout.template %}"
+  environment:
+    settings:
+      layout:
+        template: sidebar
+  filesystem:
+    sidebar: Sidebar layout
+  expected: Sidebar layout
+  complexity: 510
+  hint: |
+    Deep property access for partial names. The variable expression
+    settings.layout.template must be fully resolved to get "sidebar".
+
+# ── Dynamic include with parameters ────────────────────────────────────────────
+
+- name: dynamic_include_with_static_params
+  template: "{% assign tpl = 'card' %}{% include tpl, title: 'Widget', price: 99 %}"
+  filesystem:
+    card: "{{ title }}: ${{ price }}"
+  expected: "Widget: $99"
+  complexity: 520
+  hint: |
+    Dynamic partial name combined with static parameters. Both the dynamic
+    name resolution and parameter passing must work together.
+
+- name: dynamic_include_with_variable_params
+  template: |
+    {% assign tpl = 'card' %}{% assign name = 'Widget' %}{% include tpl, title: name %}
+  filesystem:
+    card: "Title: {{ title }}"
+  expected: |
+    Title: Widget
+  complexity: 520
+  hint: |
+    Both the partial name AND the parameter values come from variables.
+    All must be resolved at render time.
+
+- name: dynamic_include_with_with_clause
+  template: "{% assign tpl = 'product' %}{% include tpl with featured %}"
+  environment:
+    featured: Widget
+  filesystem:
+    product: "Product: {{ product }}"
+  expected: "Product: Widget"
+  complexity: 530
+  hint: |
+    Dynamic include with 'with' binding. The partial name comes from a variable,
+    and the bound value uses the resolved partial name as its variable name.
+    So if tpl="product", the value is bound to 'product' inside the partial.
+
+- name: dynamic_include_with_as_alias
+  template: "{% assign tpl = 'card' %}{% include tpl with featured as item %}"
+  environment:
+    featured: Widget
+  filesystem:
+    card: "Item: {{ item }}"
+  expected: "Item: Widget"
+  complexity: 530
+  hint: |
+    Dynamic include with 'with ... as' aliasing. The partial name is dynamic
+    but the alias is a static identifier.
+
+- name: dynamic_include_with_for_iteration
+  template: "{% assign tpl = 'row' %}{% include tpl for items %}"
+  environment:
+    items:
+      - a
+      - b
+      - c
+  filesystem:
+    row: "[{{ row }}]"
+  expected: "[a][b][c]"
+  complexity: 530
+  hint: |
+    Dynamic include with 'for' iteration. The partial name is resolved once
+    from the variable, then the partial is rendered once per item. The
+    iteration variable is named after the RESOLVED partial name ("row").
+
+- name: dynamic_include_for_with_alias
+  template: "{% assign tpl = 'card' %}{% include tpl for products as product %}"
+  environment:
+    products:
+      - Widget
+      - Gadget
+  filesystem:
+    card: "[{{ product }}]"
+  expected: "[Widget][Gadget]"
+  complexity: 530
+  hint: |
+    Dynamic include with 'for ... as' — the partial name is dynamic,
+    the alias is static.
+
+# ── Conditional dynamic dispatch ───────────────────────────────────────────────
+
+- name: dynamic_include_conditional_dispatch
+  template: |
+    {% if use_fancy %}{% assign tpl = 'fancy' %}{% else %}{% assign tpl = 'simple' %}{% endif %}{% include tpl %}
+  environment:
+    use_fancy: true
+  filesystem:
+    fancy: "FANCY"
+    simple: "SIMPLE"
+  expected: |
+    FANCY
+  complexity: 560
+  hint: |
+    The partial name is chosen at render time based on a condition. This is
+    the core "dynamic dispatch" pattern: the template chooses which partial
+    to render based on data. The compiler cannot know which path will be taken.
+
+- name: dynamic_include_conditional_dispatch_false
+  template: |
+    {% if use_fancy %}{% assign tpl = 'fancy' %}{% else %}{% assign tpl = 'simple' %}{% endif %}{% include tpl %}
+  environment:
+    use_fancy: false
+  filesystem:
+    fancy: "FANCY"
+    simple: "SIMPLE"
+  expected: |
+    SIMPLE
+  complexity: 560
+  hint: |
+    Same dispatch pattern, different branch taken.
+
+- name: dynamic_include_type_based_dispatch
+  template: "{% for block in blocks %}{% include block.type, block: block %}{% endfor %}"
+  environment:
+    blocks:
+      - type: heading
+        text: Welcome
+        level: 2
+      - type: paragraph
+        text: Hello world
+      - type: heading
+        text: Features
+        level: 3
+      - type: image
+        src: hero.jpg
+        alt: Hero image
+  filesystem:
+    heading: "<h{{ block.level }}>{{ block.text }}</h{{ block.level }}>"
+    paragraph: "<p>{{ block.text }}</p>"
+    image: '<img src="{{ block.src }}" alt="{{ block.alt }}">'
+  expected: '<h2>Welcome</h2><p>Hello world</p><h3>Features</h3><img src="hero.jpg" alt="Hero image">'
+  complexity: 580
+  hint: |
+    TYPE-BASED DISPATCH: Each block has a 'type' field that determines which
+    partial to render. This is the most important real-world pattern for dynamic
+    includes — content management systems use it to render heterogeneous blocks.
+
+    At compile time, you cannot know which partials will be used. You must:
+    1. Iterate over the blocks array
+    2. For each block, read block.type to get the partial name
+    3. Load and render that partial, passing the block as a parameter
+
+    This pattern requires deferring partial compilation to render time.
+
+- name: dynamic_include_section_rendering
+  template: |
+    {% for section in page.sections %}{% include section.template, section: section %}
+    {% endfor %}
+  environment:
+    page:
+      sections:
+        - template: hero
+          title: "Welcome to Our Store"
+          subtitle: "Shop the latest collection"
+        - template: featured_products
+          title: "Featured Products"
+          items:
+            - name: Widget
+              price: 29
+            - name: Gadget
+              price: 49
+            - name: Gizmo
+              price: 19
+        - template: newsletter
+          title: "Stay Updated"
+          placeholder: "Enter your email"
+  filesystem:
+    hero: |
+      <section class="hero"><h1>{{ section.title }}</h1><p>{{ section.subtitle }}</p></section>
+    featured_products: |
+      <section class="featured"><h2>{{ section.title }}</h2>{% for item in section.items %}<div class="product">{{ item.name }}: ${{ item.price }}</div>{% endfor %}</section>
+    newsletter: |
+      <section class="newsletter"><h2>{{ section.title }}</h2><input placeholder="{{ section.placeholder }}"></section>
+  expected: |+
+    <section class="hero"><h1>Welcome to Our Store</h1><p>Shop the latest collection</p></section>
+
+    <section class="featured"><h2>Featured Products</h2><div class="product">Widget: $29</div><div class="product">Gadget: $49</div><div class="product">Gizmo: $19</div></section>
+
+    <section class="newsletter"><h2>Stay Updated</h2><input placeholder="Enter your email"></section>
+
+
+  complexity: 580
+  hint: |
+    SECTION RENDERING: A page is composed of sections, each with its own
+    template. This is how real CMSes work — a page definition stores an
+    array of sections, each referencing a template by name.
+
+    This tests:
+    - Dynamic partial name from nested property (section.template)
+    - Passing the entire section object as a parameter
+    - Each partial accesses different properties of its section
+    - One partial (featured_products) has its own nested for loop
+
+# ── Dynamic includes with scope ────────────────────────────────────────────────
+
+- name: dynamic_include_shares_outer_scope
+  template: "{% assign x = 'visible' %}{% assign tpl = 'show' %}{% include tpl %}"
+  filesystem:
+    show: "[{{ x }}]"
+  expected: "[visible]"
+  complexity: 530
+  hint: |
+    Dynamic includes behave exactly like static includes regarding scope —
+    outer variables are visible inside the partial. The dynamic name
+    resolution doesn't change scope behavior.
+
+- name: dynamic_include_leaks_to_outer_scope
+  template: "{% assign tpl = 'setter' %}{% include tpl %}{{ leaked }}"
+  filesystem:
+    setter: "{% assign leaked = 'yes' %}"
+  expected: "yes"
+  complexity: 530
+  hint: |
+    Variables assigned inside a dynamically included partial leak to the
+    outer scope, just like static includes.
+
+- name: dynamic_include_modifies_shared_state
+  template: |
+    {% assign count = 0 %}{% for tpl in templates %}{% include tpl %}{% endfor %}Total: {{ count }}
+  environment:
+    templates:
+      - counter
+      - counter
+      - counter
+  filesystem:
+    counter: "{% assign count = count | plus: 1 %}"
+  expected: |
+    Total: 3
+  complexity: 550
+  hint: |
+    Dynamic includes share scope with the caller. Each include of "counter"
+    increments the shared 'count' variable. After 3 iterations, count is 3.
+    This tests that dynamic includes interact correctly with shared state.
+
+# ── Dynamic name from computed values ──────────────────────────────────────────
+
+- name: dynamic_include_name_from_filter
+  template: "{% assign type = 'CARD' %}{% assign tpl = type | downcase %}{% include tpl %}"
+  filesystem:
+    card: Card partial
+  expected: Card partial
+  complexity: 550
+  hint: |
+    The partial name is computed using a filter. You first assign the
+    downcased value, then include it. The template name resolution
+    must handle any string value, including those produced by filters.
+
+- name: dynamic_include_name_with_prefix
+  template: |
+    {% assign base = 'hero' %}{% assign tpl = 'sections/' | append: base %}{% include tpl %}
+  filesystem:
+    sections/hero: Hero section
+  expected: |
+    Hero section
+  complexity: 550
+  hint: |
+    The partial name is constructed by appending strings. This is a
+    common pattern for organizing partials into directories/namespaces.
+    The filesystem must support path-like keys.
+
+- name: dynamic_include_name_from_array_element
+  template: "{% include partials[1] %}"
+  environment:
+    partials:
+      - header
+      - sidebar
+      - footer
+  filesystem:
+    header: HEADER
+    sidebar: SIDEBAR
+    footer: FOOTER
+  expected: SIDEBAR
+  complexity: 550
+  hint: |
+    The partial name comes from an array element via bracket notation.
+    partials[1] resolves to "sidebar" at render time.
+
+- name: dynamic_include_name_from_first_filter
+  template: "{% assign tpl = templates | first %}{% include tpl %}"
+  environment:
+    templates:
+      - greeting
+      - farewell
+  filesystem:
+    greeting: Hello!
+    farewell: Goodbye!
+  expected: Hello!
+  complexity: 550
+  hint: |
+    The partial name is extracted from an array using the 'first' filter.
+    This demonstrates that any expression that evaluates to a string can
+    provide the partial name.
+
+# ── Iterating with different dynamic partials ──────────────────────────────────
+
+- name: dynamic_include_different_partials_per_iteration
+  template: "{% for name in partial_names %}{% include name %}{% endfor %}"
+  environment:
+    partial_names:
+      - header
+      - body
+      - footer
+  filesystem:
+    header: "[HEADER]"
+    body: "[BODY]"
+    footer: "[FOOTER]"
+  expected: "[HEADER][BODY][FOOTER]"
+  complexity: 570
+  hint: |
+    Each iteration of the for loop includes a DIFFERENT partial. The partial
+    name changes on every iteration. This is the key test for deferred
+    compilation — you cannot precompile a single partial at parse time.
+
+- name: dynamic_include_heterogeneous_list
+  template: |
+    {% for widget in widgets %}{% include widget.partial, data: widget.data %}
+    {% endfor %}
+  environment:
+    widgets:
+      - partial: text_widget
+        data:
+          content: "Hello world"
+      - partial: counter_widget
+        data:
+          count: 42
+          label: visitors
+      - partial: text_widget
+        data:
+          content: "Goodbye"
+      - partial: list_widget
+        data:
+          title: Colors
+          items:
+            - red
+            - green
+            - blue
+  filesystem:
+    text_widget: "<p>{{ data.content }}</p>"
+    counter_widget: "<span class=\"counter\">{{ data.count }} {{ data.label }}</span>"
+    list_widget: |
+      <div><h4>{{ data.title }}</h4><ul>{% for i in data.items %}<li>{{ i }}</li>{% endfor %}</ul></div>
+  expected: |+
+    <p>Hello world</p>
+    <span class="counter">42 visitors</span>
+    <p>Goodbye</p>
+    <div><h4>Colors</h4><ul><li>red</li><li>green</li><li>blue</li></ul></div>
+
+
+  complexity: 600
+  hint: |
+    A heterogeneous widget list — each widget specifies its own partial AND
+    its own data shape. This tests:
+    1. Different partial per iteration (deferred compilation)
+    2. Each partial receives different data structures
+    3. One partial (list_widget) has a nested for loop
+    4. Partials can be reused (text_widget appears twice)
+
+    This is a very realistic CMS pattern.
+
+# ── Dynamic include with nested partials ───────────────────────────────────────
+
+- name: dynamic_include_nested_static_inside_dynamic
+  template: "{% assign tpl = 'wrapper' %}{% include tpl %}"
+  filesystem:
+    wrapper: "BEFORE{% include 'inner' %}AFTER"
+    inner: "[INNER]"
+  expected: "BEFORE[INNER]AFTER"
+  complexity: 580
+  hint: |
+    A dynamically included partial can itself include other partials
+    statically. The dynamic resolution is only for the outer include.
+
+- name: dynamic_include_nested_dynamic_inside_dynamic
+  template: "{% assign tpl = 'wrapper' %}{% include tpl %}"
+  environment:
+    inner_tpl: content
+  filesystem:
+    wrapper: "{% include inner_tpl %}"
+    content: "[CONTENT]"
+  expected: "[CONTENT]"
+  complexity: 600
+  hint: |
+    Double dynamic: the outer include is dynamic (tpl variable), and the
+    inner include is also dynamic (inner_tpl variable). Both must defer
+    resolution to render time.
+
+- name: dynamic_include_three_levels_deep
+  template: "{% include level %}"
+  environment:
+    level: level1
+    sublevel: level2
+    subsublevel: level3
+  filesystem:
+    level1: "1>{% include sublevel %}"
+    level2: "2>{% include subsublevel %}"
+    level3: "3"
+  expected: "1>2>3"
+  complexity: 620
+  hint: |
+    Three levels of dynamic includes, each resolving a different variable.
+    The partial chain is: level1 -> level2 -> level3, all via dynamic names.
+
+# ── Dynamic include with missing/nil partial names ─────────────────────────────
+
+- name: dynamic_include_nil_name
+  template: "{% include missing_var %}"
+  errors:
+    output:
+      - Illegal template name
+  render_errors: true
+  required_features: [inline_errors]
+  complexity: 550
+  hint: |
+    When the variable resolving the partial name is nil/undefined,
+    a "Illegal template name" error should be raised. The template
+    name must be a non-nil string.
+
+- name: dynamic_include_empty_string_name
+  template: "{% assign tpl = '' %}{% include tpl %}"
+  errors:
+    output:
+      - Could not find
+  render_errors: true
+  required_features: [inline_errors]
+  complexity: 550
+  hint: |
+    An empty string resolves to a file lookup for "" which doesn't exist.
+    This produces a "Could not find asset" file system error.
+
+- name: dynamic_include_missing_partial
+  template: "{% assign tpl = 'nonexistent' %}{% include tpl %}"
+  errors:
+    output:
+      - Could not find
+  render_errors: true
+  required_features: [inline_errors]
+  complexity: 550
+  hint: |
+    When the variable resolves to a valid string but the partial doesn't
+    exist in the filesystem, a file-not-found error should be raised.
+
+# ── Dynamic include in realistic scenarios ─────────────────────────────────────
+
+- name: dynamic_include_theme_layout_system
+  template: |
+    {% assign header_style = settings.header_type %}{% include header_style %}
+    <main>{{ content }}</main>
+    {% assign footer_style = settings.footer_type %}{% include footer_style %}
+  environment:
+    settings:
+      header_type: header_minimal
+      footer_type: footer_full
+    content: "<p>Page content here</p>"
+    site_name: "My Store"
+    footer_links:
+      - title: About
+        url: /about
+      - title: Contact
+        url: /contact
+  filesystem:
+    header_minimal: |
+      <header class="minimal"><nav>{{ site_name }}</nav></header>
+    header_full: |
+      <header class="full"><div class="logo">{{ site_name }}</div><nav>Full nav here</nav></header>
+    footer_minimal: |
+      <footer class="minimal">&copy; {{ site_name }}</footer>
+    footer_full: |
+      <footer class="full">{% for link in footer_links %}<a href="{{ link.url }}">{{ link.title }}</a> {% endfor %}</footer>
+  expected: |+
+    <header class="minimal"><nav>My Store</nav></header>
+
+    <main><p>Page content here</p></main>
+    <footer class="full"><a href="/about">About</a> <a href="/contact">Contact</a> </footer>
+
+  complexity: 650
+  hint: |
+    THEME LAYOUT SYSTEM: The header and footer styles are configurable via
+    settings. This is exactly how real Shopify themes work — the merchant
+    picks a header style, and the layout dynamically includes the right partial.
+
+    Tests:
+    - Multiple dynamic includes in one template
+    - Variable comes from nested object (settings.header_type)
+    - Each partial accesses shared scope (site_name, footer_links)
+    - One partial has a for loop
+
+- name: dynamic_include_form_builder
+  template: |
+    <form>
+    {% for field in form.fields %}{% include field.type, field: field %}
+    {% endfor %}
+    <button type="submit">{{ form.submit_label }}</button>
+    </form>
+  environment:
+    form:
+      submit_label: Send Message
+      fields:
+        - type: text_input
+          name: name
+          label: Your Name
+          required: true
+        - type: email_input
+          name: email
+          label: Email Address
+          required: true
+        - type: select_input
+          name: subject
+          label: Subject
+          options:
+            - General
+            - Support
+            - Sales
+        - type: textarea_input
+          name: message
+          label: Message
+          rows: 5
+  filesystem:
+    text_input: |
+      <div class="field"><label>{{ field.label }}{% if field.required %} *{% endif %}</label><input type="text" name="{{ field.name }}"></div>
+    email_input: |
+      <div class="field"><label>{{ field.label }}{% if field.required %} *{% endif %}</label><input type="email" name="{{ field.name }}"></div>
+    select_input: |
+      <div class="field"><label>{{ field.label }}</label><select name="{{ field.name }}">{% for opt in field.options %}<option>{{ opt }}</option>{% endfor %}</select></div>
+    textarea_input: |
+      <div class="field"><label>{{ field.label }}</label><textarea name="{{ field.name }}" rows="{{ field.rows }}"></textarea></div>
+  expected: |+
+    <form>
+    <div class="field"><label>Your Name *</label><input type="text" name="name"></div>
+
+    <div class="field"><label>Email Address *</label><input type="email" name="email"></div>
+
+    <div class="field"><label>Subject</label><select name="subject"><option>General</option><option>Support</option><option>Sales</option></select></div>
+
+    <div class="field"><label>Message</label><textarea name="message" rows="5"></textarea></div>
+
+
+    <button type="submit">Send Message</button>
+    </form>
+  complexity: 650
+  hint: |
+    FORM BUILDER: A form definition lists fields, each with a type that maps
+    to a partial. This is a very common real-world pattern for dynamic form
+    rendering in CMSes and web frameworks.
+
+    Each field type (text_input, email_input, select_input, textarea_input)
+    has its own partial with different rendering logic. The select partial
+    has a nested for loop for options.
+
+- name: dynamic_include_email_template_system
+  template: |
+    {% include email_layout %}
+  environment:
+    email_layout: transactional
+    email_type: order_confirmation
+    shop_name: "TechGear"
+    customer_name: Alice
+    order_number: "#1234"
+    items:
+      - name: Widget
+        qty: 2
+        price: 29
+      - name: Gadget
+        qty: 1
+        price: 49
+  filesystem:
+    transactional: |
+      <div class="email">
+      <header>{{ shop_name }}</header>
+      {% include email_type %}
+      <footer>&copy; {{ shop_name }}</footer>
+      </div>
+    marketing: |
+      <div class="promo">
+      <h1>{{ shop_name }} Special Offer!</h1>
+      {% include email_type %}
+      </div>
+    order_confirmation: |
+      <h2>Order {{ order_number }}</h2>
+      <p>Thanks {{ customer_name }}!</p>
+      <table>{% for item in items %}<tr><td>{{ item.name }}</td><td>x{{ item.qty }}</td><td>${{ item.price }}</td></tr>{% endfor %}</table>
+    welcome: |
+      <h2>Welcome {{ customer_name }}!</h2>
+      <p>Thanks for joining {{ shop_name }}.</p>
+  expected: |+
+    <div class="email">
+    <header>TechGear</header>
+    <h2>Order #1234</h2>
+    <p>Thanks Alice!</p>
+    <table><tr><td>Widget</td><td>x2</td><td>$29</td></tr><tr><td>Gadget</td><td>x1</td><td>$49</td></tr></table>
+
+    <footer>&copy; TechGear</footer>
+    </div>
+
+  complexity: 650
+  hint: |
+    TWO-LEVEL DYNAMIC DISPATCH: Both the email layout AND the email content
+    are chosen dynamically. The transactional layout includes the email_type
+    partial, which is also dynamic.
+
+    This tests:
+    - Nested dynamic includes (layout includes content, both dynamic)
+    - Both partials access the shared scope
+    - The inner partial has a for loop
+    - Multiple alternative partials exist but only some are used
+
+# ── Dynamic include with break/continue propagation ────────────────────────────
+
+- name: dynamic_include_propagates_break
+  template: "{% for i in (1..3) %}{{ i }}{% assign tpl = 'breaker' %}{% include tpl %}{{ i }}{% endfor %}"
+  filesystem:
+    breaker: "{% break %}"
+  expected: "1"
+  complexity: 560
+  hint: |
+    Break inside a dynamically included partial propagates to the outer loop,
+    just like static includes. Dynamic resolution doesn't change the
+    interrupt propagation behavior.
+
+- name: dynamic_include_propagates_continue
+  template: "{% for i in (1..3) %}{{ i }}{% assign tpl = 'skipper' %}{% include tpl %}X{% endfor %}"
+  filesystem:
+    skipper: "{% continue %}"
+  expected: "123"
+  complexity: 560
+  hint: |
+    Continue also propagates through dynamic includes. The "X" after
+    each include is never rendered because continue skips the rest
+    of each iteration.
+
+# ── Dynamic include caching behavior ──────────────────────────────────────────
+
+- name: dynamic_include_same_partial_multiple_times
+  template: |
+    {% include tpl, n: 1 %}{% include tpl, n: 2 %}{% include tpl, n: 3 %}
+  environment:
+    tpl: show
+  filesystem:
+    show: "[{{ n }}]"
+  expected: |
+    [1][2][3]
+  complexity: 540
+  hint: |
+    The same dynamic partial is included three times with different parameters.
+    Implementations may cache the parsed partial after first resolution, but
+    each render must use fresh parameters.
+
+- name: dynamic_include_alternating_partials
+  template: "{% for item in items %}{% if item.highlight %}{% include 'featured' , item: item %}{% else %}{% include item.template, item: item %}{% endif %}{% endfor %}"
+  environment:
+    items:
+      - template: compact
+        name: A
+        highlight: false
+      - template: compact
+        name: B
+        highlight: true
+      - template: detailed
+        name: C
+        highlight: false
+      - template: compact
+        name: D
+        highlight: false
+  filesystem:
+    featured: "<b>{{ item.name }}</b>"
+    compact: "({{ item.name }})"
+    detailed: "[{{ item.name }}]"
+  expected: "(A)<b>B</b>[C](D)"
+  complexity: 570
+  hint: |
+    Mix of static and dynamic includes in a loop with conditional logic.
+    Some iterations use a static include ('featured'), others use dynamic
+    (item.template). The partial varies per item.

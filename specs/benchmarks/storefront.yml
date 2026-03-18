@@ -1,0 +1,1522 @@
+---
+_metadata:
+  hint: |
+    Full storefront benchmark using ONLY standard Liquid features (no Shopify-specific
+    filters/tags). This is the non-Shopify equivalent of the theme_* benchmarks.
+    Exercises: render, include (static + dynamic), for loops, nested for loops,
+    forloop object, if/elsif/else/unless, case/when, assign, capture, increment,
+    decrement, cycle, tablerow, comment, raw, liquid tag, echo, whitespace control,
+    break, continue, offset/limit, reversed, ranges, filter chains, where, map,
+    sort, sort_natural, uniq, concat, compact, first, last, join, split, size,
+    plus/minus/times/divided_by/modulo/floor/ceil/round/abs, upcase/downcase/
+    capitalize/strip/lstrip/rstrip/strip_html/strip_newlines/newline_to_br/
+    url_encode/url_decode/escape/escape_once/truncate/truncatewords/prepend/
+    append/replace/replace_first/remove/remove_first/slice/reverse/date/default.
+specs:
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Full Product Page (equivalent to theme_product.yml)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_storefront_product_page
+  template: |
+    {%- comment -%}Full product page — standard Liquid only{%- endcomment -%}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>{{ product.title | escape }} — {{ shop.name | escape }}</title>
+      <meta name="description" content="{{ product.description | strip_html | strip_newlines | truncate: 160 }}">
+      <link rel="canonical" href="{{ shop.url | append: '/products/' | append: product.handle }}">
+    </head>
+    <body>
+      {% render 'header', shop: shop, navigation: navigation, cart_count: cart.item_count %}
+
+      <main class="product-page">
+        {%- comment -%}Breadcrumbs{%- endcomment -%}
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/">Home</a></li>
+            {% if collection %}<li><a href="{{ collection.url }}">{{ collection.title | escape }}</a></li>{% endif %}
+            <li aria-current="page">{{ product.title | escape }}</li>
+          </ol>
+        </nav>
+
+        <div class="product" itemscope itemtype="https://schema.org/Product">
+          {%- comment -%}Image gallery{%- endcomment -%}
+          <div class="product__gallery">
+            {% for image in product.images %}
+              <{% if forloop.first %}div class="product__main-image"{% else %}div class="product__thumb"{% endif %}>
+                <img src="{{ image.src | prepend: '/images/' }}"
+                     alt="{{ image.alt | default: product.title | escape }}"
+                     width="{{ image.width }}" height="{{ image.height }}"
+                     loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="product__details">
+            <h1 class="product__title" itemprop="name">{{ product.title }}</h1>
+
+            {% if product.vendor %}
+              <p class="product__vendor">By <a href="/vendors/{{ product.vendor | downcase | replace: ' ', '-' }}">{{ product.vendor }}</a></p>
+            {% endif %}
+
+            {%- comment -%}Price with sale badge{%- endcomment -%}
+            <div class="product__price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+              {% assign price_dollars = product.price | divided_by: 100 %}{% assign price_cents = product.price | modulo: 100 %}{% capture formatted_price %}${{ price_dollars }}.{% if price_cents < 10 %}0{% endif %}{{ price_cents }}{% endcapture %}
+              {% if product.compare_at_price and product.compare_at_price > product.price %}
+                {% assign compare_dollars = product.compare_at_price | divided_by: 100 %}{% assign compare_cents = product.compare_at_price | modulo: 100 %}{% capture formatted_compare %}${{ compare_dollars }}.{% if compare_cents < 10 %}0{% endif %}{{ compare_cents }}{% endcapture %}
+                {% assign discount_amount = product.compare_at_price | minus: product.price %}
+                {% assign discount_pct = discount_amount | times: 100 | divided_by: product.compare_at_price %}
+                <span class="price price--sale" itemprop="price">{{ formatted_price }}</span>
+                <span class="price price--compare"><s>{{ formatted_compare }}</s></span>
+                <span class="badge badge--sale">-{{ discount_pct }}%</span>
+              {% else %}
+                <span class="price" itemprop="price">{{ formatted_price }}</span>
+              {% endif %}
+              <meta itemprop="priceCurrency" content="USD">
+              <meta itemprop="availability" content="{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+            </div>
+
+            {%- comment -%}Variant selector with option groups{%- endcomment -%}
+            <form method="post" action="/cart/add" class="product-form" id="product-form-{{ product.id }}">
+              {% unless product.has_only_default_variant %}
+                {% for option in product.options_with_values %}
+                  <div class="product-form__option">
+                    <label for="option-{{ option.name | downcase | replace: ' ', '-' }}">{{ option.name }}</label>
+                    <select name="option-{{ forloop.index }}" id="option-{{ option.name | downcase | replace: ' ', '-' }}">
+                      {% for value in option.values %}
+                        <option value="{{ value | escape }}" {% if forloop.first %}selected{% endif %}>{{ value }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                {% endfor %}
+
+                <select name="id" id="variant-select" class="product-form__variant-select">
+                  {% for variant in product.variants %}
+                    <option value="{{ variant.id }}"
+                            {% unless variant.available %}disabled{% endunless %}
+                            data-price="{{ variant.price }}">
+                      {{ variant.title }}
+                      {%- assign v_dollars = variant.price | divided_by: 100 -%}
+                      {%- assign v_cents = variant.price | modulo: 100 -%}
+                       — ${{ v_dollars }}.{% if v_cents < 10 %}0{% endif %}{{ v_cents }}
+                      {%- unless variant.available %} — Sold out{% endunless -%}
+                    </option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+              {% endunless %}
+
+              <div class="product-form__quantity">
+                <label for="qty">Quantity</label>
+                <input type="number" id="qty" name="quantity" value="1" min="1">
+              </div>
+
+              <button type="submit" class="button button--primary button--full"
+                      {% unless product.available %}disabled{% endunless %}>
+                {% if product.available %}Add to Cart{% else %}Sold Out{% endif %}
+              </button>
+            </form>
+
+            {%- comment -%}Product description{%- endcomment -%}
+            <div class="product__description" itemprop="description">
+              {{ product.description }}
+            </div>
+
+            {%- comment -%}Product meta — vendor, type, tags with links{%- endcomment -%}
+            <div class="product__meta">
+              {% if product.vendor %}<div class="product__meta-item">Vendor: {{ product.vendor }}</div>{% endif %}
+              {% if product.type %}<div class="product__meta-item">Type: {{ product.type }}</div>{% endif %}
+              {% if product.tags.size > 0 %}
+                <div class="product__tags">
+                  <span>Tags:</span>
+                  <ul class="tag-list">
+                    {% for tag in product.tags %}
+                      <li><a href="/tags/{{ tag | downcase | replace: ' ', '-' | url_encode }}">{{ tag | capitalize }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            </div>
+
+            {%- comment -%}Options details table using tablerow{%- endcomment -%}
+            <table class="product__specs">
+              <caption>Specifications</caption>
+              {% for option in product.options_with_values %}
+                <tr>
+                  <th>{{ option.name }}</th>
+                  <td>{{ option.values | join: ", " }}</td>
+                </tr>
+              {% endfor %}
+              {% if product.weight %}
+                <tr><th>Weight</th><td>{% assign kg = product.weight | divided_by: 1000.0 %}{{ kg }} kg</td></tr>
+              {% endif %}
+            </table>
+
+            {%- comment -%}Shipping & returns info using capture and raw{%- endcomment -%}
+            {% capture shipping_info %}
+              <div class="product__policy">
+                <strong>Free shipping</strong> on orders over $100.
+                <br>Standard delivery: 3–7 business days.
+              </div>
+            {% endcapture %}
+            {{ shipping_info }}
+          </div>
+        </div>
+
+        {%- comment -%}Product reviews section using cycle{%- endcomment -%}
+        {% if product.reviews.size > 0 %}
+          <section class="reviews">
+            <h2>Customer Reviews ({{ product.reviews | size }})</h2>
+            {% assign avg_rating = 0 %}
+            {% for review in product.reviews %}
+              {% assign avg_rating = avg_rating | plus: review.rating %}
+            {% endfor %}
+            {% assign avg_rating = avg_rating | divided_by: product.reviews.size %}
+            <div class="reviews__summary">Average: {{ avg_rating }} / 5</div>
+            {% for review in product.reviews %}
+              <div class="review {% cycle 'odd', 'even' %}">
+                <div class="review__header">
+                  <strong>{{ review.author | escape }}</strong>
+                  <span class="review__rating">{% for i in (1..5) %}{% if i <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</span>
+                  <time>{{ review.date }}</time>
+                </div>
+                <p class="review__body">{{ review.body | escape | truncatewords: 50 }}</p>
+              </div>
+            {% endfor %}
+          </section>
+        {% endif %}
+
+        {%- comment -%}Related products using render with for{%- endcomment -%}
+        {% if related_products.size > 0 %}
+          <section class="related-products">
+            <h2>You Might Also Like</h2>
+            <div class="product-grid product-grid--4">
+              {% render 'product-card' for related_products as product %}
+            </div>
+          </section>
+        {% endif %}
+
+        {%- comment -%}Recently viewed — dynamic include{%- endcomment -%}
+        {% if recently_viewed.size > 0 %}
+          <section class="recently-viewed">
+            <h2>Recently Viewed</h2>
+            <div class="product-grid product-grid--6">
+              {% for item in recently_viewed limit: 6 %}
+                {% include item.card_template, product: item %}
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+      </main>
+
+      {% render 'footer', shop: shop, footer_links: footer_links %}
+    </body>
+    </html>
+  filesystem:
+    header.liquid: |
+      <header class="site-header">
+        <div class="container">
+          <a href="/" class="logo">{{ shop.name | escape }}</a>
+          <nav class="main-nav" role="navigation">
+            <ul>
+              {%- for link in navigation -%}
+                <li{% if link.active %} class="active"{% endif %}>
+                  <a href="{{ link.url }}">{{ link.title | escape }}</a>
+                  {%- if link.children.size > 0 -%}
+                    <ul class="dropdown">
+                      {%- for child in link.children -%}
+                        <li><a href="{{ child.url }}">{{ child.title | escape }}</a></li>
+                      {%- endfor -%}
+                    </ul>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </nav>
+          <div class="header-actions">
+            <a href="/search" aria-label="Search"><span class="icon-search"></span></a>
+            <a href="/cart" class="cart-link">Cart (<span class="cart-count">{{ cart_count | default: 0 }}</span>)</a>
+          </div>
+        </div>
+      </header>
+    footer.liquid: |
+      <footer class="site-footer">
+        <div class="container">
+          <div class="footer-grid">
+            <div class="footer-col">
+              <h4>{{ shop.name }}</h4>
+              <p>{{ shop.description | strip_html | truncate: 120 }}</p>
+            </div>
+            <div class="footer-col">
+              <h4>Quick Links</h4>
+              <ul>
+                {% for link in footer_links %}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="footer-col">
+              <h4>Contact</h4>
+              <p>{{ shop.email }}</p>
+              <p>{{ shop.phone }}</p>
+              <p>{{ shop.address.street }}<br>{{ shop.address.city }}, {{ shop.address.state }} {{ shop.address.zip }}</p>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; {{ "now" | date: "%Y" }} {{ shop.name }}. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    product-card.liquid: |
+      {% comment %}Reusable product card — receives 'product' parameter{% endcomment %}
+      <div class="product-card">
+        <a href="/products/{{ product.handle }}">
+          <div class="product-card__image">
+            <img src="/images/{{ product.featured_image }}" alt="{{ product.title | escape }}" loading="lazy">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">{{ product.title | truncate: 40 }}</h3>
+            {% assign pc_dollars = product.price | divided_by: 100 %}{% assign pc_cents = product.price | modulo: 100 %}
+            {% if product.compare_at_price and product.compare_at_price > product.price %}
+              {% assign pcc_dollars = product.compare_at_price | divided_by: 100 %}{% assign pcc_cents = product.compare_at_price | modulo: 100 %}
+              <span class="product-card__price--sale">${{ pc_dollars }}.{% if pc_cents < 10 %}0{% endif %}{{ pc_cents }}</span>
+              <span class="product-card__price--compare"><s>${{ pcc_dollars }}.{% if pcc_cents < 10 %}0{% endif %}{{ pcc_cents }}</s></span>
+            {% else %}
+              <span class="product-card__price">${{ pc_dollars }}.{% if pc_cents < 10 %}0{% endif %}{{ pc_cents }}</span>
+            {% endif %}
+            {% if product.available == false %}<span class="badge badge--soldout">Sold out</span>{% endif %}
+          </div>
+        </a>
+      </div>
+    product-card-compact.liquid: |
+      <div class="product-card product-card--compact">
+        <a href="/products/{{ product.handle }}">
+          <img src="/images/{{ product.featured_image }}" alt="{{ product.title | escape }}" loading="lazy">
+          <span>{{ product.title | truncate: 25 }}</span>
+        </a>
+      </div>
+  environment:
+    shop:
+      name: "Alpine Gear Co."
+      description: "<p>Premium outdoor equipment for every adventure. Snowboards, boots, bindings, and accessories from the world's top brands.</p>"
+      url: "https://alpinegear.example.com"
+      email: "hello@alpinegear.example.com"
+      phone: "1-800-555-0199"
+      address:
+        street: "742 Mountain Pass Rd"
+        city: "Boulder"
+        state: "CO"
+        zip: "80302"
+    navigation:
+      - title: Home
+        url: /
+        active: false
+        children: []
+      - title: Snowboards
+        url: /collections/snowboards
+        active: true
+        children:
+          - title: All-Mountain
+            url: /collections/snowboards/all-mountain
+          - title: Freestyle
+            url: /collections/snowboards/freestyle
+          - title: Freeride
+            url: /collections/snowboards/freeride
+      - title: Boots
+        url: /collections/boots
+        active: false
+        children:
+          - title: Men's
+            url: /collections/boots/mens
+          - title: Women's
+            url: /collections/boots/womens
+      - title: Bindings
+        url: /collections/bindings
+        active: false
+        children: []
+      - title: Sale
+        url: /collections/sale
+        active: false
+        children: []
+    footer_links:
+      - title: Shipping Policy
+        url: /policies/shipping
+      - title: Return Policy
+        url: /policies/returns
+      - title: Privacy Policy
+        url: /policies/privacy
+      - title: Terms of Service
+        url: /policies/terms
+      - title: About Us
+        url: /about
+      - title: Contact
+        url: /contact
+    cart:
+      item_count: 3
+    collection:
+      title: Snowboards
+      url: /collections/snowboards
+    product:
+      id: 1
+      title: "Arbor Pro Draft 2025"
+      handle: arbor-pro-draft-2025
+      type: Snowboards
+      vendor: Arbor
+      price: 49900
+      compare_at_price: 64900
+      available: true
+      has_only_default_variant: false
+      weight: 3200
+      description: |
+        <p>The <strong>Arbor Pro Draft 2025</strong> is engineered for all-mountain dominance.
+        A medium-flex camber profile delivers explosive pop and responsive edge hold on
+        hardpack, while the sustainably sourced paulownia core keeps weight featherlight.</p>
+        <p>Features include: Grip Tech contact points, recycled sidewalls, bio-resin
+        construction, and a sintered base for maximum glide speed. Whether you're carving
+        groomers, hitting park features, or dropping into steep chutes — this board does
+        it all.</p>
+      featured_image: arbor-pro-draft.jpg
+      images:
+        - src: arbor-pro-draft-front.jpg
+          alt: "Arbor Pro Draft — front view"
+          width: 800
+          height: 1200
+        - src: arbor-pro-draft-back.jpg
+          alt: "Arbor Pro Draft — back view"
+          width: 800
+          height: 1200
+        - src: arbor-pro-draft-detail.jpg
+          alt: "Arbor Pro Draft — edge detail"
+          width: 800
+          height: 600
+        - src: arbor-pro-draft-action.jpg
+          alt: "Arbor Pro Draft — in action on the mountain"
+          width: 1200
+          height: 800
+      tags:
+        - all-mountain
+        - camber
+        - eco-friendly
+        - medium-flex
+        - sintered-base
+      options_with_values:
+        - name: Length
+          values:
+            - "154cm"
+            - "157cm"
+            - "160cm"
+            - "163cm"
+        - name: Profile
+          values:
+            - Camber
+            - Hybrid
+      variants:
+        - id: 101
+          title: "154cm / Camber"
+          price: 49900
+          available: true
+        - id: 102
+          title: "154cm / Hybrid"
+          price: 52900
+          available: true
+        - id: 103
+          title: "157cm / Camber"
+          price: 49900
+          available: true
+        - id: 104
+          title: "157cm / Hybrid"
+          price: 52900
+          available: true
+        - id: 105
+          title: "160cm / Camber"
+          price: 51900
+          available: true
+        - id: 106
+          title: "160cm / Hybrid"
+          price: 54900
+          available: false
+        - id: 107
+          title: "163cm / Camber"
+          price: 53900
+          available: true
+        - id: 108
+          title: "163cm / Hybrid"
+          price: 56900
+          available: true
+      reviews:
+        - author: "Mike T."
+          rating: 5
+          date: "2025-01-12"
+          body: "Absolutely incredible board. The pop off jumps is unreal and it holds an edge on ice like nothing else I've ridden. The eco construction is a huge bonus."
+        - author: "Sarah K."
+          rating: 4
+          date: "2025-01-08"
+          body: "Great all-mountain board. Lost one star because it's a little stiff for park riding but otherwise a fantastic daily driver for resort days."
+        - author: "Jake R."
+          rating: 5
+          date: "2024-12-20"
+          body: "My third Arbor board and the best yet. Carves like a dream and the sintered base is noticeably faster than my old board."
+        - author: "Emma L."
+          rating: 3
+          date: "2024-12-15"
+          body: "Good board but runs a bit large. I'd recommend sizing down if you're between sizes. The flex pattern is nice though and edge hold is excellent."
+        - author: "Chris W."
+          rating: 5
+          date: "2024-11-30"
+          body: "10/10 would buy again. Took it to Whistler for a week and it handled everything from groomers to powder to the park. Truly an all-mountain weapon."
+    related_products:
+      - title: "Burton Custom 2025"
+        handle: burton-custom-2025
+        price: 44900
+        compare_at_price: 44900
+        featured_image: burton-custom.jpg
+        available: true
+      - title: "Jones Mountain Twin"
+        handle: jones-mountain-twin
+        price: 52900
+        compare_at_price: 62900
+        featured_image: jones-mountain-twin.jpg
+        available: true
+      - title: "Capita DOA"
+        handle: capita-doa
+        price: 39900
+        compare_at_price: 39900
+        featured_image: capita-doa.jpg
+        available: true
+      - title: "GNU Riders Choice"
+        handle: gnu-riders-choice
+        price: 47900
+        compare_at_price: 47900
+        featured_image: gnu-riders-choice.jpg
+        available: false
+    recently_viewed:
+      - title: "Rome Agent"
+        handle: rome-agent
+        price: 34900
+        compare_at_price: 34900
+        featured_image: rome-agent.jpg
+        available: true
+        card_template: product-card-compact
+      - title: "Lib Tech Skate Banana"
+        handle: lib-tech-skate-banana
+        price: 41900
+        compare_at_price: 48900
+        featured_image: lib-tech-skate-banana.jpg
+        available: true
+        card_template: product-card-compact
+      - title: "Ride Warpig"
+        handle: ride-warpig
+        price: 43900
+        compare_at_price: 43900
+        featured_image: ride-warpig.jpg
+        available: true
+        card_template: product-card-compact
+  expected_pattern: "(?m)DOCTYPE.*Alpine Gear.*breadcrumb.*Snowboards.*Arbor Pro Draft.*product__gallery.*product__main-image.*product__thumb.*\\$499\\.00.*\\$649\\.00.*-23%.*variant-select.*154cm.*Sold out.*Add to Cart.*eco-friendly.*sintered-base.*Specifications.*Length.*Weight.*3\\.2 kg.*Free shipping.*Customer Reviews.*5.*★.*You Might Also Like.*product-card.*Burton Custom.*Recently Viewed.*product-card--compact.*footer.*Alpine Gear"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Collection Page with Filtering/Sorting (complex data processing)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_storefront_collection_page
+  template: |
+    {%- comment -%}Collection page with server-side filtering, sorting, and pagination{%- endcomment -%}
+    <!DOCTYPE html>
+    <html>
+    <head><title>{{ collection.title | escape }} — {{ shop.name }}</title></head>
+    <body>
+      {% render 'header', shop: shop, navigation: navigation, cart_count: 2 %}
+
+      <main class="collection-page">
+        <div class="collection-header">
+          <h1>{{ collection.title }}</h1>
+          {% if collection.description %}
+            <p>{{ collection.description | strip_html | truncate: 200 }}</p>
+          {% endif %}
+          <p class="collection-count">{{ collection.products | size }} products</p>
+        </div>
+
+        {%- comment -%}Filter and sort products{%- endcomment -%}
+        {% assign filtered = collection.products %}
+
+        {%- comment -%}Filter by tag if set{%- endcomment -%}
+        {% if active_tag %}
+          {% assign filtered = filtered | where: "type", active_tag %}
+        {% endif %}
+
+        {%- comment -%}Filter by availability{%- endcomment -%}
+        {% if show_available_only %}
+          {% assign filtered = filtered | where: "available", true %}
+        {% endif %}
+
+        {%- comment -%}Sort{%- endcomment -%}
+        {% case sort_by %}
+          {% when "price-asc" %}
+            {% assign filtered = filtered | sort: "price" %}
+          {% when "price-desc" %}
+            {% assign filtered = filtered | sort: "price" | reverse %}
+          {% when "title" %}
+            {% assign filtered = filtered | sort_natural: "title" %}
+          {% when "newest" %}
+            {% assign filtered = filtered | sort: "created_at" | reverse %}
+          {% else %}
+            {%- comment -%}default/manual order{%- endcomment -%}
+        {% endcase %}
+
+        {% assign total = filtered | size %}
+        {% assign page_size = 6 %}
+        {% assign current_page_idx = current_page | default: 1 | minus: 1 %}
+        {% assign offset = current_page_idx | times: page_size %}
+        {% assign total_pages = total | divided_by: page_size %}
+        {% assign remainder = total | modulo: page_size %}
+        {% if remainder > 0 %}{% assign total_pages = total_pages | plus: 1 %}{% endif %}
+
+        {%- comment -%}Sidebar: extract unique types and tag counts{%- endcomment -%}
+        <aside class="collection-sidebar">
+          <h3>Product Types</h3>
+          <ul>
+            {% assign all_types = collection.products | map: "type" | uniq | sort_natural %}
+            {% for t in all_types %}
+              <li{% if t == active_tag %} class="active"{% endif %}>
+                <a href="?type={{ t | downcase | url_encode }}">{{ t }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+
+          <h3>Price Ranges</h3>
+          <ul>
+            {% for range in price_ranges %}
+              {% assign range_count = 0 %}
+              {% for p in filtered %}
+                {% if p.price >= range.min and p.price <= range.max %}
+                  {% assign range_count = range_count | plus: 1 %}
+                {% endif %}
+              {% endfor %}
+              <li>
+                {% assign min_d = range.min | divided_by: 100 %}{% assign max_d = range.max | divided_by: 100 %}
+                <a href="?price={{ range.min }}-{{ range.max }}">${{ min_d }} – ${{ max_d }}</a>
+                <span class="count">({{ range_count }})</span>
+              </li>
+            {% endfor %}
+          </ul>
+
+          <h3>Tags</h3>
+          {% assign all_tags = "" %}
+          {% for p in collection.products %}
+            {% for tag in p.tags %}
+              {% assign all_tags = all_tags | append: tag | append: "|" %}
+            {% endfor %}
+          {% endfor %}
+          {% assign tag_list = all_tags | split: "|" | compact | sort_natural | uniq %}
+          <ul class="tag-cloud">
+            {% for tag in tag_list limit: 15 %}
+              <li><a href="?tag={{ tag | url_encode }}">{{ tag | capitalize }}</a></li>
+            {% endfor %}
+          </ul>
+        </aside>
+
+        {%- comment -%}Product grid{%- endcomment -%}
+        <div class="collection-grid">
+          <div class="toolbar">
+            <span>Showing {{ offset | plus: 1 }}–{% assign page_end = offset | plus: page_size %}{% if page_end > total %}{% assign page_end = total %}{% endif %}{{ page_end }} of {{ total }}</span>
+            <select name="sort">
+              <option value="manual"{% if sort_by == nil %} selected{% endif %}>Featured</option>
+              <option value="price-asc"{% if sort_by == "price-asc" %} selected{% endif %}>Price: Low to High</option>
+              <option value="price-desc"{% if sort_by == "price-desc" %} selected{% endif %}>Price: High to Low</option>
+              <option value="title"{% if sort_by == "title" %} selected{% endif %}>Alphabetical</option>
+            </select>
+          </div>
+
+          <div class="product-grid product-grid--3">
+            {% for product in filtered limit: page_size offset: offset %}
+              {% render 'product-card', product: product %}
+            {% endfor %}
+          </div>
+
+          {%- comment -%}Pagination{%- endcomment -%}
+          {% if total_pages > 1 %}
+            <nav class="pagination" aria-label="Collection pagination">
+              {% if current_page > 1 %}
+                <a href="?page={{ current_page | minus: 1 }}" class="pagination__prev">&laquo; Previous</a>
+              {% endif %}
+              {% for i in (1..total_pages) %}
+                {% if i == current_page %}
+                  <span class="pagination__current" aria-current="page">{{ i }}</span>
+                {% else %}
+                  <a href="?page={{ i }}" class="pagination__link">{{ i }}</a>
+                {% endif %}
+              {% endfor %}
+              {% if current_page < total_pages %}
+                <a href="?page={{ current_page | plus: 1 }}" class="pagination__next">Next &raquo;</a>
+              {% endif %}
+            </nav>
+          {% endif %}
+        </div>
+      </main>
+
+      {% render 'footer', shop: shop, footer_links: footer_links %}
+    </body>
+    </html>
+  filesystem:
+    header.liquid: |
+      <header class="site-header">
+        <a href="/" class="logo">{{ shop.name }}</a>
+        <nav>{% for link in navigation %}<a href="{{ link.url }}"{% if link.active %} class="active"{% endif %}>{{ link.title }}</a>{% endfor %}</nav>
+        <a href="/cart">Cart ({{ cart_count }})</a>
+      </header>
+    footer.liquid: |
+      <footer class="site-footer">
+        <div class="footer-col"><h4>{{ shop.name }}</h4></div>
+        <div class="footer-col"><h4>Links</h4><ul>{% for link in footer_links %}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{% endfor %}</ul></div>
+        <p>&copy; {{ "now" | date: "%Y" }} {{ shop.name }}</p>
+      </footer>
+    product-card.liquid: |
+      <div class="product-card">
+        <a href="/products/{{ product.handle }}">
+          <img src="/images/{{ product.featured_image }}" alt="{{ product.title | escape }}" loading="lazy">
+          <h3>{{ product.title | truncate: 45 }}</h3>
+          {% assign d = product.price | divided_by: 100 %}{% assign c = product.price | modulo: 100 %}
+          {% if product.compare_at_price and product.compare_at_price > product.price %}
+            {% assign cd = product.compare_at_price | divided_by: 100 %}{% assign cc = product.compare_at_price | modulo: 100 %}
+            <span class="price--sale">${{ d }}.{% if c < 10 %}0{% endif %}{{ c }}</span>
+            <span class="price--compare"><s>${{ cd }}.{% if cc < 10 %}0{% endif %}{{ cc }}</s></span>
+          {% else %}
+            <span class="price">${{ d }}.{% if c < 10 %}0{% endif %}{{ c }}</span>
+          {% endif %}
+          {% unless product.available %}<span class="badge--soldout">Sold out</span>{% endunless %}
+        </a>
+      </div>
+  environment:
+    shop:
+      name: "Alpine Gear Co."
+    navigation:
+      - title: Home
+        url: /
+        active: false
+      - title: All Products
+        url: /collections/all
+        active: true
+      - title: Sale
+        url: /sale
+        active: false
+    footer_links:
+      - title: Shipping
+        url: /shipping
+      - title: Returns
+        url: /returns
+    sort_by: "price-asc"
+    current_page: 1
+    active_tag: null
+    show_available_only: false
+    price_ranges:
+      - min: 0
+        max: 30000
+      - min: 30000
+        max: 50000
+      - min: 50000
+        max: 80000
+      - min: 80000
+        max: 200000
+    collection:
+      title: "All Snowboard Gear"
+      description: "<p>Shop our complete range of snowboards, boots, bindings, and accessories from top brands like Arbor, Burton, Jones, and more.</p>"
+      products:
+        - id: 1
+          title: "Arbor Pro Draft"
+          handle: arbor-pro-draft
+          type: Snowboards
+          vendor: Arbor
+          price: 49900
+          compare_at_price: 64900
+          available: true
+          featured_image: arbor-pro-draft.jpg
+          tags: ["all-mountain", "camber", "eco-friendly"]
+          created_at: "2025-01-15"
+        - id: 2
+          title: "Burton Custom Flying V"
+          handle: burton-custom-flying-v
+          type: Snowboards
+          vendor: Burton
+          price: 44900
+          compare_at_price:
+          available: true
+          featured_image: burton-custom.jpg
+          tags: ["freestyle", "hybrid", "park"]
+          created_at: "2025-01-10"
+        - id: 3
+          title: "Vans Aura OG Boots"
+          handle: vans-aura-og
+          type: Boots
+          vendor: Vans
+          price: 22900
+          compare_at_price: 27900
+          available: true
+          featured_image: vans-aura.jpg
+          tags: ["boots", "beginner", "comfort"]
+          created_at: "2025-01-05"
+        - id: 4
+          title: "Union Strata Bindings"
+          handle: union-strata
+          type: Bindings
+          vendor: Union
+          price: 29900
+          compare_at_price:
+          available: true
+          featured_image: union-strata.jpg
+          tags: ["bindings", "all-mountain", "responsive"]
+          created_at: "2025-01-08"
+        - id: 5
+          title: "Jones Mountain Twin"
+          handle: jones-mountain-twin
+          type: Snowboards
+          vendor: Jones
+          price: 52900
+          compare_at_price: 62900
+          available: true
+          featured_image: jones-mt.jpg
+          tags: ["all-mountain", "directional-twin", "powder"]
+          created_at: "2024-12-20"
+        - id: 6
+          title: "Capita DOA 2025"
+          handle: capita-doa
+          type: Snowboards
+          vendor: Capita
+          price: 39900
+          compare_at_price:
+          available: true
+          featured_image: capita-doa.jpg
+          tags: ["freestyle", "park", "jib"]
+          created_at: "2024-12-15"
+        - id: 7
+          title: "ThirtyTwo Lashed Boots"
+          handle: thirtytwo-lashed
+          type: Boots
+          vendor: ThirtyTwo
+          price: 27900
+          compare_at_price:
+          available: false
+          featured_image: thirtytwo-lashed.jpg
+          tags: ["boots", "intermediate", "heat-moldable"]
+          created_at: "2024-12-10"
+        - id: 8
+          title: "Ride A-6 Bindings"
+          handle: ride-a6
+          type: Bindings
+          vendor: Ride
+          price: 34900
+          compare_at_price: 39900
+          available: true
+          featured_image: ride-a6.jpg
+          tags: ["bindings", "freeride", "stiff"]
+          created_at: "2024-12-05"
+        - id: 9
+          title: "GNU Riders Choice"
+          handle: gnu-riders-choice
+          type: Snowboards
+          vendor: GNU
+          price: 47900
+          compare_at_price:
+          available: true
+          featured_image: gnu-riders.jpg
+          tags: ["freestyle", "asymmetric", "magnetraction"]
+          created_at: "2024-11-30"
+        - id: 10
+          title: "Lib Tech Orca"
+          handle: lib-tech-orca
+          type: Snowboards
+          vendor: "Lib Tech"
+          price: 62900
+          compare_at_price: 74900
+          available: true
+          featured_image: lib-tech-orca.jpg
+          tags: ["powder", "freeride", "short-fat"]
+          created_at: "2024-11-25"
+        - id: 11
+          title: "DC Phase Boots"
+          handle: dc-phase
+          type: Boots
+          vendor: DC
+          price: 17900
+          compare_at_price: 21900
+          available: true
+          featured_image: dc-phase.jpg
+          tags: ["boots", "beginner", "budget"]
+          created_at: "2024-11-20"
+        - id: 12
+          title: "Nitro Team Bindings"
+          handle: nitro-team
+          type: Bindings
+          vendor: Nitro
+          price: 25900
+          compare_at_price:
+          available: true
+          featured_image: nitro-team.jpg
+          tags: ["bindings", "freestyle", "lightweight"]
+          created_at: "2024-11-15"
+        - id: 13
+          title: "Rome Ravine Select"
+          handle: rome-ravine
+          type: Snowboards
+          vendor: Rome
+          price: 55900
+          compare_at_price:
+          available: true
+          featured_image: rome-ravine.jpg
+          tags: ["freeride", "stiff", "bamboo"]
+          created_at: "2024-11-10"
+        - id: 14
+          title: "Salomon Huck Knife"
+          handle: salomon-huck-knife
+          type: Snowboards
+          vendor: Salomon
+          price: 41900
+          compare_at_price: 41900
+          available: true
+          featured_image: salomon-huck.jpg
+          tags: ["freestyle", "park", "popstar"]
+          created_at: "2024-11-05"
+  expected_pattern: "(?m)All Snowboard Gear.*14 products.*Product Types.*Bindings.*Boots.*Snowboards.*Price Ranges.*\\$0 – \\$300.*Tag.*product-grid.*product-card.*DC Phase.*Vans Aura.*Nitro Team.*pagination.*Next"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Cart Page (filter chains, math, capture)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_storefront_cart_page
+  template: |
+    {%- comment -%}Shopping cart — heavy math and filter chain usage{%- endcomment -%}
+    <!DOCTYPE html>
+    <html>
+    <head><title>Your Cart — {{ shop.name }}</title></head>
+    <body>
+      {% render 'header', shop: shop, navigation: navigation, cart_count: cart.item_count %}
+
+      <main class="cart-page">
+        <h1>Your Cart</h1>
+
+        {% if cart.items.size > 0 %}
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% assign subtotal = 0 %}
+              {% for item in cart.items %}
+                {% assign line_total = item.price | times: item.quantity %}
+                {% assign subtotal = subtotal | plus: line_total %}
+                <tr class="cart-item {% cycle 'cart-row-odd', 'cart-row-even' %}">
+                  <td class="cart-item__product">
+                    <img src="/images/{{ item.image }}" alt="{{ item.title | escape }}" width="80">
+                    <div>
+                      <a href="/products/{{ item.handle }}">{{ item.product_title | escape }}</a>
+                      {% if item.variant_title %}<small>{{ item.variant_title }}</small>{% endif %}
+                      {% if item.properties.size > 0 %}
+                        <ul class="cart-item__properties">
+                          {% for prop in item.properties %}
+                            <li><em>{{ prop.name }}:</em> {{ prop.value | escape }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    </div>
+                  </td>
+                  <td class="cart-item__price">
+                    {% assign d = item.price | divided_by: 100 %}{% assign c = item.price | modulo: 100 %}
+                    ${{ d }}.{% if c < 10 %}0{% endif %}{{ c }}
+                    {% if item.original_price and item.original_price > item.price %}
+                      {% assign od = item.original_price | divided_by: 100 %}{% assign oc = item.original_price | modulo: 100 %}
+                      <s class="compare-price">${{ od }}.{% if oc < 10 %}0{% endif %}{{ oc }}</s>
+                    {% endif %}
+                  </td>
+                  <td class="cart-item__qty">
+                    <input type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-line="{{ forloop.index }}">
+                  </td>
+                  <td class="cart-item__total">
+                    {% assign td = line_total | divided_by: 100 %}{% assign tc = line_total | modulo: 100 %}
+                    ${{ td }}.{% if tc < 10 %}0{% endif %}{{ tc }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          {%- comment -%}Cart summary with discount, tax, shipping{%- endcomment -%}
+          <div class="cart-summary">
+            {% assign sd = subtotal | divided_by: 100 %}{% assign sc = subtotal | modulo: 100 %}
+            <div class="cart-summary__row">
+              <span>Subtotal ({{ cart.item_count }} items)</span>
+              <span>${{ sd }}.{% if sc < 10 %}0{% endif %}{{ sc }}</span>
+            </div>
+
+            {% if cart.discount_code %}
+              {% assign discount_amount = subtotal | times: cart.discount_percent | divided_by: 100 %}
+              {% assign subtotal = subtotal | minus: discount_amount %}
+              {% assign dd = discount_amount | divided_by: 100 %}{% assign dc = discount_amount | modulo: 100 %}
+              <div class="cart-summary__row cart-summary__discount">
+                <span>Discount ({{ cart.discount_code }}, {{ cart.discount_percent }}% off)</span>
+                <span>-${{ dd }}.{% if dc < 10 %}0{% endif %}{{ dc }}</span>
+              </div>
+            {% endif %}
+
+            {% if subtotal >= 10000 %}
+              {% assign shipping = 0 %}
+              <div class="cart-summary__row"><span>Shipping</span><span>FREE</span></div>
+            {% else %}
+              {% assign shipping = 999 %}
+              <div class="cart-summary__row"><span>Shipping</span><span>$9.99</span></div>
+            {% endif %}
+
+            {% assign tax = subtotal | times: 8 | divided_by: 100 %}
+            {% assign txd = tax | divided_by: 100 %}{% assign txc = tax | modulo: 100 %}
+            <div class="cart-summary__row">
+              <span>Tax (8%)</span>
+              <span>${{ txd }}.{% if txc < 10 %}0{% endif %}{{ txc }}</span>
+            </div>
+
+            {% assign grand_total = subtotal | plus: shipping | plus: tax %}
+            {% assign gtd = grand_total | divided_by: 100 %}{% assign gtc = grand_total | modulo: 100 %}
+            <div class="cart-summary__row cart-summary__total">
+              <span>Total</span>
+              <span>${{ gtd }}.{% if gtc < 10 %}0{% endif %}{{ gtc }}</span>
+            </div>
+
+            <button type="submit" class="button button--primary button--full">Checkout</button>
+          </div>
+
+          {%- comment -%}Upsell section — render product cards for suggestions{%- endcomment -%}
+          {% if cart.upsell_products.size > 0 %}
+            <section class="cart-upsells">
+              <h2>Complete Your Order</h2>
+              <div class="product-grid product-grid--3">
+                {% render 'product-card' for cart.upsell_products as product %}
+              </div>
+            </section>
+          {% endif %}
+
+        {% else %}
+          <div class="cart-empty">
+            <p>Your cart is empty.</p>
+            <a href="/collections/all" class="button">Start Shopping</a>
+          </div>
+        {% endif %}
+      </main>
+
+      {% render 'footer', shop: shop, footer_links: footer_links %}
+    </body>
+    </html>
+  filesystem:
+    header.liquid: |
+      <header class="site-header">
+        <a href="/" class="logo">{{ shop.name }}</a>
+        <nav>{% for link in navigation %}<a href="{{ link.url }}">{{ link.title }}</a>{% endfor %}</nav>
+        <a href="/cart">Cart ({{ cart_count }})</a>
+      </header>
+    footer.liquid: |
+      <footer><p>&copy; {{ "now" | date: "%Y" }} {{ shop.name }}</p></footer>
+    product-card.liquid: |
+      <div class="product-card">
+        <a href="/products/{{ product.handle }}">
+          <img src="/images/{{ product.featured_image }}" alt="{{ product.title | escape }}" loading="lazy">
+          <h3>{{ product.title | truncate: 40 }}</h3>
+          {% assign d = product.price | divided_by: 100 %}{% assign c = product.price | modulo: 100 %}
+          <span class="price">${{ d }}.{% if c < 10 %}0{% endif %}{{ c }}</span>
+        </a>
+      </div>
+  environment:
+    shop:
+      name: "Alpine Gear Co."
+    navigation:
+      - title: Home
+        url: /
+      - title: Shop
+        url: /collections/all
+      - title: Cart
+        url: /cart
+    footer_links:
+      - title: Shipping
+        url: /shipping
+    cart:
+      item_count: 5
+      discount_code: "WINTER25"
+      discount_percent: 25
+      items:
+        - product_title: "Arbor Pro Draft 2025"
+          variant_title: "157cm / Camber"
+          handle: arbor-pro-draft-2025
+          price: 49900
+          original_price: 64900
+          quantity: 1
+          image: arbor-pro-draft.jpg
+          properties: []
+        - product_title: "Vans Aura OG Boots"
+          variant_title: "Size 10 / Black"
+          handle: vans-aura-og
+          price: 22900
+          original_price:
+          quantity: 1
+          image: vans-aura.jpg
+          properties:
+            - name: "Heat Molding"
+              value: "Yes"
+        - product_title: "Union Strata Bindings"
+          variant_title: "Medium / Matte Black"
+          handle: union-strata
+          price: 29900
+          original_price:
+          quantity: 1
+          image: union-strata.jpg
+          properties: []
+        - product_title: "Board Wax Kit"
+          variant_title:
+          handle: board-wax-kit
+          price: 1999
+          original_price: 2499
+          quantity: 2
+          image: wax-kit.jpg
+          properties:
+            - name: "Scent"
+              value: "Cedar"
+      upsell_products:
+        - title: "Helmet Pro"
+          handle: helmet-pro
+          price: 12900
+          featured_image: helmet.jpg
+          available: true
+        - title: "Goggles Elite"
+          handle: goggles-elite
+          price: 15900
+          featured_image: goggles.jpg
+          available: true
+        - title: "Stomp Pad"
+          handle: stomp-pad
+          price: 999
+          featured_image: stomp-pad.jpg
+          available: true
+  expected_pattern: "(?m)Your Cart.*Arbor Pro Draft.*\\$499\\.00.*\\$649\\.00.*Vans Aura.*Heat Molding.*Union Strata.*Board Wax Kit.*Cedar.*Subtotal.*5 items.*Discount.*WINTER25.*25%.*Shipping.*FREE.*Tax.*8%.*Total.*Checkout.*Complete Your Order.*Helmet.*Goggles.*Stomp"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Order Confirmation Email (capture, nested loops, date formatting)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_storefront_order_email
+  template: |
+    {%- comment -%}Order confirmation email — tests capture, date, and complex nesting{%- endcomment -%}
+    {% capture email_subject %}Order {{ order.name }} confirmed — {{ shop.name }}{% endcapture %}
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #2d3748; color: white; padding: 20px; text-align: center;">
+        <h1 style="margin: 0;">{{ shop.name }}</h1>
+      </div>
+
+      <div style="padding: 20px;">
+        <h2>Thank you for your order, {{ customer.first_name }}!</h2>
+        <p>We've received your order and are preparing it for shipment.</p>
+
+        <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <table style="width: 100%;">
+            <tr><td><strong>Order:</strong></td><td>{{ order.name }}</td></tr>
+            <tr><td><strong>Date:</strong></td><td>{{ order.created_at | date: "%B %e, %Y at %l:%M %p" }}</td></tr>
+            <tr><td><strong>Status:</strong></td><td>{{ order.status | capitalize }}</td></tr>
+            <tr><td><strong>Payment:</strong></td><td>{{ order.payment_method | capitalize }}</td></tr>
+          </table>
+        </div>
+
+        <h3>Items Ordered</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #edf2f7;">
+              <th style="padding: 8px; text-align: left;">Item</th>
+              <th style="padding: 8px; text-align: center;">Qty</th>
+              <th style="padding: 8px; text-align: right;">Each</th>
+              <th style="padding: 8px; text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.line_items %}
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px;">
+                  {{ item.title | escape }}
+                  {% if item.variant %}<br><small style="color: #718096;">{{ item.variant }}</small>{% endif %}
+                  {% if item.properties.size > 0 %}
+                    <br>
+                    {% for prop in item.properties %}
+                      <small style="color: #718096;">{{ prop.name }}: {{ prop.value | escape }}</small>{% unless forloop.last %}<br>{% endunless %}
+                    {% endfor %}
+                  {% endif %}
+                </td>
+                <td style="padding: 8px; text-align: center;">{{ item.quantity }}</td>
+                <td style="padding: 8px; text-align: right;">
+                  {% assign ed = item.unit_price | divided_by: 100 %}{% assign ec = item.unit_price | modulo: 100 %}
+                  ${{ ed }}.{% if ec < 10 %}0{% endif %}{{ ec }}
+                </td>
+                <td style="padding: 8px; text-align: right;">
+                  {% assign lt = item.unit_price | times: item.quantity %}
+                  {% assign ltd = lt | divided_by: 100 %}{% assign ltc = lt | modulo: 100 %}
+                  ${{ ltd }}.{% if ltc < 10 %}0{% endif %}{{ ltc }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 20px; text-align: right;">
+          {% assign ord_sd = order.subtotal | divided_by: 100 %}{% assign ord_sc = order.subtotal | modulo: 100 %}
+          <p>Subtotal: ${{ ord_sd }}.{% if ord_sc < 10 %}0{% endif %}{{ ord_sc }}</p>
+          {% if order.discount_amount > 0 %}
+            {% assign disc_d = order.discount_amount | divided_by: 100 %}{% assign disc_c = order.discount_amount | modulo: 100 %}
+            <p style="color: #48bb78;">Discount: -${{ disc_d }}.{% if disc_c < 10 %}0{% endif %}{{ disc_c }}</p>
+          {% endif %}
+          {% assign ship_d = order.shipping | divided_by: 100 %}{% assign ship_c = order.shipping | modulo: 100 %}
+          <p>Shipping: {% if order.shipping == 0 %}FREE{% else %}${{ ship_d }}.{% if ship_c < 10 %}0{% endif %}{{ ship_c }}{% endif %}</p>
+          {% assign tax_d = order.tax | divided_by: 100 %}{% assign tax_c = order.tax | modulo: 100 %}
+          <p>Tax: ${{ tax_d }}.{% if tax_c < 10 %}0{% endif %}{{ tax_c }}</p>
+          {% assign tot_d = order.total | divided_by: 100 %}{% assign tot_c = order.total | modulo: 100 %}
+          <p style="font-size: 1.2em;"><strong>Total: ${{ tot_d }}.{% if tot_c < 10 %}0{% endif %}{{ tot_c }}</strong></p>
+        </div>
+
+        <div style="display: flex; margin-top: 30px; gap: 20px;">
+          <div style="flex: 1;">
+            <h4>Shipping Address</h4>
+            <p>
+              {{ order.shipping_address.name }}<br>
+              {{ order.shipping_address.line1 }}<br>
+              {% if order.shipping_address.line2 %}{{ order.shipping_address.line2 }}<br>{% endif %}
+              {{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.zip }}<br>
+              {{ order.shipping_address.country }}
+            </p>
+          </div>
+          <div style="flex: 1;">
+            <h4>Billing Address</h4>
+            <p>
+              {{ order.billing_address.name }}<br>
+              {{ order.billing_address.line1 }}<br>
+              {% if order.billing_address.line2 %}{{ order.billing_address.line2 }}<br>{% endif %}
+              {{ order.billing_address.city }}, {{ order.billing_address.state }} {{ order.billing_address.zip }}<br>
+              {{ order.billing_address.country }}
+            </p>
+          </div>
+        </div>
+
+        {% if order.note %}
+          <div style="background: #fffff0; padding: 12px; border-radius: 4px; margin-top: 20px;">
+            <strong>Order Note:</strong> {{ order.note | escape }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div style="background: #f7fafc; padding: 15px; text-align: center; font-size: 12px; color: #718096;">
+        <p>Questions? Reply to this email or contact us at {{ shop.email }}</p>
+        <p>&copy; {{ "now" | date: "%Y" }} {{ shop.name }} | <a href="{{ shop.url }}">{{ shop.url | remove: "https://" }}</a></p>
+      </div>
+    </body>
+    </html>
+  environment:
+    shop:
+      name: "Alpine Gear Co."
+      email: "support@alpinegear.example.com"
+      url: "https://alpinegear.example.com"
+    customer:
+      first_name: Emily
+      last_name: Johnson
+      email: emily.j@example.com
+    order:
+      name: "#AG-20251234"
+      created_at: "2025-03-15T14:30:00Z"
+      status: confirmed
+      payment_method: "credit card"
+      subtotal: 106597
+      discount_amount: 26649
+      shipping: 0
+      tax: 6396
+      total: 86344
+      note: "Please leave at the front door. Gift wrap the boots if possible."
+      line_items:
+        - title: "Arbor Pro Draft 2025"
+          variant: "157cm / Camber"
+          quantity: 1
+          unit_price: 49900
+          properties: []
+        - title: "Vans Aura OG Boots"
+          variant: "Size 8 / White"
+          quantity: 1
+          unit_price: 22900
+          properties:
+            - name: "Gift Wrap"
+              value: "Yes"
+            - name: "Gift Message"
+              value: "Happy Birthday!"
+        - title: "Union Strata Bindings"
+          variant: "Small / Forest Green"
+          quantity: 1
+          unit_price: 29900
+          properties: []
+        - title: "Board Wax Kit"
+          variant: null
+          quantity: 2
+          unit_price: 1999
+          properties: []
+      shipping_address:
+        name: "Emily Johnson"
+        line1: "456 Powder Lane"
+        line2: "Apt 12C"
+        city: "Park City"
+        state: "UT"
+        zip: "84060"
+        country: "United States"
+      billing_address:
+        name: "Emily Johnson"
+        line1: "456 Powder Lane"
+        line2: "Apt 12C"
+        city: "Park City"
+        state: "UT"
+        zip: "84060"
+        country: "United States"
+  expected_pattern: "(?m)Alpine Gear.*Thank you.*Emily.*AG-20251234.*confirmed.*Arbor Pro Draft.*\\$499\\.00.*Vans Aura.*Gift Wrap.*Yes.*Gift Message.*Happy Birthday.*Board Wax Kit.*\\$39\\.98.*Subtotal.*\\$1,065\\.97|1065.*Discount.*Shipping.*FREE.*Tax.*Total.*Shipping Address.*456 Powder Lane.*Park City.*Order Note.*front door"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: CMS Page with Dynamic Sections (dynamic include dispatch)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_storefront_cms_page
+  template: |
+    {%- comment -%}CMS page with dynamic section rendering — tests dynamic includes heavily{%- endcomment -%}
+    <!DOCTYPE html>
+    <html>
+    <head><title>{{ page.title | escape }} — {{ shop.name }}</title></head>
+    <body>
+      {% render 'header', shop: shop, navigation: navigation, cart_count: 0 %}
+
+      <main class="page-content">
+        <h1>{{ page.title }}</h1>
+
+        {% for section in page.sections %}
+          <section class="section section--{{ section.type }}" id="section-{{ forloop.index }}">
+            {% include section.type, section: section %}
+          </section>
+        {% endfor %}
+      </main>
+
+      {% render 'footer', shop: shop, footer_links: footer_links %}
+    </body>
+    </html>
+  filesystem:
+    header.liquid: |
+      <header><a href="/">{{ shop.name }}</a><nav>{% for link in navigation %}<a href="{{ link.url }}">{{ link.title }}</a> {% endfor %}</nav><a href="/cart">Cart ({{ cart_count }})</a></header>
+    footer.liquid: |
+      <footer><p>&copy; {{ "now" | date: "%Y" }} {{ shop.name }}</p></footer>
+    hero_banner.liquid: |
+      <div class="hero" style="background-image: url('{{ section.background | escape }}')">
+        <h2>{{ section.heading | escape }}</h2>
+        <p>{{ section.subheading | escape }}</p>
+        {% if section.cta_text %}
+          <a href="{{ section.cta_url }}" class="button">{{ section.cta_text }}</a>
+        {% endif %}
+      </div>
+    featured_collection.liquid: |
+      <div class="featured-collection">
+        <h2>{{ section.heading }}</h2>
+        <div class="product-grid">
+          {% for product in section.products limit: section.limit %}
+            <div class="product-card">
+              <a href="/products/{{ product.handle }}">
+                <img src="/images/{{ product.image }}" alt="{{ product.title | escape }}" loading="lazy">
+                <h3>{{ product.title | truncate: 35 }}</h3>
+                {% assign d = product.price | divided_by: 100 %}{% assign c = product.price | modulo: 100 %}
+                <span class="price">${{ d }}.{% if c < 10 %}0{% endif %}{{ c }}</span>
+                {% if product.on_sale %}<span class="badge">Sale</span>{% endif %}
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+        {% if section.view_all_url %}
+          <a href="{{ section.view_all_url }}" class="link">View All &rarr;</a>
+        {% endif %}
+      </div>
+    rich_text.liquid: |
+      <div class="rich-text">
+        <h2>{{ section.heading }}</h2>
+        <div class="rich-text__body">{{ section.content }}</div>
+      </div>
+    image_with_text.liquid: |
+      <div class="image-text {% if section.image_position == 'right' %}image-text--reversed{% endif %}">
+        <div class="image-text__image">
+          <img src="{{ section.image | prepend: '/images/' }}" alt="{{ section.image_alt | escape }}" loading="lazy">
+        </div>
+        <div class="image-text__content">
+          <h2>{{ section.heading }}</h2>
+          {{ section.content }}
+          {% if section.button_text %}
+            <a href="{{ section.button_url }}" class="button">{{ section.button_text }}</a>
+          {% endif %}
+        </div>
+      </div>
+    testimonials.liquid: |
+      <div class="testimonials">
+        <h2>{{ section.heading }}</h2>
+        <div class="testimonials__grid">
+          {% for testimonial in section.items %}
+            <blockquote class="testimonial {% cycle 'bg-light', 'bg-white', 'bg-light' %}">
+              <p>"{{ testimonial.quote | escape }}"</p>
+              <cite>
+                {{ testimonial.author }}
+                {% if testimonial.title %}<span>{{ testimonial.title }}</span>{% endif %}
+              </cite>
+              <div class="rating">{% for i in (1..5) %}{% if i <= testimonial.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+            </blockquote>
+          {% endfor %}
+        </div>
+      </div>
+    newsletter.liquid: |
+      <div class="newsletter" style="background: {{ section.bg_color | default: '#f7fafc' }};">
+        <h2>{{ section.heading }}</h2>
+        <p>{{ section.description }}</p>
+        <form action="/subscribe" method="post" class="newsletter__form">
+          <input type="email" name="email" placeholder="{{ section.placeholder | default: 'Enter your email' }}" required>
+          <button type="submit">{{ section.button_text | default: "Subscribe" }}</button>
+        </form>
+      </div>
+    faq.liquid: |
+      <div class="faq">
+        <h2>{{ section.heading }}</h2>
+        {% for item in section.items %}
+          <details class="faq__item"{% if forloop.first %} open{% endif %}>
+            <summary>{{ item.question | escape }}</summary>
+            <div class="faq__answer">{{ item.answer }}</div>
+          </details>
+        {% endfor %}
+      </div>
+  environment:
+    shop:
+      name: "Alpine Gear Co."
+    navigation:
+      - title: Home
+        url: /
+      - title: Shop
+        url: /collections/all
+      - title: About
+        url: /about
+    footer_links:
+      - title: Shipping
+        url: /shipping
+      - title: Returns
+        url: /returns
+    page:
+      title: "Welcome to Alpine Gear"
+      sections:
+        - type: hero_banner
+          heading: "Gear Up for Winter 2025"
+          subheading: "Premium snowboard equipment from the world's best brands"
+          background: "hero-winter-2025.jpg"
+          cta_text: "Shop Now"
+          cta_url: "/collections/all"
+        - type: featured_collection
+          heading: "New Arrivals"
+          limit: 4
+          view_all_url: "/collections/new"
+          products:
+            - title: "Arbor Pro Draft 2025"
+              handle: arbor-pro-draft-2025
+              image: arbor-pro-draft.jpg
+              price: 49900
+              on_sale: true
+            - title: "Burton Custom Flying V"
+              handle: burton-custom-flying-v
+              image: burton-custom.jpg
+              price: 44900
+              on_sale: false
+            - title: "Jones Mountain Twin"
+              handle: jones-mountain-twin
+              image: jones-mt.jpg
+              price: 52900
+              on_sale: true
+            - title: "Capita DOA 2025"
+              handle: capita-doa
+              image: capita-doa.jpg
+              price: 39900
+              on_sale: false
+            - title: "GNU Riders Choice"
+              handle: gnu-riders
+              image: gnu-riders.jpg
+              price: 47900
+              on_sale: false
+        - type: image_with_text
+          heading: "Sustainably Made"
+          content: "<p>Every board in our lineup is built with eco-conscious materials. From recycled sidewalls to bio-resin construction, we're committed to protecting the mountains we ride.</p>"
+          image: sustainability.jpg
+          image_alt: "Eco-friendly snowboard construction"
+          image_position: left
+          button_text: "Learn More"
+          button_url: "/about/sustainability"
+        - type: rich_text
+          heading: "Why Choose Alpine Gear?"
+          content: |
+            <p>With over 15 years of experience outfitting riders at every level, we know gear. Our staff are certified instructors and passionate riders who test every product we sell.</p>
+            <ul>
+              <li>Free shipping on orders over $100</li>
+              <li>30-day no-questions-asked returns</li>
+              <li>Expert gear fitting via video call</li>
+              <li>Price match guarantee</li>
+            </ul>
+        - type: testimonials
+          heading: "What Riders Say"
+          items:
+            - quote: "Best online shop for snowboard gear. The team really knows their stuff and the shipping was incredibly fast."
+              author: "Mike T."
+              title: "Verified Buyer"
+              rating: 5
+            - quote: "I was skeptical about buying boots online but the video fitting service was amazing. Perfect fit on the first try."
+              author: "Sarah K."
+              title: "Pro Rider"
+              rating: 5
+            - quote: "Great selection and prices. The only store I trust for my gear now."
+              author: "Jake R."
+              title: null
+              rating: 4
+            - quote: "Excellent customer service. They went above and beyond to help me find the right board for my riding style."
+              author: "Emma L."
+              title: "Verified Buyer"
+              rating: 5
+        - type: featured_collection
+          heading: "Best Sellers"
+          limit: 3
+          view_all_url: "/collections/best-sellers"
+          products:
+            - title: "Vans Aura OG Boots"
+              handle: vans-aura-og
+              image: vans-aura.jpg
+              price: 22900
+              on_sale: true
+            - title: "Union Strata Bindings"
+              handle: union-strata
+              image: union-strata.jpg
+              price: 29900
+              on_sale: false
+            - title: "Board Wax Kit"
+              handle: board-wax-kit
+              image: wax-kit.jpg
+              price: 1999
+              on_sale: false
+        - type: faq
+          heading: "Frequently Asked Questions"
+          items:
+            - question: "What size snowboard should I get?"
+              answer: "<p>Board size depends on your weight, height, riding style, and ability level. As a general rule, the board should come up between your chin and nose when standing on end. Contact us for a personalized recommendation.</p>"
+            - question: "Do you offer international shipping?"
+              answer: "<p>Yes! We ship to over 30 countries. International shipping rates are calculated at checkout based on weight and destination.</p>"
+            - question: "What's your return policy?"
+              answer: "<p>We offer 30-day returns on all unused gear in original packaging. Used gear can be returned within 7 days if defective. See our <a href='/policies/returns'>return policy</a> for details.</p>"
+            - question: "How do I know if boots fit correctly?"
+              answer: "<p>Book a free video fitting session with our boot experts. We'll walk you through sizing and heat molding options to ensure the perfect fit.</p>"
+        - type: newsletter
+          heading: "Stay in the Loop"
+          description: "Get first access to new arrivals, exclusive deals, and riding tips delivered to your inbox."
+          placeholder: "your@email.com"
+          button_text: "Join the Crew"
+          bg_color: "#2d3748"
+  expected_pattern: "(?m)Alpine Gear.*hero.*Gear Up for Winter 2025.*Shop Now.*featured-collection.*New Arrivals.*Arbor Pro Draft.*\\$499\\.00.*Sale.*Burton Custom.*Jones Mountain.*Capita DOA.*View All.*image-text.*Sustainably Made.*eco-conscious.*rich-text.*Why Choose.*Free shipping.*30-day.*testimonials.*What Riders Say.*Mike T.*★★★★★.*Sarah K.*Pro Rider.*Best Sellers.*Vans Aura.*Union Strata.*faq.*What size snowboard.*return policy.*newsletter.*Stay in the Loop.*Join the Crew"
