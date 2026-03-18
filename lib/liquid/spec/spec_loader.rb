@@ -56,7 +56,7 @@ module Liquid
       VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity required_features data_files].freeze
       VALID_SPEC_KEYS = %w[
         name template expected expected_pattern environment filesystem complexity hint doc
-        error_mode render_errors required_features errors template_name
+        error_mode render_errors required_features errors template_name resource_limits
       ].freeze
 
       class << self
@@ -259,6 +259,7 @@ module Liquid
               raw_environment: raw_env,
               raw_filesystem: spec_data["filesystem"] || {},
               raw_template_factory: spec_data["template_factory"],
+              raw_resource_limits: spec_data["resource_limits"],
               source_hint: source_hint,
               source_required_options: source_required_options,
             )
