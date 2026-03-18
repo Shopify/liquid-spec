@@ -586,11 +586,11 @@ specs:
 
 - name: date_negative_timestamp
   template: "{{ -86400 | date: '%Y-%m-%d' }}"
-  expected: "1969-12-31"
+  expected: "1969-12-30"
   complexity: 190
   hint: |
     Negative timestamps represent dates before Unix epoch (1970-01-01).
-    -86400 seconds = Dec 31, 1969.
+    -86400 seconds in America/New_York (TEST_TZ) = Dec 30, 1969.
 
 - name: date_very_old_date
   template: "{{ '1900-01-01' | date: '%Y-%m-%d %A' }}"
