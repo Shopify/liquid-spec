@@ -1,4 +1,12 @@
 ---
+_metadata:
+  hint: |
+    These specs require lax parsing mode. The syntax tested here was never valid
+    Liquid - it was accidentally tolerated by the lax parser.
+  required_features: [lax_parsing]
+  required_options:
+    error_mode: :lax
+specs:
 - name: AssignTest#test_assign_uses_error_mode_2aa5686f
   template: "{% assign foo = ('X' | downcase) %}"
   render_errors: false
@@ -299,3 +307,140 @@
   render_errors: false
   expected: hello12
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L235
+
+# --- Case tag with invalid/lax syntax ---
+- name: CaseTagUnitTest#test_case_when_with_invalid_expression_67620f0d
+  template: |
+    {%- case 'baz' -%}
+      {%- when foo=>bar -%}
+        one
+      {%- else -%}
+        two
+    {%- endcase -%}
+  environment:
+    foo:
+      bar: baz
+  render_errors: false
+  expected: one
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/unit/tags/case_tag_unit_test.rb#L139
+- name: CaseTagUnitTest#test_case_when_with_trailing_element_3597f047
+  template: |
+    {%- case 1 -%}
+      {%- when 1 bar -%}
+        one
+      {%- else -%}
+        two
+    {%- endcase -%}
+  render_errors: false
+  expected: one
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/unit/tags/case_tag_unit_test.rb#L45
+- name: CaseTagUnitTest#test_case_with_invalid_expression_cd9c0c85
+  template: |
+    {%- case foo=>bar -%}
+      {%- when 'baz' -%}
+        one
+      {%- else -%}
+        two
+    {%- endcase -%}
+  environment:
+    foo:
+      bar: baz
+  render_errors: false
+  expected: one
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/unit/tags/case_tag_unit_test.rb#L117
+- name: CaseTagUnitTest#test_case_with_trailing_element_53df2d40
+  template: |
+    {%- case 1 bar -%}
+      {%- when 1 -%}
+        one
+      {%- else -%}
+        two
+    {%- endcase -%}
+  render_errors: false
+  expected: one
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/unit/tags/case_tag_unit_test.rb#L24
+
+# --- Cycle tag with invalid/lax syntax ---
+- name: CycleTagTest#test_cycle_tag_with_error_mode_2e06b45a
+  template: "{% assign 5 = 'b' %}{% cycle .5, .4 %}"
+  render_errors: false
+  expected: b
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L100
+- name: CycleTagTest#test_cycle_tag_with_error_mode_577d33f5
+  template: "{% cycle .5: 'a', 'b' %}"
+  render_errors: false
+  expected: a
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L101
+- name: CycleTagTest#test_cycle_with_trailing_elements_24de1b7f
+  template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle n  e: 'a', 'b', 'c'
+    %}"
+  render_errors: false
+  expected: "N"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L128
+- name: CycleTagTest#test_cycle_with_trailing_elements_5b8114bf
+  template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle n  e  'a', 'b', 'c'
+    %}"
+  render_errors: false
+  expected: "N"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L129
+- name: CycleTagTest#test_cycle_with_trailing_elements_692ee629
+  template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle       'a'  'b', 'c'
+    %}"
+  render_errors: false
+  expected: a
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L125
+- name: CycleTagTest#test_cycle_with_trailing_elements_6d4832a1
+  template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle name: 'a'  'b', 'c'
+    %}"
+  render_errors: false
+  expected: a
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L126
+- name: CycleTagTest#test_cycle_with_trailing_elements_c853a037
+  template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle name: 'a', 'b'  'c'
+    %}"
+  render_errors: false
+  expected: a
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/cycle_tag_test.rb#L127
+
+# --- Tablerow tag with invalid/lax syntax (triple dots in range, invalid attributes) ---
+- name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_012a518a
+  template: "{% tablerow n in (1...10) limit:true %} {{n}} {% endtablerow %}"
+  error_mode: :warn
+  render_errors: true
+  required_features: [inline_errors]
+  errors:
+    output:
+      - "invalid integer"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L192
+- name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_5ff6df98
+  template: "{% tablerow n in (1...10) cols:true %} {{n}} {% endtablerow %}"
+  error_mode: :warn
+  render_errors: true
+  required_features: [inline_errors]
+  errors:
+    output:
+      - "invalid integer"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L206
+- name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_848b46e7
+  template: "{% tablerow n in (1...10) offset:true %} {{n}} {% endtablerow %}"
+  error_mode: :warn
+  render_errors: true
+  required_features: [inline_errors]
+  errors:
+    output:
+      - "invalid integer"
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L199
+- name: TableRowTest#test_tablerow_with_invalid_attribute_strict_vs_strict2_b293b0fe
+  template: "{% tablerow i in (1..5) invalid_attr: 10 %}{{ i }}{% endtablerow %}"
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td><td class="col4">4</td><td class="col5">5</td></tr>
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L443
+- name: TableRowTest#test_tablerow_with_invalid_expression_strict_vs_strict2_944ef6e0
+  template: "{% tablerow i in (1..5) limit: foo=>bar %}{{ i }}{% endtablerow %}"
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    </tr>
+  url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/table_row_test.rb#L460
