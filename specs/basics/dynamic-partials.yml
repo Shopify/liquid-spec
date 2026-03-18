@@ -489,17 +489,39 @@ specs:
 - name: dynamic_include_nil_name
   template: "{% include missing_var %}"
   errors:
+    render_error:
+      - Illegal template name
+  complexity: 550
+  hint: |
+    When the variable resolving the partial name is nil/undefined,
+    an "Illegal template name" error should be raised as an exception.
+    Only {% include %} can have dynamic names — {% render %} requires
+    a string literal and would fail at parse time instead.
+
+- name: dynamic_include_nil_name_inline
+  template: "{% include missing_var %}"
+  errors:
     output:
       - Illegal template name
   render_errors: true
   required_features: [inline_errors]
   complexity: 550
   hint: |
-    When the variable resolving the partial name is nil/undefined,
-    a "Illegal template name" error should be raised. The template
-    name must be a non-nil string.
+    Same as dynamic_include_nil_name but with inline error rendering.
+    When render_errors is true, the error message is rendered into the
+    output instead of raising an exception.
 
 - name: dynamic_include_empty_string_name
+  template: "{% assign tpl = '' %}{% include tpl %}"
+  errors:
+    render_error:
+      - Could not find
+  complexity: 550
+  hint: |
+    An empty string resolves to a file lookup for "" which doesn't exist.
+    This produces a "Could not find asset" exception.
+
+- name: dynamic_include_empty_string_name_inline
   template: "{% assign tpl = '' %}{% include tpl %}"
   errors:
     output:
@@ -508,10 +530,19 @@ specs:
   required_features: [inline_errors]
   complexity: 550
   hint: |
-    An empty string resolves to a file lookup for "" which doesn't exist.
-    This produces a "Could not find asset" file system error.
+    Same as dynamic_include_empty_string_name but with inline error rendering.
 
 - name: dynamic_include_missing_partial
+  template: "{% assign tpl = 'nonexistent' %}{% include tpl %}"
+  errors:
+    render_error:
+      - Could not find
+  complexity: 550
+  hint: |
+    When the variable resolves to a valid string but the partial doesn't
+    exist in the filesystem, a file-not-found exception should be raised.
+
+- name: dynamic_include_missing_partial_inline
   template: "{% assign tpl = 'nonexistent' %}{% include tpl %}"
   errors:
     output:
@@ -520,8 +551,7 @@ specs:
   required_features: [inline_errors]
   complexity: 550
   hint: |
-    When the variable resolves to a valid string but the partial doesn't
-    exist in the filesystem, a file-not-found error should be raised.
+    Same as dynamic_include_missing_partial but with inline error rendering.
 
 # ── Dynamic include in realistic scenarios ─────────────────────────────────────
 

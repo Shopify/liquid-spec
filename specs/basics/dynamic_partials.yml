@@ -34,12 +34,35 @@ specs:
     value: "ok"
   expected: "[OUT:ok]"
 
+- name: dynamic_include_missing_partial_error
+  template: "{% include tpl %}"
+  filesystem: {}
+  environment:
+    tpl: "missing"
+  errors:
+    render_error:
+      - Could not find
+
 - name: dynamic_include_missing_partial_inline_error
   template: "{% include tpl %}"
   filesystem: {}
   environment:
     tpl: "missing"
-  expected: "render_error matching /Could\\ not\\ find\\ partial/i"
+  render_errors: true
+  required_features: [inline_errors]
+  errors:
+    output:
+      - Could not find
+
+- name: dynamic_include_illegal_name_error
+  template: "{% include tpl %}"
+  filesystem:
+    x: "X"
+  environment:
+    tpl: 123
+  errors:
+    render_error:
+      - Illegal template name
 
 - name: dynamic_include_illegal_name_inline_error
   template: "{% include tpl %}"
@@ -47,4 +70,8 @@ specs:
     x: "X"
   environment:
     tpl: 123
-  expected: "render_error matching /Illegal\\ template\\ name/i"
+  render_errors: true
+  required_features: [inline_errors]
+  errors:
+    output:
+      - Illegal template name
