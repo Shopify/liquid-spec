@@ -7,10 +7,16 @@ CAPTURE_PATH = File.join(__dir__, "..", "..", "..", "..", "tmp", "liquid-ruby-ca
 module ShopifyLiquidPatch
   def assert_template_result(expected, template, assigns = {},
     message: nil, partials: nil, error_mode: nil, render_errors: false, template_factory: nil)
+    # Resolve actual error_mode: if nil, check the environment default
+    # (which with_error_modes temporarily sets)
+    actual_error_mode = error_mode || Liquid::Environment.default.error_mode
+    # Only record non-default (strict) error modes
+    recorded_error_mode = actual_error_mode == :strict ? nil : actual_error_mode.to_s
+
     data = {
       "template" => template,
       "environment" => _deep_dup(assigns),
-      "error_mode" => error_mode,
+      "error_mode" => recorded_error_mode,
       "render_errors" => render_errors,
       "message" => message,
       "expected" => expected,

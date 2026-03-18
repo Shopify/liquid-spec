@@ -468,6 +468,48 @@ class ContextWithRaisingSubcontext < Liquid::Context
   end
 end
 
+# --- YAML coders for capture pipeline ---
+# These make YAML.dump produce portable instantiate: format instead of !ruby/ tags.
+require_relative "yaml_coders"
+
+LiquidSpecYAMLCoder.register(ValueDrop, "ValueDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register(CountingDrop, "CountingDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register(TestDrop, "TestDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register_empty(TestEnumerable, "TestEnumerable")
+LiquidSpecYAMLCoder.register(NumberLikeThing, "NumberLikeThing", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register_empty(ThingWithToLiquid, "ThingWithToLiquid")
+LiquidSpecYAMLCoder.register_empty(ThingWithValue, "ThingWithValue")
+LiquidSpecYAMLCoder.register(BooleanDrop, "BooleanDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register(IntegerDrop, "IntegerDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register(StringDrop, "StringDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register_empty(ErrorDrop, "ErrorDrop")
+LiquidSpecYAMLCoder.register(SettingsDrop, "SettingsDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register(CustomToLiquidDrop, "CustomToLiquidDrop", skip_ivars: [:@context])
+LiquidSpecYAMLCoder.register_hash(HashWithCustomToS, "HashWithCustomToS")
+LiquidSpecYAMLCoder.register_hash(HashWithoutCustomToS, "HashWithoutCustomToS")
+LiquidSpecYAMLCoder.register(LoaderDrop, "LoaderDrop", skip_ivars: [:@context, :@each_called, :@load_slice_called])
+LiquidSpecYAMLCoder.register(ArrayDrop, "ArrayDrop", skip_ivars: [:@context])
+
+# ToSDrop needs custom encode_with to match the constructor's param format
+ToSDrop.define_method(:encode_with) do |coder|
+  coder.represent_map(nil, { "instantiate:ToSDrop:" => { "to_s" => @to_s_value } })
+end
+
+# StubTemplateFactory
+StubTemplateFactory.define_method(:encode_with) do |coder|
+  coder.represent_map(nil, { "instantiate:StubTemplateFactory:" => {} })
+end
+
+# Update StubFileSystem to use instantiate: format
+StubFileSystem.define_method(:encode_with) do |coder|
+  coder.represent_map(nil, { "instantiate:StubFileSystem:" => @values })
+end
+
+# Update StubExceptionRenderer to use instantiate: format
+StubExceptionRenderer.define_method(:encode_with) do |coder|
+  coder.represent_map(nil, { "instantiate:StubExceptionRenderer:" => { "raise_internal_errors" => @raise_internal_errors } })
+end
+
 # Load test drops and filters after base classes are defined
 require_relative "../test_drops"
 require_relative "../test_filters"

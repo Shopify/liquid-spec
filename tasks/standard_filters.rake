@@ -37,6 +37,20 @@ FILTER_PATCH = <<~RUBY
     )
   )
 
+  # Load YAML coders so YAML.dump produces instantiate: format
+  require_relative(
+    File.join(
+      __dir__, "..", "..", "..", "..", "lib", "liquid", "spec", "deps", "yaml_coders",
+    )
+  )
+
+  # Patch TestThing (defined above in this file) to serialize as ToSDrop
+  TestThing.class_eval do
+    def encode_with(coder)
+      coder.represent_map(nil, { "instantiate:ToSDrop:" => { "foo" => @foo } })
+    end
+  end
+
   TEST_TIME = Time.utc(2024, 0o1, 0o1, 0, 1, 58).freeze
   require 'timecop'
 
