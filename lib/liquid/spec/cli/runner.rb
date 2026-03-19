@@ -716,6 +716,22 @@ module Liquid
                    "#{ratio_s}"
             end
 
+            # YJIT stats during render (only when JIT is active)
+            if r[:yjit_compiled_iseqs]
+              parts = []
+              parts << "+#{r[:yjit_compiled_iseqs]} iseqs" if r[:yjit_compiled_iseqs] > 0
+              parts << "#{"%.1f" % r[:yjit_compile_time_ms]}ms jit time" if r[:yjit_compile_time_ms] && r[:yjit_compile_time_ms] > 0.05
+              parts << "#{r[:yjit_invalidations]} invalidations" if r[:yjit_invalidations] && r[:yjit_invalidations] > 0
+              if r[:yjit_code_bytes] && r[:yjit_code_bytes] > 0
+                kb = r[:yjit_code_bytes] / 1024.0
+                parts << "#{"%.1f" % kb}KB code"
+              end
+              if r[:yjit_compile_us_per_iter] && r[:yjit_compile_us_per_iter] > 0.01
+                parts << "#{"%.2f" % r[:yjit_compile_us_per_iter]}µs jit/op"
+              end
+              puts "  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m" if parts.any?
+            end
+
             puts ""
           end
 
@@ -968,6 +984,13 @@ module Liquid
               render_cold_1:       result[:render_cold_1],
               render_cold_10_mean: result[:render_cold_10_mean],
               render_cold_10_p50:  result[:render_cold_10_p50],
+
+              # YJIT delta during render (nil when not using YJIT)
+              yjit_compiled_iseqs:    result[:yjit_compiled_iseqs],
+              yjit_compile_time_ms:   result[:yjit_compile_time_ms],
+              yjit_invalidations:     result[:yjit_invalidations],
+              yjit_code_bytes:        result[:yjit_code_bytes],
+              yjit_compile_us_per_iter: result[:yjit_compile_us_per_iter],
             }
           end
 

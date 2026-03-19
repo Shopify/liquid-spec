@@ -65,15 +65,18 @@ module Liquid
             GC.enable
             GC.start  # recover between phases
 
-            # ── 6. Timed render (GC off) ─────────────────────────────────
+            # ── 6. Timed render (GC off, YJIT delta tracked) ────────────
+            yjit_before = yjit_snapshot
             GC.disable
             render_stats = timed_loop(half) { render_proc.call(env_proc.call) }
             GC.enable
+            yjit_after = yjit_snapshot
 
             build_result(
               compile_stats, render_stats,
               compile_allocs, render_allocs,
               cold_1, cold_10,
+              yjit_delta(yjit_before, yjit_after, render_stats[:iters]),
             )
           rescue => e
             GC.enable rescue nil
@@ -162,7 +165,7 @@ module Liquid
             counts.sort[n / 2]
           end
 
-          def build_result(cs, rs, ca, ra, cold_1, cold_10)
+          def build_result(cs, rs, ca, ra, cold_1, cold_10, yjit)
             cold_10_mean = cold_10.sum / cold_10.size.to_f
             cold_10_sorted = cold_10.sort
             {
@@ -188,8 +191,42 @@ module Liquid
               render_cold_10_p50:  pct(cold_10_sorted, 50),
               render_cold_10_all:  cold_10,
 
+              # YJIT delta during render (nil when not using YJIT)
+              **yjit,
+
               error: nil,
             }
+          end
+
+          # Snapshot YJIT counters. Returns nil if no YJIT.
+          def yjit_snapshot
+            return nil unless defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+            s = RubyVM::YJIT.runtime_stats
+            {
+              compiled_iseqs: s[:compiled_iseq_count] || 0,
+              compile_ns:     s[:compile_time_ns] || 0,
+              invalidations:  s[:invalidation_count] || 0,
+              code_size:      s[:inline_code_size] || 0,
+            }
+          end
+
+          # Compute delta between two snapshots. Returns hash with yjit_ keys.
+          def yjit_delta(before, after, iters)
+            return {} unless before && after
+            compiled  = after[:compiled_iseqs] - before[:compiled_iseqs]
+            compile_ms = (after[:compile_ns] - before[:compile_ns]) / 1_000_000.0
+            invalidations = after[:invalidations] - before[:invalidations]
+            code_bytes = after[:code_size] - before[:code_size]
+
+            result = {
+              yjit_compiled_iseqs:  compiled,
+              yjit_compile_time_ms: compile_ms,
+              yjit_invalidations:   invalidations,
+              yjit_code_bytes:      code_bytes,
+            }
+            # Per-iteration compile time (µs) — how much JIT overhead per render
+            result[:yjit_compile_us_per_iter] = (compile_ms * 1000.0) / iters if iters > 0
+            result
           end
 
           def pct(sorted, p)
