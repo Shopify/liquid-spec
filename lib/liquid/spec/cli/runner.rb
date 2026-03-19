@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
+require_relative "benchmark"
 require_relative "config"
 require_relative "../time_freezer"
 require "json"
@@ -776,13 +777,11 @@ module Liquid
               strict_errors: false,
             }.compact
 
-            # Deep copy the environment once up front. Reuse via shallow .dup per iteration.
-            # Templates may mutate top-level keys via assign/include but won't mutate nested
-            # objects, so a shallow dup is sufficient for benchmark isolation.
-            assigns_snapshot = deep_copy(spec.instantiate_environment)
+            # Pre-build a deep copy of the environment for validation
+            env_master = deep_copy(spec.instantiate_environment)
 
-            # Verify expected output first (warm up + validation)
-            actual = LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
+            # Verify expected output first
+            actual = LiquidSpec.do_render(env_master.dup, render_options, context)
             if spec.expected && actual != spec.expected
               return {
                 name: spec.name,
@@ -791,105 +790,31 @@ module Liquid
               }
             end
 
-            # Warm up
-            3.times do
-              LiquidSpec.do_compile(spec.template, compile_options, context)
-              LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
+            # Use shared benchmark infrastructure.
+            # env_proc returns a shallow dup — templates may mutate top-level keys
+            # via assign/include but won't mutate nested objects.
+            result = Benchmark.run(
+              compile_proc: -> { LiquidSpec.do_compile(spec.template, compile_options, context) },
+              render_proc:  ->(env) { LiquidSpec.do_render(env, render_options, context) },
+              env_proc:     -> { env_master.dup },
+              duration:     duration_seconds,
+            )
+
+            if result[:error]
+              return { name: spec.name, iterations: 0, error: result[:error] }
             end
 
-            # Count allocations for a single compile+render cycle
-            GC.start
-            alloc_before = GC.stat(:total_allocated_objects)
-            LiquidSpec.do_compile(spec.template, compile_options, context)
-            compile_allocs = GC.stat(:total_allocated_objects) - alloc_before
-
-            alloc_before = GC.stat(:total_allocated_objects)
-            LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
-            render_allocs = GC.stat(:total_allocated_objects) - alloc_before
-
-            # Disable GC for consistent timing
-            GC.disable
-
-            # Benchmark compile (half the duration)
-            compile_times = benchmark_operation(duration_seconds / 2.0) do
-              LiquidSpec.do_compile(spec.template, compile_options, context)
-            end
-
-            # Benchmark render (half the duration)
-            render_times = benchmark_operation(duration_seconds / 2.0) do
-              LiquidSpec.do_render(assigns_snapshot.dup, render_options, context)
-            end
-
-            # Re-enable GC
-            GC.enable
-
-            {
+            result.merge(
               name: spec.name,
-              iterations: compile_times[:iterations] + render_times[:iterations],
-              compile_iterations: compile_times[:iterations],
-              render_iterations: render_times[:iterations],
-              compile_mean: compile_times[:mean],
-              compile_stddev: compile_times[:stddev],
-              compile_min: compile_times[:min],
-              compile_max: compile_times[:max],
-              compile_allocs: compile_allocs,
-              render_mean: render_times[:mean],
-              render_stddev: render_times[:stddev],
-              render_min: render_times[:min],
-              render_max: render_times[:max],
-              render_allocs: render_allocs,
+              iterations: result[:compile_runs] + result[:render_runs],
+              compile_iterations: result[:compile_runs],
+              render_iterations: result[:render_runs],
               # Legacy fields for compatibility
-              mean_time: render_times[:mean],
-              stddev: render_times[:stddev],
-              min_time: render_times[:min],
-              max_time: render_times[:max],
-              error: nil,
-            }
-          rescue => e
-            # Ensure GC is re-enabled on error
-            GC.enable
-            {
-              name: spec.name,
-              iterations: 0,
-              error: e,
-            }
-          end
-
-          def benchmark_operation(duration_seconds)
-            times = []
-            max_iterations = 5000
-            iterations = 0
-
-            start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-            end_time = start_time + duration_seconds
-
-            # Initial timing to determine batch size
-            t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-            yield
-            single_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
-
-            # Target ~50ms per batch
-            batch_size = [(0.05 / [single_time, 0.0001].max).to_i, 1].max
-            batch_size = [batch_size, 500].min
-
-            while iterations < max_iterations && Process.clock_gettime(Process::CLOCK_MONOTONIC) < end_time
-              batch_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-              batch_size.times { yield }
-              batch_elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - batch_start
-              times << batch_elapsed / batch_size
-              iterations += batch_size
-            end
-
-            mean = times.sum / times.size
-            variance = times.map { |t| (t - mean) ** 2 }.sum / times.size
-
-            {
-              mean: mean,
-              stddev: Math.sqrt(variance),
-              min: times.min,
-              max: times.max,
-              iterations: iterations,
-            }
+              mean_time: result[:render_mean],
+              stddev: result[:render_stddev],
+              min_time: result[:render_min],
+              max_time: result[:render_max],
+            )
           end
 
           def format_number(num)
@@ -923,26 +848,26 @@ module Liquid
             jit_info = Config.jit_info
             jit_label = jit_info[:enabled] ? jit_info[:engine] : "no-jit"
 
-            puts "-" * 50
+            puts "-" * 60
             puts "\e[1m#{adapter_name}\e[0m (Ruby #{RUBY_VERSION}, #{jit_label})"
             puts "  Tests: #{total} run, #{successful.size} passed, #{failed.size} failed (#{success_rate}%)"
 
             if successful.any?
-              # Calculate aggregates
-              total_parse_ms = successful.sum { |r| r[:result][:compile_mean] * 1000 }
-              total_render_ms = successful.sum { |r| r[:result][:render_mean] * 1000 }
+              # Calculate aggregates using median (more robust than mean)
+              total_parse_median_ms = successful.sum { |r| (r[:result][:compile_median] || r[:result][:compile_mean]) * 1000 }
+              total_render_median_ms = successful.sum { |r| (r[:result][:render_median] || r[:result][:render_mean]) * 1000 }
               total_parse_allocs = successful.sum { |r| r[:result][:compile_allocs] || 0 }
               total_render_allocs = successful.sum { |r| r[:result][:render_allocs] || 0 }
-              total_parse_iters = successful.sum { |r| r[:result][:compile_iterations] || 0 }
-              total_render_iters = successful.sum { |r| r[:result][:render_iterations] || 0 }
+              total_parse_iters = successful.sum { |r| r[:result][:compile_iterations] || r[:result][:compile_runs] || 0 }
+              total_render_iters = successful.sum { |r| r[:result][:render_iterations] || r[:result][:render_runs] || 0 }
 
-              puts "  Parse:  #{format_time(total_parse_ms)} total, #{format_time(total_parse_ms / successful.size)} avg (#{format_number(total_parse_iters)} iters)"
-              puts "  Render: #{format_time(total_render_ms)} total, #{format_time(total_render_ms / successful.size)} avg (#{format_number(total_render_iters)} iters)"
+              puts "  Parse:  #{format_time(total_parse_median_ms)} total (median), #{format_time(total_parse_median_ms / successful.size)} avg (#{format_number(total_parse_iters)} iters)"
+              puts "  Render: #{format_time(total_render_median_ms)} total (median), #{format_time(total_render_median_ms / successful.size)} avg (#{format_number(total_render_iters)} iters)"
               puts "  Allocs: #{format_number(total_parse_allocs)} parse, #{format_number(total_render_allocs)} render"
 
-              # Show slowest specs
+              # Show slowest specs by median render time
               if successful.size > 3
-                slowest = successful.sort_by { |r| -r[:result][:render_mean] }.first(3)
+                slowest = successful.sort_by { |r| -(r[:result][:render_median] || r[:result][:render_mean]) }.first(3)
                 puts "  Slowest: #{slowest.map { |r| r[:spec].name.split("#").last }.join(", ")}"
               end
             end
@@ -993,18 +918,26 @@ module Liquid
 
               # Parse/compile timings (parsing IS compiling in Liquid)
               parse_mean: result[:compile_mean],
+              parse_median: result[:compile_median],
               parse_stddev: result[:compile_stddev],
               parse_min: result[:compile_min],
               parse_max: result[:compile_max],
-              parse_iterations: result[:compile_iterations],
+              parse_p75: result[:compile_p75],
+              parse_p95: result[:compile_p95],
+              parse_p99: result[:compile_p99],
+              parse_iterations: result[:compile_iterations] || result[:compile_runs],
               parse_allocs: result[:compile_allocs],
 
               # Render timings
               render_mean: result[:render_mean],
+              render_median: result[:render_median],
               render_stddev: result[:render_stddev],
               render_min: result[:render_min],
               render_max: result[:render_max],
-              render_iterations: result[:render_iterations],
+              render_p75: result[:render_p75],
+              render_p95: result[:render_p95],
+              render_p99: result[:render_p99],
+              render_iterations: result[:render_iterations] || result[:render_runs],
               render_allocs: result[:render_allocs],
             }
           end

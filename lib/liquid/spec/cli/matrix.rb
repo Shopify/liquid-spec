@@ -2,6 +2,7 @@
 
 require "json"
 require "fileutils"
+require_relative "benchmark"
 require_relative "config"
 require_relative "runs"
 
@@ -470,8 +471,8 @@ module Liquid
 
               # Add timing stats if we have successful results
               if successful.any?
-                parse_total = successful.sum { |r| ((r[:parse_mean] || r[:compile_mean]) || 0) * 1000 }
-                render_total = successful.sum { |r| (r[:render_mean] || 0) * 1000 }
+                parse_total = successful.sum { |r| ((r[:parse_median] || r[:parse_mean] || r[:compile_median] || r[:compile_mean]) || 0) * 1000 }
+                render_total = successful.sum { |r| ((r[:render_median] || r[:render_mean]) || 0) * 1000 }
                 parse_avg = parse_total / successful.size
                 render_avg = render_total / successful.size
                 status += "  (parse: #{format_time_compact(parse_avg)}, render: #{format_time_compact(render_avg)})"
@@ -515,13 +516,13 @@ module Liquid
               puts "  Tests: #{total} run, #{successful.size} passed, #{failed.size} failed (#{success_rate}%)"
 
               if successful.any?
-                # Use parse_ fields if available, fall back to compile_ for consistency
-                total_parse_ms = successful.sum { |r| ((r[:parse_mean] || r[:compile_mean]) || 0) * 1000 }
-                total_render_ms = successful.sum { |r| (r[:render_mean] || 0) * 1000 }
+                # Use median fields if available, fall back to mean for compatibility
+                total_parse_ms = successful.sum { |r| ((r[:parse_median] || r[:parse_mean] || r[:compile_median] || r[:compile_mean]) || 0) * 1000 }
+                total_render_ms = successful.sum { |r| ((r[:render_median] || r[:render_mean]) || 0) * 1000 }
                 total_allocs = successful.sum { |r| ((r[:parse_allocs] || r[:compile_allocs]) || 0) + (r[:render_allocs] || 0) }
 
-                puts "  Parse:  #{format_time(total_parse_ms)} total, #{format_time(total_parse_ms / successful.size)} avg"
-                puts "  Render: #{format_time(total_render_ms)} total, #{format_time(total_render_ms / successful.size)} avg"
+                puts "  Parse:  #{format_time(total_parse_ms)} total (median), #{format_time(total_parse_ms / successful.size)} avg"
+                puts "  Render: #{format_time(total_render_ms)} total (median), #{format_time(total_render_ms / successful.size)} avg"
                 puts "  Allocs: #{format_number(total_allocs)} total"
               end
               puts ""
@@ -553,15 +554,15 @@ module Liquid
               ref_result = (results_by_adapter[reference] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
               next unless ref_result
 
-              ref_parse = ref_result[:parse_mean] || ref_result[:compile_mean]
-              ref_render = ref_result[:render_mean]
+              ref_parse = ref_result[:parse_median] || ref_result[:parse_mean] || ref_result[:compile_median] || ref_result[:compile_mean]
+              ref_render = ref_result[:render_median] || ref_result[:render_mean]
 
               others.each do |other|
                 other_result = (results_by_adapter[other] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
                 next unless other_result
 
-                other_parse = other_result[:parse_mean] || other_result[:compile_mean]
-                other_render = other_result[:render_mean]
+                other_parse = other_result[:parse_median] || other_result[:parse_mean] || other_result[:compile_median] || other_result[:compile_mean]
+                other_render = other_result[:render_median] || other_result[:render_mean]
 
                 parse_ratios[other] << other_parse / ref_parse if ref_parse && other_parse && ref_parse > 0
                 render_ratios[other] << other_render / ref_render if ref_render && other_render && ref_render > 0
@@ -755,17 +756,25 @@ module Liquid
 
               # Parse timings
               parse_mean: result[:compile_mean],
+              parse_median: result[:compile_median],
               parse_stddev: result[:compile_stddev],
               parse_min: result[:compile_min],
               parse_max: result[:compile_max],
+              parse_p75: result[:compile_p75],
+              parse_p95: result[:compile_p95],
+              parse_p99: result[:compile_p99],
               parse_iterations: result[:compile_runs],
               parse_allocs: result[:compile_allocs],
 
               # Render timings
               render_mean: result[:render_mean],
+              render_median: result[:render_median],
               render_stddev: result[:render_stddev],
               render_min: result[:render_min],
               render_max: result[:render_max],
+              render_p75: result[:render_p75],
+              render_p95: result[:render_p95],
+              render_p99: result[:render_p99],
               render_iterations: result[:render_runs],
               render_allocs: result[:render_allocs],
             }
@@ -796,10 +805,12 @@ module Liquid
             render_options[:error_mode] = spec.error_mode if spec.error_mode
 
             ctx = adapter.ctx
+            compile_block = adapter.instance_variable_get(:@compile_block)
+            render_block = adapter.instance_variable_get(:@render_block)
 
             # Verify it works first
-            adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
-            actual = adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
+            compile_block.call(ctx, spec.template, compile_options)
+            actual = render_block.call(ctx, deep_copy(environment), render_options)
 
             if spec.expected && actual.to_s != spec.expected
               return {
@@ -807,86 +818,16 @@ module Liquid
               }
             end
 
-            # Warm up
-            3.times do
-              adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
-              adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
-            end
+            # Pre-build a master copy of the environment.
+            # env_proc returns a shallow dup — NOT deep_copy in the hot loop.
+            env_master = deep_copy(environment)
 
-            # Count allocations for a single compile+render cycle
-            GC.start
-            alloc_before = GC.stat(:total_allocated_objects)
-            adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
-            compile_allocs = GC.stat(:total_allocated_objects) - alloc_before
-
-            alloc_before = GC.stat(:total_allocated_objects)
-            adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
-            render_allocs = GC.stat(:total_allocated_objects) - alloc_before
-
-            # Disable GC for consistent timing
-            GC.disable
-
-            # Benchmark compile
-            compile_result = benchmark_operation(duration_seconds / 2.0) do
-              adapter.instance_variable_get(:@compile_block).call(ctx, spec.template, compile_options)
-            end
-            compile_times = compile_result[:times]
-
-            # Benchmark render (pre-compiled template)
-            render_result = benchmark_operation(duration_seconds / 2.0) do
-              adapter.instance_variable_get(:@render_block).call(ctx, deep_copy(environment), render_options)
-            end
-            render_times = render_result[:times]
-
-            # Re-enable GC
-            GC.enable
-
-            {
-              compile_mean: mean(compile_times),
-              compile_stddev: stddev(compile_times),
-              compile_min: compile_times.min,
-              compile_max: compile_times.max,
-              compile_runs: compile_result[:iterations],
-              compile_allocs: compile_allocs,
-              render_mean: mean(render_times),
-              render_stddev: stddev(render_times),
-              render_min: render_times.min,
-              render_max: render_times.max,
-              render_runs: render_result[:iterations],
-              render_allocs: render_allocs,
-              error: nil,
-            }
-          rescue => e
-            GC.enable
-            { error: e }
-          end
-
-          def benchmark_operation(duration_seconds, &block)
-            times = []
-            max_iterations = 5000
-            iterations = 0
-
-            start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-            end_time = start_time + duration_seconds
-
-            # Initial timing to determine batch size
-            t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-            block.call
-            single_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - t0
-
-            # Target ~50ms per batch
-            batch_size = [(0.05 / [single_time, 0.0001].max).to_i, 1].max
-            batch_size = [batch_size, 500].min
-
-            while iterations < max_iterations && Process.clock_gettime(Process::CLOCK_MONOTONIC) < end_time
-              batch_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-              batch_size.times { block.call }
-              batch_elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - batch_start
-              times << batch_elapsed / batch_size
-              iterations += batch_size
-            end
-
-            { times: times, iterations: iterations }
+            Benchmark.run(
+              compile_proc: -> { compile_block.call(ctx, spec.template, compile_options) },
+              render_proc:  ->(env) { render_block.call(ctx, env, render_options) },
+              env_proc:     -> { env_master.dup },
+              duration:     duration_seconds,
+            )
           end
 
           def print_benchmark_summaries(all_results, adapters)
