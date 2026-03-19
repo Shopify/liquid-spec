@@ -669,15 +669,13 @@ module Liquid
               if result[:error]
                 puts "  \e[31m✗\e[0m #{name}: #{result[:error].message[0..60]}"
               else
-                compile_ms = result[:compile_mean] * 1000
-                render_ms = result[:render_mean] * 1000
-                total_ms = compile_ms + render_ms
-                total_allocs = (result[:compile_allocs] || 0) + (result[:render_allocs] || 0)
-
+                f = Benchmark.method(:fmt)
                 puts "  \e[32m✓\e[0m #{name}"
-                puts "      Compile: #{format_time(compile_ms)} ± #{format_time(result[:compile_stddev] * 1000)}  \e[2m#{result[:compile_runs]} iters, #{result[:compile_allocs]} allocs\e[0m"
-                puts "      Render:  #{format_time(render_ms)} ± #{format_time(result[:render_stddev] * 1000)}  \e[2m#{result[:render_runs]} iters, #{result[:render_allocs]} allocs\e[0m"
-                puts "      Total:   #{format_time(total_ms)}  \e[2m#{total_allocs} allocs\e[0m"
+                puts "      Parse:  #{f.call(result[:compile_median])}  p95 #{f.call(result[:compile_p95])}  \e[2m#{Benchmark.fmt_iters(result[:compile_iters])} iters, #{result[:compile_allocs]} allocs/op\e[0m"
+                puts "      Render: #{f.call(result[:render_median])}  p95 #{f.call(result[:render_p95])}  \e[2m#{Benchmark.fmt_iters(result[:render_iters])} iters, #{result[:render_allocs]} allocs/op\e[0m"
+                if result[:render_cold_1]
+                  puts "      Cold:   #{f.call(result[:render_cold_1])} @1  #{f.call(result[:render_cold_10_mean])} @10"
+                end
               end
             end
 
@@ -716,9 +714,11 @@ module Liquid
             successful = results.select { |_, r| r[:error].nil? }
             if successful.size >= 2
               # Find fastest render
-              fastest_name, fastest = successful.min_by { |_, r| r[:render_mean] }
-              slowest_name, slowest = successful.max_by { |_, r| r[:render_mean] }
-              ratio = slowest[:render_mean] / fastest[:render_mean]
+              fastest_name, fastest = successful.min_by { |_, r| r[:render_median] || r[:render_mean] }
+              slowest_name, slowest = successful.max_by { |_, r| r[:render_median] || r[:render_mean] }
+              fast_t = fastest[:render_median] || fastest[:render_mean]
+              slow_t = slowest[:render_median] || slowest[:render_mean]
+              ratio = slow_t / fast_t
               if ratio > 1.1
                 print "\e[2m#{fastest_name} %.1fx faster\e[0m" % ratio
               end
@@ -763,10 +763,11 @@ module Liquid
               parse_p75: result[:compile_p75],
               parse_p95: result[:compile_p95],
               parse_p99: result[:compile_p99],
-              parse_iterations: result[:compile_runs],
-              parse_allocs: result[:compile_allocs],
+              parse_iters: result[:compile_iters],
+              parse_samples: result[:compile_samples],
+              parse_allocs_per_op: result[:compile_allocs],
 
-              # Render timings
+              # Render timings (warm)
               render_mean: result[:render_mean],
               render_median: result[:render_median],
               render_stddev: result[:render_stddev],
@@ -775,8 +776,14 @@ module Liquid
               render_p75: result[:render_p75],
               render_p95: result[:render_p95],
               render_p99: result[:render_p99],
-              render_iterations: result[:render_runs],
-              render_allocs: result[:render_allocs],
+              render_iters: result[:render_iters],
+              render_samples: result[:render_samples],
+              render_allocs_per_op: result[:render_allocs],
+
+              # Cold render
+              render_cold_1:       result[:render_cold_1],
+              render_cold_10_mean: result[:render_cold_10_mean],
+              render_cold_10_p50:  result[:render_cold_10_p50],
             }
 
             File.open(log_path, "a") do |f|

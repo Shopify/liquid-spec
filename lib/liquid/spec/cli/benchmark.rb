@@ -3,69 +3,78 @@
 module Liquid
   module Spec
     module CLI
-      # Shared benchmark infrastructure for runner.rb and matrix.rb.
+      # Shared benchmark infrastructure.
       #
-      # Design decisions:
-      #   - Environment copies are pre-allocated OUTSIDE the hot loop
-      #   - Warmup runs for >= 1 second to let JIT (YJIT/ZJIT) stabilize
-      #   - GC is compacted once after warmup, then disabled per phase
-      #   - GC is re-enabled between compile and render phases
-      #   - Individual timings are recorded when ops are slow enough (>50µs)
-      #   - Batch timings used for fast ops, with batch means stored
-      #   - Percentiles (p50, p75, p95, p99) computed from samples
-      #   - Allocations measured as median of 3 runs
+      # Methodology:
+      #   1. Cold renders: measure first render (no JIT, cold caches) and
+      #      mean of first 10 renders before any warmup.
+      #   2. Warmup: run compile+render in a loop for ≥1s / ≥50 iters to
+      #      let JIT (YJIT/ZJIT) stabilize and caches fill.
+      #   3. Stabilize: full GC + compact to settle the heap.
+      #   4. Allocation count: median of 3 isolated runs (GC between each).
+      #   5. Timed phase (GC disabled): auto-selects individual timing for
+      #      slow ops (>50µs) or batched timing for fast ops. Records every
+      #      sample so percentiles are real, not averaged.
+      #   6. GC re-enabled between compile and render phases.
+      #
+      # All times are in seconds. Callers use format helpers for display.
       module Benchmark
-        # Minimum warmup duration in seconds
-        WARMUP_SECONDS = 1.0
-        # Minimum warmup iterations
-        WARMUP_MIN_ITERATIONS = 50
-        # Target batch duration in seconds (for auto-sizing)
-        TARGET_BATCH_SECONDS = 0.02
-        # Max batch size to prevent huge batches for trivial ops
-        MAX_BATCH_SIZE = 2000
-        # Max iterations (generous — 500k should be enough for anyone)
-        MAX_ITERATIONS = 500_000
+        WARMUP_SECONDS        = 1.0
+        WARMUP_MIN_ITERS      = 50
+        TARGET_BATCH_SECS     = 0.02
+        MAX_BATCH_SIZE        = 2_000
+        MAX_ITERS             = 500_000
 
         class << self
-          # Run a complete benchmark for a single spec.
+          # Run a full benchmark for one spec.
           #
-          # compile_proc: -> { ... } called to compile the template
-          # render_proc:  -> { ... } called to render (should NOT copy env itself)
-          # env_proc:     -> { Hash } returns a fresh environment copy for each render
-          # duration:     total seconds to spend benchmarking (split compile/render)
-          #
-          # Returns a result hash with all metrics, or { error: Exception }
+          # @param compile_proc [Proc]   -> { compile the template }
+          # @param render_proc  [Proc]   ->(env) { render with env }
+          # @param env_proc     [Proc]   -> { fresh env shallow-dup }
+          # @param duration     [Float]  total seconds (split compile/render)
+          # @return [Hash] result with all metrics, or { error: Exception }
           def run(compile_proc:, render_proc:, env_proc:, duration:)
             half = duration / 2.0
 
-            # ── Warmup (both phases, lets JIT stabilize) ──
-            warmup(WARMUP_SECONDS) do
+            # ── 1. Cold renders (before any warmup) ──────────────────────
+            GC.start(full_mark: true, immediate_sweep: true)
+            compile_proc.call
+            cold_1 = time_once { render_proc.call(env_proc.call) }
+
+            GC.start(full_mark: true, immediate_sweep: true)
+            compile_proc.call
+            cold_10 = Array.new(10) { time_once { render_proc.call(env_proc.call) } }
+
+            # ── 2. Warmup ────────────────────────────────────────────────
+            warmup do
               compile_proc.call
               render_proc.call(env_proc.call)
             end
 
-            # ── Stabilize heap ──
+            # ── 3. Stabilize heap ────────────────────────────────────────
             GC.start(full_mark: true, immediate_sweep: true)
             GC.compact if GC.respond_to?(:compact)
 
-            # ── Measure allocations (median of 3) ──
+            # ── 4. Allocations per op (median of 3) ─────────────────────
             compile_allocs = measure_allocs(3) { compile_proc.call }
             render_allocs  = measure_allocs(3) { render_proc.call(env_proc.call) }
 
-            # ── Benchmark compile ──
+            # ── 5. Timed compile (GC off) ────────────────────────────────
             GC.disable
-            compile = timed_loop(half) { compile_proc.call }
+            compile_stats = timed_loop(half) { compile_proc.call }
+            GC.enable
+            GC.start  # recover between phases
+
+            # ── 6. Timed render (GC off) ─────────────────────────────────
+            GC.disable
+            render_stats = timed_loop(half) { render_proc.call(env_proc.call) }
             GC.enable
 
-            # Let GC recover between phases
-            GC.start
-
-            # ── Benchmark render ──
-            GC.disable
-            render = timed_loop(half) { render_proc.call(env_proc.call) }
-            GC.enable
-
-            build_result(compile, render, compile_allocs, render_allocs)
+            build_result(
+              compile_stats, render_stats,
+              compile_allocs, render_allocs,
+              cold_1, cold_10,
+            )
           rescue => e
             GC.enable rescue nil
             { error: e }
@@ -73,145 +82,162 @@ module Liquid
 
           private
 
-          # Warm up for at least `seconds` and `WARMUP_MIN_ITERATIONS` iterations.
-          def warmup(seconds)
-            start = clock
-            iterations = 0
-            deadline = start + seconds
-            while iterations < WARMUP_MIN_ITERATIONS || clock < deadline
+          def warmup
+            t0 = clock
+            n = 0
+            deadline = t0 + WARMUP_SECONDS
+            while n < WARMUP_MIN_ITERS || clock < deadline
               yield
-              iterations += 1
+              n += 1
             end
           end
 
-          # Core timing loop. Returns raw samples array and iteration count.
-          #
-          # Auto-detects whether individual timing is feasible:
-          # - If a single call takes >50µs, record individual times
-          # - Otherwise, batch and record batch means
-          def timed_loop(duration)
-            # Probe single iteration time
+          def time_once
             t0 = clock
             yield
-            probe_time = clock - t0
+            clock - t0
+          end
 
-            if probe_time > 0.00005  # >50µs — record individual times
-              timed_loop_individual(duration) { yield }
+          # Auto-select individual vs batch timing.
+          def timed_loop(duration)
+            probe = time_once { yield }
+
+            if probe > 0.00005  # > 50µs → individual
+              individual_loop(duration) { yield }
             else
-              timed_loop_batched(duration, probe_time) { yield }
+              batched_loop(duration, probe) { yield }
             end
           end
 
-          # Record each iteration individually (for slower ops)
-          def timed_loop_individual(duration)
+          def individual_loop(duration)
             times = []
-            iterations = 0
             deadline = clock + duration
-
-            while iterations < MAX_ITERATIONS && clock < deadline
-              t0 = clock
-              yield
-              times << (clock - t0)
-              iterations += 1
+            while times.size < MAX_ITERS && clock < deadline
+              times << time_once { yield }
             end
-
-            build_stats(times, iterations, batched: false)
+            stats(times)
           end
 
-          # Batch iterations together (for fast ops <50µs)
-          def timed_loop_batched(duration, probe_time)
-            batch_size = [(TARGET_BATCH_SECONDS / [probe_time, 0.0000001].max).to_i, 1].max
-            batch_size = [batch_size, MAX_BATCH_SIZE].min
+          def batched_loop(duration, probe)
+            bs = [(TARGET_BATCH_SECS / [probe, 1e-7].max).to_i, 1].max
+            bs = [bs, MAX_BATCH_SIZE].min
 
-            times = []  # Each entry is mean time per iteration for that batch
-            iterations = 0
+            times = []
+            iters = 0
             deadline = clock + duration
-
-            while iterations < MAX_ITERATIONS && clock < deadline
+            while iters < MAX_ITERS && clock < deadline
               t0 = clock
-              batch_size.times { yield }
-              elapsed = clock - t0
-              times << (elapsed / batch_size)
-              iterations += batch_size
+              bs.times { yield }
+              times << (clock - t0) / bs
+              iters += bs
             end
-
-            build_stats(times, iterations, batched: true)
+            stats(times, iters)
           end
 
-          # Compute statistics from samples.
-          def build_stats(times, iterations, batched:)
-            sorted = times.sort
-
+          def stats(times, iters = times.size)
+            s = times.sort
+            n = s.size
+            m = times.sum / n.to_f
             {
-              samples: times,
-              sorted: sorted,
-              iterations: iterations,
-              mean: times.sum / times.size.to_f,
-              stddev: stddev(times),
-              min: sorted.first,
-              max: sorted.last,
-              median: percentile(sorted, 50),
-              p75: percentile(sorted, 75),
-              p95: percentile(sorted, 95),
-              p99: percentile(sorted, 99),
-              batched: batched,
+              iters:   iters,
+              samples: n,
+              mean:    m,
+              median:  pct(s, 50),
+              min:     s.first,
+              max:     s.last,
+              stddev:  Math.sqrt(times.map { |t| (t - m)**2 }.sum / n.to_f),
+              p75:     pct(s, 75),
+              p95:     pct(s, 95),
+              p99:     pct(s, 99),
             }
           end
 
-          # Measure allocations. Runs `n` times and returns the median.
           def measure_allocs(n)
-            counts = n.times.map do
+            counts = Array.new(n) do
               GC.start
               before = GC.stat(:total_allocated_objects)
               yield
               GC.stat(:total_allocated_objects) - before
             end
-            counts.sort[counts.size / 2]  # median
+            counts.sort[n / 2]
           end
 
-          def build_result(compile, render, compile_allocs, render_allocs)
+          def build_result(cs, rs, ca, ra, cold_1, cold_10)
+            cold_10_mean = cold_10.sum / cold_10.size.to_f
+            cold_10_sorted = cold_10.sort
             {
-              compile_mean:    compile[:mean],
-              compile_median:  compile[:median],
-              compile_stddev:  compile[:stddev],
-              compile_min:     compile[:min],
-              compile_max:     compile[:max],
-              compile_p75:     compile[:p75],
-              compile_p95:     compile[:p95],
-              compile_p99:     compile[:p99],
-              compile_runs:    compile[:iterations],
-              compile_allocs:  compile_allocs,
-              render_mean:     render[:mean],
-              render_median:   render[:median],
-              render_stddev:   render[:stddev],
-              render_min:      render[:min],
-              render_max:      render[:max],
-              render_p75:      render[:p75],
-              render_p95:      render[:p95],
-              render_p99:      render[:p99],
-              render_runs:     render[:iterations],
-              render_allocs:   render_allocs,
-              error:           nil,
+              # Compile (warm)
+              compile_median: cs[:median], compile_mean: cs[:mean],
+              compile_min: cs[:min], compile_max: cs[:max],
+              compile_stddev: cs[:stddev],
+              compile_p75: cs[:p75], compile_p95: cs[:p95], compile_p99: cs[:p99],
+              compile_iters: cs[:iters], compile_samples: cs[:samples],
+              compile_allocs: ca,
+
+              # Render (warm steady-state)
+              render_median: rs[:median], render_mean: rs[:mean],
+              render_min: rs[:min], render_max: rs[:max],
+              render_stddev: rs[:stddev],
+              render_p75: rs[:p75], render_p95: rs[:p95], render_p99: rs[:p99],
+              render_iters: rs[:iters], render_samples: rs[:samples],
+              render_allocs: ra,
+
+              # Cold render
+              render_cold_1:       cold_1,
+              render_cold_10_mean: cold_10_mean,
+              render_cold_10_p50:  pct(cold_10_sorted, 50),
+              render_cold_10_all:  cold_10,
+
+              error: nil,
             }
           end
 
-          def percentile(sorted, pct)
+          def pct(sorted, p)
             return sorted.first if sorted.size <= 1
-            rank = (pct / 100.0) * (sorted.size - 1)
-            lower = sorted[rank.floor]
-            upper = sorted[rank.ceil]
-            lower + (upper - lower) * (rank - rank.floor)
-          end
-
-          def stddev(arr)
-            m = arr.sum / arr.size.to_f
-            variance = arr.map { |x| (x - m)**2 }.sum / arr.size.to_f
-            Math.sqrt(variance)
+            r = (p / 100.0) * (sorted.size - 1)
+            lo = sorted[r.floor]
+            hi = sorted[r.ceil]
+            lo + (hi - lo) * (r - r.floor)
           end
 
           def clock
             Process.clock_gettime(Process::CLOCK_MONOTONIC)
           end
+        end
+
+        # ── Display helpers (all take seconds) ───────────────────────────
+
+        def self.fmt(seconds)
+          return "—" if seconds.nil? || seconds == 0
+          if seconds >= 1       then "%.2fs"  % seconds
+          elsif seconds >= 0.01 then "%.1fms" % (seconds * 1e3)
+          elsif seconds >= 1e-3 then "%.2fms" % (seconds * 1e3)
+          elsif seconds >= 1e-6 then "%.0fµs" % (seconds * 1e6)
+          else                       "%.0fns" % (seconds * 1e9)
+          end
+        end
+
+        def self.fmt_iters(n)
+          return "0" if n.nil? || n == 0
+          if    n >= 1e6 then "%.1fM" % (n / 1e6)
+          elsif n >= 1e3 then "%.1fk" % (n / 1e3)
+          else                n.to_s
+          end
+        end
+
+        def self.fmt_allocs(n)
+          return "0" if n.nil? || n == 0
+          if n >= 1e6 then "%.1fM" % (n / 1e6)
+          elsif n >= 1e4 then "%.1fk" % (n / 1e3)
+          else n.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+          end
+        end
+
+        # Keep old names as aliases
+        class << self
+          alias_method :format_time_short, :fmt
+          alias_method :format_iters, :fmt_iters
+          alias_method :format_allocs, :fmt_allocs
         end
       end
     end

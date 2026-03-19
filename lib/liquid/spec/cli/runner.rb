@@ -585,28 +585,23 @@ module Liquid
             run_id = ENV["LIQUID_SPEC_RUN_ID"] || Time.now.strftime("%Y%m%d_%H%M%S")
             jsonl_mode = ENV["LIQUID_SPEC_BENCHMARK_JSONL"] == "1"
 
-            # Determine adapter name from the loaded adapter file
             adapter_name = LiquidSpec.adapter_name || "unknown"
 
             if options[:profile] && !jsonl_mode
               require "stackprof"
               profile_dir = "/tmp/liquid-spec-profile-#{run_id}"
               Dir.mkdir(profile_dir)
-              puts "Profiling enabled, output: #{profile_dir}"
-              puts ""
             end
 
-            # Ensure benchmark directory exists (not needed in jsonl mode - parent handles it)
             benchmark_log_path = Config.adapter_jsonl_path(adapter_name) unless jsonl_mode
 
-            # Write run metadata as first entry
+            # Write run metadata
+            meta = build_run_metadata(run_id, adapter_name)
             if jsonl_mode
-              puts JSON.generate(build_run_metadata(run_id, adapter_name))
+              puts JSON.generate(meta)
               $stdout.flush
             else
-              File.open(benchmark_log_path, "a") do |f|
-                f.puts(JSON.generate(build_run_metadata(run_id, adapter_name)))
-              end
+              File.open(benchmark_log_path, "a") { |f| f.puts(JSON.generate(meta)) }
             end
 
             all_results = []
@@ -615,115 +610,176 @@ module Liquid
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
               suite_specs = filter_by_features(suite_specs, features)
-
               next if suite_specs.empty?
 
+              duration_per_spec = suite.default_iteration_seconds
+
+              # Profile if requested
+              if profile_dir && !jsonl_mode
+                prepared_specs = suite_specs.map { |s| prepare_benchmark_spec(s, config) }.compact
+                run_profiling(prepared_specs, profile_dir) if prepared_specs.any?
+              end
+
               unless jsonl_mode
-                puts "Benchmark: #{suite.name} (#{suite_specs.size} specs)"
-                puts "JIT: #{jit_status}, Duration: #{suite.default_iteration_seconds}s/spec"
+                jit_label = jit_status
                 puts ""
-              end
-
-              # Prepare all specs first
-              prepared_specs = suite_specs.map do |spec|
-                prepare_benchmark_spec(spec, config)
-              end.compact
-
-              # Profile compile phase (all specs together)
-              if profile_dir && prepared_specs.any? && !jsonl_mode
-                puts "  Profiling..."
-                compile_profile = StackProf.run(mode: :cpu, raw: true) do
-                  prepared_specs.each do |prepared|
-                    100.times do
-                      LiquidSpec.do_compile(prepared[:template], prepared[:compile_options], prepared[:context])
-                    end
-                  end
-                end
-                File.binwrite("#{profile_dir}/compile_cpu.dump", Marshal.dump(compile_profile))
-
-                compile_obj_profile = StackProf.run(mode: :object, raw: true) do
-                  prepared_specs.each do |prepared|
-                    10.times do
-                      LiquidSpec.do_compile(prepared[:template], prepared[:compile_options], prepared[:context])
-                    end
-                  end
-                end
-                File.binwrite("#{profile_dir}/compile_object.dump", Marshal.dump(compile_obj_profile))
-
-                render_profile = StackProf.run(mode: :cpu, raw: true) do
-                  prepared_specs.each do |prepared|
-                    100.times do
-                      LiquidSpec.do_render(
-                        deep_copy(prepared[:assigns]),
-                        prepared[:render_options],
-                        prepared[:context]
-                      )
-                    end
-                  end
-                end
-                File.binwrite("#{profile_dir}/render_cpu.dump", Marshal.dump(render_profile))
-
-                render_obj_profile = StackProf.run(mode: :object, raw: true) do
-                  prepared_specs.each do |prepared|
-                    10.times do
-                      LiquidSpec.do_render(
-                        deep_copy(prepared[:assigns]),
-                        prepared[:render_options],
-                        prepared[:context]
-                      )
-                    end
-                  end
-                end
-                File.binwrite("#{profile_dir}/render_object.dump", Marshal.dump(render_obj_profile))
+                puts "\e[1m#{adapter_name}\e[0m — #{suite.name}"
+                puts "Ruby #{RUBY_VERSION} (#{jit_label}) │ #{suite_specs.size} specs │ #{duration_per_spec}s/spec"
                 puts ""
-              end
 
-              passed = 0
-              failed = 0
+                # Table header
+                puts ROW_FMT % ["SPEC", "PARSE", "RENDER", "p95", "cold@1", "cold@10", "iters", "p.alc", "r.alc"]
+                puts "  " + "─" * 103
+              end
 
               suite_specs.each do |spec|
-                result = run_benchmark_spec(spec, config, suite.default_iteration_seconds)
+                result = run_benchmark_spec(spec, config, duration_per_spec)
                 all_results << { spec: spec, result: result }
 
                 if jsonl_mode
-                  # Output JSONL to stdout for parallel collection
                   output_benchmark_jsonl(run_id, adapter_name, spec, result)
                 else
-                  # Save to JSONL file
                   save_benchmark_result(benchmark_log_path, run_id, adapter_name, spec, result)
-
-                  # Compact output
-                  if result[:error]
-                    print "\e[31m✗\e[0m"
-                    failed += 1
-                  else
-                    print "\e[32m.\e[0m"
-                    passed += 1
-                  end
-                  $stdout.flush
+                  print_benchmark_row(spec, result)
                 end
               end
 
               unless jsonl_mode
-                puts ""
-                puts "  #{passed} passed, #{failed} failed"
-                puts ""
+                puts "  " + "─" * 103
+                print_benchmark_totals(all_results)
               end
             end
 
-            # Print compact summary (skip in jsonl mode)
             unless jsonl_mode
-              print_benchmark_summary_compact(all_results, adapter_name)
-
               if profile_dir
                 puts ""
                 puts "StackProf: #{profile_dir}/"
               end
 
               puts ""
-              puts "Results saved to: #{benchmark_log_path}"
-              puts "Run \e[1mliquid-spec report\e[0m to analyze results"
+              puts "Results: #{benchmark_log_path}"
             end
+          end
+
+          # ── Per-spec row ──────────────────────────────────────────────
+
+          ROW_FMT = "  %-36s %8s  %8s  %8s  %8s  %8s  %8s  %6s  %6s"
+
+          def print_benchmark_row(spec, r)
+            name = spec.name.sub(/\Abench_/, "").sub(/\A[^#]*#/, "")
+            name = name[0..34] + "…" if name.length > 35
+
+            if r[:error]
+              puts "  %-36s  \e[31m✗ %s\e[0m" % [name, r[:error].message[0..70]]
+              return
+            end
+
+            f = Benchmark.method(:fmt)
+
+            puts ROW_FMT % [
+              name,
+              f.call(r[:compile_median]),   # PARSE
+              f.call(r[:render_median]),     # RENDER
+              f.call(r[:render_p95]),        # p95
+              f.call(r[:render_cold_1]),     # cold@1
+              f.call(r[:render_cold_10_mean]), # cold@10
+              Benchmark.fmt_iters(r[:render_iters]),  # iters
+              Benchmark.fmt_allocs(r[:compile_allocs] || 0), # p.alloc
+              Benchmark.fmt_allocs(r[:render_allocs]  || 0), # r.alloc
+            ]
+          end
+
+          # ── Totals / summary ───────────────────────────────────────────
+
+          def print_benchmark_totals(all_results)
+            ok = all_results.select { |r| r[:result][:error].nil? }
+            nfail = all_results.size - ok.size
+
+            if ok.empty?
+              puts "  \e[31m#{nfail} failed, 0 passed\e[0m"
+              return
+            end
+
+            f = Benchmark.method(:fmt)
+
+            # Collect per-spec values
+            pmed = ok.map { |r| r[:result][:compile_median] }.compact
+            pitr = ok.sum { |r| r[:result][:compile_iters] || 0 }
+            pall = ok.map { |r| r[:result][:compile_allocs] || 0 }
+
+            rmed = ok.map { |r| r[:result][:render_median] }.compact
+            rp95 = ok.map { |r| r[:result][:render_p95] }.compact
+            ritr = ok.sum { |r| r[:result][:render_iters] || 0 }
+            rall = ok.map { |r| r[:result][:render_allocs] || 0 }
+
+            c1  = ok.map { |r| r[:result][:render_cold_1] }.compact
+            c10 = ok.map { |r| r[:result][:render_cold_10_mean] }.compact
+
+            puts ""
+            status = "\e[1m#{ok.size} passed\e[0m"
+            status += ", \e[31m#{nfail} failed\e[0m" if nfail > 0
+            puts "  #{status}"
+            puts ""
+
+            # Parse summary
+            puts "  \e[1mParse\e[0m"
+            puts "    median #{f.call(arr_median(pmed))}/op  │  #{Benchmark.fmt_iters(pitr)} iters  │  #{Benchmark.fmt_allocs(arr_median(pall).to_i)} allocs/op"
+
+            # Render summary
+            puts "  \e[1mRender (warm)\e[0m"
+            puts "    median #{f.call(arr_median(rmed))}/op  │  p95 #{f.call(arr_median(rp95))}  │  #{Benchmark.fmt_iters(ritr)} iters  │  #{Benchmark.fmt_allocs(arr_median(rall).to_i)} allocs/op"
+
+            # Cold summary
+            if c1.any? && rmed.any?
+              warm = arr_median(rmed)
+              cold1 = arr_median(c1)
+              cold10 = arr_median(c10)
+              ratio = warm > 0 ? "%.1fx" % (cold1 / warm) : "—"
+              puts "  \e[1mRender (cold)\e[0m"
+              puts "    @1 #{f.call(cold1)} (#{ratio} vs warm)  │  @10 #{f.call(cold10)}"
+            end
+
+            # Slowest
+            if ok.size > 3
+              slowest = ok.sort_by { |r| -(r[:result][:render_median] || 0) }.first(3)
+              puts "  \e[1mSlowest\e[0m"
+              slowest.each do |entry|
+                sname = entry[:spec].name.sub(/\Abench_/, "")
+                stime = f.call(entry[:result][:render_median])
+                puts "    #{sname} (#{stime})"
+              end
+            end
+          end
+
+          def arr_median(a)
+            return 0 if a.nil? || a.empty?
+            s = a.sort; s[s.size / 2]
+          end
+
+          # ── Profiling (StackProf) ──────────────────────────────────────
+
+          def run_profiling(prepared_specs, profile_dir)
+            puts "  Profiling to #{profile_dir}/ ..."
+            {
+              "compile_cpu"    => [:cpu,    100, :compile],
+              "compile_object" => [:object, 10,  :compile],
+              "render_cpu"     => [:cpu,    100, :render],
+              "render_object"  => [:object, 10,  :render],
+            }.each do |filename, (mode, n, phase)|
+              profile = StackProf.run(mode: mode, raw: true) do
+                prepared_specs.each do |p|
+                  n.times do
+                    if phase == :compile
+                      LiquidSpec.do_compile(p[:template], p[:compile_options], p[:context])
+                    else
+                      LiquidSpec.do_render(deep_copy(p[:assigns]), p[:render_options], p[:context])
+                    end
+                  end
+                end
+              end
+              File.binwrite("#{profile_dir}/#{filename}.dump", Marshal.dump(profile))
+            end
+            puts ""
           end
 
           def prepare_benchmark_spec(spec, _config)
@@ -806,14 +862,9 @@ module Liquid
 
             result.merge(
               name: spec.name,
-              iterations: result[:compile_runs] + result[:render_runs],
-              compile_iterations: result[:compile_runs],
-              render_iterations: result[:render_runs],
-              # Legacy fields for compatibility
-              mean_time: result[:render_mean],
-              stddev: result[:render_stddev],
-              min_time: result[:render_min],
-              max_time: result[:render_max],
+              iterations: (result[:compile_iters] || 0) + (result[:render_iters] || 0),
+              compile_iterations: result[:compile_iters],
+              render_iterations: result[:render_iters],
             )
           end
 
@@ -829,52 +880,6 @@ module Liquid
               "%.3f ms" % ms
             else
               "%.3f µs" % (ms * 1000)
-            end
-          end
-
-          def print_benchmark_summary(results)
-            # No summary for single-adapter benchmarks - each benchmark measures
-            # a different template, so comparing them doesn't make sense.
-            # Comparisons are only meaningful in matrix mode where we compare
-            # the same benchmark across different implementations.
-          end
-
-          def print_benchmark_summary_compact(all_results, adapter_name)
-            successful = all_results.select { |r| r[:result][:error].nil? }
-            failed = all_results.select { |r| r[:result][:error] }
-            total = all_results.size
-            success_rate = total > 0 ? (successful.size.to_f / total * 100).round(0) : 0
-
-            jit_info = Config.jit_info
-            jit_label = jit_info[:enabled] ? jit_info[:engine] : "no-jit"
-
-            puts "-" * 60
-            puts "\e[1m#{adapter_name}\e[0m (Ruby #{RUBY_VERSION}, #{jit_label})"
-            puts "  Tests: #{total} run, #{successful.size} passed, #{failed.size} failed (#{success_rate}%)"
-
-            if successful.any?
-              # Calculate aggregates using median (more robust than mean)
-              total_parse_median_ms = successful.sum { |r| (r[:result][:compile_median] || r[:result][:compile_mean]) * 1000 }
-              total_render_median_ms = successful.sum { |r| (r[:result][:render_median] || r[:result][:render_mean]) * 1000 }
-              total_parse_allocs = successful.sum { |r| r[:result][:compile_allocs] || 0 }
-              total_render_allocs = successful.sum { |r| r[:result][:render_allocs] || 0 }
-              total_parse_iters = successful.sum { |r| r[:result][:compile_iterations] || r[:result][:compile_runs] || 0 }
-              total_render_iters = successful.sum { |r| r[:result][:render_iterations] || r[:result][:render_runs] || 0 }
-
-              puts "  Parse:  #{format_time(total_parse_median_ms)} total (median), #{format_time(total_parse_median_ms / successful.size)} avg (#{format_number(total_parse_iters)} iters)"
-              puts "  Render: #{format_time(total_render_median_ms)} total (median), #{format_time(total_render_median_ms / successful.size)} avg (#{format_number(total_render_iters)} iters)"
-              puts "  Allocs: #{format_number(total_parse_allocs)} parse, #{format_number(total_render_allocs)} render"
-
-              # Show slowest specs by median render time
-              if successful.size > 3
-                slowest = successful.sort_by { |r| -(r[:result][:render_median] || r[:result][:render_mean]) }.first(3)
-                puts "  Slowest: #{slowest.map { |r| r[:spec].name.split("#").last }.join(", ")}"
-              end
-            end
-
-            # Show failed specs
-            if failed.any?
-              puts "  \e[31mFailed:\e[0m #{failed.map { |r| r[:spec].name }.join(", ")}"
             end
           end
 
@@ -917,28 +922,35 @@ module Liquid
               error: result[:error]&.message,
 
               # Parse/compile timings (parsing IS compiling in Liquid)
-              parse_mean: result[:compile_mean],
               parse_median: result[:compile_median],
+              parse_mean: result[:compile_mean],
               parse_stddev: result[:compile_stddev],
               parse_min: result[:compile_min],
               parse_max: result[:compile_max],
               parse_p75: result[:compile_p75],
               parse_p95: result[:compile_p95],
               parse_p99: result[:compile_p99],
-              parse_iterations: result[:compile_iterations] || result[:compile_runs],
-              parse_allocs: result[:compile_allocs],
+              parse_iters: result[:compile_iters] || result[:compile_iterations],
+              parse_samples: result[:compile_samples],
+              parse_allocs_per_op: result[:compile_allocs],
 
-              # Render timings
-              render_mean: result[:render_mean],
+              # Render timings (warm steady-state)
               render_median: result[:render_median],
+              render_mean: result[:render_mean],
               render_stddev: result[:render_stddev],
               render_min: result[:render_min],
               render_max: result[:render_max],
               render_p75: result[:render_p75],
               render_p95: result[:render_p95],
               render_p99: result[:render_p99],
-              render_iterations: result[:render_iterations] || result[:render_runs],
-              render_allocs: result[:render_allocs],
+              render_iters: result[:render_iters] || result[:render_iterations],
+              render_samples: result[:render_samples],
+              render_allocs_per_op: result[:render_allocs],
+
+              # Cold render (before JIT/caches)
+              render_cold_1:       result[:render_cold_1],
+              render_cold_10_mean: result[:render_cold_10_mean],
+              render_cold_10_p50:  result[:render_cold_10_p50],
             }
           end
 
@@ -968,7 +980,7 @@ module Liquid
             elsif defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
               "yjit"
             else
-              "off"
+              "no-jit"
             end
           end
 
