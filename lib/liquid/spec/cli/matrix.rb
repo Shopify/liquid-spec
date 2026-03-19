@@ -496,110 +496,159 @@ module Liquid
           end
 
           def print_parallel_summary(adapter_names, results_by_adapter)
-            jit_info = Config.jit_info
-            jit_label = jit_info[:enabled] ? jit_info[:engine] : "no-jit"
+            f = Benchmark.method(:fmt)
 
-            puts "-" * 70
-            puts "\e[1mSUMMARY\e[0m (Ruby #{RUBY_VERSION}, #{jit_label})"
-            puts "-" * 70
-            puts ""
+            # Collect all spec names that ran in at least one adapter
+            all_spec_names = results_by_adapter.values.flatten.select { |r| r[:status] == "success" }.map { |r| r[:spec_name] }.uniq
 
-            # Per-adapter summary
-            adapter_names.each do |name|
-              results = results_by_adapter[name] || []
-              successful = results.select { |r| r[:status] == "success" }
-              failed = results.select { |r| r[:status] != "success" }
-              total = results.size
-              success_rate = total > 0 ? (successful.size.to_f / total * 100).round(0) : 0
+            # Find active adapters (those with at least 1 result)
+            active = adapter_names.select { |n| (results_by_adapter[n] || []).any? { |r| r[:status] == "success" } }
+            return if active.empty? || all_spec_names.empty?
 
-              puts "\e[1m#{name}\e[0m"
-              puts "  Tests: #{total} run, #{successful.size} passed, #{failed.size} failed (#{success_rate}%)"
+            # Max adapter name length for padding
+            pad = active.map(&:size).max
 
-              if successful.any?
-                # Use median fields if available, fall back to mean for compatibility
-                total_parse_ms = successful.sum { |r| ((r[:parse_median] || r[:parse_mean] || r[:compile_median] || r[:compile_mean]) || 0) * 1000 }
-                total_render_ms = successful.sum { |r| ((r[:render_median] || r[:render_mean]) || 0) * 1000 }
-                total_allocs = successful.sum { |r| ((r[:parse_allocs] || r[:compile_allocs]) || 0) + (r[:render_allocs] || 0) }
+            # ── Per-spec comparison ──────────────────────────────────────
+            all_spec_names.each_with_index do |spec_name, idx|
+              label = spec_name.sub(/\Abench_/, "")
+              puts "\e[1mBenchmark #{idx + 1}/#{all_spec_names.size}:\e[0m #{label}"
 
-                puts "  Parse:  #{format_time(total_parse_ms)} total (median), #{format_time(total_parse_ms / successful.size)} avg"
-                puts "  Render: #{format_time(total_render_ms)} total (median), #{format_time(total_render_ms / successful.size)} avg"
-                puts "  Allocs: #{format_number(total_allocs)} total"
+              active.each do |adapter|
+                r = (results_by_adapter[adapter] || []).find { |x| x[:spec_name] == spec_name && x[:status] == "success" }
+                unless r
+                  puts "  #{adapter.ljust(pad)}  \e[2m(skipped)\e[0m"
+                  next
+                end
+
+                pmean   = r[:parse_mean] || r[:compile_mean] || 0
+                pstd    = r[:parse_stddev] || r[:compile_stddev] || 0
+                rmean   = r[:render_mean] || 0
+                rstd    = r[:render_stddev] || 0
+                rmin    = r[:render_min] || 0
+                rmax    = r[:render_max] || 0
+                pallocs = r[:parse_allocs_per_op] || r[:parse_allocs] || r[:compile_allocs] || 0
+                rallocs = r[:render_allocs_per_op] || r[:render_allocs] || 0
+                piters  = r[:parse_iters] || r[:parse_iterations] || 0
+                riters  = r[:render_iters] || r[:render_iterations] || 0
+                cold1   = r[:render_cold_1]
+                cold10  = r[:render_cold_10_mean]
+
+                puts "  \e[1m#{adapter.ljust(pad)}\e[0m  " \
+                     "Parse  (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                     "\e[1;32m#{f.call(pmean).rjust(9)}\e[0m ± " \
+                     "\e[32m#{f.call(pstd).rjust(8)}\e[0m    " \
+                     "[\e[34m#{Benchmark.fmt_allocs(pallocs)} allocs\e[0m, " \
+                     "\e[2m#{Benchmark.fmt_iters(piters)} runs\e[0m]"
+
+                puts "  #{" " * pad}  " \
+                     "Render (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                     "\e[1;32m#{f.call(rmean).rjust(9)}\e[0m ± " \
+                     "\e[32m#{f.call(rstd).rjust(8)}\e[0m    " \
+                     "[\e[34m#{Benchmark.fmt_allocs(rallocs)} allocs\e[0m, " \
+                     "\e[2m#{Benchmark.fmt_iters(riters)} runs\e[0m]"
+
+                puts "  #{" " * pad}  " \
+                     "Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):  " \
+                     "\e[36m#{f.call(rmin).rjust(9)}\e[0m … " \
+                     "\e[35m#{f.call(rmax).rjust(8)}\e[0m    " \
+                     "[\e[2m#{Benchmark.fmt_iters(riters)} runs\e[0m]"
+
+                if cold1
+                  ratio = rmean > 0 ? cold1 / rmean : 0
+                  ratio_s = ratio > 1.05 ? "    \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
+                  puts "  #{" " * pad}  " \
+                       "Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):  " \
+                       "\e[33m#{f.call(cold1).rjust(9)}\e[0m / " \
+                       "\e[33m#{f.call(cold10 || 0).rjust(8)}\e[0m" \
+                       "#{ratio_s}"
+                end
               end
+
+              # Show speedup between adapters for this spec
+              if active.size >= 2
+                render_times = {}
+                active.each do |a|
+                  r = (results_by_adapter[a] || []).find { |x| x[:spec_name] == spec_name && x[:status] == "success" }
+                  render_times[a] = r[:render_mean] || r[:render_median] if r
+                end
+                if render_times.size >= 2
+                  fastest_name, fastest_time = render_times.min_by { |_, t| t }
+                  slowest_name, slowest_time = render_times.max_by { |_, t| t }
+                  if fastest_time > 0 && slowest_time / fastest_time > 1.1
+                    puts "  \e[2m#{fastest_name} is %.2fx faster than #{slowest_name}\e[0m" % (slowest_time / fastest_time)
+                  end
+                end
+              end
+
               puts ""
             end
 
-            # Comparison if multiple adapters
-            if adapter_names.size >= 2
-              print_parallel_comparison(adapter_names, results_by_adapter)
+            # ── Overall comparison ─────────────────────────────────────
+            if active.size >= 2
+              print_overall_comparison(active, results_by_adapter, all_spec_names)
             end
           end
 
-          def print_parallel_comparison(adapter_names, results_by_adapter)
-            # Find specs that exist in all adapters
-            common_specs = nil
-            adapter_names.each do |name|
-              specs = (results_by_adapter[name] || []).select { |r| r[:status] == "success" }.map { |r| r[:spec_name] }
-              common_specs = common_specs ? (common_specs & specs) : specs
-            end
-
-            return if common_specs.nil? || common_specs.empty?
-
+          def print_overall_comparison(adapter_names, results_by_adapter, all_spec_names)
+            f = Benchmark.method(:fmt)
             reference = adapter_names.first
             others = adapter_names[1..]
 
             parse_ratios = Hash.new { |h, k| h[k] = [] }
             render_ratios = Hash.new { |h, k| h[k] = [] }
 
-            common_specs.each do |spec_name|
-              ref_result = (results_by_adapter[reference] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
-              next unless ref_result
+            all_spec_names.each do |spec_name|
+              ref = (results_by_adapter[reference] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
+              next unless ref
 
-              ref_parse = ref_result[:parse_median] || ref_result[:parse_mean] || ref_result[:compile_median] || ref_result[:compile_mean]
-              ref_render = ref_result[:render_median] || ref_result[:render_mean]
+              ref_parse  = ref[:parse_mean] || ref[:compile_mean]
+              ref_render = ref[:render_mean]
 
               others.each do |other|
-                other_result = (results_by_adapter[other] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
-                next unless other_result
+                o = (results_by_adapter[other] || []).find { |r| r[:spec_name] == spec_name && r[:status] == "success" }
+                next unless o
 
-                other_parse = other_result[:parse_median] || other_result[:parse_mean] || other_result[:compile_median] || other_result[:compile_mean]
-                other_render = other_result[:render_median] || other_result[:render_mean]
+                o_parse  = o[:parse_mean] || o[:compile_mean]
+                o_render = o[:render_mean]
 
-                parse_ratios[other] << other_parse / ref_parse if ref_parse && other_parse && ref_parse > 0
-                render_ratios[other] << other_render / ref_render if ref_render && other_render && ref_render > 0
+                parse_ratios[other]  << o_parse / ref_parse   if ref_parse  && o_parse  && ref_parse  > 0
+                render_ratios[other] << o_render / ref_render if ref_render && o_render && ref_render > 0
               end
             end
 
-            puts "-" * 70
-            puts "\e[1mCOMPARISON\e[0m (#{common_specs.size} common specs)"
-            puts "-" * 70
-            puts ""
-            puts "Reference: #{reference}"
+            # Count common specs
+            common_count = parse_ratios.values.map(&:size).min || 0
+            return if common_count == 0
+
+            puts "─" * 70
+            puts "\e[1mOverall\e[0m (#{common_count} common specs, reference: #{reference})"
             puts ""
 
-            puts "\e[1mParse (geometric mean):\e[0m"
-            parse_ratios.each do |adapter, ratios|
+            puts "  \e[1mParse (geometric mean):\e[0m"
+            others.each do |adapter|
+              ratios = parse_ratios[adapter]
               next if ratios.empty?
-              geomean = geometric_mean(ratios)
-              if geomean > 1
-                puts "  #{reference} is \e[32m%.2fx faster\e[0m than #{adapter}" % geomean
-              elsif geomean < 1
-                puts "  #{adapter} is \e[32m%.2fx faster\e[0m than #{reference}" % (1.0 / geomean)
+              gm = geometric_mean(ratios)
+              if gm > 1.05
+                puts "    \e[32m#{reference}\e[0m is \e[1;32m%.2fx faster\e[0m than #{adapter}" % gm
+              elsif gm < 0.95
+                puts "    \e[32m#{adapter}\e[0m is \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
               else
-                puts "  #{adapter} is equal to #{reference}"
+                puts "    #{adapter} ≈ #{reference}"
               end
             end
 
-            puts ""
-            puts "\e[1mRender (geometric mean):\e[0m"
-            render_ratios.each do |adapter, ratios|
+            puts "  \e[1mRender (geometric mean):\e[0m"
+            others.each do |adapter|
+              ratios = render_ratios[adapter]
               next if ratios.empty?
-              geomean = geometric_mean(ratios)
-              if geomean > 1
-                puts "  #{reference} is \e[32m%.2fx faster\e[0m than #{adapter}" % geomean
-              elsif geomean < 1
-                puts "  #{adapter} is \e[32m%.2fx faster\e[0m than #{reference}" % (1.0 / geomean)
+              gm = geometric_mean(ratios)
+              if gm > 1.05
+                puts "    \e[32m#{reference}\e[0m is \e[1;32m%.2fx faster\e[0m than #{adapter}" % gm
+              elsif gm < 0.95
+                puts "    \e[32m#{adapter}\e[0m is \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
               else
-                puts "  #{adapter} is equal to #{reference}"
+                puts "    #{adapter} ≈ #{reference}"
               end
             end
 
