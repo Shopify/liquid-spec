@@ -37,6 +37,9 @@ module Liquid
             half = duration / 2.0
 
             # ── 1. Cold renders (before any warmup) ──────────────────────
+            # Snapshot YJIT before any render of this template
+            yjit_before = yjit_snapshot
+
             GC.start(full_mark: true, immediate_sweep: true)
             compile_proc.call
             cold_1 = time_once { render_proc.call(env_proc.call) }
@@ -65,11 +68,12 @@ module Liquid
             GC.enable
             GC.start  # recover between phases
 
-            # ── 6. Timed render (GC off, YJIT delta tracked) ────────────
-            yjit_before = yjit_snapshot
+            # ── 6. Timed render (GC off) ─────────────────────────────────
             GC.disable
             render_stats = timed_loop(half) { render_proc.call(env_proc.call) }
             GC.enable
+
+            # Snapshot YJIT after all renders (cold + warm + timed)
             yjit_after = yjit_snapshot
 
             build_result(

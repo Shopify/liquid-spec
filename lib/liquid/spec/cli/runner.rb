@@ -716,12 +716,13 @@ module Liquid
                    "#{ratio_s}"
             end
 
-            # YJIT stats during render (only when JIT is active)
+            # YJIT stats (only when JIT is active)
             if r[:yjit_compiled_iseqs]
               parts = []
-              parts << "+#{r[:yjit_compiled_iseqs]} iseqs" if r[:yjit_compiled_iseqs] > 0
+              parts << "+#{r[:yjit_compiled_iseqs]} iseqs"
               parts << "#{"%.1f" % r[:yjit_compile_time_ms]}ms jit time" if r[:yjit_compile_time_ms] && r[:yjit_compile_time_ms] > 0.05
-              parts << "#{r[:yjit_invalidations]} invalidations" if r[:yjit_invalidations] && r[:yjit_invalidations] > 0
+              inv = r[:yjit_invalidations] || 0
+              parts << (inv > 0 ? "\e[33m#{inv} invalidations\e[2m" : "0 invalidations")
               if r[:yjit_code_bytes] && r[:yjit_code_bytes] > 0
                 kb = r[:yjit_code_bytes] / 1024.0
                 parts << "#{"%.1f" % kb}KB code"
@@ -729,7 +730,7 @@ module Liquid
               if r[:yjit_compile_us_per_iter] && r[:yjit_compile_us_per_iter] > 0.01
                 parts << "#{"%.2f" % r[:yjit_compile_us_per_iter]}µs jit/op"
               end
-              puts "  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m" if parts.any?
+              puts "  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m"
             end
 
             puts ""
