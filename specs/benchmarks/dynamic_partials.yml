@@ -2,44 +2,72 @@
 _metadata:
   doc: implementers/partials.md
   hint: |
-    Benchmarks for dynamic partial runtime path. These cannot be inlined at parse time
-    because the partial name comes from data.
+    Benchmarks for dynamic partial runtime path. Partial names come from data,
+    so they cannot be inlined or resolved at parse time. Tests: dynamic switching
+    between partials in a loop, include-for iteration, and 3-level deep nesting
+    where each level dynamically resolves the next partial name.
 specs:
-- name: bench_dynamic_include_switch
-  template: |
-    {% for t in template_names %}
-      {% assign tpl = t %}
-      {% include tpl %}
-    {% endfor %}
-  environment:
-    template_names: [row_a, row_b, row_c, row_a, row_b, row_c, row_a, row_b, row_c, row_a]
-    value: "X"
-  filesystem:
-    row_a: "<div class='a'>A{{ value }}</div>"
-    row_b: "<div class='b'>B{{ value }}</div>"
-    row_c: "<div class='c'>C{{ value }}</div>"
-  expected_pattern: "(?m).*A[X].*B[X].*C[X].*A[X].*"
-  complexity: 1000
 
-- name: bench_dynamic_include_for_loop
-  template: "{% include tpl for items %}"
-  environment:
-    tpl: "item_row"
-    items: [1,2,3,4,5,6,7,8,9,10]
-  filesystem:
-    item_row: "[{{ item_row }}]"
-  expected_pattern: "\\[1\\]\\[2\\]\\[3\\]\\[4\\]\\[5\\]\\[6\\]\\[7\\]\\[8\\]\\[9\\]\\[10\\]"
+- name: bench_dynamic_partials
   complexity: 1000
-
-- name: bench_dynamic_include_nested
+  hint: |
+    A page built from dynamic sections. Each section type maps to a different
+    partial via {% assign tpl = section.type %}{% include tpl %}. The grid
+    partial dynamically includes product_card, which dynamically includes
+    card_detail (3 levels deep). The testimonials partial dynamically includes
+    stars. Tests: dynamic name resolution at every level, include-for pattern,
+    nested dynamic includes, mixed static/dynamic content.
   template: |
-    {% assign tpl = 'outer' %}
-    {% include tpl %}
-  environment:
-    inner_tpl: "inner"
-    payload: "ok"
+    {%- comment -%}Dynamic partials: switching, for-loops, 3-level nesting{%- endcomment -%}
+    {%- for section in sections -%}
+      {%- assign section_tpl = section.type -%}
+      {%- include section_tpl -%}
+    {%- endfor -%}
   filesystem:
-    outer: "<section>{% include inner_tpl %}</section>"
-    inner: "<span>{{ payload }}</span>"
-  expected_pattern: "<section><span>ok</span></section>"
-  complexity: 1000
+    hero: "<section class='hero'><h1>{{ section.title }}</h1><p>{{ section.subtitle }}</p><small>{{ site_name }}</small></section>"
+    grid: "<section class='grid'><h2>{{ section.title }}</h2><div class='items'>{% for item in section.items %}{% assign card = card_tpl %}{% include card %}{% endfor %}</div></section>"
+    product_card: "<div class='card'><span>{{ item.name }}</span><span>${{ item.price | times: 100 | divided_by: 100 }}</span>{% assign detail_tpl = 'card_detail' %}{% include detail_tpl %}</div>"
+    card_detail: "<em>{% if item.price > 50 %}Premium{% else %}Standard{% endif %}</em>"
+    testimonials: "<section class='reviews'>{% for quote in section.quotes %}<blockquote>{{ quote.text }} — {{ quote.author }}{% assign st = stars_tpl %}{% include st %}</blockquote>{% endfor %}</section>"
+    stars: "{% for i in (1..quote.rating) %}★{% endfor %}"
+  environment:
+    card_tpl: "product_card"
+    stars_tpl: "stars"
+    site_name: "TestStore"
+    sections:
+      - type: hero
+        title: Welcome
+        subtitle: Shop now
+      - type: grid
+        title: Featured
+        items:
+          - { name: "Product 1", price: 10 }
+          - { name: "Product 2", price: 20 }
+          - { name: "Product 3", price: 35 }
+          - { name: "Product 4", price: 50 }
+          - { name: "Product 5", price: 65 }
+          - { name: "Product 6", price: 80 }
+          - { name: "Product 7", price: 95 }
+          - { name: "Product 8", price: 120 }
+      - type: hero
+        title: "Summer Sale"
+        subtitle: "50% off everything"
+      - type: grid
+        title: New Arrivals
+        items:
+          - { name: "Item A", price: 15 }
+          - { name: "Item B", price: 30 }
+          - { name: "Item C", price: 45 }
+          - { name: "Item D", price: 60 }
+          - { name: "Item E", price: 75 }
+          - { name: "Item F", price: 90 }
+      - type: testimonials
+        quotes:
+          - { author: Alice, text: "Great quality!", rating: 5 }
+          - { author: Bob, text: "Love the design", rating: 4 }
+          - { author: Carol, text: "Amazing service", rating: 5 }
+          - { author: Dave, text: "Will buy again", rating: 3 }
+      - type: hero
+        title: Subscribe
+        subtitle: "Join our newsletter"
+  expected_pattern: "hero.*Welcome.*grid.*Featured.*Product 1.*Product 8.*hero.*Summer Sale.*grid.*New Arrivals.*Item A.*Item F.*reviews.*Alice.*★★★★★.*Bob.*★★★★.*hero.*Subscribe"
