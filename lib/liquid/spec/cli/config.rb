@@ -21,13 +21,16 @@ module Liquid
             dir
           end
 
-          # Path to JSONL file for a specific adapter
+          # Path to JSONL file for a specific adapter run.
+          # Each run gets its own file: {adapter}.{timestamp}.jsonl
           #
           # @param adapter_name [String] The adapter name (e.g., "liquid_ruby")
+          # @param run_id [String] Run ID / timestamp (e.g., "20260319_004500")
           # @param output_override [String, nil] CLI-specified output directory
           # @return [String] Full path to the adapter's JSONL file
-          def adapter_jsonl_path(adapter_name, output_override = nil)
-            File.join(reports_dir(output_override), "#{adapter_name}.jsonl")
+          def adapter_jsonl_path(adapter_name, run_id: nil, output_override: nil)
+            run_id ||= generate_run_id
+            File.join(reports_dir(output_override), "#{adapter_name}.#{run_id}.jsonl")
           end
 
           # Returns JIT information for the current Ruby process

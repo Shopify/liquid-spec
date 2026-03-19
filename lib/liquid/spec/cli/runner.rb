@@ -593,7 +593,7 @@ module Liquid
               Dir.mkdir(profile_dir)
             end
 
-            benchmark_log_path = Config.adapter_jsonl_path(adapter_name) unless jsonl_mode
+            benchmark_log_path = Config.adapter_jsonl_path(adapter_name, run_id: run_id) unless jsonl_mode
 
             # Write run metadata
             meta = build_run_metadata(run_id, adapter_name)
@@ -665,8 +665,9 @@ module Liquid
                 puts "StackProf: #{profile_dir}/"
               end
 
+              # Last line: exact file path (scriptable via tail -n1)
               puts ""
-              puts "Results: #{benchmark_log_path}"
+              puts benchmark_log_path
             end
           end
 
