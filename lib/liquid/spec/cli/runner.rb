@@ -699,20 +699,20 @@ module Liquid
                  "\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m]"
 
             # Range: min … max
-            puts "  Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):  " \
+            puts "  Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):   " \
                  "\e[36m#{f.call(r[:render_min]).rjust(9)}\e[0m … " \
-                 "\e[35m#{f.call(r[:render_max])}\e[0m    " \
-                 "\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m"
+                 "\e[35m#{f.call(r[:render_max]).rjust(8)}\e[0m    " \
+                 "[\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m]"
 
             # Cold: @1 / @10
             if r[:render_cold_1]
               warm = r[:render_mean] || 0
               cold1 = r[:render_cold_1]
               ratio = warm > 0 ? cold1 / warm : 0
-              ratio_s = ratio > 1.05 ? "  \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
-              puts "  Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):  " \
+              ratio_s = ratio > 1.05 ? "    \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
+              puts "  Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):   " \
                    "\e[33m#{f.call(cold1).rjust(9)}\e[0m / " \
-                   "\e[33m#{f.call(r[:render_cold_10_mean])}\e[0m" \
+                   "\e[33m#{f.call(r[:render_cold_10_mean]).rjust(8)}\e[0m" \
                    "#{ratio_s}"
             end
 
