@@ -21,7 +21,7 @@ module Liquid
 
         Commands:
           run ADAPTER         Run specs using the specified adapter file
-          bench               Run benchmarks across adapters (alias for: matrix --bench)
+          bench [ADAPTER]     Run benchmarks (all adapters, or ADAPTER vs liquid_ruby)
           test                Run specs against all available example adapters
           matrix              Run specs across multiple adapters and compare results
           report              Analyze and compare benchmark results
@@ -36,6 +36,9 @@ module Liquid
           liquid-spec init                              # Creates liquid_adapter.rb
           liquid-spec run adapter.rb                    # Run all specs
           liquid-spec run adapter.rb -n for             # Run specs matching 'for'
+          liquid-spec bench                             # Benchmark all builtin adapters
+          liquid-spec bench my_adapter.rb               # Benchmark my_adapter vs liquid_ruby
+          liquid-spec bench my_adapter.rb -n storefront # Benchmark specific specs
           liquid-spec inspect adapter.rb -n "case.*empty"  # Inspect failing spec
           liquid-spec eval adapter.rb -l "{{ 'hi' | upcase }}"  # Quick test
 
@@ -103,8 +106,23 @@ module Liquid
         when "run"
           Runner.run(args)
         when "bench"
-          # bench is an alias for matrix --bench
-          Matrix.run(["--bench"] + args)
+          # bench is a smart alias for matrix --bench
+          # - `liquid-spec bench` → runs all builtin adapters
+          # - `liquid-spec bench my_adapter.rb` → runs my_adapter + liquid_ruby reference
+          bench_args = ["--bench"]
+
+          # Check if first arg is an adapter file
+          if args.first && !args.first.start_with?("-") && (File.exist?(args.first) || File.exist?("#{args.first}.rb") || args.first.end_with?(".rb"))
+            adapter_path = args.shift
+            bench_args += ["--adapters=liquid_ruby", "--adapter=#{adapter_path}"]
+          end
+
+          # Default to --all if no adapters specified
+          unless args.any? { |a| a.start_with?("--adapter") || a == "--all" } || bench_args.any? { |a| a.start_with?("--adapter") }
+            bench_args << "--all"
+          end
+
+          Matrix.run(bench_args + args)
         when "test"
           Test.run(args)
         when "matrix"
