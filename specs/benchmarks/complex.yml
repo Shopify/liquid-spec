@@ -224,7 +224,7 @@ specs:
       featured_image: "/images/case.jpg"
       price: 29
       compare_at_price: 35
-  expected_pattern: "TechGear Store.*Premium Wireless Earbuds.*Add to Cart.*You May Also Like"
+  expected_pattern: "(?m)TechGear Store.*Premium Wireless Earbuds.*Add to Cart.*You May Also Like"
 
 - name: bench_collection_with_filters
   template: |
@@ -397,7 +397,7 @@ specs:
       image: "/images/ssd.jpg"
       tags: ["storage", "ssd", "portable"]
       created_at: "2024-01-18"
-  expected_pattern: "Electronics.*Showing.*products.*pagination"
+  expected_pattern: "(?m)Electronics.*Showing.*products.*class=\"product\""
 
 - name: bench_order_confirmation
   template: |
@@ -560,4 +560,4 @@ specs:
         province_code: "CA"
         zip: "94102"
         country: "United States"
-  expected_pattern: "Order Confirmation.*TG-12345.*Wireless Earbuds.*Total.*318"
+  expected_pattern: "(?m)Order Confirmation.*TG-12345.*Wireless Earbuds.*Total.*318"

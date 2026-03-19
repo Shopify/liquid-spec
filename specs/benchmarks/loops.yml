@@ -153,4 +153,4 @@ specs:
         price: 59
         available: true
       tags: ["electronics", "accessories", "usb-c"]
-  expected_pattern: "product-grid.*pagination"
+  expected_pattern: "(?m)product-grid.*pagination"
