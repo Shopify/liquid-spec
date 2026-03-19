@@ -625,7 +625,9 @@ module Liquid
                 puts ""
                 puts "\e[1m#{adapter_name}\e[0m — #{suite.name}"
                 puts "Ruby #{RUBY_VERSION} (#{jit_label}) │ #{suite_specs.size} specs │ #{duration_per_spec}s/spec"
-                puts ""
+
+                # Pre-run: compile+render every spec once, collect suite-wide stats
+                print_prerun_stats(suite_specs, config)
 
                 puts ""
               end
@@ -666,6 +668,70 @@ module Liquid
               puts ""
               puts "Results: #{benchmark_log_path}"
             end
+          end
+
+          # ── Pre-run stats (one pass through all specs) ───────────────
+
+          def print_prerun_stats(specs, config)
+            f = Benchmark::method(:fmt)
+
+            # Snapshot before
+            GC.start(full_mark: true, immediate_sweep: true)
+            yjit_before = yjit_snapshot_if_available
+            alloc_before = GC.stat(:total_allocated_objects)
+            total_template_bytes = 0
+
+            # Run each spec once: compile + render
+            specs.each do |spec|
+              prepared = prepare_benchmark_spec(spec, config)
+              next unless prepared
+
+              total_template_bytes += spec.template.bytesize
+
+              LiquidSpec.do_compile(
+                prepared[:template],
+                prepared[:compile_options],
+                prepared[:context],
+              )
+              LiquidSpec.do_render(
+                deep_copy(prepared[:assigns]),
+                prepared[:render_options],
+                prepared[:context],
+              )
+            end
+
+            # Snapshot after
+            alloc_after = GC.stat(:total_allocated_objects)
+            yjit_after = yjit_snapshot_if_available
+            total_allocs = alloc_after - alloc_before
+
+            puts ""
+            puts "  \e[2mSuite: #{specs.size} specs, #{Benchmark.fmt_allocs(total_template_bytes)} template bytes, #{Benchmark.fmt_allocs(total_allocs)} allocs (1 pass)\e[0m"
+
+            if yjit_before && yjit_after
+              compiled = yjit_after[:compiled_iseqs] - yjit_before[:compiled_iseqs]
+              compile_ms = (yjit_after[:compile_ns] - yjit_before[:compile_ns]) / 1_000_000.0
+              invalidations = yjit_after[:invalidations] - yjit_before[:invalidations]
+              code_kb = (yjit_after[:code_size] - yjit_before[:code_size]) / 1024.0
+
+              parts = []
+              parts << "#{compiled} iseqs compiled"
+              parts << "#{"%.1f" % compile_ms}ms jit time" if compile_ms > 0.1
+              parts << "#{invalidations} invalidations"
+              parts << "#{"%.1f" % code_kb}KB code" if code_kb > 0
+              puts "  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m"
+            end
+          end
+
+          def yjit_snapshot_if_available
+            return nil unless defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+            s = RubyVM::YJIT.runtime_stats
+            {
+              compiled_iseqs: s[:compiled_iseq_count] || 0,
+              compile_ns:     s[:compile_time_ns] || 0,
+              invalidations:  s[:invalidation_count] || 0,
+              code_size:      s[:inline_code_size] || 0,
+            }
           end
 
           # ── Per-spec output (hyperfine-style) ────────────────────────
