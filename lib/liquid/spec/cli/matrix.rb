@@ -319,11 +319,11 @@ module Liquid
             run_parallel_benchmarks(runs, timing_suites, options, run_id, reports_dir)
 
             # Show saved files
-            puts ""
-            puts "Results saved to: #{reports_dir}/"
-
-            puts ""
-            puts "Run \e[1mliquid-spec report\e[0m to analyze results"
+            jsonl_files = Dir[File.join(reports_dir, "*.jsonl")].sort
+            if jsonl_files.any?
+              puts ""
+              puts "Results: #{File.join(reports_dir, "*.jsonl")} (#{jsonl_files.size} files)"
+            end
           end
 
           def run_parallel_benchmarks(runs, timing_suites, options, run_id, reports_dir)
