@@ -1,0 +1,459 @@
+---
+# =============================================================================
+# COMPLEXITY 160-200: Nested/Dotted Variable Paths in Tag Parameters
+# =============================================================================
+#
+# Liquid allows variable lookups (including dotted paths and bracket notation)
+# in most parameter positions — not just simple variable names. This file
+# tests that implementers correctly resolve nested paths like `obj.prop`,
+# `obj[0]`, and `obj.nested.deep` when used as tag arguments.
+#
+# These are NOT exotic — they appear constantly in real themes where config
+# objects, section settings, and block data use nested structures.
+#
+# =============================================================================
+
+_metadata:
+  doc: implementers/core-abstractions.md
+
+specs:
+
+# ── for tag: limit ──────────────────────────────────────────────────────
+
+- name: for_limit_from_dotted_variable
+  template: "{% for item in items limit: config.page_size %}{{ item }}{% endfor %}"
+  environment:
+    items: [a, b, c, d, e]
+    config:
+      page_size: 3
+  expected: "abc"
+  complexity: 160
+  hint: |
+    The limit: parameter of a for loop should accept a dotted variable
+    path like config.page_size, not just a bare variable or literal.
+
+- name: for_limit_from_bracket_notation
+  template: "{% for item in items limit: sizes[0] %}{{ item }}{% endfor %}"
+  environment:
+    items: [a, b, c, d, e]
+    sizes: [2, 4]
+  expected: "ab"
+  complexity: 170
+  hint: |
+    The limit: parameter should work with bracket notation (array index).
+
+- name: for_limit_from_deeply_nested_variable
+  template: "{% for item in items limit: settings.pagination.per_page %}{{ item }}{% endfor %}"
+  environment:
+    items: [a, b, c, d, e, f]
+    settings:
+      pagination:
+        per_page: 4
+  expected: "abcd"
+  complexity: 180
+  hint: |
+    Deeply nested dotted paths (3+ levels) should work in limit:.
+
+# ── for tag: offset ─────────────────────────────────────────────────────
+
+- name: for_offset_from_dotted_variable
+  template: "{% for item in items offset: config.start %}{{ item }}{% endfor %}"
+  environment:
+    items: [a, b, c, d, e]
+    config:
+      start: 2
+  expected: "cde"
+  complexity: 160
+  hint: |
+    The offset: parameter should accept dotted variable paths.
+
+- name: for_offset_and_limit_both_dotted
+  template: "{% for item in items limit: page.size offset: page.start %}{{ item }}{% endfor %}"
+  environment:
+    items: [a, b, c, d, e, f, g]
+    page:
+      size: 3
+      start: 2
+  expected: "cde"
+  complexity: 170
+  hint: |
+    Both limit: and offset: should work with dotted paths simultaneously.
+
+# ── for tag: collection from dotted path ────────────────────────────────
+
+- name: for_collection_from_dotted_variable
+  template: "{% for item in data.items %}{{ item }}{% endfor %}"
+  environment:
+    data:
+      items: [x, y, z]
+  expected: "xyz"
+  complexity: 160
+  hint: |
+    The collection expression in for loops should support dotted paths.
+
+- name: for_collection_from_deep_path_with_limit
+  template: "{% for item in store.section.products limit: store.section.limit %}{{ item.name }},{% endfor %}"
+  environment:
+    store:
+      section:
+        limit: 2
+        products:
+          - name: "Alpha"
+          - name: "Beta"
+          - name: "Gamma"
+  expected: "Alpha,Beta,"
+  complexity: 180
+  hint: |
+    Both the collection and limit: should resolve from the same nested
+    object — a common pattern in Shopify theme sections.
+
+# ── tablerow tag ────────────────────────────────────────────────────────
+
+- name: tablerow_cols_from_dotted_variable
+  template: "{% tablerow item in items cols: layout.columns %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d]
+    layout:
+      columns: 2
+  expected_pattern: '(?m)row1.*col1.*a.*col2.*b.*row2.*col1.*c.*col2.*d'
+  complexity: 180
+  hint: |
+    The cols: parameter of tablerow should accept dotted variable paths.
+
+- name: tablerow_limit_from_dotted_variable
+  template: "{% tablerow item in items limit: config.max cols: 2 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+    config:
+      max: 3
+  expected_pattern: '(?m)row1.*col1.*a.*col2.*b.*row2.*col1.*c'
+  complexity: 180
+  hint: |
+    tablerow limit: should accept dotted variable paths, same as for loops.
+
+- name: tablerow_offset_from_dotted_variable
+  template: "{% tablerow item in items offset: config.skip cols: 3 %}{{ item }}{% endtablerow %}"
+  environment:
+    items: [a, b, c, d, e]
+    config:
+      skip: 2
+  expected_pattern: '(?m)row1.*col1.*c.*col2.*d.*col3.*e'
+  complexity: 180
+  hint: |
+    tablerow offset: should accept dotted variable paths.
+
+# ── render tag: keyword args from dotted paths ──────────────────────────
+
+- name: render_keyword_arg_from_dotted_variable
+  template: "{% render 'greeting', name: user.first_name %}"
+  filesystem:
+    greeting: "Hello {{ name }}!"
+  environment:
+    user:
+      first_name: "Alice"
+  expected: "Hello Alice!"
+  complexity: 160
+  hint: |
+    Keyword arguments to render should accept dotted variable paths.
+
+- name: render_multiple_dotted_args
+  template: "{% render 'card', title: product.title, price: product.price %}"
+  filesystem:
+    card: "{{ title }}: ${{ price }}"
+  environment:
+    product:
+      title: "Widget"
+      price: 42
+  expected: "Widget: $42"
+  complexity: 170
+  hint: |
+    Multiple keyword arguments should all support dotted paths.
+
+- name: render_with_dotted_variable
+  template: "{% render 'item' with collection.featured %}"
+  filesystem:
+    item: "[{{ item }}]"
+  environment:
+    collection:
+      featured: "Star Product"
+  expected: "[Star Product]"
+  complexity: 170
+  hint: |
+    The 'with' clause should resolve dotted variable paths.
+
+- name: render_for_dotted_collection
+  template: "{% render 'tag' for product.tags %}"
+  filesystem:
+    tag: "{{ tag }},"
+  environment:
+    product:
+      tags: ["red", "blue", "green"]
+  expected: "red,blue,green,"
+  complexity: 170
+  hint: |
+    The 'for' clause should resolve dotted variable paths to iterate.
+
+# ── include tag: keyword args from dotted paths ─────────────────────────
+
+- name: include_keyword_arg_from_dotted_variable
+  template: "{% include 'greeting', name: user.first_name %}"
+  filesystem:
+    greeting: "Hello {{ name }}!"
+  environment:
+    user:
+      first_name: "Bob"
+  expected: "Hello Bob!"
+  complexity: 160
+  hint: |
+    Keyword arguments to include should accept dotted variable paths.
+
+- name: include_with_dotted_variable
+  template: "{% include 'item' with collection.featured %}"
+  filesystem:
+    item: "[{{ item }}]"
+  environment:
+    collection:
+      featured: "Top Pick"
+  expected: "[Top Pick]"
+  complexity: 170
+  hint: |
+    The include 'with' clause should resolve dotted paths.
+
+# ── dynamic include: passing nested objects ─────────────────────────────
+
+- name: dynamic_include_with_nested_keyword_arg
+  template: "{% for s in page.sections %}{% include s.type, section: s %}{% endfor %}"
+  filesystem:
+    banner: "{{ section.heading }}!"
+    grid: "{% for p in section.products %}{{ p.name }},{% endfor %}"
+  environment:
+    page:
+      sections:
+        - type: "banner"
+          heading: "Welcome"
+        - type: "grid"
+          products:
+            - name: "A"
+            - name: "B"
+  expected: "Welcome!A,B,"
+  complexity: 190
+  hint: |
+    Dynamic includes often pass the entire section object as a keyword arg,
+    then the partial iterates over nested arrays. This is the core pattern
+    for Shopify section rendering.
+
+- name: dynamic_include_nested_for_with_limit
+  template: "{% include s.type, section: s %}"
+  filesystem:
+    products: "{% for p in section.items limit: section.max %}{{ p }},{% endfor %}"
+  environment:
+    s:
+      type: "products"
+      max: 2
+      items: [x, y, z]
+  expected: "x,y,"
+  complexity: 200
+  hint: |
+    Inside a dynamically included partial, for loops with limit: should
+    resolve dotted paths relative to the partial's scope — including
+    variables passed as keyword arguments.
+
+# ── filter arguments from dotted paths ──────────────────────────────────
+
+- name: filter_arg_from_dotted_variable
+  template: "{{ text | truncate: config.max_length }}"
+  environment:
+    text: "Hello World this is a long string"
+    config:
+      max_length: 10
+  expected: "Hello W..."
+  complexity: 160
+  hint: |
+    Filter arguments should accept dotted variable paths.
+
+- name: filter_arg_from_bracket_notation
+  template: "{{ text | truncate: limits[1] }}"
+  environment:
+    text: "Hello World this is a long string"
+    limits: [5, 15]
+  expected: "Hello World ..."
+  complexity: 170
+  hint: |
+    Filter arguments should accept bracket notation for array access.
+
+- name: filter_two_args_from_dotted_variables
+  template: "{{ text | slice: range.start, range.length }}"
+  environment:
+    text: "Hello World"
+    range:
+      start: 6
+      length: 5
+  expected: "World"
+  complexity: 180
+  hint: |
+    Multiple filter arguments should all resolve dotted variable paths.
+
+- name: filter_named_arg_from_dotted_variable
+  template: "{{ items | where: 'active', config.active_value }}"
+  environment:
+    items:
+      - title: "A"
+        active: true
+      - title: "B"
+        active: false
+      - title: "C"
+        active: true
+    config:
+      active_value: true
+  expected: "{\"title\"=>\"A\", \"active\"=>true}{\"title\"=>\"C\", \"active\"=>true}"
+  complexity: 180
+  hint: |
+    The second argument to 'where' filter should resolve dotted paths.
+    This is used constantly in themes to filter collections by settings.
+
+# ── case/when with dotted paths ─────────────────────────────────────────
+
+- name: case_dotted_variable
+  template: "{% case item.status %}{% when 'active' %}ON{% when 'inactive' %}OFF{% endcase %}"
+  environment:
+    item:
+      status: "active"
+  expected: "ON"
+  complexity: 160
+  hint: |
+    The case expression should resolve dotted variable paths.
+
+# ── assign with dotted path on right side ───────────────────────────────
+
+- name: assign_from_dotted_variable
+  template: "{% assign x = config.greeting %}{{ x }}"
+  environment:
+    config:
+      greeting: "Hi there"
+  expected: "Hi there"
+  complexity: 160
+  hint: |
+    The right-hand side of assign should resolve dotted paths.
+
+- name: assign_from_dotted_with_filter
+  template: "{% assign x = user.name | upcase %}{{ x }}"
+  environment:
+    user:
+      name: "alice"
+  expected: "ALICE"
+  complexity: 160
+  hint: |
+    Dotted paths combined with filters in assign should work.
+
+# ── if/unless conditions with dotted paths ──────────────────────────────
+
+- name: if_dotted_comparison
+  template: "{% if cart.item_count > settings.free_shipping_threshold %}FREE{% else %}PAID{% endif %}"
+  environment:
+    cart:
+      item_count: 5
+    settings:
+      free_shipping_threshold: 3
+  expected: "FREE"
+  complexity: 170
+  hint: |
+    Both sides of a comparison in if/unless should resolve dotted paths.
+
+- name: unless_dotted_variable
+  template: "{% unless config.maintenance_mode %}OPEN{% endunless %}"
+  environment:
+    config:
+      maintenance_mode: false
+  expected: "OPEN"
+  complexity: 160
+  hint: |
+    unless should resolve dotted variable paths for its condition.
+
+# ── cycle with dotted group name ────────────────────────────────────────
+
+- name: cycle_items_from_output
+  template: "{% for i in (1..4) %}{% cycle 'a', 'b' %}{% endfor %}"
+  expected: "abab"
+  complexity: 160
+  hint: |
+    Basic cycle reference — ensures cycle works before testing with
+    nested variables in surrounding context.
+
+# ── echo with dotted path ───────────────────────────────────────────────
+
+- name: echo_dotted_variable
+  template: "{% echo user.name %}"
+  environment:
+    user:
+      name: "Charlie"
+  expected: "Charlie"
+  complexity: 160
+  hint: |
+    echo should resolve dotted variable paths.
+
+- name: echo_dotted_with_filter
+  template: "{% echo product.title | upcase %}"
+  environment:
+    product:
+      title: "Widget"
+  expected: "WIDGET"
+  complexity: 160
+  hint: |
+    echo with filters should resolve dotted paths.
+
+# ── liquid tag with dotted paths ────────────────────────────────────────
+
+- name: liquid_tag_for_with_dotted_limit
+  template: |
+    {%- liquid
+      for item in items limit: config.count
+        echo item
+      endfor
+    -%}
+  environment:
+    items: [a, b, c, d, e]
+    config:
+      count: 3
+  expected: "abc"
+  complexity: 180
+  hint: |
+    Inside a liquid tag, for loops with limit: from dotted paths should
+    work the same as in regular template tags.
+
+- name: liquid_tag_case_with_dotted_path
+  template: |
+    {%- liquid
+      case item.color
+        when "red"
+          echo "R"
+        when "blue"
+          echo "B"
+      endcase
+    -%}
+  environment:
+    item:
+      color: "blue"
+  expected: "B"
+  complexity: 180
+  hint: |
+    case inside a liquid tag should resolve dotted paths in the expression.
+
+- name: liquid_tag_if_dotted_comparison
+  template: |
+    {%- liquid
+      if user.age > limits.min
+        echo "OK"
+      else
+        echo "NO"
+      endif
+    -%}
+  environment:
+    user:
+      age: 25
+    limits:
+      min: 18
+  expected: "OK"
+  complexity: 180
+  hint: |
+    if inside a liquid tag should resolve dotted paths on both sides
+    of a comparison.
