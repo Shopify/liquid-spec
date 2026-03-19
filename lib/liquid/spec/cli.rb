@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "cli/bench"
 require_relative "cli/runner"
 require_relative "cli/init"
 require_relative "cli/inspect"
@@ -106,23 +107,7 @@ module Liquid
         when "run"
           Runner.run(args)
         when "bench"
-          # bench is a smart alias for matrix --bench
-          # - `liquid-spec bench` → runs all builtin adapters
-          # - `liquid-spec bench my_adapter.rb` → runs my_adapter + liquid_ruby reference
-          bench_args = ["--bench"]
-
-          # Check if first arg is an adapter file
-          if args.first && !args.first.start_with?("-") && (File.exist?(args.first) || File.exist?("#{args.first}.rb") || args.first.end_with?(".rb"))
-            adapter_path = args.shift
-            bench_args += ["--adapters=liquid_ruby", "--adapter=#{adapter_path}"]
-          end
-
-          # Default to --all if no adapters specified
-          unless args.any? { |a| a.start_with?("--adapter") || a == "--all" } || bench_args.any? { |a| a.start_with?("--adapter") }
-            bench_args << "--all"
-          end
-
-          Matrix.run(bench_args + args)
+          Bench.run(args)
         when "test"
           Test.run(args)
         when "matrix"
