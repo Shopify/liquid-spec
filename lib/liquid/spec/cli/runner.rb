@@ -627,12 +627,17 @@ module Liquid
                 puts "Ruby #{RUBY_VERSION} (#{jit_label}) │ #{suite_specs.size} specs │ #{duration_per_spec}s/spec"
                 puts ""
 
-                # Table header
-                puts ROW_FMT % ["SPEC", "PARSE", "RENDER", "p95", "cold@1", "cold@10", "iters", "p.alc", "r.alc"]
-                puts "  " + "─" * 103
+                puts ""
               end
 
-              suite_specs.each do |spec|
+              suite_specs.each_with_index do |spec, idx|
+                unless jsonl_mode
+                  # Show progress line (overwritten by results)
+                  spec_label = spec.name.sub(/\Abench_/, "")
+                  print "\r\e[2K  \e[2m⏱  #{idx + 1}/#{suite_specs.size}\e[0m  #{spec_label} …"
+                  $stdout.flush
+                end
+
                 result = run_benchmark_spec(spec, config, duration_per_spec)
                 all_results << { spec: spec, result: result }
 
@@ -640,12 +645,14 @@ module Liquid
                   output_benchmark_jsonl(run_id, adapter_name, spec, result)
                 else
                   save_benchmark_result(benchmark_log_path, run_id, adapter_name, spec, result)
-                  print_benchmark_row(spec, result)
+                  # Clear progress line and print results
+                  print "\r\e[2K"
+                  print_benchmark_spec(spec, result, idx + 1, suite_specs.size)
                 end
               end
 
               unless jsonl_mode
-                puts "  " + "─" * 103
+                puts ""
                 print_benchmark_totals(all_results)
               end
             end
@@ -661,32 +668,55 @@ module Liquid
             end
           end
 
-          # ── Per-spec row ──────────────────────────────────────────────
+          # ── Per-spec output (hyperfine-style) ────────────────────────
 
-          ROW_FMT = "  %-36s %8s  %8s  %8s  %8s  %8s  %8s  %6s  %6s"
-
-          def print_benchmark_row(spec, r)
-            name = spec.name.sub(/\Abench_/, "").sub(/\A[^#]*#/, "")
-            name = name[0..34] + "…" if name.length > 35
+          def print_benchmark_spec(spec, r, idx, total)
+            name = spec.name.sub(/\Abench_/, "")
 
             if r[:error]
-              puts "  %-36s  \e[31m✗ %s\e[0m" % [name, r[:error].message[0..70]]
+              puts "\e[1mBenchmark #{idx}/#{total}:\e[0m #{name}"
+              puts "  \e[31m✗ #{r[:error].message[0..80]}\e[0m"
+              puts ""
               return
             end
 
             f = Benchmark.method(:fmt)
 
-            puts ROW_FMT % [
-              name,
-              f.call(r[:compile_median]),   # PARSE
-              f.call(r[:render_median]),     # RENDER
-              f.call(r[:render_p95]),        # p95
-              f.call(r[:render_cold_1]),     # cold@1
-              f.call(r[:render_cold_10_mean]), # cold@10
-              Benchmark.fmt_iters(r[:render_iters]),  # iters
-              Benchmark.fmt_allocs(r[:compile_allocs] || 0), # p.alloc
-              Benchmark.fmt_allocs(r[:render_allocs]  || 0), # r.alloc
-            ]
+            puts "\e[1mBenchmark #{idx}/#{total}:\e[0m #{name}"
+
+            # Parse: mean ± σ  [allocs, runs]
+            puts "  Parse  (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                 "\e[1;32m#{f.call(r[:compile_mean]).rjust(9)}\e[0m ± " \
+                 "\e[32m#{f.call(r[:compile_stddev]).rjust(8)}\e[0m    " \
+                 "[\e[34m#{Benchmark.fmt_allocs(r[:compile_allocs] || 0)} allocs\e[0m, " \
+                 "\e[2m#{Benchmark.fmt_iters(r[:compile_iters])} runs\e[0m]"
+
+            # Render: mean ± σ  [allocs, runs]
+            puts "  Render (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                 "\e[1;32m#{f.call(r[:render_mean]).rjust(9)}\e[0m ± " \
+                 "\e[32m#{f.call(r[:render_stddev]).rjust(8)}\e[0m    " \
+                 "[\e[34m#{Benchmark.fmt_allocs(r[:render_allocs] || 0)} allocs\e[0m, " \
+                 "\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m]"
+
+            # Range: min … max
+            puts "  Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):  " \
+                 "\e[36m#{f.call(r[:render_min]).rjust(9)}\e[0m … " \
+                 "\e[35m#{f.call(r[:render_max])}\e[0m    " \
+                 "\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m"
+
+            # Cold: @1 / @10
+            if r[:render_cold_1]
+              warm = r[:render_mean] || 0
+              cold1 = r[:render_cold_1]
+              ratio = warm > 0 ? cold1 / warm : 0
+              ratio_s = ratio > 1.05 ? "  \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
+              puts "  Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):  " \
+                   "\e[33m#{f.call(cold1).rjust(9)}\e[0m / " \
+                   "\e[33m#{f.call(r[:render_cold_10_mean])}\e[0m" \
+                   "#{ratio_s}"
+            end
+
+            puts ""
           end
 
           # ── Totals / summary ───────────────────────────────────────────
@@ -701,59 +731,46 @@ module Liquid
             end
 
             f = Benchmark.method(:fmt)
+            n = ok.size
 
-            # Collect per-spec values
-            pmed = ok.map { |r| r[:result][:compile_median] }.compact
-            pitr = ok.sum { |r| r[:result][:compile_iters] || 0 }
-            pall = ok.map { |r| r[:result][:compile_allocs] || 0 }
+            # Aggregate across specs
+            parse_total  = ok.sum { |r| r[:result][:compile_mean] || 0 }
+            render_total = ok.sum { |r| r[:result][:render_mean]  || 0 }
+            parse_allocs  = ok.sum { |r| r[:result][:compile_allocs] || 0 }
+            render_allocs = ok.sum { |r| r[:result][:render_allocs]  || 0 }
+            parse_iters  = ok.sum { |r| r[:result][:compile_iters] || 0 }
+            render_iters = ok.sum { |r| r[:result][:render_iters]  || 0 }
 
-            rmed = ok.map { |r| r[:result][:render_median] }.compact
-            rp95 = ok.map { |r| r[:result][:render_p95] }.compact
-            ritr = ok.sum { |r| r[:result][:render_iters] || 0 }
-            rall = ok.map { |r| r[:result][:render_allocs] || 0 }
+            cold1s  = ok.map { |r| r[:result][:render_cold_1] }.compact
+            cold10s = ok.map { |r| r[:result][:render_cold_10_mean] }.compact
+            warm_means = ok.map { |r| r[:result][:render_mean] }.compact
 
-            c1  = ok.map { |r| r[:result][:render_cold_1] }.compact
-            c10 = ok.map { |r| r[:result][:render_cold_10_mean] }.compact
-
-            puts ""
-            status = "\e[1m#{ok.size} passed\e[0m"
+            status = "\e[1m#{n} passed\e[0m"
             status += ", \e[31m#{nfail} failed\e[0m" if nfail > 0
-            puts "  #{status}"
+            puts status
             puts ""
 
-            # Parse summary
-            puts "  \e[1mParse\e[0m"
-            puts "    median #{f.call(arr_median(pmed))}/op  │  #{Benchmark.fmt_iters(pitr)} iters  │  #{Benchmark.fmt_allocs(arr_median(pall).to_i)} allocs/op"
+            puts "  \e[1mParse\e[0m   #{f.call(parse_total / n)} mean/op  │  " \
+                 "#{Benchmark.fmt_allocs(parse_allocs / n)} allocs/op  │  " \
+                 "#{Benchmark.fmt_iters(parse_iters)} total runs"
+            puts "  \e[1mRender\e[0m  #{f.call(render_total / n)} mean/op  │  " \
+                 "#{Benchmark.fmt_allocs(render_allocs / n)} allocs/op  │  " \
+                 "#{Benchmark.fmt_iters(render_iters)} total runs"
 
-            # Render summary
-            puts "  \e[1mRender (warm)\e[0m"
-            puts "    median #{f.call(arr_median(rmed))}/op  │  p95 #{f.call(arr_median(rp95))}  │  #{Benchmark.fmt_iters(ritr)} iters  │  #{Benchmark.fmt_allocs(arr_median(rall).to_i)} allocs/op"
-
-            # Cold summary
-            if c1.any? && rmed.any?
-              warm = arr_median(rmed)
-              cold1 = arr_median(c1)
-              cold10 = arr_median(c10)
-              ratio = warm > 0 ? "%.1fx" % (cold1 / warm) : "—"
-              puts "  \e[1mRender (cold)\e[0m"
-              puts "    @1 #{f.call(cold1)} (#{ratio} vs warm)  │  @10 #{f.call(cold10)}"
+            if cold1s.any? && warm_means.any?
+              cold1_avg = cold1s.sum / cold1s.size
+              cold10_avg = cold10s.sum / cold10s.size
+              warm_avg = warm_means.sum / warm_means.size
+              ratio = warm_avg > 0 ? cold1_avg / warm_avg : 0
+              ratio_s = ratio > 1.05 ? " (%.1fx vs warm)" % ratio : ""
+              puts "  \e[1mCold\e[0m    #{f.call(cold1_avg)} @1  /  #{f.call(cold10_avg)} @10#{ratio_s}"
             end
 
-            # Slowest
-            if ok.size > 3
-              slowest = ok.sort_by { |r| -(r[:result][:render_median] || 0) }.first(3)
-              puts "  \e[1mSlowest\e[0m"
-              slowest.each do |entry|
-                sname = entry[:spec].name.sub(/\Abench_/, "")
-                stime = f.call(entry[:result][:render_median])
-                puts "    #{sname} (#{stime})"
-              end
+            if n > 3
+              puts ""
+              slowest = ok.sort_by { |r| -(r[:result][:render_mean] || 0) }.first(3)
+              puts "  \e[2mSlowest: #{slowest.map { |e| "#{e[:spec].name.sub(/\Abench_/, "")} (#{f.call(e[:result][:render_mean])})" }.join(", ")}\e[0m"
             end
-          end
-
-          def arr_median(a)
-            return 0 if a.nil? || a.empty?
-            s = a.sort; s[s.size / 2]
           end
 
           # ── Profiling (StackProf) ──────────────────────────────────────
