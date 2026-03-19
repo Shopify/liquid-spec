@@ -51,12 +51,20 @@ module Liquid
             runs = Runs.new
             runs.parse_options!(args)
 
-            # Check if first remaining arg is an adapter file
-            if args.first && !args.first.start_with?("-") &&
-               (File.exist?(args.first) || File.exist?("#{args.first}.rb") || args.first.end_with?(".rb"))
-              adapter_path = args.shift
-              runs.add_adapter("liquid_ruby")  # reference first
-              runs.add_adapter(adapter_path)
+            # Consume positional adapter file arguments
+            positional_adapters = []
+            while args.first && !args.first.start_with?("-") &&
+                  (File.exist?(args.first) || File.exist?("#{args.first}.rb") || args.first.end_with?(".rb"))
+              positional_adapters << args.shift
+            end
+
+            if positional_adapters.size == 1
+              # Single adapter: add liquid_ruby as reference first
+              runs.add_adapter("liquid_ruby")
+              runs.add_adapter(positional_adapters.first)
+            elsif positional_adapters.size >= 2
+              # Multiple adapters: use them as-is (first is reference)
+              positional_adapters.each { |a| runs.add_adapter(a) }
             end
 
             # Default to --all if no adapters specified
@@ -74,6 +82,7 @@ module Liquid
             end
 
             # Multiple adapters: run each sequentially, collect JSONL for comparison
+            gem_root = File.expand_path("../../../../..", __FILE__)
             reports_dir = runs.reports_dir
             results_by_adapter = {}
 
@@ -83,7 +92,7 @@ module Liquid
 
               # Run with normal output (nice per-spec display) + tee JSONL
               env = { "LIQUID_SPEC_RUN_ID" => Config.generate_run_id }
-              system(env, *cmd)
+              Dir.chdir(gem_root) { system(env, *cmd) }
 
               # Read back results for comparison
               if File.exist?(jsonl_path)
@@ -104,9 +113,12 @@ module Liquid
           private
 
           def build_cmd(adapter_path, extra_args)
-            gem_root = File.expand_path("../../../../..", __FILE__)
-            cmd = ["bundle", "exec", "ruby", "-Ilib", "bin/liquid-spec",
-                   "run", adapter_path, "-s", "benchmarks", "--bench"]
+            cmd = ["bundle", "exec", "ruby"]
+            # Pre-scan adapter for LiquidSpec.rubyopt declarations (e.g. "--yjit")
+            rubyopt = scan_rubyopt(adapter_path)
+            cmd += rubyopt if rubyopt.any?
+            cmd += ["-Ilib", "bin/liquid-spec", "run", adapter_path,
+                    "-s", "benchmarks", "--bench"]
             cmd += extra_args
             cmd
           end
@@ -114,6 +126,18 @@ module Liquid
           def exec_adapter(cmd)
             gem_root = File.expand_path("../../../../..", __FILE__)
             Dir.chdir(gem_root) { system(*cmd) }
+          end
+
+          # Scan an adapter file for LiquidSpec.rubyopt declarations
+          # without executing it. Returns array of flags like ["--yjit"].
+          def scan_rubyopt(adapter_path)
+            return [] unless File.exist?(adapter_path)
+            content = File.read(adapter_path)
+            flags = []
+            content.scan(/LiquidSpec\.rubyopt\s+["']([^"']+)["']/) do |match|
+              flags.concat(match[0].split)
+            end
+            flags
           end
 
           def print_comparison(adapter_names, results_by_adapter)
