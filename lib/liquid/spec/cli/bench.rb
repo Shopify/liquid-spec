@@ -67,16 +67,24 @@ module Liquid
               positional_adapters.each { |a| runs.add_adapter(a) }
             end
 
+            # Catch --json mistake
+            if args.include?("--json")
+              $stderr.puts "Error: Use --jsonl (not --json). Output is JSON Lines (one object per line)."
+              exit(1)
+            end
+
             # Default to --all if no adapters specified
             runs.add_all_builtin_adapters if runs.empty?
 
-            # Collect remaining flags to pass through
+            # Extract --jsonl (don't pass to subprocesses — they always write files)
+            jsonl_mode = args.delete("--jsonl")
             pass_through = args.dup
 
             # Single adapter: just run it directly (in-process, no subprocess)
             if runs.adapters.size == 1
               adapter = runs.adapters.first
-              cmd = build_cmd(adapter.path, pass_through)
+              extra = jsonl_mode ? pass_through + ["--jsonl"] : pass_through
+              cmd = build_cmd(adapter.path, extra)
               exec_adapter(cmd)
               return
             end
@@ -88,25 +96,40 @@ module Liquid
 
             runs.adapters.each do |adapter|
               cmd = build_cmd(adapter.path, pass_through)
-              jsonl_path = File.join(reports_dir, "#{adapter.name}.jsonl")
+              run_id = Config.generate_run_id
+              env = { "LIQUID_SPEC_RUN_ID" => run_id }
 
-              # Run with normal output (nice per-spec display) + tee JSONL
-              env = { "LIQUID_SPEC_RUN_ID" => Config.generate_run_id }
-              Dir.chdir(gem_root) { system(env, *cmd) }
+              if jsonl_mode
+                # Suppress human output, just run for the files
+                Dir.chdir(gem_root) { system(env, *cmd, out: File::NULL, err: File::NULL) }
+              else
+                Dir.chdir(gem_root) { system(env, *cmd) }
+              end
 
-              # Read back results for comparison
-              if File.exist?(jsonl_path)
+              # Read back results from this run's jsonl
+              jsonl_files = Dir[File.join(reports_dir, "#{adapter.name}.*.jsonl")].sort
+              jsonl_path = jsonl_files.last
+              if jsonl_path && File.exist?(jsonl_path)
                 results_by_adapter[adapter.name] = File.readlines(jsonl_path).filter_map do |line|
                   data = JSON.parse(line, symbolize_names: true) rescue nil
-                  data if data && data[:type] == "result" && data[:status] == "success"
+                  if jsonl_mode && data
+                    # Stream each line to stdout
+                    puts JSON.generate(Benchmark.compact(data))
+                    $stdout.flush
+                  end
+                  data if data && (data[:type] == "spec" || data[:type] == "result") && data[:status] == "success"
                 end
               end
             end
 
             # Show cross-adapter comparison
             if results_by_adapter.size >= 2
-              puts ""
-              print_comparison(runs.adapter_names, results_by_adapter)
+              if jsonl_mode
+                emit_comparison_jsonl(runs.adapter_names, results_by_adapter)
+              else
+                puts ""
+                print_comparison(runs.adapter_names, results_by_adapter)
+              end
             end
           end
 
@@ -145,8 +168,9 @@ module Liquid
             reference = adapter_names.first
             others = adapter_names[1..]
 
-            # Find common specs
-            all_specs = results_by_adapter.values.map { |rs| rs.map { |r| r[:spec_name] } }
+            # Find common specs (handle both old :spec_name and new :spec keys)
+            sk = ->(r) { r[:spec_name] || r[:spec] }
+            all_specs = results_by_adapter.values.map { |rs| rs.map(&sk) }
             common = all_specs.reduce(:&) || []
             return if common.empty?
 
@@ -157,19 +181,19 @@ module Liquid
             parse_ratios = Hash.new { |h, k| h[k] = [] }
             render_ratios = Hash.new { |h, k| h[k] = [] }
 
-            common.each do |spec_name|
-              ref = results_by_adapter[reference]&.find { |r| r[:spec_name] == spec_name }
+            common.each do |sn|
+              ref = results_by_adapter[reference]&.find { |r| sk.call(r) == sn }
               next unless ref
 
-              ref_parse  = ref[:parse_mean] || ref[:compile_mean]
-              ref_render = ref[:render_mean]
+              ref_parse  = ref.dig(:parse, :mean) || ref[:parse_mean] || ref[:compile_mean]
+              ref_render = ref.dig(:render, :mean) || ref[:render_mean]
 
               others.each do |other|
-                o = results_by_adapter[other]&.find { |r| r[:spec_name] == spec_name }
+                o = results_by_adapter[other]&.find { |r| sk.call(r) == sn }
                 next unless o
 
-                o_parse  = o[:parse_mean] || o[:compile_mean]
-                o_render = o[:render_mean]
+                o_parse  = o.dig(:parse, :mean) || o[:parse_mean] || o[:compile_mean]
+                o_render = o.dig(:render, :mean) || o[:render_mean]
 
                 parse_ratios[other]  << o_parse / ref_parse   if ref_parse  && o_parse  && ref_parse  > 0
                 render_ratios[other] << o_render / ref_render if ref_render && o_render && ref_render > 0
@@ -205,6 +229,47 @@ module Liquid
             end
 
             puts ""
+          end
+
+          def emit_comparison_jsonl(adapter_names, results_by_adapter)
+            reference = adapter_names.first
+            others = adapter_names[1..]
+
+            all_specs = results_by_adapter.values.map { |rs| rs.map { |r| r[:spec_name] || r[:spec] } }
+            common = all_specs.reduce(:&) || []
+            return if common.empty?
+
+            others.each do |other|
+              parse_ratios = []
+              render_ratios = []
+
+              common.each do |spec_name|
+                ref = results_by_adapter[reference]&.find { |r| (r[:spec_name] || r[:spec]) == spec_name }
+                o = results_by_adapter[other]&.find { |r| (r[:spec_name] || r[:spec]) == spec_name }
+                next unless ref && o
+
+                rp = ref.dig(:parse, :mean) || ref[:parse_mean]
+                op = o.dig(:parse, :mean) || o[:parse_mean]
+                rr = ref.dig(:render, :mean) || ref[:render_mean]
+                or_ = o.dig(:render, :mean) || o[:render_mean]
+
+                parse_ratios << op / rp if rp && op && rp > 0
+                render_ratios << or_ / rr if rr && or_ && rr > 0
+              end
+
+              entry = Benchmark.compact({
+                type: "comparison",
+                reference: reference,
+                vs: other,
+                common_specs: common.size,
+                parse_geomean: geometric_mean(parse_ratios),
+                render_geomean: geometric_mean(render_ratios),
+                parse_faster: parse_ratios.any? ? (1.0 / geometric_mean(parse_ratios)) : nil,
+                render_faster: render_ratios.any? ? (1.0 / geometric_mean(render_ratios)) : nil,
+              })
+              puts JSON.generate(entry)
+              $stdout.flush
+            end
           end
 
           def geometric_mean(arr)

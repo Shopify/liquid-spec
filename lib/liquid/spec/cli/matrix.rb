@@ -97,6 +97,9 @@ module Liquid
                 options[:max_failures] = nil
               when "-v", "--verbose"
                 options[:verbose] = true
+              when "--json"
+                $stderr.puts "Error: Use --jsonl (not --json). Output is JSON Lines (one object per line)."
+                exit(1)
               end
             end
 

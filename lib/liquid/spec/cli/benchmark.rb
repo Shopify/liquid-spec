@@ -280,6 +280,26 @@ module Liquid
           alias_method :format_iters, :fmt_iters
           alias_method :format_allocs, :fmt_allocs
         end
+
+        # Round all floats in a hash (recursive). Removes nil values.
+        # Times (seconds) get 6 decimal places (µs precision).
+        # Ratios/percentages get 3 decimal places.
+        def self.compact(hash)
+          hash.each_with_object({}) do |(k, v), out|
+            case v
+            when Float
+              # Heuristic: values < 1 are likely seconds → 6dp (µs precision)
+              # Values >= 1 are likely ratios/ms/counts → 3dp
+              out[k] = v < 1.0 ? v.round(6) : v.round(3)
+            when Hash
+              out[k] = compact(v)
+            when nil
+              # skip
+            else
+              out[k] = v
+            end
+          end
+        end
       end
     end
   end

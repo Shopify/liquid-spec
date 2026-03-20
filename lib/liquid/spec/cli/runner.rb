@@ -179,6 +179,11 @@ module Liquid
                 options[:compare] = true
               when "-b", "--bench"
                 options[:bench] = true
+              when "--jsonl"
+                options[:jsonl] = true
+              when "--json"
+                $stderr.puts "Error: Use --jsonl (not --json). Output is JSON Lines (one object per line)."
+                exit(1)
               when "--profile"
                 options[:profile] = true
               when "-v", "--verbose"
@@ -583,7 +588,7 @@ module Liquid
             features = config.features
             profile_dir = nil
             run_id = ENV["LIQUID_SPEC_RUN_ID"] || Time.now.strftime("%Y%m%d_%H%M%S")
-            jsonl_mode = ENV["LIQUID_SPEC_BENCHMARK_JSONL"] == "1"
+            jsonl_mode = options[:jsonl] || ENV["LIQUID_SPEC_BENCHMARK_JSONL"] == "1"
 
             adapter_name = LiquidSpec.adapter_name || "unknown"
 
@@ -653,7 +658,9 @@ module Liquid
                 end
               end
 
-              unless jsonl_mode
+              if jsonl_mode
+                output_benchmark_summary_jsonl(run_id, adapter_name, all_results)
+              else
                 puts ""
                 print_benchmark_totals(all_results)
               end
@@ -993,73 +1000,103 @@ module Liquid
 
           def output_benchmark_jsonl(run_id, adapter_name, spec, result)
             entry = build_benchmark_entry(run_id, adapter_name, spec, result)
-            puts JSON.generate(entry)
+            puts JSON.generate(Benchmark.compact(entry))
+            $stdout.flush
+          end
+
+          # Emit a summary line at the end of a JSONL stream
+          def output_benchmark_summary_jsonl(run_id, adapter_name, all_results)
+            ok = all_results.select { |r| r[:result][:error].nil? }
+            return if ok.empty?
+
+            n = ok.size
+            summary = {
+              type: "summary",
+              run_id: run_id,
+              adapter: adapter_name,
+              ruby_version: RUBY_VERSION,
+              jit_engine: jit_status,
+              specs: n,
+              parse: {
+                mean_per_op: ok.sum { |r| r[:result][:compile_mean] || 0 } / n,
+                allocs_per_op: ok.sum { |r| r[:result][:compile_allocs] || 0 } / n,
+                total_iters: ok.sum { |r| r[:result][:compile_iters] || 0 },
+              },
+              render: {
+                mean_per_op: ok.sum { |r| r[:result][:render_mean] || 0 } / n,
+                allocs_per_op: ok.sum { |r| r[:result][:render_allocs] || 0 } / n,
+                total_iters: ok.sum { |r| r[:result][:render_iters] || 0 },
+              },
+              cold: {
+                at_1_avg: ok.sum { |r| r[:result][:render_cold_1] || 0 } / n,
+                at_10_avg: ok.sum { |r| r[:result][:render_cold_10_mean] || 0 } / n,
+              },
+            }
+
+            # Warmup ratio
+            warm = summary[:render][:mean_per_op]
+            cold1 = summary[:cold][:at_1_avg]
+            summary[:cold][:warmup_ratio] = cold1 / warm if warm > 0
+
+            puts JSON.generate(Benchmark.compact(summary))
             $stdout.flush
           end
 
           def build_benchmark_entry(run_id, adapter_name, spec, result)
             jit_info = Config.jit_info
 
-            {
-              type: "result",
+            entry = {
+              type: "spec",
               run_id: run_id,
-              timestamp: Config.real_time.iso8601,
-
-              # Grouping dimensions
               adapter: adapter_name,
-              ruby_version: RUBY_VERSION,
-              jit_enabled: jit_info[:enabled],
-              jit_engine: jit_info[:engine],
-              group_key: [adapter_name, RUBY_VERSION, jit_info[:engine]],
-
-              # Spec info
-              spec_name: spec.name,
-              source_file: spec.source_file,
-              complexity: spec.complexity || 1000,
-              template_size: spec.template.bytesize,
-
-              # Result
+              ruby: RUBY_VERSION,
+              jit: jit_info[:engine],
+              spec: spec.name,
+              template_bytes: spec.template.bytesize,
               status: result[:error] ? "error" : "success",
-              error: result[:error]&.message,
-
-              # Parse/compile timings (parsing IS compiling in Liquid)
-              parse_median: result[:compile_median],
-              parse_mean: result[:compile_mean],
-              parse_stddev: result[:compile_stddev],
-              parse_min: result[:compile_min],
-              parse_max: result[:compile_max],
-              parse_p75: result[:compile_p75],
-              parse_p95: result[:compile_p95],
-              parse_p99: result[:compile_p99],
-              parse_iters: result[:compile_iters] || result[:compile_iterations],
-              parse_samples: result[:compile_samples],
-              parse_allocs_per_op: result[:compile_allocs],
-
-              # Render timings (warm steady-state)
-              render_median: result[:render_median],
-              render_mean: result[:render_mean],
-              render_stddev: result[:render_stddev],
-              render_min: result[:render_min],
-              render_max: result[:render_max],
-              render_p75: result[:render_p75],
-              render_p95: result[:render_p95],
-              render_p99: result[:render_p99],
-              render_iters: result[:render_iters] || result[:render_iterations],
-              render_samples: result[:render_samples],
-              render_allocs_per_op: result[:render_allocs],
-
-              # Cold render (before JIT/caches)
-              render_cold_1:       result[:render_cold_1],
-              render_cold_10_mean: result[:render_cold_10_mean],
-              render_cold_10_p50:  result[:render_cold_10_p50],
-
-              # YJIT delta during render (nil when not using YJIT)
-              yjit_compiled_iseqs:    result[:yjit_compiled_iseqs],
-              yjit_compile_time_ms:   result[:yjit_compile_time_ms],
-              yjit_invalidations:     result[:yjit_invalidations],
-              yjit_code_bytes:        result[:yjit_code_bytes],
-              yjit_compile_us_per_iter: result[:yjit_compile_us_per_iter],
             }
+
+            if result[:error]
+              entry[:error] = result[:error].message
+              return entry
+            end
+
+            entry[:parse] = {
+              mean: result[:compile_mean],
+              stddev: result[:compile_stddev],
+              min: result[:compile_min],
+              max: result[:compile_max],
+              p95: result[:compile_p95],
+              iters: result[:compile_iters],
+              allocs: result[:compile_allocs],
+            }
+
+            entry[:render] = {
+              mean: result[:render_mean],
+              stddev: result[:render_stddev],
+              min: result[:render_min],
+              max: result[:render_max],
+              p95: result[:render_p95],
+              iters: result[:render_iters],
+              allocs: result[:render_allocs],
+            }
+
+            entry[:cold] = {
+              at_1: result[:render_cold_1],
+              at_10: result[:render_cold_10_mean],
+            }
+
+            if result[:yjit_compiled_iseqs]
+              entry[:yjit] = {
+                iseqs: result[:yjit_compiled_iseqs],
+                compile_ms: result[:yjit_compile_time_ms],
+                invalidations: result[:yjit_invalidations],
+                code_bytes: result[:yjit_code_bytes],
+                us_per_iter: result[:yjit_compile_us_per_iter],
+              }
+            end
+
+            entry
           end
 
           def build_run_metadata(run_id, adapter_name)
