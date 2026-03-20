@@ -1489,6 +1489,7 @@ module Liquid
             render_options = {
               registers: build_registers(spec, filesystem),
               strict_errors: !render_errors,
+              resource_limits: spec.raw_resource_limits.empty? ? nil : spec.raw_resource_limits,
             }.compact
 
             begin

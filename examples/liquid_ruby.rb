@@ -29,10 +29,19 @@ LiquidSpec.compile do |ctx, source, parse_options|
 end
 
 LiquidSpec.render do |ctx, assigns, render_options|
+  resource_limits = if render_options[:resource_limits]
+    limits = Liquid::ResourceLimits.new({})
+    render_options[:resource_limits].each do |key, value|
+      limits.send(:"#{key}=", value)
+    end
+    limits
+  end
+
   context = Liquid::Context.build(
     static_environments: assigns,
     registers: Liquid::Registers.new(render_options[:registers] || {}),
     rethrow_errors: render_options[:strict_errors],
+    resource_limits: resource_limits,
   )
   context.exception_renderer = render_options[:exception_renderer] if render_options[:exception_renderer]
 
