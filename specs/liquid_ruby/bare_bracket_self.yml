@@ -1,0 +1,300 @@
+---
+# Specs for bare-bracket rejection in strict2 and the `self` keyword.
+#
+# In strict2 mode, bare-bracket variable access (e.g. {{ ['product'] }})
+# is rejected. The `self` keyword provides an explicit way to perform
+# dynamic variable lookups: {{ self[key] }}.
+#
+# `self` resolves to a SelfDrop that walks the normal variable scope
+# chain (local > file > global) without exposing context internals.
+
+- name: strict2_rejects_bare_bracket_string_variable
+  template: "{{ ['product'] }}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    In strict2 mode, bare-bracket access like ['product'] is rejected.
+    The parser should raise a SyntaxError when it encounters an open
+    square bracket at the start of an expression.
+
+- name: strict2_rejects_bare_bracket_double_quoted
+  template: '{{ ["product"] }}'
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    Double-quoted bare-bracket access is also rejected in strict2 mode.
+
+- name: strict2_rejects_bare_bracket_dynamic_lookup
+  template: "{{ [key] }}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    Dynamic variable lookup via bare brackets is rejected in strict2 mode.
+    Use self[key] instead.
+
+- name: strict2_rejects_bare_bracket_in_for
+  template: "{% for item in ['collection'] %}{{ item }}{% endfor %}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    Bare brackets in for loop collections are rejected in strict2 mode.
+
+- name: strict2_rejects_bare_bracket_in_if
+  template: "{% if ['product'] == true %}hello{% endif %}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    Bare brackets in if conditions are rejected in strict2 mode.
+
+- name: strict2_rejects_bare_bracket_in_case
+  template: "{% case ['product'] %}{% when 'a' %}hello{% endcase %}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    Bare brackets in case expressions are rejected in strict2 mode.
+
+- name: strict2_rejects_bare_bracket_in_assign
+  template: "{% assign x = ['product'] %}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - "Bare bracket access is not allowed"
+  hint: |
+    Bare brackets in assign values are rejected in strict2 mode.
+
+- name: strict2_accepts_qualified_bracket_access
+  template: "{{ product['title'] }}"
+  environment:
+    product:
+      title: Cool
+  error_mode: strict2
+  expected: "Cool"
+  hint: |
+    Bracket notation on a named variable (product['title']) is still
+    valid in strict2 mode. Only bare brackets at the start of an
+    expression are rejected.
+
+- name: strict2_accepts_dot_notation
+  template: "{{ product.title }}"
+  environment:
+    product:
+      title: Cool
+  error_mode: strict2
+  expected: "Cool"
+  hint: |
+    Dot notation is always valid in strict2 mode.
+
+- name: self_bracket_access_resolves_variable
+  template: "{{ self['product'] }}"
+  environment:
+    product: shoes
+  expected: "shoes"
+  hint: |
+    self['product'] resolves the variable 'product' through the normal
+    scope chain. The `self` keyword returns a SelfDrop that provides
+    variable-only access to the current context.
+
+- name: self_bracket_access_strict2
+  template: "{{ self['product'] }}"
+  environment:
+    product: shoes
+  error_mode: strict2
+  expected: "shoes"
+  hint: |
+    self['product'] is valid in strict2 mode - it's the replacement
+    for bare-bracket access like ['product'].
+
+- name: self_dynamic_lookup
+  template: "{{ self[key] }}"
+  environment:
+    key: target
+    target: found it
+  expected: "found it"
+  hint: |
+    self[key] performs a dynamic variable lookup: first resolves 'key'
+    to get 'target', then looks up 'target' in the scope chain.
+
+- name: self_dynamic_lookup_strict2
+  template: "{{ self[key] }}"
+  environment:
+    key: target
+    target: found it
+  error_mode: strict2
+  expected: "found it"
+  hint: |
+    self[key] is the strict2-compatible way to do dynamic lookups.
+    In lax mode, [key] works but is rejected in strict2.
+
+- name: self_dynamic_lookup_with_assigned_key
+  template: "{% assign key = 'greeting' %}{{ self[key] }}"
+  environment:
+    greeting: hello
+  expected: "hello"
+  hint: |
+    The dynamic key passed to self[...] can come from a local assign,
+    not just from the environment. self[key] reads 'key' from the
+    local scope and uses its value to look up 'greeting'.
+
+- name: self_sees_local_assigns
+  template: "{% assign product = 'local' %}{{ self['product'] }}"
+  environment:
+    product: global
+  expected: "local"
+  hint: |
+    self walks the normal scope chain (local > file > global).
+    A local assign shadows the global variable, and self['product']
+    returns the local value.
+
+- name: self_can_be_assigned
+  template: "{% assign self = 'hello' %}{{ self }}"
+  expected: "hello"
+  hint: |
+    If 'self' is explicitly assigned as a local variable, the local
+    value takes precedence over the SelfDrop. This allows templates
+    that already use 'self' as a variable name to continue working.
+
+- name: self_returns_empty_for_unknown_keys
+  template: "{{ self['nonexistent'] }}"
+  environment:
+    product: shoes
+  expected: ""
+  hint: |
+    self['nonexistent'] returns nil (rendered as empty string) when
+    the key doesn't exist in any scope.
+
+- name: self_returns_empty_for_unknown_keys_strict2
+  template: "{{ self['nonexistent'] }}"
+  error_mode: strict2
+  expected: ""
+  hint: |
+    In strict2 mode, self['nonexistent'] still renders as an empty
+    string for missing keys (it returns nil, not an error). Strict2
+    rejects bare brackets at parse time, but self[...] is a normal
+    drop access at runtime and follows the usual missing-variable
+    rendering behavior.
+
+- name: self_nested_property_access
+  template: "{{ self['product'].title }}"
+  environment:
+    product:
+      title: Shoes
+  expected: "Shoes"
+  hint: |
+    After resolving self['product'] to the product hash, further
+    property access (.title) works as expected.
+
+- name: self_bracket_in_bracket_recursion
+  template: "{{ a[ self[ 'b' ] ] }}"
+  environment:
+    b: c
+    a:
+      c: result
+  expected: "result"
+  hint: |
+    self[...] can appear inside another bracket expression. Here
+    self['b'] resolves to 'c', which is then used as the key into
+    the 'a' hash, yielding 'result'. Nested resolution should work
+    naturally because self[...] is just another expression.
+
+- name: self_recursive_lookup
+  template: "{{ self[self['key1']] }}"
+  environment:
+    key1: key2
+    key2: value
+  expected: "value"
+  hint: |
+    self[...] can be nested inside itself. The inner self['key1']
+    resolves to 'key2', then the outer self[...] looks up 'key2'
+    in the scope chain and returns 'value'.
+
+- name: self_contains_present_key
+  template: "{% if self contains 'greeting' %}yes{% else %}no{% endif %}"
+  environment:
+    greeting: hello
+  expected: "no"
+  hint: |
+    QUIRK: `self contains 'key'` always renders the false branch,
+    even when the key exists. The `contains` operator calls
+    include? on its left operand, and SelfDrop does not implement
+    include?, so the operator falls through to false. Use
+    self['key'] and check the result instead, or rely on
+    {% if self['key'] %} for truthiness.
+
+- name: self_contains_absent_key
+  template: "{% if self contains 'absent' %}yes{% else %}no{% endif %}"
+  expected: "no"
+  hint: |
+    `self contains 'key'` returns false when the key is not defined.
+    Note that this matches the present-key behavior - `contains`
+    does not work on SelfDrop because Drop does not implement
+    include?.
+
+- name: self_contains_nil_valued_key
+  template: "{% if self contains 'maybe' %}yes{% else %}no{% endif %}"
+  environment:
+    maybe: null
+  expected: "no"
+  hint: |
+    `self contains 'key'` returns false even for keys with explicit
+    nil values, because `contains` doesn't work on SelfDrop at all
+    (Drop doesn't implement include?). The `contains` operator is
+    not the right way to test variable definedness through self.
+
+- name: self_inside_for_loop_body
+  template: "{% for item in items %}{{ self[item] }}{% endfor %}"
+  environment:
+    items:
+      - a
+      - b
+    a: "1"
+    b: "2"
+  expected: "12"
+  hint: |
+    self[...] works inside loop bodies. Each iteration of the for
+    loop looks up the current `item` value through self, walking
+    the normal scope chain to find variables `a` and `b`.
+
+- name: self_inside_capture_body
+  template: "{% capture x %}{{ self['k'] }}{% endcapture %}{{ x }}"
+  environment:
+    k: v
+  expected: "v"
+  hint: |
+    self[...] works inside capture blocks. The captured value is
+    rendered using the same variable lookup rules as anywhere else.
+
+- name: self_lookup_when_environment_has_self_key
+  template: "{{ self['key'] }}"
+  environment:
+    self: env_value
+    key: value
+  expected: "value"
+  hint: |
+    Even when the environment defines a 'self' key, the `self`
+    keyword still resolves to the SelfDrop for bracket lookups.
+    SelfDrop is returned by find_variable for the 'self' key
+    before environment lookup occurs (unless 'self' was explicitly
+    assigned as a local variable). So self['key'] still does the
+    normal scope-chain lookup and finds 'key'.
+
+- name: lax_allows_bare_bracket_access
+  template: "{{ ['product'] }}"
+  environment:
+    product: shoes
+  error_mode: :lax
+  expected: "shoes"
+  hint: |
+    Bare-bracket access is still allowed in lax mode for backwards
+    compatibility. Only strict2 mode rejects it.
