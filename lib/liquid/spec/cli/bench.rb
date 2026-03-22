@@ -89,46 +89,155 @@ module Liquid
               return
             end
 
-            # Multiple adapters: run each sequentially, collect JSONL for comparison
+            # Multiple adapters: run each with --jsonl to collect results,
+            # then display interleaved per-spec comparison.
             gem_root = File.expand_path("../../../../..", __FILE__)
             reports_dir = runs.reports_dir
             results_by_adapter = {}
+            adapter_names = runs.adapter_names
+            pad = adapter_names.map(&:size).max
+
+            f = Benchmark.method(:fmt)
+
+            # ── Phase 1: Collect results from each adapter ───────────────
+            unless jsonl_mode
+              puts ""
+              puts "\e[1mCollecting benchmarks\e[0m (#{adapter_names.size} adapters)"
+              puts ""
+            end
 
             runs.adapters.each do |adapter|
-              cmd = build_cmd(adapter.path, pass_through)
+              cmd = build_cmd(adapter.path, pass_through + ["--jsonl"])
               run_id = Config.generate_run_id
               env = { "LIQUID_SPEC_RUN_ID" => run_id }
 
-              if jsonl_mode
-                # Suppress human output, just run for the files
-                Dir.chdir(gem_root) { system(env, *cmd, out: File::NULL, err: File::NULL) }
-              else
-                Dir.chdir(gem_root) { system(env, *cmd) }
+              unless jsonl_mode
+                print "  \e[2m⏱\e[0m  #{adapter.name} …"
+                $stdout.flush
               end
 
-              # Read back results from this run's jsonl
-              jsonl_files = Dir[File.join(reports_dir, "#{adapter.name}.*.jsonl")].sort
-              jsonl_path = jsonl_files.last
-              if jsonl_path && File.exist?(jsonl_path)
-                results_by_adapter[adapter.name] = File.readlines(jsonl_path).filter_map do |line|
-                  data = JSON.parse(line, symbolize_names: true) rescue nil
-                  if jsonl_mode && data
-                    # Stream each line to stdout
-                    puts JSON.generate(Benchmark.compact(data))
-                    $stdout.flush
-                  end
-                  data if data && (data[:type] == "spec" || data[:type] == "result") && data[:status] == "success"
+              # Run with JSONL to stdout, capture it
+              output = Dir.chdir(gem_root) {
+                IO.popen(env, cmd.map(&:to_s), err: File::NULL, &:read)
+              }
+
+              specs = []
+              output.each_line do |line|
+                data = JSON.parse(line.strip, symbolize_names: true) rescue nil
+                next unless data
+                if jsonl_mode
+                  puts JSON.generate(Benchmark.compact(data))
+                  $stdout.flush
                 end
+                specs << data if (data[:type] == "spec" || data[:type] == "result") && data[:status] == "success"
+              end
+              results_by_adapter[adapter.name] = specs
+
+              unless jsonl_mode
+                print "\r\e[2K"
+                jit = specs.first&.dig(:jit) || "?"
+                puts "  \e[32m✓\e[0m  #{adapter.name} (#{jit}, #{specs.size} specs)"
               end
             end
 
-            # Show cross-adapter comparison
+            # ── Phase 2: Interleaved per-spec display ────────────────────
+            sk = ->(r) { r[:spec_name] || r[:spec] }
+            all_spec_names = results_by_adapter.values.flatten.map(&sk).uniq
+
+            unless jsonl_mode
+              puts ""
+
+              all_spec_names.each_with_index do |spec_name, idx|
+                label = spec_name.sub(/\Abench_/, "")
+                puts "\e[1mBenchmark #{idx + 1}/#{all_spec_names.size}:\e[0m #{label}"
+
+                adapter_names.each do |name|
+                  r = results_by_adapter[name]&.find { |x| sk.call(x) == spec_name }
+                  unless r
+                    puts "  \e[1m#{name.ljust(pad)}\e[0m  \e[2m(skipped)\e[0m"
+                    next
+                  end
+
+                  # Extract values (handle both nested and flat formats)
+                  pmean = r.dig(:parse, :mean) || r[:parse_mean] || 0
+                  pstd  = r.dig(:parse, :stddev) || r[:parse_stddev] || 0
+                  pall  = r.dig(:parse, :allocs) || r[:parse_allocs_per_op] || 0
+                  pitr  = r.dig(:parse, :iters) || r[:parse_iters] || 0
+                  rmean = r.dig(:render, :mean) || r[:render_mean] || 0
+                  rstd  = r.dig(:render, :stddev) || r[:render_stddev] || 0
+                  rmin  = r.dig(:render, :min) || r[:render_min] || 0
+                  rmax  = r.dig(:render, :max) || r[:render_max] || 0
+                  rall  = r.dig(:render, :allocs) || r[:render_allocs_per_op] || 0
+                  ritr  = r.dig(:render, :iters) || r[:render_iters] || 0
+                  cold1 = r.dig(:cold, :at_1) || r[:render_cold_1]
+                  cold10 = r.dig(:cold, :at_10) || r[:render_cold_10_mean]
+
+                  puts "  \e[1m#{name.ljust(pad)}\e[0m  " \
+                       "Parse  (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                       "\e[1;32m#{f.call(pmean).rjust(9)}\e[0m ± " \
+                       "\e[32m#{f.call(pstd).rjust(8)}\e[0m    " \
+                       "[\e[34m#{Benchmark.fmt_allocs(pall)} allocs\e[0m, " \
+                       "\e[2m#{Benchmark.fmt_iters(pitr)} runs\e[0m]"
+
+                  puts "  #{" " * pad}  " \
+                       "Render (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                       "\e[1;32m#{f.call(rmean).rjust(9)}\e[0m ± " \
+                       "\e[32m#{f.call(rstd).rjust(8)}\e[0m    " \
+                       "[\e[34m#{Benchmark.fmt_allocs(rall)} allocs\e[0m, " \
+                       "\e[2m#{Benchmark.fmt_iters(ritr)} runs\e[0m]"
+
+                  puts "  #{" " * pad}  " \
+                       "Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):  " \
+                       "\e[36m#{f.call(rmin).rjust(9)}\e[0m … " \
+                       "\e[35m#{f.call(rmax).rjust(8)}\e[0m    " \
+                       "[\e[2m#{Benchmark.fmt_iters(ritr)} runs\e[0m]"
+
+                  if cold1
+                    ratio = rmean > 0 ? cold1 / rmean : 0
+                    ratio_s = ratio > 1.05 ? "    \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
+                    puts "  #{" " * pad}  " \
+                         "Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):  " \
+                         "\e[33m#{f.call(cold1).rjust(9)}\e[0m / " \
+                         "\e[33m#{f.call(cold10 || 0).rjust(8)}\e[0m" \
+                         "#{ratio_s}"
+                  end
+
+                  # YJIT stats
+                  yjit = r[:yjit]
+                  if yjit && yjit[:iseqs]
+                    parts = []
+                    parts << "+#{yjit[:iseqs]} iseqs"
+                    parts << "#{"%.1f" % yjit[:compile_ms]}ms jit" if yjit[:compile_ms] && yjit[:compile_ms] > 0.05
+                    parts << "#{yjit[:invalidations]} inv"
+                    parts << "#{"%.1f" % (yjit[:code_bytes] / 1024.0)}KB" if yjit[:code_bytes] && yjit[:code_bytes] > 0
+                    puts "  #{" " * pad}  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m"
+                  end
+                end
+
+                # Per-spec speedup
+                render_times = {}
+                adapter_names.each do |a|
+                  r = results_by_adapter[a]&.find { |x| sk.call(x) == spec_name }
+                  render_times[a] = r.dig(:render, :mean) || r[:render_mean] if r
+                end
+                if render_times.size >= 2
+                  fastest_name, fastest_t = render_times.min_by { |_, t| t }
+                  slowest_name, slowest_t = render_times.max_by { |_, t| t }
+                  if fastest_t > 0 && slowest_t / fastest_t > 1.1
+                    puts "  \e[2m→ #{fastest_name} is %.2fx faster\e[0m" % (slowest_t / fastest_t)
+                  end
+                end
+
+                puts ""
+              end
+            end
+
+            # ── Phase 3: Overall comparison ──────────────────────────────
             if results_by_adapter.size >= 2
               if jsonl_mode
-                emit_comparison_jsonl(runs.adapter_names, results_by_adapter)
+                emit_comparison_jsonl(adapter_names, results_by_adapter)
               else
-                puts ""
-                print_comparison(runs.adapter_names, results_by_adapter)
+                print_comparison(adapter_names, results_by_adapter)
               end
             end
           end
