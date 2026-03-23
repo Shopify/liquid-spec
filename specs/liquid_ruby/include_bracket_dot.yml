@@ -1,0 +1,52 @@
+---
+- name: RecordedTest#IncludeBracketDotTest#test_include_with_bracket_dot_expression_in_arg_cecbd434
+  template: "{% include 'snippet', items: data[config.key].values %}"
+  expected: "[a][b][c]"
+  environment:
+    data:
+      my_menu:
+        values: &1
+        - a
+        - b
+        - c
+    config:
+      key: my_menu
+    items: *1
+  filesystem:
+    snippet: "{% for item in items %}[{{ item }}]{% endfor %}"
+  caller_location: test/include_bracket_dot_test.rb:30
+- name: RecordedTest#IncludeBracketDotTest#test_include_with_simple_bracket_expression_in_arg_d0395a60
+  template: "{% include 'snippet', items: data[key].values %}"
+  expected: "[x][y]"
+  environment:
+    data:
+      my_menu:
+        values: &2
+        - x
+        - "y"
+    key: my_menu
+    items: *2
+  filesystem:
+    snippet: "{% for item in items %}[{{ item }}]{% endfor %}"
+  caller_location: test/include_bracket_dot_test.rb:30
+- name: RecordedTest#IncludeBracketDotTest#test_or_with_blank_comparison_34935bd0
+  template: "{% assign a = 2 %}{% assign b = 1 %}{% if a > b or x == blank %}YES{%
+    else %}NO{% endif %}"
+  expected: 'YES'
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/include_bracket_dot_test.rb:30
+- name: RecordedTest#IncludeBracketDotTest#test_or_with_empty_comparison_3bd8cff3
+  template: "{% assign a = 2 %}{% assign b = 1 %}{% if a > b or x == empty %}YES{%
+    else %}NO{% endif %}"
+  expected: 'YES'
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/include_bracket_dot_test.rb:30
+- name: RecordedTest#IncludeBracketDotTest#test_or_with_variable_gt_and_blank_a4c76fdc
+  template: "{% assign d = 2 %}{% if d > 1 or items == blank %}YES{% else %}NO{% endif
+    %}"
+  expected: 'YES'
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/include_bracket_dot_test.rb:30

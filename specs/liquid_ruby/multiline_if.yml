@@ -1,0 +1,100 @@
+---
+- name: RecordedTest#MultilineIfTest#test_multiline_if_with_or_and_mix_4a3c7b80
+  template: |
+    {%- if a > 0
+      or b
+      or c
+      and d == true
+      or e
+    -%}YES{%- endif -%}
+  expected: 'YES'
+  environment:
+    a: 0
+    b: false
+    c: true
+    d: true
+    e: false
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
+- name: RecordedTest#MultilineIfTest#test_multiple_or_then_and_d985c12f
+  template: "{% if a or b or c and d %}YES{% endif %}"
+  expected: 'YES'
+  environment:
+    a: false
+    b: false
+    c: true
+    d: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
+- name: RecordedTest#MultilineIfTest#test_multiple_or_then_and_or_5449e06b
+  template: "{% if a or b or c and d or e %}YES{% endif %}"
+  expected: 'YES'
+  environment:
+    a: false
+    b: false
+    c: true
+    d: true
+    e: false
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
+- name: RecordedTest#MultilineIfTest#test_or_and_with_deep_property_and_comparison_00f3719a
+  template: "{% if obj.a > 0 or obj.b or obj.c and val == true or obj.d %}YES{% endif
+    %}"
+  expected: 'YES'
+  environment:
+    obj:
+      a: 0
+      b: false
+      c: true
+      d: false
+    val: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
+- name: RecordedTest#MultilineIfTest#test_or_and_with_property_lookups_736601d3
+  template: "{% if a.size > 0 or b.settings.newsletter or b.settings.show_social and
+    d == true or b.settings.follow %}YES{% endif %}"
+  expected: 'YES'
+  environment:
+    a: []
+    b:
+      settings:
+        newsletter: false
+        show_social: true
+        follow: false
+    d: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
+- name: RecordedTest#MultilineIfTest#test_simple_or_and_mix_43aaad9d
+  template: "{% if a or b and c %}YES{% endif %}"
+  expected: 'YES'
+  environment:
+    a: false
+    b: true
+    c: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
+- name: RecordedTest#MultilineIfTest#test_with_comparisons_9edfcbcd
+  template: |
+    {%- assign has_social = true -%}
+    {%- if blocks_size > 0
+      or newsletter
+      or show_social
+      and has_social == true
+      or follow_on_shop
+    -%}INSIDE{%- endif -%}
+  expected: INSIDE
+  environment:
+    blocks_size: 0
+    newsletter: false
+    show_social: true
+    follow_on_shop: false
+    has_social: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/multiline_if_test.rb:17
