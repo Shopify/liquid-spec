@@ -1,0 +1,840 @@
+---
+- name: RecordedTest#LiquidTagParityTest#test_and_condition_false_outer_renders_else_1e15e0f4
+  template: |-
+    {% if show %}{% liquid
+      assign x = false
+      if a and b
+        assign x = true
+      endif
+      assign y = false
+    %}IF_BRANCH x={{ x }}{% else %}ELSE_BRANCH{% endif %}
+  expected: ELSE_BRANCH
+  environment:
+    show: false
+    a: true
+    b: false
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_and_condition_followed_by_assign_inside_if_else_a995b0c4
+  template: |-
+    {% if product != blank %}{% liquid
+      assign x = false
+      if a and b
+        assign x = true
+      endif
+      assign y = false
+      if c and d
+        assign y = true
+      endif
+    %}IF_BRANCH x={{ x }} y={{ y }}{% else %}ELSE_BRANCH{% endif %}
+  expected: IF_BRANCH x=true y=false
+  environment:
+    product: something
+    a: true
+    b: true
+    c: false
+    d: true
+    x: true
+    "y": false
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_assign_and_echo_in_liquid_d8b4c1bd
+  template: |-
+    {% liquid
+    assign greeting = "hello"
+    echo greeting
+    %}
+  expected: hello
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_break_inside_case_in_for_9dc0a6f5
+  template: |-
+    {% liquid
+    for i in items
+      case i
+      when 3
+        break
+      else
+        echo i
+      endcase
+    endfor
+    %}
+  expected: '12'
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_capture_inside_case_dc9873c0
+  template: |-
+    {% liquid
+    case x
+    when "a"
+      capture result
+        echo "hello"
+      endcapture
+    endcase
+    echo result
+    %}
+  expected: hello
+  environment:
+    x: a
+    result: hello
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_inside_for_does_not_eat_subsequent_content_da17cba7
+  template: '{%- for i in items -%}{%- case i -%}{%- when "a" -%}A{%- endcase -%}{%-
+    endfor -%}AFTER'
+  expected: AFTER
+  environment:
+    items: []
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_nested_in_if_7d984571
+  template: |-
+    {% liquid
+    if show
+      case x
+      when "a"
+        echo "A"
+      when "b"
+        echo "B"
+      endcase
+    endif
+    %}
+  expected: B
+  environment:
+    show: true
+    x: b
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_comma_separated_f29e079d
+  template: |-
+    {% liquid
+    case x
+    when "a", "b"
+      echo "AB"
+    when "c"
+      echo "C"
+    endcase
+    %}
+  expected: AB
+  environment:
+    x: b
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_else_not_taken_760aa77d
+  template: |-
+    {% liquid
+    case x
+    when "a"
+      echo "A"
+    else
+      echo "default"
+    endcase
+    %}
+  expected: A
+  environment:
+    x: a
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_integer_64a84978
+  template: |-
+    {% liquid
+    case x
+    when 1
+      echo "one"
+    when 2
+      echo "two"
+    endcase
+    %}
+  expected: two
+  environment:
+    x: 2
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_match_first_58703254
+  template: |-
+    {% liquid
+    case x
+    when "a"
+      echo "A"
+    when "b"
+      echo "B"
+    endcase
+    %}
+  expected: A
+  environment:
+    x: a
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_match_second_fc02c15e
+  template: |-
+    {% liquid
+    case x
+    when "a"
+      echo "A"
+    when "b"
+      echo "B"
+    endcase
+    %}
+  expected: B
+  environment:
+    x: b
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_no_match_b334d9d7
+  template: |-
+    {% liquid
+    case x
+    when "a"
+      echo "A"
+    when "b"
+      echo "B"
+    endcase
+    %}
+  expected: ''
+  environment:
+    x: z
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_when_with_else_5e0bf252
+  template: |-
+    {% liquid
+    case x
+    when "a"
+      echo "A"
+    else
+      echo "default"
+    endcase
+    %}
+  expected: default
+  environment:
+    x: z
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_case_with_for_inside_b027d27c
+  template: |-
+    {% liquid
+    case mode
+    when "list"
+      for i in items
+        echo i
+        echo " "
+      endfor
+    when "count"
+      echo items.size
+    endcase
+    %}
+  expected: '1 2 3 '
+  environment:
+    mode: list
+    items:
+    - 1
+    - 2
+    - 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_comment_block_in_liquid_3d7f1024
+  template: |-
+    {% liquid
+    echo "A"
+    comment
+      echo "should not render"
+      this is a comment
+    endcomment
+    echo "B"
+    %}
+  expected: AB
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_cycle_in_liquid_c5f6cd52
+  template: |-
+    {% liquid
+    for i in items
+      cycle "a", "b", "c"
+    endfor
+    %}
+  expected: abcab
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_decrement_in_liquid_6e75fc9f
+  template: |-
+    {% liquid
+    decrement x
+    decrement x
+    %}
+  expected: "-1-2"
+  environment:
+    x: -2
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_four_branches_68fd1e38
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    elsif x == 4
+      echo "four"
+    else
+      echo "other"
+    endif
+    %}
+  expected: two
+  environment:
+    x: 2
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_four_branches_aa8824ee
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    elsif x == 4
+      echo "four"
+    else
+      echo "other"
+    endif
+    %}
+  expected: four
+  environment:
+    x: 4
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_four_branches_b1159db1
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    elsif x == 4
+      echo "four"
+    else
+      echo "other"
+    endif
+    %}
+  expected: other
+  environment:
+    x: 5
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_four_branches_cf128bc1
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    elsif x == 4
+      echo "four"
+    else
+      echo "other"
+    endif
+    %}
+  expected: three
+  environment:
+    x: 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_four_branches_e803c5a8
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    elsif x == 4
+      echo "four"
+    else
+      echo "other"
+    endif
+    %}
+  expected: one
+  environment:
+    x: 1
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_three_branches_6ff1db3c
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    else
+      echo "other"
+    endif
+    %}
+  expected: one
+  environment:
+    x: 1
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_three_branches_8713863c
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    else
+      echo "other"
+    endif
+    %}
+  expected: two
+  environment:
+    x: 2
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_three_branches_9b198409
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    else
+      echo "other"
+    endif
+    %}
+  expected: other
+  environment:
+    x: 4
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_elsif_three_branches_ddf3f4b9
+  template: |-
+    {% liquid
+    if x == 1
+      echo "one"
+    elsif x == 2
+      echo "two"
+    elsif x == 3
+      echo "three"
+    else
+      echo "other"
+    endif
+    %}
+  expected: three
+  environment:
+    x: 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_for_else_empty_79b57faa
+  template: |-
+    {% liquid
+    for item in items
+      echo item
+    else
+      echo "empty"
+    endfor
+    %}
+  expected: empty
+  environment:
+    items: []
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_for_else_nonempty_b38a8073
+  template: |-
+    {% liquid
+    for item in items
+      echo item
+    else
+      echo "empty"
+    endfor
+    %}
+  expected: '12'
+  environment:
+    items:
+    - 1
+    - 2
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_for_with_case_inside_a03efb65
+  template: |-
+    {% liquid
+    for item in items
+      case item
+      when 1
+        echo "one"
+      when 2
+        echo "two"
+      else
+        echo "?"
+      endcase
+      echo " "
+    endfor
+    %}
+  expected: 'one two ? '
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_for_with_ifchanged_and_case_12ecd658
+  template: |-
+    {% liquid
+    for i in items
+      ifchanged
+        case i
+        when 1
+          echo "one"
+        when 2
+          echo "two"
+        else
+          echo "other"
+        endcase
+      endifchanged
+    endfor
+    %}
+  expected: onetwoother
+  environment:
+    items:
+    - 1
+    - 1
+    - 2
+    - 2
+    - 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_if_else_in_liquid_3aac8535
+  template: |-
+    {% liquid
+    if x
+      echo "yes"
+    else
+      echo "no"
+    endif
+    %}
+  expected: 'yes'
+  environment:
+    x: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_if_else_in_liquid_false_54526d24
+  template: |-
+    {% liquid
+    if x
+      echo "yes"
+    else
+      echo "no"
+    endif
+    %}
+  expected: 'no'
+  environment:
+    x: false
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_if_with_tablerow_inside_1c48c77f
+  template: |-
+    {% liquid
+    if show
+      tablerow item in items
+        echo item
+      endtablerow
+    endif
+    %}
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+  environment:
+    show: true
+    items:
+    - 1
+    - 2
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_ifchanged_all_different_0ea65590
+  template: |-
+    {% liquid
+    for i in items
+      ifchanged
+        echo i
+      endifchanged
+    endfor
+    %}
+  expected: '123'
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_ifchanged_all_same_7a497f9c
+  template: |-
+    {% liquid
+    for i in items
+      ifchanged
+        echo i
+      endifchanged
+    endfor
+    %}
+  expected: '1'
+  environment:
+    items:
+    - 1
+    - 1
+    - 1
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_ifchanged_basic_bdc30a2f
+  template: |-
+    {% liquid
+    for i in items
+      ifchanged
+        echo i
+      endifchanged
+    endfor
+    %}
+  expected: '123'
+  environment:
+    items:
+    - 1
+    - 1
+    - 2
+    - 2
+    - 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_increment_in_liquid_a7c65aba
+  template: |-
+    {% liquid
+    increment x
+    increment x
+    increment x
+    %}
+  expected: '012'
+  environment:
+    x: 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_inline_comment_hash_3fee7c03
+  template: |-
+    {% liquid
+    echo "A"
+    # this is a comment
+    echo "B"
+    %}
+  expected: AB
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_nested_comment_in_liquid_1dfcfcd5
+  template: |-
+    {% liquid
+    echo "A"
+    comment
+      comment
+        nested comment
+      endcomment
+      still in outer comment
+    endcomment
+    echo "B"
+    %}
+  expected: AB
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_render_in_liquid_040ebc79
+  template: |-
+    {% liquid
+    render 'snippet', name: 'World'
+    %}
+  expected: Hello World
+  filesystem:
+    snippet: Hello {{ name }}
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_tablerow_basic_27c09d63
+  template: |-
+    {% liquid
+    tablerow item in items
+      echo item
+    endtablerow
+    %}
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_tablerow_empty_878313e6
+  template: |-
+    {% liquid
+    tablerow item in items
+      echo item
+    endtablerow
+    %}
+  expected: |
+    <tr class="row1">
+    </tr>
+  environment:
+    items: []
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_tablerow_with_cols_b66abba1
+  template: |-
+    {% liquid
+    tablerow item in items cols:2
+      echo item
+    endtablerow
+    %}
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+    <tr class="row2"><td class="col1">3</td><td class="col2">4</td></tr>
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_tablerow_with_limit_b774ae45
+  template: |-
+    {% liquid
+    tablerow item in items limit:2
+      echo item
+    endtablerow
+    %}
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_tablerow_with_offset_d6053a99
+  template: |-
+    {% liquid
+    tablerow item in items offset:1
+      echo item
+    endtablerow
+    %}
+  expected: |
+    <tr class="row1">
+    <td class="col1">2</td><td class="col2">3</td><td class="col3">4</td></tr>
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_unless_else_falsy_24720c48
+  template: |-
+    {% liquid
+    unless x
+      echo "yes"
+    else
+      echo "no"
+    endunless
+    %}
+  expected: 'yes'
+  environment:
+    x: false
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
+- name: RecordedTest#LiquidTagParityTest#test_unless_else_truthy_2ac8f8d6
+  template: |-
+    {% liquid
+    unless x
+      echo "yes"
+    else
+      echo "no"
+    endunless
+    %}
+  expected: 'no'
+  environment:
+    x: true
+  filesystem:
+    _error-message: This liquid context does not allow includes.
+  caller_location: test/liquid_tag_test.rb:27
