@@ -1,0 +1,49 @@
+_metadata:
+  hint: |
+    Tests for resource limit enforcement during rendering.
+    Cumulative scores survive reset() across partial renders,
+    preventing unbounded work via many small partials.
+  complexity: 300
+  required_features:
+    - core
+
+specs:
+- name: cumulative_render_score_across_partials
+  template: "{% render 'a' %}{% render 'b' %}{% render 'c' %}"
+  filesystem:
+    a: "{% for i in (1..10) %}x{% endfor %}"
+    b: "{% for i in (1..10) %}x{% endfor %}"
+    c: "{% for i in (1..10) %}x{% endfor %}"
+  resource_limits:
+    render_score_limit: 100
+    cumulative_render_score_limit: 25
+  errors:
+    render_error:
+      - Liquid error
+  hint: |
+    Each partial renders a for-loop scoring ~10 points. Per-template limit (100)
+    is fine, but cumulative limit (25) is exceeded after the second partial.
+
+- name: cumulative_limits_not_triggered_when_unset
+  template: "{% render 'a' %}{% render 'b' %}"
+  filesystem:
+    a: "{% for i in (1..5) %}x{% endfor %}"
+    b: "{% for i in (1..5) %}y{% endfor %}"
+  resource_limits:
+    render_score_limit: 100
+  expected: "xxxxxyyyyy"
+  hint: |
+    Without cumulative limits set, partials render normally even though
+    cumulative score grows. Only per-template limits are checked.
+
+- name: per_template_limit_still_works_with_cumulative
+  template: "{% for i in (1..100) %}x{% endfor %}"
+  resource_limits:
+    render_score_limit: 10
+    cumulative_render_score_limit: 1000
+  errors:
+    render_error:
+      - Liquid error
+  hint: |
+    Per-template render_score_limit (10) fires even when
+    cumulative_render_score_limit (1000) is generous.
