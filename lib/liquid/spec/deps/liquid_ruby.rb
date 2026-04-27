@@ -77,36 +77,38 @@ class ToSDrop < Liquid::Drop
   #   {"instantiate:ToSDrop" => {"to_s" => "hello"}}
   #   # to_s returns "hello"
   #
-  # Legacy TestThing format: foo is a counter, incremented on each to_s call.
-  # This lets specs verify that to_s was actually called by the filter.
+  # Legacy TestThing format: foo is a starting counter; to_liquid increments it.
+  # This lets specs verify that to_liquid was called by the filter pipeline.
   #   {"instantiate:ToSDrop" => {"foo" => 3}}
-  #   # first to_s call: counter becomes 4, returns "woot: 4"
+  #   # after one to_liquid call, to_s returns "woot: 4"
+  #   # after two to_liquid calls, to_s returns "woot: 5"
 
   def initialize(params = {})
     params = { "to_s" => params } unless params.is_a?(Hash)
 
     if params.key?("to_s") || params.key?(:to_s)
       @to_s_value = params["to_s"] || params[:to_s] || ""
-      @counter = nil
+      @initial_foo = nil
     elsif params.key?("foo") || params.key?(:foo)
-      @counter = params["foo"] || params[:foo]
+      @initial_foo = params["foo"] || params[:foo]
+      @call_count = 0
       @to_s_value = nil
     else
       @to_s_value = ""
-      @counter = nil
+      @initial_foo = nil
     end
   end
 
   def to_s
-    if @counter
-      @counter += 1
-      "woot: #{@counter}"
+    if @initial_foo
+      "woot: #{@initial_foo + @call_count}"
     else
       @to_s_value.to_s
     end
   end
 
   def to_liquid
+    @call_count += 1 if @initial_foo
     self
   end
 end
