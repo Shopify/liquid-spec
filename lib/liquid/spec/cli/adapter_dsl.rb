@@ -127,7 +127,7 @@ module LiquidSpec
   class << self
     attr_reader :compile_block, :render_block, :config, :setup_block, :ctx
     attr_accessor :cli_options, :adapter_name
-    attr_reader :adapter_timeout_seconds
+    attr_reader :adapter_timeout_seconds, :required_rubyopt
 
     # Skip this adapter with a reason
     def skip!(reason)
@@ -142,6 +142,13 @@ module LiquidSpec
 
     def features
       @config&.instance_variable_get(:@features) || DEFAULT_FEATURES
+    end
+
+    # Declare Ruby flags this adapter needs (e.g. "--yjit").
+    # bench reads this before spawning the subprocess so the flags
+    # are present at Ruby boot time.
+    def rubyopt(flags)
+      @required_rubyopt = flags
     end
 
     # Called once before running specs

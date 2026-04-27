@@ -1366,6 +1366,230 @@ specs:
     comments.
 
     '
+
+# ── Complex liquid tag programs ────────────────────────────────────────────────
+
+- name: liquid_tag_split_sort_filter
+  template: |
+    {%- liquid
+      assign animals = "zebra, octopus, giraffe, tiger, ant, elephant, bear" | split: ", "
+      assign sorted = animals | sort
+      assign result = ""
+      for a in sorted
+        assign len = a | size
+        if len > 4
+          if result != ""
+            assign result = result | append: ", "
+          endif
+          assign result = result | append: a | append: "(" | append: len | append: ")"
+        endif
+      endfor
+      echo result
+    -%}
+  expected: "elephant(8), giraffe(7), octopus(7), tiger(5), zebra(5)"
+  complexity: 135
+  hint: |
+    Complex liquid tag program: split a CSV string into an array, sort it,
+    then filter by string length and build a formatted result. Tests assign
+    with split filter, sort, for loop, size filter, if conditions, string
+    concatenation via append, and echo.
+
+- name: liquid_tag_csv_parser
+  template: |
+    {%- liquid
+      assign csv = "name:age:city,Alice:30:NYC,Bob:25:LA,Carol:35:Chicago" | split: ","
+      assign count = 0
+      for row in csv
+        if forloop.first
+          continue
+        endif
+        assign fields = row | split: ":"
+        assign age = fields[1] | plus: 0
+        if age >= 30
+          assign count = count | plus: 1
+          echo fields[0]
+          echo " ("
+          echo fields[2]
+          echo ")"
+          unless forloop.last
+            echo ", "
+          endunless
+        endif
+      endfor
+      echo " [" | append: count | append: " found]"
+    -%}
+  expected: "Alice (NYC), Carol (Chicago) [2 found]"
+  complexity: 135
+  hint: |
+    Parses a colon-separated CSV inside a liquid tag. Splits on comma for
+    rows, splits on colon for fields, skips the header row with continue,
+    converts age to number with plus:0, filters rows by age >= 30, and
+    builds formatted output. Tests nested splits, array indexing, type
+    coercion, continue, and conditional output.
+
+- name: liquid_tag_case_when_with_filters
+  template: |
+    {%- liquid
+      assign fruits = "apple, banana, cherry, grape, mango" | split: ", "
+      for fruit in fruits
+        assign letter = fruit | slice: 0
+        case letter
+          when "a"
+            echo fruit | upcase
+          when "b"
+            echo fruit | capitalize
+          when "c"
+            echo fruit | append: "!"
+          else
+            echo fruit | prepend: "*" | append: "*"
+        endcase
+        unless forloop.last
+          echo " | "
+        endunless
+      endfor
+    -%}
+  expected: "APPLE | Banana | cherry! | *grape* | *mango*"
+  complexity: 135
+  hint: |
+    Uses case/when inside a liquid tag to apply different filters based on
+    the first letter of each word. Tests slice filter to extract first char,
+    case/when/else, upcase, capitalize, append, prepend filters, and unless
+    for separator logic.
+
+- name: liquid_tag_nested_loops_with_break_continue
+  template: |
+    {%- liquid
+      assign matrix = "1-2-3,4-5-6,7-8-9" | split: ","
+      for row in matrix
+        assign cells = row | split: "-"
+        for cell in cells
+          assign val = cell | plus: 0
+          if val == 5
+            continue
+          endif
+          if val > 8
+            break
+          endif
+          echo val
+          echo " "
+        endfor
+      endfor
+    -%}
+  expected: "1 2 3 4 6 7 8 "
+  complexity: 135
+  hint: |
+    Nested for loops inside a liquid tag with break and continue. Splits a
+    string into a matrix (rows split by comma, cells split by dash). Skips
+    cell value 5 with continue, breaks out of inner loop when value > 8.
+    Tests nested split, nested for, type coercion, continue, and break.
+
+- name: liquid_tag_accumulator_with_capture
+  template: |
+    {%- liquid
+      assign words = "the quick brown fox jumps over the lazy dog" | split: " "
+      assign unique_count = 0
+      assign seen = ""
+      for word in words
+        assign lower = word | downcase
+        assign check = seen | split: "," | where: lower
+        if check.size == 0
+          assign unique_count = unique_count | plus: 1
+          if seen != ""
+            assign seen = seen | append: ","
+          endif
+          assign seen = seen | append: lower
+        endif
+      endfor
+      assign sorted_unique = seen | split: "," | sort | join: ", "
+      echo unique_count | append: " unique: " | append: sorted_unique
+    -%}
+  expected: "8 unique: brown, dog, fox, jumps, lazy, over, quick, the"
+  complexity: 140
+  hint: |
+    Counts unique words in a sentence using a liquid tag program. Builds a
+    comma-separated "seen" list, checks for duplicates by splitting and
+    using the where filter, then sorts the unique words alphabetically.
+    Tests complex string accumulation, split/join round-trip, where filter
+    on simple arrays, size for emptiness checks, and multi-filter echo.
+
+- name: liquid_tag_math_pipeline
+  template: |
+    {%- liquid
+      assign values = "15, 8, 23, 4, 42, 16, 7, 31" | split: ", "
+      assign sum = 0
+      assign count = 0
+      assign max = 0
+      for v in values
+        assign n = v | plus: 0
+        assign sum = sum | plus: n
+        assign count = count | plus: 1
+        if n > max
+          assign max = n
+        endif
+      endfor
+      assign avg = sum | divided_by: count
+      assign remainder = sum | modulo: count
+      echo "sum=" | append: sum | append: " count=" | append: count | append: " avg=" | append: avg | append: " max=" | append: max | append: " mod=" | append: remainder
+    -%}
+  expected: "sum=146 count=8 avg=18 max=42 mod=2"
+  complexity: 135
+  hint: |
+    Statistical calculations inside a liquid tag. Parses a string of numbers,
+    computes sum, count, max, integer average (divided_by truncates), and
+    modulo remainder. Tests plus for accumulation, divided_by for integer
+    division, modulo, and comparison operators.
+
+# ── Inline comments ({% # %}) ─────────────────────────────────────────────────
+
+- name: comment_inline_with_liquid_syntax
+  template: "{% # assign x = 'ignored' %}{{ x }}"
+  environment:
+    x: real
+  expected: real
+  complexity: 120
+  hint: |
+    Inline comments ignore their contents entirely — even valid Liquid code.
+    The assign inside the comment is never executed, so x retains its
+    environment value.
+
+- name: comment_inline_between_tags
+  template: "{%- assign a = 1 -%}{%- # separator comment -%}{%- assign b = 2 -%}{{ a }}{{ b }}"
+  expected: "12"
+  complexity: 120
+  hint: |
+    Inline comments can appear between any tags. With trim markers they
+    produce no whitespace in the output.
+
+- name: comment_inline_inside_liquid_tag_with_code
+  template: |
+    {%- liquid
+      assign x = 10
+      # assign x = 99
+      # This line is ignored
+      assign y = x | plus: 5
+      echo y
+    -%}
+  expected: "15"
+  complexity: 130
+  hint: |
+    Inside a liquid tag, lines starting with # are comments and are
+    completely ignored. The 'assign x = 99' on a comment line does NOT
+    execute, so x stays 10 and y becomes 15.
+
+- name: comment_inline_preserves_flow
+  template: |
+    {%- for i in (1..5) -%}
+      {%- # Skip even numbers explanation -%}
+      {%- assign mod = i | modulo: 2 -%}
+      {%- if mod != 0 -%}{{ i }}{%- endif -%}
+    {%- endfor -%}
+  expected: "135"
+  complexity: 130
+  hint: |
+    Inline comments inside loops don't affect control flow. The comment
+    is simply ignored each iteration. Tests that the parser correctly
+    skips the comment without disrupting the for loop or if condition.
+
 - name: filter_first
   template: "{{ items | first }}"
   environment:

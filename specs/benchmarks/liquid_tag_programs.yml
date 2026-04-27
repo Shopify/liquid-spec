@@ -1,0 +1,154 @@
+---
+_metadata:
+  hint: |
+    Benchmarks written entirely in {% liquid %} tag syntax with # comments.
+    Tests "program mode" Liquid — complex multi-line logic in a single block,
+    using echo instead of {{ }}, and # comments instead of {% comment %}.
+    Only standard Liquid features.
+  minimum_complexity: 1000
+specs:
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Inventory Report Generator
+# Parses pipe-delimited product data, categorizes by department, computes
+# totals, and formats a full report — all in one {% liquid %} block.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_liquid_tag_inventory_report
+  complexity: 1000
+  hint: |
+    A complete data processing pipeline in a single {% liquid %} block.
+    Parses pipe-delimited product data, groups by category, computes per-category
+    and grand totals, formats output. Tests: split, nested for loops, if/endif,
+    string comparison, plus (accumulation + type coercion), append chains,
+    upcase, size, and echo with filters.
+  template: |
+    {%- liquid
+      # ════════════════════════════════════════════════════════════════════
+      # INVENTORY REPORT GENERATOR
+      # Processes raw product data, categorizes, and formats a report.
+      # ════════════════════════════════════════════════════════════════════
+
+      # Step 1: Parse raw product data (pipe-separated: name|category|price|qty)
+      assign raw = "Widget A|electronics|29.99|150,Widget B|electronics|49.99|80,Gadget X|electronics|199.99|12,T-Shirt M|clothing|24.99|200,Jeans L|clothing|59.99|45,Jacket XL|clothing|129.99|15,Hammer|tools|19.99|90,Drill|tools|89.99|30,Wrench Set|tools|34.99|60,Novel ABC|books|14.99|300,Textbook 101|books|79.99|25,Cookbook Pro|books|29.99|100"
+      assign rows = raw | split: ","
+
+      # Step 2: Categorize and compute totals
+      assign categories = "electronics,clothing,tools,books" | split: ","
+      assign grand_total_qty = 0
+      assign report_lines = ""
+
+      for cat in categories
+        # Per-category accumulators
+        assign cat_qty = 0
+        assign cat_items = 0
+        assign cat_lines = ""
+
+        for row in rows
+          assign fields = row | split: "|"
+          assign item_cat = fields[1]
+          if item_cat == cat
+            assign item_name = fields[0]
+            assign item_price = fields[2]
+            assign item_qty = fields[3] | plus: 0
+            assign cat_qty = cat_qty | plus: item_qty
+            assign cat_items = cat_items | plus: 1
+
+            # Format: "Name ($price) xQty"
+            if cat_lines != ""
+              assign cat_lines = cat_lines | append: "; "
+            endif
+            assign cat_lines = cat_lines | append: item_name | append: " ($" | append: item_price | append: ") x" | append: item_qty
+          endif
+        endfor
+
+        assign grand_total_qty = grand_total_qty | plus: cat_qty
+
+        # Build category header + items
+        assign cat_upper = cat | upcase
+        assign cat_summary = cat_upper | append: " [" | append: cat_items | append: " items, " | append: cat_qty | append: " units]: " | append: cat_lines
+        if report_lines != ""
+          assign report_lines = report_lines | append: " || "
+        endif
+        assign report_lines = report_lines | append: cat_summary
+      endfor
+
+      # Step 3: Final output
+      echo "INVENTORY REPORT (" | append: rows.size | append: " products, " | append: grand_total_qty | append: " total units) --- "
+      echo report_lines
+    -%}
+  expected: "INVENTORY REPORT (12 products, 1107 total units) --- ELECTRONICS [3 items, 242 units]: Widget A ($29.99) x150; Widget B ($49.99) x80; Gadget X ($199.99) x12 || CLOTHING [3 items, 260 units]: T-Shirt M ($24.99) x200; Jeans L ($59.99) x45; Jacket XL ($129.99) x15 || TOOLS [3 items, 180 units]: Hammer ($19.99) x90; Drill ($89.99) x30; Wrench Set ($34.99) x60 || BOOKS [3 items, 425 units]: Novel ABC ($14.99) x300; Textbook 101 ($79.99) x25; Cookbook Pro ($29.99) x100"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Leaderboard with Ranking
+# Sorts scores, assigns ranks, handles ties, and formats a leaderboard.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+- name: bench_liquid_tag_leaderboard
+  complexity: 1000
+  hint: |
+    Builds a leaderboard from player data. Since Liquid can't sort objects
+    by a property directly in liquid-tag mode, this uses a manual approach:
+    iterates N^2 to find rank by counting how many players have a higher
+    score. Tests: nested for loops (O(n^2)), if/elsif, plus, minus,
+    forloop.index, size, append chains, and comparison operators.
+  template: |
+    {%- liquid
+      # ════════════════════════════════════════════════════════════════════
+      # LEADERBOARD GENERATOR
+      # Ranks players by score (higher is better), handles ties.
+      # ════════════════════════════════════════════════════════════════════
+
+      assign board = ""
+
+      # For each player, count how many have a strictly higher score = rank - 1
+      for player in players
+        assign rank = 1
+        for other in players
+          if other.score > player.score
+            assign rank = rank | plus: 1
+          endif
+        endfor
+
+        # Medal emoji for top 3
+        if rank == 1
+          assign medal = "[GOLD]"
+        elsif rank == 2
+          assign medal = "[SILVER]"
+        elsif rank == 3
+          assign medal = "[BRONZE]"
+        else
+          assign medal = ""
+        endif
+
+        # Win rate
+        assign total_games = player.wins | plus: player.losses
+        if total_games > 0
+          assign win_rate = player.wins | times: 100 | divided_by: total_games
+        else
+          assign win_rate = 0
+        endif
+
+        # Format: "#rank Name - score pts (win_rate%) medal"
+        if board != ""
+          assign board = board | append: " | "
+        endif
+        assign board = board | append: "#" | append: rank | append: " " | append: player.name | append: " - " | append: player.score | append: "pts (" | append: win_rate | append: "%)"
+        if medal != ""
+          assign board = board | append: " " | append: medal
+        endif
+      endfor
+
+      echo "LEADERBOARD: " | append: board
+    -%}
+  environment:
+    players:
+      - { name: "Alice", score: 2850, wins: 142, losses: 58 }
+      - { name: "Bob", score: 2650, wins: 120, losses: 80 }
+      - { name: "Carol", score: 3100, wins: 155, losses: 45 }
+      - { name: "Dave", score: 2850, wins: 138, losses: 62 }
+      - { name: "Eve", score: 2400, wins: 100, losses: 100 }
+      - { name: "Frank", score: 3100, wins: 160, losses: 40 }
+      - { name: "Grace", score: 2750, wins: 130, losses: 70 }
+      - { name: "Hank", score: 2200, wins: 85, losses: 115 }
+  expected: "LEADERBOARD: #3 Alice - 2850pts (71%) [BRONZE] | #6 Bob - 2650pts (60%) | #1 Carol - 3100pts (77%) [GOLD] | #3 Dave - 2850pts (69%) [BRONZE] | #7 Eve - 2400pts (50%) | #1 Frank - 3100pts (80%) [GOLD] | #5 Grace - 2750pts (65%) | #8 Hank - 2200pts (42%)"
