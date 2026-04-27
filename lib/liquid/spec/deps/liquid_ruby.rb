@@ -77,25 +77,33 @@ class ToSDrop < Liquid::Drop
   #   {"instantiate:ToSDrop" => {"to_s" => "hello"}}
   #   # to_s returns "hello"
   #
-  # Also accepts "foo" param for legacy TestThing compatibility:
+  # Legacy TestThing format: foo is a counter, incremented on each to_s call.
+  # This lets specs verify that to_s was actually called by the filter.
   #   {"instantiate:ToSDrop" => {"foo" => 3}}
-  #   # to_s returns "woot: 3"
+  #   # first to_s call: counter becomes 4, returns "woot: 4"
 
   def initialize(params = {})
     params = { "to_s" => params } unless params.is_a?(Hash)
 
-    @to_s_value = if params.key?("to_s") || params.key?(:to_s)
-      params["to_s"] || params[:to_s] || ""
+    if params.key?("to_s") || params.key?(:to_s)
+      @to_s_value = params["to_s"] || params[:to_s] || ""
+      @counter = nil
     elsif params.key?("foo") || params.key?(:foo)
-      # Legacy TestThing format
-      "woot: #{params["foo"] || params[:foo]}"
+      @counter = params["foo"] || params[:foo]
+      @to_s_value = nil
     else
-      ""
+      @to_s_value = ""
+      @counter = nil
     end
   end
 
   def to_s
-    @to_s_value.to_s
+    if @counter
+      @counter += 1
+      "woot: #{@counter}"
+    else
+      @to_s_value.to_s
+    end
   end
 
   def to_liquid
