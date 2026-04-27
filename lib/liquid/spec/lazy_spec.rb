@@ -300,7 +300,7 @@ module Liquid
             key = obj.keys.first
             value = obj.values.first
             if key.is_a?(String) && key.start_with?("instantiate:")
-              class_name = key.sub("instantiate:", "")
+              class_name = key.sub("instantiate:", "").chomp(":")
               # Deep instantiate the parameters first
               params = deep_instantiate(value, seen)
               # Create a fresh instance via the registry
