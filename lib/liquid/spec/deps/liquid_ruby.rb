@@ -111,6 +111,10 @@ class ToSDrop < Liquid::Drop
     @call_count += 1 if @initial_foo
     self
   end
+
+  def [](_key)
+    to_s
+  end
 end
 
 class TestDrop < Liquid::Drop

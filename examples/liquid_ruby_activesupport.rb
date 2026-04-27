@@ -24,7 +24,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :activesupport, :strict_parsing]
+  config.missing_features = [:shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :lax_parsing]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|

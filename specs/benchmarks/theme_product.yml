@@ -2,7 +2,7 @@
 _metadata:
   hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
   doc: implementers/shopify-theme-filters.md
-  required_features:
+  features:
     - shopify_filters
   data_files:
     - _data/theme_database.yml

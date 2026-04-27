@@ -117,10 +117,10 @@ module Liquid
           puts "liquid-spec Features"
           puts "=" * 60
           puts
-          puts "Features control which specs are run. Declare them in your adapter:"
+          puts "Features are tags on specs. Declare what your adapter can't run:"
           puts
           puts "  LiquidSpec.configure do |config|"
-          puts "    config.features = [:core, :strict_parsing]"
+          puts "    config.missing_features = [:shopify_tags, :shopify_filters]"
           puts "  end"
           puts
           puts "-" * 60
@@ -147,8 +147,8 @@ module Liquid
             puts "    #{feature}: #{count}"
           end
           puts
-          puts "Recommended starter config:"
-          puts "  config.features = [:core, :strict_parsing]"
+          puts "Adapter with no limitations (runs all specs):"
+          puts "  config.missing_features = []"
           puts
         end
 
@@ -167,9 +167,9 @@ module Liquid
               specs.each do |spec|
                 next unless spec.is_a?(Hash)
 
-                # Get required features from spec or metadata
-                features = spec["required_features"] ||
-                           (metadata && metadata["required_features"]) ||
+                # Get features from spec or metadata
+                features = spec["features"] ||
+                           (metadata && metadata["features"]) ||
                            []
 
                 features = [features] unless features.is_a?(Array)

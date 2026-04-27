@@ -68,35 +68,36 @@ class LazySpecTest < Minitest::Test
     assert patterns[1].match?("UNEXPECTED token")
   end
 
-  def test_required_features
-    spec = create_spec(required_features: [:shopify_tags, :shopify_filters])
-    assert_equal [:shopify_tags, :shopify_filters], spec.required_features
+  def test_features
+    spec = create_spec(features: [:shopify_tags, :shopify_filters])
+    assert_equal [:shopify_tags, :shopify_filters], spec.features
   end
 
   def test_error_mode_adds_lax_parsing_feature
     spec = create_spec(error_mode: :lax)
-    assert_includes spec.required_features, :lax_parsing
+    assert_includes spec.features, :lax_parsing
   end
 
   def test_error_mode_adds_strict_parsing_feature
     spec = create_spec(error_mode: :strict)
-    assert_includes spec.required_features, :strict_parsing
+    assert_includes spec.features, :strict_parsing
   end
 
-  def test_runnable_with_features
-    spec = create_spec(required_features: [:core, :shopify_tags])
+  def test_skipped_by_missing_features
+    spec = create_spec(features: [:core, :shopify_tags])
 
-    assert spec.runnable_with?([:core, :shopify_tags, :shopify_filters])
-    refute spec.runnable_with?([:core])
+    refute spec.skipped_by?([:shopify_filters])
+    assert spec.skipped_by?([:shopify_tags])
+    assert spec.skipped_by?([:core, :shopify_tags])
   end
 
-  def test_missing_features
-    spec = create_spec(required_features: [:core, :shopify_tags, :shopify_filters])
-    missing = spec.missing_features([:core])
+  def test_skipped_by_empty_missing_features
+    spec = create_spec(features: [:core, :shopify_tags, :shopify_filters])
 
-    assert_includes missing, :shopify_tags
-    assert_includes missing, :shopify_filters
-    refute_includes missing, :core
+    refute spec.skipped_by?([])
+    assert spec.skipped_by?([:shopify_tags])
+    assert spec.skipped_by?([:shopify_filters])
+    refute spec.skipped_by?([:runtime_drops])
   end
 
   def test_location_with_file_and_line

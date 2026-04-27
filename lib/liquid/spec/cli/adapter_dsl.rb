@@ -13,7 +13,7 @@ require "timeout"
 #
 #   LiquidSpec.configure do |config|
 #     config.suite = :liquid_ruby
-#     config.features = [:core, :lax_parsing]
+#     config.missing_features = [:shopify_tags]
 #   end
 #
 #   LiquidSpec.compile do |ctx, source, parse_options|
@@ -67,19 +67,9 @@ module LiquidSpec
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
   }.freeze
 
-  # Feature expansions - declaring a feature automatically includes these
-  # :core is the "full implementation" feature that includes runtime drop support
-  # JSON-RPC adapters that can't support runtime drops should not declare :core
-  FEATURE_EXPANSIONS = {
-    core: [:runtime_drops, :inline_errors],
-  }.freeze
-
-  # Default features when no config is set (matches Configuration defaults after expansion)
-  DEFAULT_FEATURES = [:core, :runtime_drops, :inline_errors].freeze
-
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
-    attr_reader :features, :known_failures, :suites
+    attr_reader :missing_features, :known_failures, :suites
 
     def initialize
       @suite = :all
@@ -87,9 +77,8 @@ module LiquidSpec
       @filter = nil
       @verbose = false
       @strict_only = false
-      @features = [:core]
+      @missing_features = []
       @known_failures = []
-      expand_features!
     end
 
     # Set multiple suites to run (overrides suite)
@@ -97,27 +86,16 @@ module LiquidSpec
       @suites = Array(list).map(&:to_sym)
     end
 
-    def features=(list)
-      @features = Array(list).map(&:to_sym)
-      expand_features!
+    def missing_features=(list)
+      @missing_features = Array(list).map(&:to_sym)
     end
 
     def known_failures=(list)
       @known_failures = Array(list).map(&:to_s)
     end
 
-    def feature?(name)
-      @features.include?(name.to_sym)
-    end
-
-    private
-
-    def expand_features!
-      FEATURE_EXPANSIONS.each do |feature, includes|
-        if @features.include?(feature)
-          @features |= includes
-        end
-      end
+    def missing_feature?(name)
+      @missing_features.include?(name.to_sym)
     end
   end
 
@@ -140,8 +118,8 @@ module LiquidSpec
       @config
     end
 
-    def features
-      @config&.instance_variable_get(:@features) || DEFAULT_FEATURES
+    def missing_features
+      @config&.instance_variable_get(:@missing_features) || []
     end
 
     # Declare Ruby flags this adapter needs (e.g. "--yjit").

@@ -511,7 +511,7 @@ specs:
     output:
     - include usage is not allowed in this context
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   complexity: 220
   hint: |
     Same as render_prohibits_include but with inline error rendering.
@@ -539,7 +539,7 @@ specs:
     output:
     - include usage is not allowed in this context
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   complexity: 220
   hint: |
     Same as render_prohibits_include_nested but with inline error rendering.
@@ -676,7 +676,7 @@ specs:
   filesystem:
     recursive: "{% render 'recursive' %}"
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
     - nesting too deep
@@ -699,7 +699,7 @@ specs:
   filesystem:
     recursive: "{% include 'recursive' %}"
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
     - nesting too deep
@@ -724,7 +724,7 @@ specs:
     a: "{% render 'b' %}"
     b: "{% render 'a' %}"
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
     - nesting too deep

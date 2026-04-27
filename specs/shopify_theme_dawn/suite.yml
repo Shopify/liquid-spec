@@ -16,8 +16,7 @@ hint: |
   To run these specs, your Liquid implementation must support Shopify theme tags.
 
 # Required features for this suite
-required_features:
-  - core
+features:
   - shopify_tags        # {% schema %}, {% style %}, {% section %}, etc.
   - shopify_objects     # section, block, content_for_header, etc.
   - shopify_filters     # asset_url, image_url, etc.
