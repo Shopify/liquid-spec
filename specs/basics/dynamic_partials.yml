@@ -49,7 +49,7 @@ specs:
   environment:
     tpl: "missing"
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - Could not find
@@ -71,7 +71,7 @@ specs:
   environment:
     tpl: 123
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - Illegal template name

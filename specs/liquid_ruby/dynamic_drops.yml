@@ -12,7 +12,7 @@ specs:
 # LoaderDrop - tracks each_called and load_slice_called state
 - name: ForTagTest#test_iterate_with_each_when_no_limit_applied_4b504dbf
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% for item in items %}{{item}}{% endfor %}"
   environment:
     items:
@@ -24,7 +24,7 @@ specs:
 
 - name: ForTagTest#test_iterate_with_load_slice_returns_same_results_as_without_e99b5d3d
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
   environment:
     items:
@@ -36,7 +36,7 @@ specs:
 
 - name: ForTagTest#test_iterate_with_load_slice_when_limit_and_offset_applied_e99b5d3d
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
   environment:
     items:
@@ -48,7 +48,7 @@ specs:
 
 - name: ForTagTest#test_iterate_with_load_slice_when_limit_applied_fd17a528
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% for item in items limit:1 %}{{item}}{% endfor %}"
   environment:
     items:
@@ -61,13 +61,13 @@ specs:
 # ErrorDrop - raises exceptions on method access (tests error handling)
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_c34cdb86
   complexity: 310
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% include 'foo' with errors %}"
   environment:
     errors:
       instantiate:ErrorDrop: {}
   render_errors: true
-  required_features: [runtime_drops, inline_errors]
+  features: [runtime_drops, inline_errors]
   errors:
     output:
       - "standard error"
@@ -77,7 +77,7 @@ specs:
 
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_c92c1757
   complexity: 320
-  required_features: [runtime_drops, inline_errors, template_factory]
+  features: [runtime_drops, inline_errors, template_factory]
   template: "{% include 'foo' with errors %}"
   environment:
     errors:
@@ -95,7 +95,7 @@ specs:
 
 - name: RenderTagTest#test_render_tag_renders_error_with_template_name_79f1a430
   complexity: 310
-  required_features: [runtime_drops, inline_errors]
+  features: [runtime_drops, inline_errors]
   template: "{% render 'foo' with errors %}"
   environment:
     errors:
@@ -110,7 +110,7 @@ specs:
 
 - name: RenderTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_8dab9308
   complexity: 320
-  required_features: [runtime_drops, inline_errors, template_factory]
+  features: [runtime_drops, inline_errors, template_factory]
   template: "{% render 'foo' with errors %}"
   environment:
     errors:
@@ -129,7 +129,7 @@ specs:
 # CountingDrop - tracks access count (state changes during rendering)
 - name: StandardFiltersTest#test_map_calls_to_liquid_ac8bb77d
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: '{{ foo | map: "whatever" }}'
   environment:
     foo:
@@ -141,7 +141,7 @@ specs:
 # TestEnumerable - yields items dynamically at runtime
 - name: RenderTagTest#test_render_tag_for_drop_cf2ab489
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% render 'loop' for loop as value %}"
   environment:
     loop:
@@ -154,7 +154,7 @@ specs:
 
 - name: RenderTagTest#test_render_tag_with_drop_e577945d
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% render 'loop' with loop as value %}"
   environment:
     loop:
@@ -167,7 +167,7 @@ specs:
 
 - name: StandardFiltersTest#test_sort_works_on_enumerables_83b00155
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: '{{ foo | sort: "bar" | map: "foo" }}'
   environment:
     foo:
@@ -179,7 +179,7 @@ specs:
 # SettingsDrop - dynamic property access via liquid_method_missing
 - name: VariableTest#test_double_nested_variable_lookup_b9f99226
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: '{{ list[list[settings.zero]]["foo"] }}'
   environment:
     list:
@@ -196,7 +196,7 @@ specs:
 
 - name: VariableTest#test_dynamic_find_var_with_drop_4ca2f954
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: '{{ [list[settings.zero]["foo"]] }}'
   environment:
     list:
@@ -212,7 +212,7 @@ specs:
 
 - name: VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{{ [list[settings.zero]] }}"
   environment:
     list:
@@ -229,7 +229,7 @@ specs:
 # ArrayDrop - Enumerable drop with lazy iteration
 - name: TableRowTest#test_enumerable_drop_549595e3
   complexity: 300
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   template: "{% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}"
   environment:
     numbers:

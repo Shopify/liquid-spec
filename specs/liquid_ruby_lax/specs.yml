@@ -3,7 +3,7 @@ _metadata:
   hint: |
     These specs require lax parsing mode. The syntax tested here was never valid
     Liquid - it was accidentally tolerated by the lax parser.
-  required_features: [lax_parsing]
+  features: [lax_parsing]
   required_options:
     error_mode: :lax
 specs:
@@ -55,7 +55,7 @@ specs:
   template: "{% if a true %}{% endif %}"
   expected: ""
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     Lax mode quirk: unknown operators in conditions with empty bodies are
     silently swallowed (no error in output). Requires render_errors: true
@@ -65,7 +65,7 @@ specs:
   template: "{% if true true %}{% endif %}"
   expected: ""
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     Lax mode quirk: blank tag bodies swallow render errors entirely.
     Requires render_errors: true so the runner doesn't raise exceptions,
@@ -76,7 +76,7 @@ specs:
   errors:
       output: "Unknown operator true"
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     Even in lax mode, errors are shown when there's an else block with content.
 - name: Does not output error when unknown operators are used in elsif but if is true
@@ -95,7 +95,7 @@ specs:
   errors:
       output: "Unknown operator true"
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When the if branch is false, the elsif is evaluated and the error is shown.
 - name: Unsupported operators render an error
@@ -103,7 +103,7 @@ specs:
   errors:
       output: "Unknown operator ="
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     The = operator is not valid in conditions (use ==). Shows error because body has content.
 - name: Does not output error when short circuit evaluation avoids using the unknown operator
@@ -407,7 +407,7 @@ specs:
   template: "{% tablerow n in (1...10) limit:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - "invalid integer"
@@ -416,7 +416,7 @@ specs:
   template: "{% tablerow n in (1...10) cols:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - "invalid integer"
@@ -425,7 +425,7 @@ specs:
   template: "{% tablerow n in (1...10) offset:true %} {{n}} {% endtablerow %}"
   error_mode: :warn
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - "invalid integer"

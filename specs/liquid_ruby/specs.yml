@@ -1152,7 +1152,7 @@
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L154
-  required_features:
+  features:
   - ruby_types
 - name: ContextTest#test_length_query_8ee139be
   template: "{% if numbers.size == 4 %}true{% endif %}"
@@ -1165,7 +1165,7 @@
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L148
-  required_features:
+  features:
   - ruby_types
 - name: ContextTest#test_length_query_ae9cb49d
   template: "{% if numbers.size == 4 %}true{% endif %}"
@@ -1193,7 +1193,7 @@
   render_errors: false
   expected: pass
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L371
-  required_features:
+  features:
   - ruby_drops
 - name: ContextTest#test_ranges_b0baaf87
   template: "{{ (1..test) }}"
@@ -1673,7 +1673,7 @@
   render_errors: false
   expected: pass
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/expression_test.rb#L188
-  required_features:
+  features:
   - ruby_drops
 - name: ExpressionTest#test_range_beec6d45
   template: "{{ ( 3 .. 4 ) }}"
@@ -2302,7 +2302,7 @@
   render_errors: false
   expected: " 1  2  3 "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/for_tag_test.rb#L62
-  required_features:
+  features:
   - ruby_drops
 - name: ForTagTest#test_for_with_hash_value_range_35a8ec0f
   template: "{%for item in (1..foobar.value) %} {{item}} {%endfor%}"
@@ -2415,7 +2415,7 @@
   render_errors: false
   expected: '12345'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/for_tag_test.rb#L424
-  required_features:
+  features:
   - ruby_drops
 - name: ForTagTest#test_iterate_with_load_slice_returns_same_results_as_without_00bb236f
   template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
@@ -2443,7 +2443,7 @@
   render_errors: false
   expected: '34'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/for_tag_test.rb#L455
-  required_features:
+  features:
   - ruby_drops
 - name: ForTagTest#test_iterate_with_load_slice_when_limit_and_offset_applied_e99b5d3d
   template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
@@ -2459,7 +2459,7 @@
   render_errors: false
   expected: '34'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/for_tag_test.rb#L444
-  required_features:
+  features:
   - ruby_drops
 - name: ForTagTest#test_iterate_with_load_slice_when_limit_applied_fd17a528
   template: "{% for item in items limit:1 %}{{item}}{% endfor %}"
@@ -2475,7 +2475,7 @@
   render_errors: false
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/for_tag_test.rb#L434
-  required_features:
+  features:
   - ruby_drops
 - name: ForTagTest#test_limiting_4a572a26
   template: "{%for i in array limit: 4 offset: 2 %}{{ i }}{%endfor%}"
@@ -2847,7 +2847,7 @@
   render_errors: false
   expected: '{"numbers"=>[{:foo=>42}]}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L77
-  required_features:
+  features:
   - ruby_types
 - name: HashRenderingTest#test_render_hash_with_hash_key_e0cefbd9
   template: "{{ my_hash }}"
@@ -2876,7 +2876,7 @@
   render_errors: false
   expected: "{:key1=>1, :key2=>2}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L15
-  required_features:
+  features:
   - ruby_types
 - name: HashRenderingTest#test_render_nested_hash_6b16a507
   template: "{{ my_hash }}"
@@ -2904,7 +2904,7 @@
   render_errors: false
   expected: kewl
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L91
-  required_features:
+  features:
   - ruby_drops
 - name: HashRenderingTest#test_rendering_hash_without_custom_to_s_uses_default_inspect_5098df4b
   template: "{{ my_hash }}"
@@ -2915,7 +2915,7 @@
   render_errors: false
   expected: "{:foo=>:bar}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L98
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: IfElseTagTest#test_comparison_of_expressions_starting_with_and_or_or_0ba70a25
@@ -3742,7 +3742,7 @@
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L384
-  required_features:
+  features:
   - ruby_drops
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_8842ca42
   template: "{% include 'foo' with errors %}"
@@ -3756,7 +3756,7 @@
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L394
-  required_features:
+  features:
   - ruby_drops
 - name: IncludeTagTest#test_strict2_parsing_errors_574c8b26
   template: '{% include "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
@@ -4425,7 +4425,7 @@
   filesystem:
     loop: "{{ value.foo }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L276
-  required_features:
+  features:
   - ruby_drops
 - name: RenderTagTest#test_render_tag_forloop_385fc4dd
   template: "{% render 'product' for products %}"
@@ -4456,7 +4456,7 @@
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L298
-  required_features:
+  features:
   - ruby_drops
 - name: RenderTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_dacc144e
   template: "{% render 'foo' with errors %}"
@@ -4470,7 +4470,7 @@
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L308
-  required_features:
+  features:
   - ruby_drops
 - name: RenderTagTest#test_render_tag_with_39fadbdf
   template: "{% render 'product' with products[0] %}"
@@ -4506,7 +4506,7 @@
   filesystem:
     loop: "{{ value }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L287
-  required_features:
+  features:
   - ruby_drops
 - name: RenderTagTest#test_render_tag_within_if_statement_6b13a27e
   template: '{% if true %}{% render "snippet" %}{% endif %}'
@@ -4632,7 +4632,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L839
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_at_least_a060ad5f
   template: "{{ 5 | at_least: width }}"
@@ -4643,7 +4643,7 @@
   render_errors: false
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L840
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_at_least_aaf61adc
   template: "{{ width | at_least:5 }}"
@@ -4654,7 +4654,7 @@
   render_errors: false
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L838
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_at_most_2d96296b
   template: "{{ width | at_most:5 }}"
@@ -4665,7 +4665,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L827
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_at_most_5574738c
   template: "{{ 5 | at_most: width }}"
@@ -4676,7 +4676,7 @@
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L829
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_at_most_8295a338
   template: "{{ width | at_most:5 }}"
@@ -4687,7 +4687,7 @@
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L828
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_at_most_a310f354
   template: "{{ 5 | at_most:5 }}"
@@ -4735,7 +4735,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L808
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_date_raises_nothing_63e134c4
   template: "{{ 'abc' | date: '%D' }}"
@@ -4756,7 +4756,7 @@
   render_errors: false
   expected: Yay
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L874
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_default_c933af38
   template: "{{ false | default: 'bar' }}"
@@ -4772,7 +4772,7 @@
   render_errors: false
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L873
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_default_handle_false_8fb3aa7f
   template: "{{ false | default: 'bar', allow_false: true }}"
@@ -4788,7 +4788,7 @@
   render_errors: false
   expected: Nay
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L885
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_default_handle_false_d4715f99
   template: "{{ drop | default: 'bar', allow_false: true }}"
@@ -4799,7 +4799,7 @@
   render_errors: false
   expected: Yay
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L886
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_divided_by_4b236710
   template: "{{ 15 | divided_by:3 }}"
@@ -4825,7 +4825,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L777
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_divided_by_fa7032a8
   template: "{{ 12 | divided_by:3 }}"
@@ -4900,7 +4900,7 @@
   render_errors: false
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L592
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_first_and_last_call_to_liquid_e68e43c2
   template: "{{ foo | first }}"
@@ -4910,7 +4910,7 @@
   render_errors: false
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L591
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_first_last_on_strings_via_template_39483e1f
   template: "{{ name | last }}"
@@ -4949,7 +4949,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L818
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_floor_95ae89b6
   template: "{{ input | floor }}"
@@ -5114,7 +5114,7 @@
   render_errors: false
   expected: 'woot: 1'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L494
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_map_doesnt_call_arbitrary_stuff_047e3303
   template: '{{ "foo" | map: "inspect" }}'
@@ -5158,7 +5158,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L739
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_minus_e5e28610
   template: "{{ input | minus:operand }}"
@@ -5182,7 +5182,7 @@
   render_errors: false
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L786
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_modulo_e58d50f0
   template: "{{ 3 | modulo:2 }}"
@@ -5236,7 +5236,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L732
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_prepend_27296fe9
   template: "{{ a | prepend: b}}"
@@ -5343,7 +5343,7 @@
   render_errors: false
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L797
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_round_a9cde38e
   template: "{{ input | round }}"
@@ -5361,7 +5361,7 @@
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L798
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_round_bfef0082
   template: "{{ input | round: 2 }}"
@@ -5392,7 +5392,7 @@
   render_errors: false
   expected: '213'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L587
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_strip_43de48e5
   template: "{{ source | strip }}"
@@ -5518,7 +5518,7 @@
   render_errors: false
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L762
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_times_0d94427d
   template: "{{ 3 | times:4 }}"
@@ -5559,7 +5559,7 @@
   render_errors: false
   expected: wo...
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L596
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFiltersTest#test_where_7111322f
   template: "{{ array | where: 'ok' | map: 'handle' | join: ' ' }}"
@@ -6341,7 +6341,7 @@
   render_errors: false
   expected: hash has 4 elements
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L336
-  required_features:
+  features:
   - ruby_types
 - name: StatementsTest#test_is_collection_empty_4af3fc35
   template: " {% if array == empty %} true {% else %} false {% endif %} "
@@ -6517,7 +6517,7 @@
     <td class="col1"> 1 </td><td class="col2"> 2 </td><td class="col3"> 3 </td></tr>
     <tr class="row2"><td class="col1"> 4 </td><td class="col2"> 5 </td><td class="col3"> 6 </td></tr>
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L64
-  required_features:
+  features:
   - ruby_drops
 - name: TableRowTest#test_nil_limit_is_treated_as_zero_2897eb01
   template: "{% tablerow i in (1..2) limit:nil %}{{ i }}{% endtablerow %}"
@@ -7449,7 +7449,7 @@
   render_errors: false
   expected: One
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L48
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_combining_trailing_comma_and_empty_args_27becf87
   template: '{{ "test" | append: "x", | upcase: }}'
@@ -7471,7 +7471,7 @@
   render_errors: false
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L168
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_dynamic_find_var_8fd4cb4f
   template: "{{ [key] }}"
@@ -7494,7 +7494,7 @@
   render_errors: false
   expected: foo
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L156
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
   template: "{{ [list[settings.zero]] }}"
@@ -7509,7 +7509,7 @@
   render_errors: false
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L146
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_expression_with_whitespace_in_square_brackets_04d8a149
   template: "{{ a[ 'b' ] }}"
@@ -7583,7 +7583,7 @@
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L32
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_2159fa48
   template: "{% if foo == 1 %}one{% endif %}"
@@ -7594,7 +7594,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L27
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_2914c337
   template: "{% if foo and true %}SHOULD NOT HAPPEN{% endif %}"
@@ -7605,7 +7605,7 @@
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L37
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_5996f88f
   template: "{% if foo == eqv %}one{% endif %}"
@@ -7619,7 +7619,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L28
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_9f617983
   template: "{% if foo > 0 %}one{% endif %}"
@@ -7630,7 +7630,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L30
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_a9e57fd0
   template: "{% if a contains x %}one{% endif %}"
@@ -7643,7 +7643,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L39
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_beb794c0
   template: "{% if b > a %}one{% endif %}"
@@ -7657,7 +7657,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L31
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_d3fc1f6e
   template: "{% if 0 < foo %}one{% endif %}"
@@ -7668,7 +7668,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L29
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_e162081a
   template: "{% if foo == true %}True{% endif %}"
@@ -7679,7 +7679,7 @@
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L36
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_ebf53802
   template: "{% if foo %}true{% endif %}"
@@ -7690,7 +7690,7 @@
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L33
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_if_tag_calls_to_liquid_value_ffebcff7
   template: "{% if foo %}true{% endif %}"
@@ -7701,7 +7701,7 @@
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L35
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_ignore_unknown_614171b5
   template: "{{ test }}"
@@ -7794,7 +7794,7 @@
   render_errors: false
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L44
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_unless_tag_calls_to_liquid_value_33d2b786
   template: "{% unless foo %}true{% endunless %}"
@@ -7805,7 +7805,7 @@
   render_errors: false
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L43
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_using_blank_as_variable_name_f3a2e22f
   template: "{% assign foo = blank %}{{ foo }}"
@@ -7828,7 +7828,7 @@
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L21
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_06333239
@@ -7844,7 +7844,7 @@
   render_errors: false
   expected: '2'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L20
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_64e7e768
   template: "{{ foo }}"
@@ -7855,7 +7855,7 @@
   render_errors: false
   expected: Yay
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L22
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_d8c9669a
   template: "{{ foo | upcase }}"
@@ -7866,7 +7866,7 @@
   render_errors: false
   expected: YAY
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L23
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_e91aed83
   template: "{{ foo }}"
@@ -7877,7 +7877,7 @@
   render_errors: false
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L19
-  required_features:
+  features:
   - ruby_drops
 - name: VariableTest#test_variable_lookup_should_not_hang_with_invalid_syntax_0aefa9bd
   template: "{{['foo'}}"
@@ -7922,5 +7922,5 @@
   render_errors: false
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L15
-  required_features:
+  features:
   - ruby_drops

@@ -90,10 +90,9 @@ LiquidSpec.setup do
   require "my_liquid"
 end
 
-# Declare which features you support
+# Declare what your adapter can't handle (default: run everything)
 LiquidSpec.configure do |config|
-  config.features = [:core]  # enables liquid_ruby suite
-  # Add :shopify_tags, :shopify_objects, :shopify_filters for Shopify themes
+  config.missing_features = [:shopify_tags, :shopify_filters]
 end
 
 # Parse template source into a template object
@@ -146,15 +145,15 @@ Each spec includes a detailed `hint` explaining how the feature should be implem
 
 ### Feature-Based Suite Selection
 
-Suites run based on feature declarations:
+Suites run by default. Declare what your adapter can't handle to skip specific specs:
 
 ```ruby
 LiquidSpec.configure do |config|
-  # Just core Liquid (liquid_ruby + shopify_production_recordings)
-  config.features = [:core]
-  
-  # Full Shopify theme support (adds shopify_theme_dawn)
-  config.features = [:core, :shopify_tags, :shopify_objects, :shopify_filters]
+  # Run everything (default — empty denylist)
+  config.missing_features = []
+
+  # Skip Shopify-specific specs (for adapters without Shopify extensions)
+  config.missing_features = [:shopify_tags, :shopify_objects, :shopify_filters]
 end
 ```
 

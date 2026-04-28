@@ -8,7 +8,7 @@ _metadata:
     Drops like BooleanDrop, IntegerDrop, and ThingWithToLiquid test Ruby-specific
     to_liquid, to_liquid_value, and to_s behaviors.
   minimum_complexity: 500
-  required_features:
+  features:
   - ruby_drops
 specs:
 - name: VariableTest#test_case_tag_calls_to_liquid_value_b1c40961
@@ -158,7 +158,7 @@ specs:
   render_errors: false
   expected: ''
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_069de095
-  required_features: [ruby_types]
+  features: [ruby_types]
   complexity: 500
   template: "{{ list[foo] }}"
   environment:
@@ -390,7 +390,7 @@ specs:
   expected: Yay
 - name: StandardFiltersTest#test_first_calls_to_liquid_6fc6e7a2
   complexity: 500
-  required_features: [ruby_drops]
+  features: [ruby_drops]
   template: "{{ foo | first }}"
   environment:
     foo:
@@ -400,7 +400,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L584
 - name: StandardFiltersTest#test_last_calls_to_liquid_a5d8c9b7
   complexity: 500
-  required_features: [ruby_drops]
+  features: [ruby_drops]
   template: "{{ foo | last }}"
   environment:
     foo:
@@ -410,7 +410,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L585
 - name: VariableTest#test_variable_render_calls_to_liquid_0a0a68b2
   complexity: 500
-  required_features: [ruby_drops]
+  features: [ruby_drops]
   template: "{{ foo }}"
   environment:
     foo:
@@ -429,7 +429,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/tags/for_tag_test.rb#L62
 - name: ConditionTest#test_range_equals_range_in_if_d89d2c49
   complexity: 500
-  required_features: [ruby_types]
+  features: [ruby_types]
   hint: "Range objects can't be represented in JSON. Ruby-specific test."
   template: "{% if (1..5) == expect %}pass{% endif %}"
   environment:
@@ -441,7 +441,7 @@ specs:
   expected: pass
 - name: ConditionTest#test_range_equals_range_d8f93c5a
   complexity: 500
-  required_features: [ruby_types]
+  features: [ruby_types]
   hint: "Range objects can't be represented in JSON. Ruby-specific test."
   template: "{% if expect == (1..2) %}pass{% else %}got {{ (1..2) }}{% endif %}"
   environment:
@@ -452,7 +452,7 @@ specs:
   render_errors: false
   expected: pass
 - name: StandardFiltersTest#test_truncate_calls_to_s_on_drops_b7d4c8e9
-  required_features: [ruby_drops]
+  features: [ruby_drops]
   complexity: 500
   template: "{{ foo | truncate: 5 }}"
   environment:
@@ -463,7 +463,7 @@ specs:
   expected: wo...
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L295
 - name: HashRenderingTest#test_rendering_hash_with_custom_to_s_method_uses_custom_to_s_c2ef71b8
-  required_features: [ruby_drops]
+  features: [ruby_drops]
   complexity: 500
   template: "{{ my_hash }}"
   environment:
@@ -473,7 +473,7 @@ specs:
   expected: kewl
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/hash_rendering_test.rb#L91
 - name: HashRenderingTest#test_rendering_hash_without_custom_to_s_method_8b5d7a2c
-  required_features: [ruby_types]
+  features: [ruby_types]
   complexity: 500
   template: "{{ my_hash }}"
   environment:

@@ -45,7 +45,7 @@ end
 LiquidSpec.configure do |config|
   # JSON-RPC adapters support core features including runtime_drops
   # because they implement bidirectional callbacks
-  config.features = [:core, :strict_parsing]
+  config.missing_features = [:ruby_types, :ruby_drops, :binary_data, :lax_parsing, :activesupport, :template_factory, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
