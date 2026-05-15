@@ -1,0 +1,55 @@
+---
+- name: comment-001
+  template: "{% comment %}hello"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''comment'' tag was never closed'
+  complexity: 100
+- name: comment-002
+  template: "{% comment foo %}hello"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''comment'' tag was never closed'
+  complexity: 100
+- name: comment-003
+  template: "{% comment %}{% comment %}inner{% endcomment %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''comment'' tag was never closed'
+  complexity: 100
+- name: comment-004
+  template: "{% comment %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''comment'' tag was never closed'
+  complexity: 100
+- name: comment-005
+  template: "{%- comment -%}hello"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''comment'' tag was never closed'
+  complexity: 100
+- name: comment-020
+  template: "{% comment %}{% raw %}hello{% endcomment %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''raw'' tag was never closed'
+  complexity: 100
+- name: comment-021
+  template: "{% comment %}{% raw %}hello"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''raw'' tag was never closed'
+  complexity: 100
+- name: comment-121
+  template: "{% comment %}this is {{{ not }}} valid{{ liquid{% endcomment %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: ''comment'' tag was never closed'
+  complexity: 100
+- name: comment-161
+  template: "{% endcomment %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unknown tag ''endcomment'''
+  complexity: 100

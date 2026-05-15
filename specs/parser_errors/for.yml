@@ -1,0 +1,710 @@
+---
+- name: for-mut-attr_colon-eos
+  template: "{% for x in x step , %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step ,"'
+  complexity: 100
+- name: for-mut-attr_colon-number
+  template: "{% for x in x step , 42 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , 42"'
+  complexity: 100
+- name: for-mut-attr_value-bare_bracket
+  template: "{% for x in x step , : [0] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : [0]"'
+  complexity: 100
+- name: for-mut-attr_value-close_round-004
+  template: "{% for x in x step , : ) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : )"'
+  complexity: 100
+- name: for-mut-attr_value-close_square-003
+  template: "{% for x in x step , : ] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : ]"'
+  complexity: 100
+- name: for-mut-attr_value-colon-002
+  template: "{% for x in x step , : : %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : :"'
+  complexity: 100
+- name: for-mut-attr_value-comma-001
+  template: "{% for x in x step , : , %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : ,"'
+  complexity: 100
+- name: for-mut-attr_value-comparison-009
+  template: "{% for x in x step , : == %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : =="'
+  complexity: 100
+- name: for-mut-attr_value-comparison-010
+  template: "{% for x in x step , : != %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : !="'
+  complexity: 100
+- name: for-mut-attr_value-comparison-011
+  template: "{% for x in x step , : < %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : <"'
+  complexity: 100
+- name: for-mut-attr_value-comparison-012
+  template: "{% for x in x step , : > %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : >"'
+  complexity: 100
+- name: for-mut-attr_value-comparison-013
+  template: "{% for x in x step , : <= %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : <="'
+  complexity: 100
+- name: for-mut-attr_value-comparison-014
+  template: "{% for x in x step , : >= %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : >="'
+  complexity: 100
+- name: for-mut-attr_value-comparison-015
+  template: "{% for x in x step , : contains %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : contains"'
+  complexity: 100
+- name: for-mut-attr_value-dash-006
+  template: "{% for x in x step , : - %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : -"'
+  complexity: 100
+- name: for-mut-attr_value-dot-007
+  template: "{% for x in x step , : . %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : ."'
+  complexity: 100
+- name: for-mut-attr_value-dotdot-008
+  template: "{% for x in x step , : .. %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : .."'
+  complexity: 100
+- name: for-mut-attr_value-eos-016
+  template: "{% for x in x step , : %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , :"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-ampersand
+  template: "{% for x in x step , : & %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character & in "x in x step , : &"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-asterisk
+  template: "{% for x in x step , : * %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character * in "x in x step , : *"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-at
+  template: "{% for x in x step , : @ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character @ in "x in x step , : @"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-backslash
+  template: "{% for x in x step , : \\ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character \ in "x in x step , : \"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-backtick
+  template: "{% for x in x step , : ` %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ` in "x in x step , : `"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-caret
+  template: "{% for x in x step , : ^ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ^ in "x in x step , : ^"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-dollar
+  template: "{% for x in x step , : $ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character $ in "x in x step , : $"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-hash
+  template: "{% for x in x step , : # %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character # in "x in x step , : #"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-semicolon
+  template: "{% for x in x step , : ; %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ; in "x in x step , : ;"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-tilde
+  template: "{% for x in x step , : ~ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ~ in "x in x step , : ~"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-unclosed_double_quote
+  template: '{% for x in x step , : "hello %}{% endfor %}'
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character " in "x in x step , : "hello"'
+  complexity: 100
+- name: for-mut-attr_value-lexerr-unclosed_single_quote
+  template: "{% for x in x step , : 'hello %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character '' in "x in x step , : ''hello"'
+  complexity: 100
+- name: for-mut-attr_value-lookup-bracket_wrong_content
+  template: "{% for x in x step , : x[,] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : x[,]"'
+  complexity: 100
+- name: for-mut-attr_value-lookup-dot_number
+  template: "{% for x in x step , : x.123 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : x.123"'
+  complexity: 100
+- name: for-mut-attr_value-lookup-dot_string
+  template: '{% for x in x step , : x."y" %}{% endfor %}'
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : x."y""'
+  complexity: 100
+- name: for-mut-attr_value-lookup-range_bad_separator
+  template: "{% for x in x step , : (1, 5) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : (1, 5)"'
+  complexity: 100
+- name: for-mut-attr_value-lookup-range_missing_end
+  template: "{% for x in x step , : (1..) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : (1..)"'
+  complexity: 100
+- name: for-mut-attr_value-lookup-trailing_dot
+  template: "{% for x in x step , : x. %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : x."'
+  complexity: 100
+- name: for-mut-attr_value-lookup-unclosed_bracket
+  template: "{% for x in x step , : x[0 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : x[0"'
+  complexity: 100
+- name: for-mut-attr_value-lookup-unclosed_range
+  template: "{% for x in x step , : (1..5 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : (1..5"'
+  complexity: 100
+- name: for-mut-attr_value-pipe-000
+  template: "{% for x in x step , : | %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : |"'
+  complexity: 100
+- name: for-mut-attr_value-question-005
+  template: "{% for x in x step , : ? %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step , : ?"'
+  complexity: 100
+- name: for-mut-collection-bare_bracket
+  template: "{% for x in [0] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Bare bracket access is not allowed in strict2 mode. Use
+      self[''...''] instead in "x in [0]"'
+  complexity: 100
+- name: for-mut-collection-close_round-004
+  template: "{% for x in ) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x in
+      )"'
+  complexity: 100
+- name: for-mut-collection-close_square-003
+  template: "{% for x in ] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:close_square, "]"] is not a valid expression in "x in
+      ]"'
+  complexity: 100
+- name: for-mut-collection-colon-002
+  template: "{% for x in : %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:colon, ":"] is not a valid expression in "x in :"'
+  complexity: 100
+- name: for-mut-collection-comma-001
+  template: "{% for x in , %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comma, ","] is not a valid expression in "x in ,"'
+  complexity: 100
+- name: for-mut-collection-comparison-009
+  template: "{% for x in == %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, "=="] is not a valid expression in "x in
+      =="'
+  complexity: 100
+- name: for-mut-collection-comparison-010
+  template: "{% for x in != %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, "!="] is not a valid expression in "x in
+      !="'
+  complexity: 100
+- name: for-mut-collection-comparison-011
+  template: "{% for x in < %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, "<"] is not a valid expression in "x in
+      <"'
+  complexity: 100
+- name: for-mut-collection-comparison-012
+  template: "{% for x in > %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, ">"] is not a valid expression in "x in
+      >"'
+  complexity: 100
+- name: for-mut-collection-comparison-013
+  template: "{% for x in <= %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, "<="] is not a valid expression in "x in
+      <="'
+  complexity: 100
+- name: for-mut-collection-comparison-014
+  template: "{% for x in >= %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, ">="] is not a valid expression in "x in
+      >="'
+  complexity: 100
+- name: for-mut-collection-comparison-015
+  template: "{% for x in contains %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comparison, "contains"] is not a valid expression in
+      "x in contains"'
+  complexity: 100
+- name: for-mut-collection-dash-006
+  template: "{% for x in - %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:dash, "-"] is not a valid expression in "x in -"'
+  complexity: 100
+- name: for-mut-collection-dot-007
+  template: "{% for x in . %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:dot, "."] is not a valid expression in "x in ."'
+  complexity: 100
+- name: for-mut-collection-dotdot-008
+  template: "{% for x in .. %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:dotdot, ".."] is not a valid expression in "x in .."'
+  complexity: 100
+- name: for-mut-collection-eos-016
+  template: "{% for x in %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:end_of_string] is not a valid expression in "x in"'
+  complexity: 100
+- name: for-mut-collection-lexerr-ampersand
+  template: "{% for x in & %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character & in "x in &"'
+  complexity: 100
+- name: for-mut-collection-lexerr-asterisk
+  template: "{% for x in * %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character * in "x in *"'
+  complexity: 100
+- name: for-mut-collection-lexerr-at
+  template: "{% for x in @ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character @ in "x in @"'
+  complexity: 100
+- name: for-mut-collection-lexerr-backslash
+  template: "{% for x in \\ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character \ in "x in \"'
+  complexity: 100
+- name: for-mut-collection-lexerr-backtick
+  template: "{% for x in ` %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ` in "x in `"'
+  complexity: 100
+- name: for-mut-collection-lexerr-caret
+  template: "{% for x in ^ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ^ in "x in ^"'
+  complexity: 100
+- name: for-mut-collection-lexerr-dollar
+  template: "{% for x in $ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character $ in "x in $"'
+  complexity: 100
+- name: for-mut-collection-lexerr-hash
+  template: "{% for x in # %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character # in "x in #"'
+  complexity: 100
+- name: for-mut-collection-lexerr-semicolon
+  template: "{% for x in ; %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ; in "x in ;"'
+  complexity: 100
+- name: for-mut-collection-lexerr-tilde
+  template: "{% for x in ~ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ~ in "x in ~"'
+  complexity: 100
+- name: for-mut-collection-lexerr-unclosed_double_quote
+  template: '{% for x in "hello %}{% endfor %}'
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character " in "x in "hello"'
+  complexity: 100
+- name: for-mut-collection-lexerr-unclosed_single_quote
+  template: "{% for x in 'hello %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character '' in "x in ''hello"'
+  complexity: 100
+- name: for-mut-collection-lookup-bracket_wrong_content
+  template: "{% for x in x[,] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:comma, ","] is not a valid expression in "x in x[,]"'
+  complexity: 100
+- name: for-mut-collection-lookup-dot_number
+  template: "{% for x in x.123 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected id but found number in "x in x.123"'
+  complexity: 100
+- name: for-mut-collection-lookup-dot_string
+  template: '{% for x in x."y" %}{% endfor %}'
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected id but found string in "x in x."y""'
+  complexity: 100
+- name: for-mut-collection-lookup-range_bad_separator
+  template: "{% for x in (1, 5) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected dotdot but found comma in "x in (1, 5)"'
+  complexity: 100
+- name: for-mut-collection-lookup-range_missing_end
+  template: "{% for x in (1..) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:close_round, ")"] is not a valid expression in "x in
+      (1..)"'
+  complexity: 100
+- name: for-mut-collection-lookup-trailing_dot
+  template: "{% for x in x. %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected id but found end_of_string in "x in x."'
+  complexity: 100
+- name: for-mut-collection-lookup-unclosed_bracket
+  template: "{% for x in x[0 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected close_square but found end_of_string in "x in
+      x[0"'
+  complexity: 100
+- name: for-mut-collection-lookup-unclosed_range
+  template: "{% for x in (1..5 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected close_round but found end_of_string in "x in
+      (1..5"'
+  complexity: 100
+- name: for-mut-collection-pipe-000
+  template: "{% for x in | %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:pipe, "|"] is not a valid expression in "x in |"'
+  complexity: 100
+- name: for-mut-collection-question-005
+  template: "{% for x in ? %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:question, "?"] is not a valid expression in "x in ?"'
+  complexity: 100
+- name: for-mut-end-trail-close_round
+  template: "{% for x in x ) %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found close_round in "x in
+      x )"'
+  complexity: 100
+- name: for-mut-end-trail-close_square
+  template: "{% for x in x ] %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found close_square in "x in
+      x ]"'
+  complexity: 100
+- name: for-mut-end-trail-colon
+  template: "{% for x in x : %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found colon in "x in x :"'
+  complexity: 100
+- name: for-mut-end-trail-comma
+  template: "{% for x in x , %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x ,"'
+  complexity: 100
+- name: for-mut-end-trail-comparison
+  template: "{% for x in x == %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found comparison in "x in x
+      =="'
+  complexity: 100
+- name: for-mut-end-trail-dash
+  template: "{% for x in x - %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found dash in "x in x -"'
+  complexity: 100
+- name: for-mut-end-trail-dot
+  template: "{% for x in x . %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected id but found end_of_string in "x in x ."'
+  complexity: 100
+- name: for-mut-end-trail-id
+  template: "{% for x in x extra %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x extra"'
+  complexity: 100
+- name: for-mut-end-trail-number
+  template: "{% for x in x 42 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found number in "x in x 42"'
+  complexity: 100
+- name: for-mut-end-trail-open_round
+  template: "{% for x in x ( %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found open_round in "x in x
+      ("'
+  complexity: 100
+- name: for-mut-end-trail-open_square
+  template: "{% for x in x [ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: [:end_of_string] is not a valid expression in "x in x
+      ["'
+  complexity: 100
+- name: for-mut-end-trail-pipe
+  template: "{% for x in x | %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found pipe in "x in x |"'
+  complexity: 100
+- name: for-mut-end-trail-question
+  template: "{% for x in x ? %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found question in "x in x ?"'
+  complexity: 100
+- name: for-mut-end-trail-string
+  template: "{% for x in x 'hi' %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected end_of_string but found string in "x in x ''hi''"'
+  complexity: 100
+- name: for-mut-in_keyword-eos
+  template: "{% for x %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: For loops require an ''in'' clause in "x"'
+  complexity: 100
+- name: for-mut-in_keyword-id
+  template: "{% for x of %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: For loops require an ''in'' clause in "x of"'
+  complexity: 100
+- name: for-mut-invalid_attribute-invalid
+  template: "{% for x in x step , %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Invalid attribute in for loop. Valid attributes are limit
+      and offset in "x in x step ,"'
+  complexity: 100
+- name: for-mut-variable_name-eos
+  template: "{% for  %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected id but found end_of_string in ""'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-ampersand
+  template: "{% for & %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character & in "&"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-asterisk
+  template: "{% for * %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character * in "*"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-at
+  template: "{% for @ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character @ in "@"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-backslash
+  template: "{% for \\ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character \ in "\"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-backtick
+  template: "{% for ` %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ` in "`"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-caret
+  template: "{% for ^ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ^ in "^"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-dollar
+  template: "{% for $ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character $ in "$"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-hash
+  template: "{% for # %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character # in "#"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-semicolon
+  template: "{% for ; %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ; in ";"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-tilde
+  template: "{% for ~ %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character ~ in "~"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-unclosed_double_quote
+  template: '{% for "hello %}{% endfor %}'
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character " in ""hello"'
+  complexity: 100
+- name: for-mut-variable_name-lexerr-unclosed_single_quote
+  template: "{% for 'hello %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unexpected character '' in "''hello"'
+  complexity: 100
+- name: for-mut-variable_name-number
+  template: "{% for 42 %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Expected id but found number in "42"'
+  complexity: 100
+- name: for-parity-elsif-in-for
+  template: "{% for i in (1..3) %}{% elsif %}{% endfor %}"
+  errors:
+    parse_error:
+    - 'Liquid syntax error: Unknown tag ''elsif'''
+  complexity: 100
