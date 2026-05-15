@@ -226,13 +226,13 @@ module Liquid
 
             Liquid::Spec::Suite.all.each do |suite|
               default_marker = suite.default? ? " (default)" : ""
-              runnable = suite.runnable_with?(config.features)
-              status = runnable ? "" : " [missing features: #{suite.missing_features(config.features).join(", ")}]"
+              skipped = suite.skipped_by?(config.missing_features)
+              status = skipped ? " [adapter opts out of: #{(suite.features & config.missing_features.to_a).join(", ")}]" : ""
 
               puts "  #{suite.id}#{default_marker}#{status}"
               puts "    #{suite.description}" if suite.description && config.verbose
-              if config.verbose && suite.required_features.any?
-                puts "    Required features: #{suite.required_features.join(", ")}"
+              if config.verbose && suite.features.any?
+                puts "    Required features: #{suite.features.join(", ")}"
               end
             end
           end
@@ -285,31 +285,31 @@ module Liquid
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
 
-            features = config.features
-            puts "Features: #{features.join(", ")}"
+            missing_features = config.missing_features
+            puts "Missing features: #{missing_features.join(", ")}"
 
             # Count available specs from all sources
             has_prioritized = options[:add_specs] && !options[:add_specs].empty?
             prioritized_specs = has_prioritized ? load_additional_specs(options[:add_specs]) : []
             prioritized_specs = filter_specs(prioritized_specs, config.filter) if config.filter && prioritized_specs.any?
-            prioritized_specs = filter_by_features(prioritized_specs, features) if prioritized_specs.any?
+            prioritized_specs = filter_by_missing(prioritized_specs, missing_features) if prioritized_specs.any?
 
             # Auto-discover local specs from ./specs/*.yml
             local_specs = discover_local_specs
             local_specs = filter_specs(local_specs, config.filter) if config.filter && local_specs.any?
-            local_specs = filter_by_features(local_specs, features) if local_specs.any?
+            local_specs = filter_by_missing(local_specs, missing_features) if local_specs.any?
             if local_specs.any?
               puts "Auto-including: #{local_specs.size} specs from ./specs/*.yml"
             end
 
             # Group specs by suite
-            suites_to_run = determine_suites(config, features)
+            suites_to_run = determine_suites(config, missing_features)
 
             # Check if there's anything to run
             suite_specs_exist = suites_to_run.any? do |suite|
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
-              suite_specs = filter_by_features(suite_specs, features)
+              suite_specs = filter_by_missing(suite_specs, missing_features)
               suite_specs.any?
             end
 
@@ -375,7 +375,7 @@ module Liquid
               end
 
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
-              suite_specs = filter_by_features(suite_specs, features)
+              suite_specs = filter_by_missing(suite_specs, missing_features)
               suite_specs = sort_by_complexity(suite_specs)
 
               next if suite_specs.empty?
@@ -453,7 +453,7 @@ module Liquid
             log_file.close
 
             # Show skipped suites
-            show_skipped_suites(config, features)
+            show_skipped_suites(config, missing_features)
 
             # Print unexpected failures
             print_failures(all_failures, max_failures)
@@ -508,12 +508,12 @@ module Liquid
               return
             end
 
-            features = config.features
+            missing_features = config.missing_features
             puts "Compare mode: checking adapter against reference liquid-ruby"
-            puts "Features: #{features.join(", ")}"
+            puts "Missing features: #{missing_features.join(", ")}"
             puts ""
 
-            suites_to_run = determine_suites(config, features)
+            suites_to_run = determine_suites(config, missing_features)
 
             total_same = 0
             total_different = 0
@@ -524,7 +524,7 @@ module Liquid
             suites_to_run.each do |suite|
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
-              suite_specs = filter_by_features(suite_specs, features)
+              suite_specs = filter_by_missing(suite_specs, missing_features)
               suite_specs = sort_by_complexity(suite_specs)
 
               next if suite_specs.empty?
@@ -585,7 +585,7 @@ module Liquid
           private
 
           def run_benchmark_suites(suites, config, options)
-            features = config.features
+            missing_features = config.missing_features
             profile_dir = nil
             run_id = ENV["LIQUID_SPEC_RUN_ID"] || Time.now.strftime("%Y%m%d_%H%M%S")
             jsonl_mode = options[:jsonl] || ENV["LIQUID_SPEC_BENCHMARK_JSONL"] == "1"
@@ -614,7 +614,7 @@ module Liquid
             suites.each do |suite|
               suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
-              suite_specs = filter_by_features(suite_specs, features)
+              suite_specs = filter_by_missing(suite_specs, missing_features)
               next if suite_specs.empty?
 
               duration_per_spec = suite.default_iteration_seconds
@@ -1129,27 +1129,27 @@ module Liquid
             end
           end
 
-          def determine_suites(config, features)
+          def determine_suites(config, missing_features)
             # Adapter can request specific suites via config.suites = [:benchmarks, ...]
             if config.suites&.any?
               config.suites.filter_map { |id| Liquid::Spec::Suite.find(id) }
-                .select { |s| s.runnable_with?(features) }
+                .reject { |s| s.skipped_by?(missing_features) }
             elsif config.suite != :all
               specific_suite = Liquid::Spec::Suite.find(config.suite)
               specific_suite ? [specific_suite] : []
             else
               Liquid::Spec::Suite.defaults
-                .select { |s| s.runnable_with?(features) }
+                .reject { |s| s.skipped_by?(missing_features) }
                 .sort_by { |s| s.id == :basics ? "" : s.id.to_s }
             end
           end
 
-          def run_additional_specs(options, config, features, known_failures, all_failures, all_known_failures, all_known_fixed)
+          def run_additional_specs(options, config, missing_features, known_failures, all_failures, all_known_failures, all_known_fixed)
             return [0, 0, 0, 0, 0] if options[:add_specs].nil? || options[:add_specs].empty?
 
             additional_specs = load_additional_specs(options[:add_specs])
             additional_specs = filter_specs(additional_specs, config.filter) if config.filter
-            additional_specs = filter_by_features(additional_specs, features)
+            additional_specs = filter_by_missing(additional_specs, missing_features)
             additional_specs = sort_by_complexity(additional_specs)
 
             return [0, 0, 0, 0, 0] if additional_specs.empty?
@@ -1210,12 +1210,12 @@ module Liquid
             [passed, failed, errors, known_failed, known_fixed]
           end
 
-          def show_skipped_suites(config, features)
-            skipped = Liquid::Spec::Suite.defaults.select { |s| !s.runnable_with?(features) }
+          def show_skipped_suites(config, missing_features)
+            skipped = Liquid::Spec::Suite.defaults.select { |s| s.skipped_by?(missing_features) }
             skipped.each do |suite|
-              missing = suite.missing_features(features)
+              opted_out = suite.features & missing_features.to_a
               suite_name_padded = "#{suite.name} ".ljust(40, ".")
-              puts "#{suite_name_padded} skipped (needs #{missing.join(", ")})"
+              puts "#{suite_name_padded} skipped (adapter opts out of: #{opted_out.join(", ")})"
             end
           end
 
@@ -1489,6 +1489,7 @@ module Liquid
             render_options = {
               registers: build_registers(spec, filesystem),
               strict_errors: !render_errors,
+              resource_limits: spec.raw_resource_limits.empty? ? nil : spec.raw_resource_limits,
             }.compact
 
             begin
@@ -1625,12 +1626,12 @@ module Liquid
             require "liquid/spec"
 
             suite_id = config.suite
-            features = config.features
+            missing_features = config.missing_features
 
             case suite_id
             when :all
               Liquid::Spec::Suite.defaults
-                .select { |s| s.runnable_with?(features) }
+                .reject { |s| s.skipped_by?(missing_features) }
                 .flat_map { |s| Liquid::Spec::SpecLoader.load_suite(s) }
             else
               suite = Liquid::Spec::Suite.find(suite_id)
@@ -1641,10 +1642,10 @@ module Liquid
                 exit(1)
               end
 
-              unless suite.runnable_with?(features)
-                missing = suite.missing_features(features)
-                $stderr.puts "Suite '#{suite_id}' requires features not supported by this adapter:"
-                $stderr.puts "  Missing: #{missing.join(", ")}"
+              if suite.skipped_by?(missing_features)
+                opted_out = suite.features & missing_features.to_a
+                $stderr.puts "Suite '#{suite_id}' requires features opted out of by this adapter:"
+                $stderr.puts "  Opted out: #{opted_out.join(", ")}"
                 exit(1)
               end
 
@@ -1670,9 +1671,9 @@ module Liquid
             specs
           end
 
-          def filter_by_features(specs, features)
-            feature_set = Set.new(features.map(&:to_sym))
-            specs.select { |s| s.runnable_with?(feature_set) }
+          def filter_by_missing(specs, missing_features)
+            missing_set = Set.new(missing_features.map(&:to_sym))
+            specs.reject { |s| s.skipped_by?(missing_set) }
           end
 
           def parse_filter_pattern(pattern)

@@ -28,9 +28,9 @@ module Liquid
       VALID_ERROR_KEYS = ["parse_error", "render_error", "output"].freeze
 
       attr_reader :name, :template, :template_name, :expected, :expected_pattern, :errors, :hint, :doc, :complexity
-      attr_reader :error_mode, :render_errors, :required_features
+      attr_reader :error_mode, :render_errors, :features
       attr_reader :source_file, :line_number
-      attr_reader :raw_environment, :raw_filesystem, :raw_template_factory
+      attr_reader :raw_environment, :raw_filesystem, :raw_template_factory, :raw_resource_limits
 
       def initialize(
         name:,
@@ -44,12 +44,13 @@ module Liquid
         complexity: 1000,
         error_mode: nil,
         render_errors: false,
-        required_features: [],
+        features: [],
         source_file: nil,
         line_number: nil,
         raw_environment: {},
         raw_filesystem: {},
         raw_template_factory: nil,
+        raw_resource_limits: {},
         source_hint: nil,
         source_required_options: {}
       )
@@ -64,22 +65,23 @@ module Liquid
         @complexity = complexity
         @error_mode = error_mode || source_required_options[:error_mode]
         @render_errors = render_errors
-        @required_features = Array(required_features).map(&:to_sym)
+        @features = Array(features).map(&:to_sym)
         @source_file = source_file
         @line_number = line_number
         @raw_environment = raw_environment || {}
         @raw_filesystem = raw_filesystem || {}
         @raw_template_factory = raw_template_factory
+        @raw_resource_limits = raw_resource_limits || {}
         @source_hint = source_hint
         @source_required_options = source_required_options || {}
 
         # Add parsing mode requirement based on error_mode
-        if @error_mode == :lax && !@required_features.include?(:lax_parsing)
-          @required_features << :lax_parsing
-        elsif @error_mode == :strict && !@required_features.include?(:strict_parsing)
-          @required_features << :strict_parsing
-        elsif @error_mode == :strict2 && !@required_features.include?(:strict2_parsing)
-          @required_features << :strict2_parsing
+        if @error_mode == :lax && !@features.include?(:lax_parsing)
+          @features << :lax_parsing
+        elsif @error_mode == :strict && !@features.include?(:strict_parsing)
+          @features << :strict_parsing
+        elsif @error_mode == :strict2 && !@features.include?(:strict2_parsing)
+          @features << :strict2_parsing
         end
       end
 
@@ -94,21 +96,10 @@ module Liquid
         end
       end
 
-      # Check if this spec requires a specific feature
-      def requires_feature?(feature)
-        required_features.include?(feature.to_sym)
-      end
-
-      # Check if spec can run with given features
-      def runnable_with?(features)
-        feature_set = features.is_a?(Set) ? features : Set.new(features.map(&:to_sym))
-        required_features.all? { |f| feature_set.include?(f) }
-      end
-
-      # List of missing features
-      def missing_features(features)
-        features_set = features.map(&:to_sym).to_set
-        required_features.reject { |f| features_set.include?(f) }
+      # Returns true if the adapter's missing_features prevent this spec from running
+      def skipped_by?(missing_features)
+        missing_set = missing_features.is_a?(Set) ? missing_features : Set.new(missing_features.map(&:to_sym))
+        features.any? { |f| missing_set.include?(f) }
       end
 
       # Check if this spec expects a parse error

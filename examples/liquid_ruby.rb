@@ -19,7 +19,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :strict_parsing, :strict2_parsing, :ruby_types]
+  config.missing_features = [:shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :activesupport, :lax_parsing]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
@@ -29,10 +29,19 @@ LiquidSpec.compile do |ctx, source, parse_options|
 end
 
 LiquidSpec.render do |ctx, assigns, render_options|
+  resource_limits = if render_options[:resource_limits]
+    limits = Liquid::ResourceLimits.new({})
+    render_options[:resource_limits].each do |key, value|
+      limits.send(:"#{key}=", value)
+    end
+    limits
+  end
+
   context = Liquid::Context.build(
     static_environments: assigns,
     registers: Liquid::Registers.new(render_options[:registers] || {}),
     rethrow_errors: render_options[:strict_errors],
+    resource_limits: resource_limits,
   )
   context.exception_renderer = render_options[:exception_renderer] if render_options[:exception_renderer]
 

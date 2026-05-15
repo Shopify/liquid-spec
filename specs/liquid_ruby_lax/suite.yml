@@ -9,7 +9,7 @@ hint: |
   Lax mode is a deprecated backwards-compatible parsing mode that tolerates invalid syntax.
   It exists for legacy Shopify templates but can be safely ignored by new implementations.
 
-required_features:
+features:
   - lax_parsing
 
 # Lax parsing is an advanced feature - implementations should focus on

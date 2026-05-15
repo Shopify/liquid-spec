@@ -51,7 +51,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_abs_8169b90f
@@ -67,7 +67,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_abs_b248a944
   template: "{{ a0 | abs }}"
@@ -85,7 +85,7 @@
     a0:
       :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_abs_d18cb3bf
   template: "{{ a0 | abs }}"
@@ -98,7 +98,7 @@
     a0:
       1: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_abs_d79d1bb4
   template: "{{ a0 | abs }}"
@@ -155,7 +155,7 @@
     - - foo
     - :foo: bar
   expected: WyJmb28iLCAxMjMsIG5pbCwgdHJ1ZSwgZmFsc2UsIExpcXVpZDo6RHJvcCwgWyJmb28iXSwgezpmb289PiJiYXIifV0=
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_base64_encode_1107ae74
@@ -164,7 +164,7 @@
     a0:
       1: bar
   expected: ezE9PiJiYXIifQ==
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_base64_encode_18c6c9c8
   template: "{{ a0 | base64_encode }}"
@@ -226,7 +226,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: d29vdDogMA==
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_base64_encode_cbe9e66f
   template: "{{ a0 | base64_encode }}"
@@ -256,7 +256,7 @@
     a0:
       :foo: bar
   expected: ezpmb289PiJiYXIifQ==
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_base64_encode_f5c3c752
   template: "{{ a0 | base64_encode }}"
@@ -314,7 +314,7 @@
     - - foo
     - :foo: bar
   expected: WyJmb28iLCAxMjMsIG5pbCwgdHJ1ZSwgZmFsc2UsIExpcXVpZDo6RHJvcCwgWyJmb28iXSwgezpmb289PiJiYXIifV0=
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_base64_url_safe_encode_2d47c17d
@@ -350,7 +350,7 @@
     a0:
       1: bar
   expected: ezE9PiJiYXIifQ==
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_base64_url_safe_encode_5827a928
   template: "{{ a0 | base64_url_safe_encode }}"
@@ -391,7 +391,7 @@
     a0:
       :foo: bar
   expected: ezpmb289PiJiYXIifQ==
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_base64_url_safe_encode_a5e8f0a9
   template: "{{ a0 | base64_url_safe_encode }}"
@@ -415,7 +415,7 @@
       'instantiate:ToSDrop:':
         foo: 0
   expected: d29vdDogMQ==
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_capitalize_04d26e85
   template: "{{ a0 | capitalize }}"
@@ -428,7 +428,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_capitalize_17453339
   template: "{{ a0 | capitalize }}"
@@ -446,7 +446,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_capitalize_38a9a61f
   template: "{{ a0 | capitalize }}"
@@ -461,7 +461,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, liquid::drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_capitalize_3ff86554
@@ -532,7 +532,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'Woot: 5'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_ceil_1f10ca85
   template: "{{ a0 | ceil }}"
@@ -540,7 +540,7 @@
     a0:
       1: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_ceil_20e88c97
   template: "{{ a0 | ceil }}"
@@ -548,7 +548,7 @@
     a0:
       :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_ceil_296cf205
   template: "{{ a0 | ceil }}"
@@ -578,7 +578,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_ceil_4f5c4da1
@@ -616,7 +616,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_ceil_e5a0f77f
   template: "{{ a0 | ceil }}"
@@ -667,7 +667,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 1'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_compact_2b01e238
   template: "{{ a0 | compact }}"
@@ -682,7 +682,7 @@
     - - foo
     - :foo: bar
   expected: foo123truefalseLiquid::Dropfoo{:foo=>"bar"}
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_compact_2fdb07df
@@ -718,7 +718,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_compact_8f8a64eb
   template: "{{ a0 | compact }}"
@@ -764,7 +764,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_compact_fc6ebab1
   template: "{{ a0 | compact: a1 }}"
@@ -938,7 +938,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_default_2f14ba4e
   template: "{{ a0 | default: a1 }}"
@@ -977,7 +977,7 @@
       'instantiate:ToSDrop:':
         foo: 7
   expected: 'woot: 9'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_default_446f9bac
   template: "{{ a0 | default }}"
@@ -997,7 +997,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_default_59e6b2cd
   template: "{{ a0 | default }}"
@@ -1088,7 +1088,7 @@
     - - foo
     - :foo: bar
   expected: foo123truefalseLiquid::Dropfoo{:foo=>"bar"}
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_default_a963f327
@@ -1115,7 +1115,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, liquid::drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_downcase_0fe5e452
@@ -1135,7 +1135,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'woot: 5'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_downcase_385c4591
   template: "{{ a0 | downcase }}"
@@ -1173,7 +1173,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_downcase_92e1d269
   template: "{{ a0 | downcase }}"
@@ -1222,7 +1222,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_escape_015bf946
   template: "{{ a0 | escape }}"
@@ -1235,7 +1235,7 @@
     a0:
       :foo: bar
   expected: "{:foo=&gt;&quot;bar&quot;}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_escape_27b5ea83
   template: "{{ a0 | escape }}"
@@ -1248,7 +1248,7 @@
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_escape_4269ff9d
   template: "{{ a0 | escape }}"
@@ -1290,7 +1290,7 @@
     - :foo: bar
   expected: "[&quot;foo&quot;, 123, nil, true, false, Liquid::Drop, [&quot;foo&quot;],
     {:foo=&gt;&quot;bar&quot;}]"
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_escape_8d927a70
@@ -1317,7 +1317,7 @@
       'instantiate:ToSDrop:':
         foo: 3
   expected: 'woot: 4'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_escape_db3990d0
   template: "{{ a0 | escape }}"
@@ -1387,7 +1387,7 @@
     a0:
       :foo: bar
   expected: "{:foo=&gt;&quot;bar&quot;}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_escape_once_24a25f87
   template: "{{ a0 | escape_once }}"
@@ -1418,7 +1418,7 @@
     - :foo: bar
   expected: "[&quot;foo&quot;, 123, nil, true, false, Liquid::Drop, [&quot;foo&quot;],
     {:foo=&gt;&quot;bar&quot;}]"
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_escape_once_6c11fb5b
@@ -1454,7 +1454,7 @@
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_escape_once_ae0ac47d
   template: "{{ a0 | escape_once }}"
@@ -1463,7 +1463,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_escape_once_b1335893
   template: "{{ a0 | escape_once }}"
@@ -1501,7 +1501,7 @@
       'instantiate:ToSDrop:':
         foo: 7
   expected: ''
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_first_103b3aa9
   template: "{{ a0 | first }}"
@@ -1514,7 +1514,7 @@
     a0:
       1: bar
   expected: 1bar
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_first_2e9dd802
   template: "{{ a0 | first }}"
@@ -1562,7 +1562,7 @@
     - - foo
     - :foo: bar
   expected: foo
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_first_9546f643
@@ -1608,7 +1608,7 @@
     a0:
       :foo: bar
   expected: foobar
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_first_d9a563ef
   template: "{{ a0 | first }}"
@@ -1651,7 +1651,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_floor_29259403
@@ -1687,7 +1687,7 @@
     a0:
       :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_floor_79de08ab
   template: "{{ a0 | floor }}"
@@ -1724,7 +1724,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_floor_af74b0fe
   template: "{{ a0 | floor }}"
@@ -1747,7 +1747,7 @@
     a0:
       1: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_h_15d599cb
   template: "{{ a0 | h }}"
@@ -1755,7 +1755,7 @@
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_h_168177ce
   template: "{{ a0 | h }}"
@@ -1781,7 +1781,7 @@
     - :foo: bar
   expected: "[&quot;foo&quot;, 123, nil, true, false, Liquid::Drop, [&quot;foo&quot;],
     {:foo=&gt;&quot;bar&quot;}]"
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_h_2ef8277e
@@ -1815,7 +1815,7 @@
     a0:
       :foo: bar
   expected: "{:foo=&gt;&quot;bar&quot;}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_h_82dc265e
   template: "{{ a0 | h }}"
@@ -1854,7 +1854,7 @@
       'instantiate:ToSDrop:':
         foo: 8
   expected: 'woot: 9'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_h_c2040486
   template: "{{ a0 | h }}"
@@ -1925,7 +1925,7 @@
         value: i did it
     a1: ", "
   expected: i did it, i did it
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_join_37113f09
   template: "{{ a0 | join: a1 }}"
@@ -1974,7 +1974,7 @@
       'instantiate:ToSDrop:':
         foo: 5
   expected: 'woot: 7'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_join_89aba551
   template: "{{ a0 | join }}"
@@ -2006,7 +2006,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_join_a43bcd49
   template: "{{ a0 | join }}"
@@ -2014,7 +2014,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_join_a91697b6
   template: "{{ a0 | join }}"
@@ -2039,7 +2039,7 @@
     - - foo
     - :foo: bar
   expected: foo 123  true false Liquid::Drop foo {:foo=>"bar"}
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_join_fcf4f163
@@ -2075,7 +2075,7 @@
     a0:
       1: bar
   expected: ''
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_last_1b048787
   template: "{{ a0 | last }}"
@@ -2090,7 +2090,7 @@
     - - foo
     - :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_last_2125a94f
@@ -2125,7 +2125,7 @@
     a0:
       :foo: bar
   expected: ''
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_last_b12b4f55
   template: "{{ a0 | last }}"
@@ -2179,7 +2179,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: ''
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_last_fca759f7
   template: "{{ a0 | last }}"
@@ -2199,7 +2199,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_lstrip_287bf5e9
@@ -2224,7 +2224,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_lstrip_691fd32c
   template: "{{ a0 | lstrip }}"
@@ -2277,7 +2277,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_lstrip_f4f42172
   template: "{{ a0 | lstrip }}"
@@ -2301,7 +2301,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 7'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_map_519eec4b
   template: "{{ a0 | map: a1 }}"
@@ -2354,7 +2354,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_newline_to_br_652ed44a
   template: "{{ a0 | newline_to_br }}"
@@ -2369,7 +2369,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_newline_to_br_88717d1a
   template: "{{ a0 | newline_to_br }}"
@@ -2402,7 +2402,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_newline_to_br_91643ffe
@@ -2428,7 +2428,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: 'woot: 2'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_remove_147c7a7d
   template: "{{ a0 | remove: a1 }}"
@@ -2571,7 +2571,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_reverse_4a4b9b4a
   template: "{{ a0 | reverse }}"
@@ -2591,7 +2591,7 @@
     - - foo
     - :foo: bar
   expected: '{:foo=>"bar"}fooLiquid::Dropfalsetrue123foo'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_reverse_612dbe14
@@ -2601,7 +2601,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'woot: 6'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_reverse_7d361a86
   template: "{{ a0 | reverse }}"
@@ -2636,7 +2636,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_reverse_e630c96e
   template: "{{ a0 | reverse }}"
@@ -2664,7 +2664,7 @@
       :a: 1
       :b: 2
   expected: "{:a=>1, :b=>2}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_round_0cc8a4b0
   template: "{{ a0 | round }}"
@@ -2689,7 +2689,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_round_64f03f6e
@@ -2698,7 +2698,7 @@
     a0:
       1: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_round_64f27055
   template: "{{ a0 | round }}"
@@ -2717,7 +2717,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_round_93e6c0cb
   template: "{{ a0 | round }}"
@@ -2741,7 +2741,7 @@
     a0:
       :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_round_ca1b586c
   template: "{{ a0 | round }}"
@@ -2789,7 +2789,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 7'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_rstrip_0e32369a
   template: "{{ a0 | rstrip }}"
@@ -2797,7 +2797,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_rstrip_1f72cde9
   template: "{{ a0 | rstrip }}"
@@ -2845,7 +2845,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_rstrip_87a01f76
@@ -2897,7 +2897,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_size_11612dc3
   template: "{{ a0 | size }}"
@@ -2927,7 +2927,7 @@
     - - foo
     - :foo: bar
   expected: '8'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_size_350f32de
@@ -2941,7 +2941,7 @@
     a0:
       1: bar
   expected: '1'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_size_8b29fccf
   template: "{{ a0 | size }}"
@@ -2966,7 +2966,7 @@
     a0:
       :foo: bar
   expected: '1'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_size_bdbea2e5
   template: "{{ a0 | size }}"
@@ -2999,7 +2999,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_size_cca95d86
   template: "{{ a0 | size }}"
@@ -3325,7 +3325,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sort_02927a93
   template: "{{ a0 | sort }}"
@@ -3395,7 +3395,7 @@
       :a: 1
       :b: 2
   expected: "{:a=>1, :b=>2}"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sort_60fd1f75
   template: "{{ a0 | sort }}"
@@ -3492,7 +3492,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 8'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_sort_f6400a55
   template: "{{ a0 | sort }}"
@@ -3505,7 +3505,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_067881c5
   template: "{{ a0 | sort_natural }}"
@@ -3568,7 +3568,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_5c26e91e
   template: "{{ a0 | sort_natural }}"
@@ -3596,7 +3596,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_889ad3ca
   template: "{{ a0 | sort_natural }}"
@@ -3611,7 +3611,7 @@
     - - foo
     - :foo: bar
   expected: 123falsefoofooLiquid::Droptrue{:foo=>"bar"}
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_88efd2cb
@@ -3678,7 +3678,7 @@
       'instantiate:ToSDrop:':
         foo: 3
   expected: 'woot: 5'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_sort_natural_cc938040
   template: "{{ a0 | sort_natural }}"
@@ -3761,7 +3761,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_squish_145ca951
@@ -3775,7 +3775,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_squish_33f01c11
   template: "{{ a0 | squish }}"
@@ -3800,7 +3800,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_squish_6301637d
   template: "{{ a0 | squish }}"
@@ -3815,7 +3815,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_squish_97c21bbf
   template: "{{ a0 | squish }}"
@@ -3861,7 +3861,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_strip_298c499e
   template: "{{ a0 | strip }}"
@@ -3897,7 +3897,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_strip_a93bd80e
   template: "{{ a0 | strip }}"
@@ -3916,7 +3916,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 7'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_strip_bb0e5336
   template: "{{ a0 | strip }}"
@@ -3959,7 +3959,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_strip_ef9277f9
@@ -4011,7 +4011,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_strip_html_4b83faf1
   template: "{{ a0 | strip_html }}"
@@ -4071,7 +4071,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_strip_html_a3081ea4
   template: "{{ a0 | strip_html }}"
@@ -4080,7 +4080,7 @@
       'instantiate:ToSDrop:':
         foo: 3
   expected: 'woot: 4'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_strip_html_ae94334b
   template: "{{ a0 | strip_html }}"
@@ -4107,7 +4107,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_strip_html_dc4a80f8
@@ -4169,7 +4169,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_7c67b363
@@ -4190,7 +4190,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_9a2228de
   template: "{{ a0 | strip_newlines }}"
@@ -4210,7 +4210,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_strip_newlines_cb41d77d
   template: "{{ a0 | strip_newlines }}"
@@ -4218,7 +4218,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_d61eb5c8
   template: "{{ a0 | strip_newlines }}"
@@ -4336,7 +4336,7 @@
     a0:
       :foo: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sum_5d8d0b22
   template: "{{ a0 | sum }}"
@@ -4367,7 +4367,7 @@
       : 0.4
     a1:
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_7d73388f
@@ -4384,7 +4384,7 @@
     a0:
       1: bar
   expected: '0'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_sum_81cb6a64
   template: "{{ a0 | sum: a1 }}"
@@ -4399,7 +4399,7 @@
       : 0.4
     a1: ''
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_821b1e54
@@ -4455,7 +4455,7 @@
       : 0.4
     a1: 1
   expected: "-0.3"
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_9e90e288
@@ -4488,7 +4488,7 @@
       - 1
       - 5
   expected: '0.4'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_b088741e
@@ -4508,7 +4508,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: '0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_sum_bb643a30
   template: "{{ a0 | sum }}"
@@ -4532,7 +4532,7 @@
       : 0.4
     a1: 1.0
   expected: '0.2'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_d4e0176c
@@ -4568,7 +4568,7 @@
     - - foo
     - :foo: bar
   expected: '123'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_e855bd12
@@ -4600,7 +4600,7 @@
       : 0.4
     a1: true
   expected: '1'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_fb61db9c
@@ -4635,7 +4635,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_truncate_4aa3cbc9
   template: "{{ a0 | truncate: a1 }}"
@@ -4698,7 +4698,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_truncate_b1979814
   template: "{{ a0 | truncate }}"
@@ -4740,7 +4740,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["...'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_truncate_f1369736
@@ -4773,7 +4773,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_1bfd0354
   template: "{{ a0 | truncatewords }}"
@@ -4831,7 +4831,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_54c75947
   template: "{{ a0 | truncatewords }}"
@@ -4851,7 +4851,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_5b3e76bb
@@ -4898,7 +4898,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: 'woot: 2'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_truncatewords_b366b670
   template: "{{ a0 | truncatewords }}"
@@ -4942,7 +4942,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_f331f0c8
   template: "{{ a0 | truncatewords }}"
@@ -4970,7 +4970,7 @@
     - 'instantiate:StringDrop:':
         value: bar
   expected: foobar
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_uniq_0ce0fecb
   template: "{{ a0 | uniq }}"
@@ -5022,7 +5022,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_uniq_7ab73682
   template: "{{ a0 | uniq }}"
@@ -5052,7 +5052,7 @@
     - - foo
     - :foo: bar
   expected: foo123truefalseLiquid::Drop{:foo=>"bar"}
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_uniq_879d03c3
@@ -5065,7 +5065,7 @@
         value: bar
     - foo
   expected: foobar
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_uniq_9c0e7ae6
   template: "{{ a0 | uniq }}"
@@ -5073,7 +5073,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_uniq_a417ebce
   template: "{{ a0 | uniq }}"
@@ -5112,7 +5112,7 @@
         value: test
     a1: value
   expected: TestDrop
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_uniq_dfc0bb7e
   template: "{{ a0 | uniq: a1 }}"
@@ -5141,7 +5141,7 @@
       'instantiate:ToSDrop:':
         foo: 0
   expected: 'woot: 2'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_upcase_1ab477f2
   template: "{{ a0 | upcase }}"
@@ -5159,7 +5159,7 @@
     a0:
       :foo: bar
   expected: '{:FOO=>"BAR"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_upcase_2a366551
   template: "{{ a0 | upcase }}"
@@ -5167,7 +5167,7 @@
     a0:
       1: bar
   expected: '{1=>"BAR"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_upcase_2abc21fb
   template: "{{ a0 | upcase }}"
@@ -5195,7 +5195,7 @@
     - - foo
     - :foo: bar
   expected: '["FOO", 123, NIL, TRUE, FALSE, LIQUID::DROP, ["FOO"], {:FOO=>"BAR"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_upcase_406bfebc
@@ -5226,7 +5226,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'WOOT: 5'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_upcase_971ad481
   template: "{{ a0 | upcase }}"
@@ -5335,7 +5335,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_url_decode_8007b58b
   template: "{{ a0 | url_decode }}"
@@ -5348,7 +5348,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_url_decode_9580d768
   template: "{{ a0 | url_decode }}"
@@ -5368,7 +5368,7 @@
     - - foo
     - :foo: bar
   expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_url_decode_bf1f382b
@@ -5383,7 +5383,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: 'woot: 2'
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_url_decode_c3985058
   template: "{{ a0 | url_decode }}"
@@ -5440,7 +5440,7 @@
     - - foo
     - :foo: bar
   expected: "%5B%22foo%22%2C+123%2C+nil%2C+true%2C+false%2C+Liquid%3A%3ADrop%2C+%5B%22foo%22%5D%2C+%7B%3Afoo%3D%3E%22bar%22%7D%5D"
-  required_features:
+  features:
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_url_encode_26a6b4f3
@@ -5460,7 +5460,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: woot%3A+2
-  required_features:
+  features:
   - ruby_drops
 - name: StandardFilterTest#test_url_encode_41ca8a5e
   template: "{{ a0 | url_encode }}"
@@ -5528,7 +5528,7 @@
     a0:
       :foo: bar
   expected: "%7B%3Afoo%3D%3E%22bar%22%7D"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_url_encode_eb214d0d
   template: "{{ a0 | url_encode }}"
@@ -5536,7 +5536,7 @@
     a0:
       1: bar
   expected: "%7B1%3D%3E%22bar%22%7D"
-  required_features:
+  features:
   - ruby_types
 - name: StandardFilterTest#test_where_1553f876
   template: "{{ a0 | where: a1 }}"

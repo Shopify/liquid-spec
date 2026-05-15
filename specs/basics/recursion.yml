@@ -2,7 +2,7 @@
 _metadata:
   doc: implementers/scopes.md
   complexity: 400
-  required_features:
+  features:
     - inline_errors
   hint: |
     Liquid has a stack limit of 100 recursive partial calls. When this
@@ -17,7 +17,7 @@ specs:
     done
   environment: {depth: 1}
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - start
@@ -41,7 +41,7 @@ specs:
     done
   environment: {depth: 1}
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - start
@@ -64,7 +64,7 @@ specs:
     done
   environment: {depth: 1}
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   errors:
     output:
       - start

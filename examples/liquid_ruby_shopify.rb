@@ -183,7 +183,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.features = [:core, :strict_parsing, :ruby_types, :shopify_filters]
+  config.missing_features = [:lax_parsing]
   config.suites = [:benchmarks]
   config.filter = "shopify_"
 end

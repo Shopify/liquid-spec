@@ -3,7 +3,7 @@
 # These require the shopify_error_handling feature
 
 - name: RecordedTest#test_subcontext_enter_fails_and_leaves_runtime_in_good_state_ec4f06d3a
-  required_features:
+  features:
     - shopify_error_handling
     - inline_errors
   render_errors: true

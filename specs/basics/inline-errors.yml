@@ -6,7 +6,7 @@ _metadata:
     This feature is useful for debugging and graceful degradation.
     Set render_errors: true to enable this behavior.
   minimum_complexity: 300
-  required_features:
+  features:
     - inline_errors
 
 specs:
@@ -19,7 +19,7 @@ specs:
   complexity: 300
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When render_errors is true, division by zero renders as an inline
     error message instead of raising an exception. The output should
@@ -37,7 +37,7 @@ specs:
   complexity: 400
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     Inline errors should include the line number where the error occurred.
     This helps template authors debug issues. The error on line 2 should
@@ -57,7 +57,7 @@ specs:
   complexity: 450
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When an error occurs in a partial, the inline error should include
     the partial name to help identify where the error came from.
@@ -70,7 +70,7 @@ specs:
   complexity: 350
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When multiple errors occur in a template, each should be rendered
     inline. Both division by zero errors should appear in the output.
@@ -84,7 +84,7 @@ specs:
   complexity: 350
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When an error occurs inside a loop, each iteration produces its own
     inline error. The loop continues despite errors when render_errors
@@ -101,7 +101,7 @@ specs:
   complexity: 320
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     Inline errors should be inserted into the output without discarding
     the surrounding content. The words "before" and "after" should both
@@ -116,7 +116,7 @@ specs:
   complexity: 310
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     Modulo by zero produces an inline error similar to division by zero.
     The error message typically says "divided by 0" since modulo is
@@ -131,7 +131,7 @@ specs:
   complexity: 330
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When a filter receives an invalid argument type, the error is
     rendered inline. The slice filter expects an integer but receives
@@ -150,7 +150,7 @@ specs:
   complexity: 470
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When an error occurs in a nested partial, the error message should
     identify the innermost partial where the error occurred. This helps
@@ -167,7 +167,7 @@ specs:
   complexity: 340
   error_mode: lax
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   hint: |
     When render_errors is true, successful expressions still render
     correctly and errors are interpolated inline. The upcase filters

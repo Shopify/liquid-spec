@@ -1,6 +1,6 @@
 ---
 - name: RecordedTest#test_basic_filter_833a117e
-  required_features: [shopify_filters]
+  features: [shopify_filters]
   template: "{{ 'hello' | upcase | capitalize | t }}"
   expected: translated-Hello-
   environment: {}
@@ -65,41 +65,41 @@
   template: "{% case blank %}{% when ' ' %}when{% else %}else{% endcase %}"
   expected: else
   environment: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Shopify blank matches whitespace-only strings. Standard liquid blank is just ''."
 - name: RecordedTest#test_case_method_literal_3f10d7af
   template: "{% case ' ' %}{% when blank %}when{% else %}else{% endcase %}"
   expected: when
   environment: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Shopify blank matches whitespace-only strings. Standard liquid blank is just ''."
 - name: RecordedTest#test_case_no_else_bb1c6565
   template: "{% case 2 %}{% when 1 %}when{% endcase %}"
   expected: ""
   environment: {}
 - name: RecordedTest#test_comparison_errors_7595d936
-  required_features:
+  features:
     - shopify_error_format
   template: "{% if 'abc' < 1 %}true{% else %}false{% endif %}"
   expected: "Liquid error (templates/test line 1): comparison of String with 1 failed"
   environment: {}
   template_name: templates/test
 - name: RecordedTest#test_comparison_errors_8141317d
-  required_features:
+  features:
     - shopify_error_format
   template: "{% if 'abc' > 1 %}true{% else %}false{% endif %}"
   expected: "Liquid error (templates/test line 1): comparison of String with 1 failed"
   environment: {}
   template_name: templates/test
 - name: RecordedTest#test_comparison_errors_d4f8ab6f
-  required_features:
+  features:
     - shopify_error_format
   template: "{% if 'abc' <= 1 %}true{% else %}false{% endif %}"
   expected: "Liquid error (templates/test line 1): comparison of String with 1 failed"
   environment: {}
   template_name: templates/test
 - name: RecordedTest#test_comparison_errors_f811bec9
-  required_features:
+  features:
     - shopify_error_format
   template: "{% if 'abc' >= 1 %}true{% else %}false{% endif %}"
   expected: "Liquid error (templates/test line 1): comparison of String with 1 failed"
@@ -212,7 +212,7 @@
   filesystem:
     snippet.liquid: "{% assign inner = 1 %}"
 - name: RecordedTest#test_include_tag_with_disallowed_includes_and_no_line_number_93c59f75
-  required_features:
+  features:
     - shopify_includes
   template: "{% render 'missing.liquid' %}"
   expected: "Liquid error (line 1): This liquid context does not allow includes."
@@ -270,7 +270,7 @@
   environment: {}
 
 - name: RecordedTest#test_encoding_binary_binary_binary_usascii_utf8_utf8_utf8_630b778b
-  required_features: [binary_data]
+  features: [binary_data]
   template: &template "{% assign v0 = iv0 | base64_encode | base64_decode %}{{ v0 }}{% assign
     v1 = iv1 | base64_encode | base64_decode %}{{ v1 }}{% assign v2 = iv2 | base64_encode
     | base64_decode %}{{ v2 }}{% assign v3 = iv3 | base64_encode | base64_decode %}{{
@@ -291,7 +291,7 @@
     iv5: &iv5 asciiiii
     iv6: &iv6 "\U0001F32A\U0001F32A\U0001F32A\U0001F32A\U0001F32A\U0001F32A\U0001F32A\U0001F32A️"
 - name: RecordedTest#test_encoding_binary_binary_binary_utf8_usascii_utf8_utf8_ebfbd90a
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFe8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -304,7 +304,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_binary_utf8_utf8_usascii_utf8_d8d01ee4
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFe8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -317,7 +317,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_binary_utf8_utf8_utf8_usascii_ba2a591c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFe8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -330,7 +330,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_binary_usascii_binary_utf8_utf8_utf8_aea48eb9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -343,7 +343,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_usascii_utf8_binary_utf8_utf8_aab80b71
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQAAAAAAAAAAPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKEC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -356,7 +356,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_usascii_utf8_utf8_binary_utf8_53feacf6
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQAAAAAAAAAAPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKFhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -369,7 +369,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_usascii_utf8_utf8_utf8_binary_2d6b41df
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQAAAAAAAAAAPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKFhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -382,7 +382,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_binary_utf8_binary_usascii_utf8_utf8_0dd2ee52
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShAuhS4NgCOq6TePPFd/gRXgAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -395,7 +395,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_utf8_binary_utf8_usascii_utf8_d7ddb016
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShAuhS4NgCOq6TePPFd/gRXmFzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -408,7 +408,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_utf8_binary_utf8_utf8_usascii_f9b9d827
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShAuhS4NgCOq6TePPFd/gRXmFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -421,7 +421,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_binary_utf8_usascii_binary_utf8_utf8_790300cf
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShAAAAAAAAAAAC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -434,7 +434,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_utf8_usascii_utf8_binary_utf8_c4258215
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShAAAAAAAAAABhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -447,7 +447,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_utf8_usascii_utf8_utf8_binary_477c9027
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShAAAAAAAAAABhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -460,7 +460,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_binary_utf8_utf8_binary_usascii_utf8_2e4b2d61
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWkC6FLg2AI6rpN488V3+BFeAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -473,7 +473,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_utf8_utf8_binary_utf8_usascii_d314808e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWkC6FLg2AI6rpN488V3+BFe8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -486,7 +486,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_binary_utf8_utf8_usascii_binary_utf8_ae237472
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWkAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -499,7 +499,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_binary_utf8_utf8_usascii_utf8_binary_e08f7ef9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWkAAAAAAAAAAPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -512,7 +512,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_binary_utf8_utf8_utf8_binary_usascii_cb00ae42
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwLoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -525,7 +525,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_binary_utf8_utf8_utf8_usascii_binary_420e2617
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -538,7 +538,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_usascii_binary_binary_utf8_utf8_utf8_d74c5149
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAAA4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -551,7 +551,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_usascii_binary_utf8_binary_utf8_utf8_67d3a4f7
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAAA4ODg4OGJpdPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKEC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -564,7 +564,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_usascii_binary_utf8_utf8_binary_utf8_e8b7c77c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAAA4ODg4OGJpdPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKFhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -577,7 +577,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_usascii_binary_utf8_utf8_utf8_binary_18a82d12
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAAA4ODg4OGJpdPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKFhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -590,7 +590,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_usascii_utf8_binary_binary_utf8_utf8_dfdf5527
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShODg4ODhiaXQC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -603,7 +603,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_usascii_utf8_binary_utf8_binary_utf8_09ea414e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShODg4ODhiaXRhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -616,7 +616,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_usascii_utf8_binary_utf8_utf8_binary_98981496
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShODg4ODhiaXRhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -629,7 +629,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_usascii_utf8_utf8_binary_binary_utf8_4b413d2a
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWk4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -642,7 +642,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_usascii_utf8_utf8_binary_utf8_binary_a72e99b4
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWk4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -655,7 +655,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_usascii_utf8_utf8_utf8_binary_binary_7fdf8acc
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -668,7 +668,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_binary_binary_usascii_utf8_utf8_00c77fc0
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXgAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -681,7 +681,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_binary_binary_utf8_usascii_utf8_526ee9de
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXmFzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -694,7 +694,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_binary_binary_utf8_utf8_usascii_ee6c9fd1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXmFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -707,7 +707,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_utf8_binary_usascii_binary_utf8_utf8_fda39a00
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0AAAAAAAAAAAC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -720,7 +720,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_binary_usascii_utf8_binary_utf8_802e405f
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0AAAAAAAAAABhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -733,7 +733,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_binary_usascii_utf8_utf8_binary_b6be7968
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0AAAAAAAAAABhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -746,7 +746,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_binary_utf8_binary_usascii_utf8_90047dd2
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0YXNjaWlpaWkC6FLg2AI6rpN488V3+BFeAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -759,7 +759,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_binary_utf8_binary_utf8_usascii_d1d8a2b0
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0YXNjaWlpaWkC6FLg2AI6rpN488V3+BFe8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -772,7 +772,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_utf8_binary_utf8_usascii_binary_utf8_bd9d3ac1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0YXNjaWlpaWkAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -785,7 +785,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_binary_utf8_usascii_utf8_binary_25a66421
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0YXNjaWlpaWkAAAAAAAAAAPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -798,7 +798,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_binary_utf8_utf8_binary_usascii_c3c2505c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0YXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwLoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -811,7 +811,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_utf8_binary_utf8_utf8_usascii_binary_c8701dcc
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koTg4ODg4Yml0YXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -824,7 +824,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_usascii_binary_binary_utf8_utf8_92c8ca57
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAODg4ODhiaXQC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -837,7 +837,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_usascii_binary_utf8_binary_utf8_a03bc6f3
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAODg4ODhiaXRhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -850,7 +850,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_usascii_binary_utf8_utf8_binary_88c39c4f
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAODg4ODhiaXRhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -863,7 +863,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_usascii_utf8_binary_binary_utf8_598e267f
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWk4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -876,7 +876,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_usascii_utf8_binary_utf8_binary_558a1212
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWk4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -889,7 +889,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_usascii_utf8_utf8_binary_binary_a0347e5d
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -902,7 +902,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_utf8_binary_binary_usascii_utf8_b40e58aa
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpODg4ODhiaXQC6FLg2AI6rpN488V3+BFeAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -915,7 +915,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_utf8_binary_binary_utf8_usascii_85ba58f6
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpODg4ODhiaXQC6FLg2AI6rpN488V3+BFe8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -928,7 +928,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_utf8_utf8_binary_usascii_binary_utf8_3c2764a9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpODg4ODhiaXQAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -941,7 +941,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_utf8_binary_usascii_utf8_binary_d67fd879
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpODg4ODhiaXQAAAAAAAAAAPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -954,7 +954,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_utf8_binary_utf8_binary_usascii_812232b1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpODg4ODhiaXTwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwLoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -967,7 +967,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_utf8_utf8_binary_utf8_usascii_binary_23f3a7c3
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpODg4ODhiaXTwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -980,7 +980,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_utf8_usascii_binary_binary_utf8_35643bc0
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAAA4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -993,7 +993,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_binary_utf8_utf8_usascii_binary_utf8_binary_9421ed8f
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAAA4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1006,7 +1006,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_utf8_usascii_utf8_binary_binary_d229fc2d
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1019,7 +1019,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_utf8_utf8_binary_binary_usascii_397e216d
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -1032,7 +1032,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_binary_utf8_utf8_utf8_binary_usascii_binary_2b0ca2e9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI84ODg4OGJpdAAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -1045,7 +1045,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_binary_utf8_utf8_utf8_usascii_binary_binary_b2deaf1c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAADg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1058,7 +1058,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_binary_binary_binary_utf8_utf8_utf8_a71212ca
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1071,7 +1071,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_binary_binary_utf8_binary_utf8_utf8_f4851f81
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKEC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1084,7 +1084,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_binary_binary_utf8_utf8_binary_utf8_f50ee725
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKFhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1097,7 +1097,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_binary_binary_utf8_utf8_utf8_binary_1d51814e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdPCfpKHwn6Sh8J+koQDwn6Sh8J+kofCfpKFhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1110,7 +1110,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_binary_utf8_binary_binary_utf8_utf8_f6629ca2
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShODg4ODhiaXQC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1123,7 +1123,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_binary_utf8_binary_utf8_binary_utf8_428f90e7
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShODg4ODhiaXRhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1136,7 +1136,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_binary_utf8_binary_utf8_utf8_binary_7bac4a4e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShODg4ODhiaXRhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1149,7 +1149,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_binary_utf8_utf8_binary_binary_utf8_25b291b0
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWk4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1162,7 +1162,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_binary_utf8_utf8_binary_utf8_binary_71983945
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWk4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1175,7 +1175,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_binary_utf8_utf8_utf8_binary_binary_5f331461
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1188,7 +1188,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_utf8_binary_binary_binary_utf8_utf8_23f26c43
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6Sh4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1201,7 +1201,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_utf8_binary_binary_utf8_binary_utf8_9d6c773b
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6Sh4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXRhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1214,7 +1214,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_utf8_binary_binary_utf8_utf8_binary_25491a82
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6Sh4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXRhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1227,7 +1227,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_utf8_binary_utf8_binary_binary_utf8_c58324a9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6Sh4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPYXNjaWlpaWk4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1240,7 +1240,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_utf8_binary_utf8_binary_utf8_binary_2d95f63c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6Sh4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPYXNjaWlpaWk4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1253,7 +1253,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_utf8_binary_utf8_utf8_binary_binary_3463b59d
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6Sh4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1266,7 +1266,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_utf8_utf8_binary_binary_binary_utf8_5d4cd68a
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1279,7 +1279,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_usascii_utf8_utf8_binary_binary_utf8_binary_46f91dc1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1292,7 +1292,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_utf8_utf8_binary_utf8_binary_binary_cbd8962b
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1305,7 +1305,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_usascii_utf8_utf8_utf8_binary_binary_binary_d3de0de8
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     AAAAAAAAAADwn6Sh8J+kofCfpKEA8J+kofCfpKHwn6ShYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1318,7 +1318,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_binary_binary_usascii_utf8_utf8_21bb32f8
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXgAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1331,7 +1331,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_binary_binary_utf8_usascii_utf8_b0c8dc26
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXmFzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1344,7 +1344,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_binary_binary_utf8_utf8_usascii_5f168ae1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXmFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -1357,7 +1357,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_binary_binary_usascii_binary_utf8_utf8_07f43385
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AAAAAAAAAAAC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1370,7 +1370,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_binary_usascii_utf8_binary_utf8_bf3ae198
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AAAAAAAAAABhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1383,7 +1383,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_binary_usascii_utf8_utf8_binary_f3ea132b
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AAAAAAAAAABhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1396,7 +1396,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_binary_utf8_binary_usascii_utf8_efda94fb
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0YXNjaWlpaWkC6FLg2AI6rpN488V3+BFeAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1409,7 +1409,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_binary_utf8_binary_utf8_usascii_bd6fc6cf
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0YXNjaWlpaWkC6FLg2AI6rpN488V3+BFe8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -1422,7 +1422,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_binary_binary_utf8_usascii_binary_utf8_805510be
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0YXNjaWlpaWkAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1435,7 +1435,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_binary_utf8_usascii_utf8_binary_fe0c1663
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0YXNjaWlpaWkAAAAAAAAAAPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1448,7 +1448,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_binary_utf8_utf8_binary_usascii_978eda1e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0YXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwLoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -1461,7 +1461,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_binary_binary_utf8_utf8_usascii_binary_7f1f63ad
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0YXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -1474,7 +1474,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_usascii_binary_binary_utf8_utf8_8fd88250
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jwAAAAAAAAAAODg4ODhiaXQC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1487,7 +1487,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_usascii_binary_utf8_binary_utf8_290fdded
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jwAAAAAAAAAAODg4ODhiaXRhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1500,7 +1500,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_usascii_binary_utf8_utf8_binary_2e8ce92e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jwAAAAAAAAAAODg4ODhiaXRhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1513,7 +1513,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_usascii_utf8_binary_binary_utf8_34700f6f
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jwAAAAAAAAAAYXNjaWlpaWk4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1526,7 +1526,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_usascii_utf8_binary_utf8_binary_559136aa
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jwAAAAAAAAAAYXNjaWlpaWk4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1539,7 +1539,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_usascii_utf8_utf8_binary_binary_254cb58e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jwAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1552,7 +1552,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_utf8_binary_binary_usascii_utf8_9366d5c2
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpODg4ODhiaXQC6FLg2AI6rpN488V3+BFeAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1565,7 +1565,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_utf8_binary_binary_utf8_usascii_5799ded2
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpODg4ODhiaXQC6FLg2AI6rpN488V3+BFe8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -1578,7 +1578,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_binary_utf8_binary_usascii_binary_utf8_778848ea
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpODg4ODhiaXQAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1591,7 +1591,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_utf8_binary_usascii_utf8_binary_c65a5987
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpODg4ODhiaXQAAAAAAAAAAPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1604,7 +1604,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_utf8_binary_utf8_binary_usascii_c1410f66
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpODg4ODhiaXTwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwLoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -1617,7 +1617,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_binary_utf8_binary_utf8_usascii_binary_26f9e349
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpODg4ODhiaXTwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -1630,7 +1630,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_utf8_usascii_binary_binary_utf8_927ae2cd
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpAAAAAAAAAAA4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1643,7 +1643,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_binary_utf8_usascii_binary_utf8_binary_13dc2d3b
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpAAAAAAAAAAA4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1656,7 +1656,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_utf8_usascii_utf8_binary_binary_e7c99bb8
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1669,7 +1669,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_utf8_utf8_binary_binary_usascii_589018f5
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -1682,7 +1682,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_binary_utf8_utf8_binary_usascii_binary_39966668
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI84ODg4OGJpdAAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -1695,7 +1695,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_binary_utf8_utf8_usascii_binary_binary_ac72fcbb
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koeKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j2FzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAADg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1708,7 +1708,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_usascii_binary_binary_binary_utf8_utf8_709f258c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAA4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFeYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1721,7 +1721,7 @@
     iv5: *iv5
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_usascii_binary_binary_utf8_binary_utf8_7c759f86
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAA4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXRhc2NpaWlpaQLoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1734,7 +1734,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_usascii_binary_binary_utf8_utf8_binary_0fe536f1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAA4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXRhc2NpaWlpafCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1747,7 +1747,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_usascii_binary_utf8_binary_binary_utf8_69edf179
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAA4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPYXNjaWlpaWk4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1760,7 +1760,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_usascii_binary_utf8_binary_utf8_binary_2ef1c008
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAA4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPYXNjaWlpaWk4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1773,7 +1773,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_usascii_binary_utf8_utf8_binary_binary_deb2781c
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAA4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1786,7 +1786,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_usascii_utf8_binary_binary_binary_utf8_19005acf
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWnim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1799,7 +1799,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_usascii_utf8_binary_binary_utf8_binary_77491cb9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWnim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1812,7 +1812,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_usascii_utf8_binary_utf8_binary_binary_3b3223bd
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWnim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1825,7 +1825,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_usascii_utf8_utf8_binary_binary_binary_cbfc6fb3
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koQAAAAAAAAAAYXNjaWlpaWnwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1838,7 +1838,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_binary_binary_binary_usascii_utf8_0f40b8eb
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFeAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1851,7 +1851,7 @@
     iv5: *iv3
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_utf8_binary_binary_binary_utf8_usascii_bc1d7063
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQC6FLg2AI6rpN488V3+BFe8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAA==
@@ -1864,7 +1864,7 @@
     iv5: *iv6
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_utf8_binary_binary_usascii_binary_utf8_a614e821
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQAAAAAAAAAAALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1877,7 +1877,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_utf8_binary_binary_usascii_utf8_binary_d77d0ffa
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXQAAAAAAAAAAPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1890,7 +1890,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_binary_binary_utf8_binary_usascii_6e53a9c4
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwLoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -1903,7 +1903,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_utf8_binary_binary_utf8_usascii_binary_d0b63e5b
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPODg4ODhiaXTwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jwAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -1916,7 +1916,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_binary_usascii_binary_binary_utf8_63d8c552
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAAA4ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -1929,7 +1929,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_utf8_binary_usascii_binary_utf8_binary_a32af3d1
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAAA4ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -1942,7 +1942,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_binary_usascii_utf8_binary_binary_af833032
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iPAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1955,7 +1955,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_binary_utf8_binary_binary_usascii_94127997
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -1968,7 +1968,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_utf8_binary_utf8_binary_usascii_binary_12edbb13
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI84ODg4OGJpdAAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -1981,7 +1981,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_binary_utf8_usascii_binary_binary_3dfa6630
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP4pu977iP8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAADg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -1994,7 +1994,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_usascii_binary_binary_binary_utf8_9214db18
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV7wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jw==
@@ -2007,7 +2007,7 @@
     iv5: *iv2
     iv6: *iv6
 - name: RecordedTest#test_encoding_utf8_utf8_usascii_binary_binary_utf8_binary_785864e9
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdPCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq77iPAuhS4NgCOq6TePPFd/gRXg==
@@ -2020,7 +2020,7 @@
     iv5: *iv6
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_usascii_binary_utf8_binary_binary_9cf04b37
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAADim73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/wn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -2033,7 +2033,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_usascii_utf8_binary_binary_binary_4f0f608b
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlpAAAAAAAAAADwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+Mqu+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -2046,7 +2046,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_utf8_binary_binary_binary_usascii_d6286344
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdALoUuDYAjquk3jzxXf4EV4AAAAAAAAAAA==
@@ -2059,7 +2059,7 @@
     iv5: *iv2
     iv6: *iv3
 - name: RecordedTest#test_encoding_utf8_utf8_utf8_binary_binary_usascii_binary_62490583
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI84ODg4OGJpdAAAAAAAAAAAAuhS4NgCOq6TePPFd/gRXg==
@@ -2072,7 +2072,7 @@
     iv5: *iv3
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_utf8_binary_usascii_binary_binary_2dab4bd3
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI/im73vuI8AAAAAAAAAADg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -2085,7 +2085,7 @@
     iv5: *iv1
     iv6: *iv2
 - name: RecordedTest#test_encoding_utf8_utf8_utf8_usascii_binary_binary_binary_8b848d4e
-  required_features: [binary_data]
+  features: [binary_data]
   template: *template
   expected: !binary |-
     8J+kofCfpKHwn6ShAPCfpKHwn6Sh8J+koWFzY2lpaWlp8J+MqvCfjKrwn4yq8J+MqvCfjKrwn4yq8J+MqvCfjKrvuI8AAAAAAAAAAOKbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4j+Kbve+4jzg4ODg4Yml0AuhS4NgCOq6TePPFd/gRXg==
@@ -2182,13 +2182,13 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_conditional_tag_returns_false_when_the_operator_is_unknown_5c21eaec8
-  required_features:
+  features:
     - lax_parsing
   expected: ''
   template: "{% if a true %}{% endif %}"
   environment: {}
 - name: RecordedTest#test_correct_error_when_unknown_operators_are_used_in_elsif_and_if_is_false_0589cd983
-  required_features:
+  features:
     - lax_parsing
   expected: 'Liquid error (line 1): Unknown operator true'
   template: |-
@@ -2199,20 +2199,20 @@
     {% endif %}
   environment: {}
 - name: RecordedTest#test_does_not_ignore_unknown_operators_when_the_tags_body_is_empty_but_there_is_an_else_c330ba20b
-  required_features:
+  features:
     - lax_parsing
   expected: 'Liquid error (line 1): Unknown operator true'
   template: "{% if true true %}{% else %}1{% endif %}"
   environment: {}
 - name: RecordedTest#test_does_not_output_error_when_short_circuit_evaluation_avoids_using_the_unknown_operator_68463361a
-  required_features:
+  features:
     - lax_parsing
   expected: b
   template: "{% if dynamic and true true %}a{% else %}b{% endif %}"
   environment:
     dynamic: false
 - name: RecordedTest#test_does_not_output_error_when_unknown_operators_are_used_in_elsif_but_if_is_true_9f923dacb
-  required_features:
+  features:
     - lax_parsing
   expected: a
   template: "{% if true %}a{% elsif true true %}b{% endif %}"
@@ -2254,7 +2254,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_ignore_unknown_operators_when_the_tags_body_is_empty_c0bf47389
-  required_features:
+  features:
     - lax_parsing
   expected: ''
   template: "{% if true true %}{% endif %}"
@@ -2397,20 +2397,20 @@
   filesystem:
     child: "{{ item }}"
 - name: RecordedTest#test_rendering_include_asset_not_found_error_from_snippet_9b4ebca33
-  required_features: [shopify_error_handling]
+  features: [shopify_error_handling]
   expected: 'Liquid error (foo line 1): Could not find asset bar'
   template: "{% include 'foo' %}"
   environment: {}
   filesystem:
     foo: "{% include 'bar' %}"
 - name: RecordedTest#test_rendering_include_tag_with_file_does_not_exist_does_not_repeat_dot_liquid_extension_da1add0e3
-  required_features: [shopify_error_format]
+  features: [shopify_error_format]
   expected: 'Liquid error (line 1): Could not find asset foo.liquid'
   template: "{% include 'foo.liquid' %}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_rendering_include_tag_with_variables_and_file_does_not_exist_528dba57f
-  required_features: [shopify_error_format]
+  features: [shopify_error_format]
   expected: 'Liquid error (line 1): Could not find asset locale_variables'
   template: "{% include 'locale_variables' echo1: 'test123' %}"
   environment: {}
@@ -2510,7 +2510,7 @@
   environment:
     x: "\vGround\tcontrol\nto\rMajor\nTom."
 - name: RecordedTest#test_unsupported_operators_render_an_error_618870a92
-  required_features:
+  features:
     - lax_parsing
   expected: 'Liquid error (line 1): Unknown operator ='
   template: "{% if 0 = 0 %}NOPE{% endif %}"
@@ -2540,7 +2540,7 @@
     x: 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_0bf709cdb
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,0)y"
   template: "(4,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2548,7 +2548,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_30d06a02d
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,6)y"
   template: "(6,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2558,7 +2558,7 @@
     b: *1
   filesystem: {}
 - name: RecordedTest#test_array_equality_acb840454
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,0)n"
   template: "(7,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2567,7 +2567,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_177c8451b
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,1)y"
   template: "(7,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2577,7 +2577,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_66cb5d9e8
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,2)n"
   template: "(7,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2588,7 +2588,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_942654985
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,3)y"
   template: "(7,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2598,7 +2598,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_5fcfca576
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,4)n"
   template: "(7,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2607,7 +2607,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_52682e874
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,5)y"
   template: "(7,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2617,7 +2617,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_d7fbf88ea
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,6)n"
   template: "(7,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2628,7 +2628,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_883546623
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,6)n"
   template: "(3,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2639,7 +2639,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_79693fe3c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,5)y"
   template: "(3,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2649,7 +2649,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_b03a01068
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,4)n"
   template: "(3,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2658,7 +2658,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_28ad15de5
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,3)y"
   template: "(3,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2667,7 +2667,7 @@
     b: *2
   filesystem: {}
 - name: RecordedTest#test_array_equality_ef0cb720f
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,7)y"
   template: "(7,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2676,7 +2676,7 @@
     b: *3
   filesystem: {}
 - name: RecordedTest#test_array_equality_89e0cea30
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,2)n"
   template: "(3,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2687,7 +2687,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_5ccaa46da
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,1)y"
   template: "(3,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2697,7 +2697,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_601794035
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,0)n"
   template: "(3,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2706,7 +2706,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_fe011c5b4
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,7)n"
   template: "(2,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2717,7 +2717,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_42a0bd643
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,6)y"
   template: "(2,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2729,7 +2729,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_8f51adcfc
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,5)n"
   template: "(2,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2740,7 +2740,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_6c527aed3
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,4)n"
   template: "(2,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2750,7 +2750,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_6dde0dcf7
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,3)n"
   template: "(2,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2761,7 +2761,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_6276c612b
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,2)y"
   template: "(2,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2771,7 +2771,7 @@
     b: *4
   filesystem: {}
 - name: RecordedTest#test_array_equality_e13b66d26
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,1)n"
   template: "(2,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2782,7 +2782,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_8f3d8f269
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,0)n"
   template: "(2,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2792,7 +2792,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_4c29cbf04
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,7)y"
   template: "(1,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2802,7 +2802,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_5a66f2593
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,6)n"
   template: "(1,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2813,7 +2813,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_90f598e19
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,5)y"
   template: "(1,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2823,7 +2823,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_813c1adf9
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,4)n"
   template: "(1,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2832,7 +2832,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_8af728851
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,3)y"
   template: "(1,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2842,7 +2842,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_44a21d70e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,2)n"
   template: "(1,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2853,7 +2853,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_97cd5b0c9
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,1)y"
   template: "(1,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2862,7 +2862,7 @@
     b: *5
   filesystem: {}
 - name: RecordedTest#test_array_equality_5e12d42dd
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,0)n"
   template: "(1,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2871,7 +2871,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_2ac642825
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,7)n"
   template: "(0,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2880,7 +2880,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_a7165c91e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,6)n"
   template: "(0,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2890,7 +2890,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_4e80dd7e0
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,5)n"
   template: "(0,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2899,7 +2899,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_82ca91136
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,4)y"
   template: "(0,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2907,7 +2907,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_37c61c7ec
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,3)n"
   template: "(0,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2916,7 +2916,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_f10d67b70
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,2)n"
   template: "(0,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2926,7 +2926,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_5c8001355
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,1)n"
   template: "(0,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2935,7 +2935,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_1f9d960e5
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,0)y"
   template: "(0,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2943,7 +2943,7 @@
     b: *6
   filesystem: {}
 - name: RecordedTest#test_array_equality_6b83cba66
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,7)y"
   template: "(3,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2953,7 +2953,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_f48a900fc
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,1)n"
   template: "(4,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2962,7 +2962,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_c6e7cfc53
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,2)n"
   template: "(4,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2972,7 +2972,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_9fabb3d69
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,3)n"
   template: "(4,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2981,7 +2981,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_d2b2dadd4
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,4)y"
   template: "(4,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2989,7 +2989,7 @@
     b: *7
   filesystem: {}
 - name: RecordedTest#test_array_equality_b08bddfbb
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,5)n"
   template: "(4,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -2998,7 +2998,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_53787360a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,6)n"
   template: "(4,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3008,7 +3008,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_2c7a0fe4a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,7)n"
   template: "(4,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3017,7 +3017,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_2b8d64542
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,0)n"
   template: "(5,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3026,7 +3026,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_7527aba0d
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,1)y"
   template: "(5,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3036,7 +3036,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_1dfbfd714
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,2)n"
   template: "(5,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3047,7 +3047,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_0e0558d41
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,3)y"
   template: "(5,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3057,7 +3057,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_7b1d9698c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,4)n"
   template: "(5,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3066,7 +3066,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_06368e270
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,5)y"
   template: "(5,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3075,7 +3075,7 @@
     b: *8
   filesystem: {}
 - name: RecordedTest#test_array_equality_17eb50c09
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,6)n"
   template: "(5,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3086,7 +3086,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_d8bd79d9d
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,7)y"
   template: "(5,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3096,7 +3096,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_e37dfe191
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,0)n"
   template: "(6,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3106,7 +3106,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_10f72890c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,1)n"
   template: "(6,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3117,7 +3117,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_7f20cc13c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,2)y"
   template: "(6,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3129,7 +3129,7 @@
     - 2
   filesystem: {}
 - name: RecordedTest#test_array_equality_95643fa49
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,3)n"
   template: "(6,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3140,7 +3140,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_5ec79d27f
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,4)n"
   template: "(6,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3150,7 +3150,7 @@
     b: []
   filesystem: {}
 - name: RecordedTest#test_array_equality_24802c9ea
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,5)n"
   template: "(6,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3161,7 +3161,7 @@
     - 1
   filesystem: {}
 - name: RecordedTest#test_array_equality_6a75997f8
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,7)n"
   template: "(6,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -3252,7 +3252,7 @@
     bar: 10
   filesystem: {}
 - name: RecordedTest#test_assign_binds_to_the_template_name_with_much_quirks-1_b2bd69483
-  required_features:
+  features:
     - shopify_includes
   expected: blueberry-other_flavor
   template: '{%- include "product" -%}
@@ -3275,7 +3275,7 @@
       {%- assign product = all_products["other_product"] -%}
       {{ product.flavor }}-{{ all_products["other_product"].flavor -}}
 - name: RecordedTest#test_assign_binds_to_the_template_name_with_much_quirks-2_b9250013b
-  required_features:
+  features:
     - shopify_includes
   expected: other_flavor-other_flavorother_flavor-other_flavor
   template: |
@@ -3298,7 +3298,7 @@
       {%- assign product = all_products["other_product"] -%}
       {{ product.flavor }}-{{ all_products["other_product"].flavor -}}
 - name: RecordedTest#test_assign_binds_to_the_template_name_with_much_quirks-3_1fcf60910
-  required_features:
+  features:
     - shopify_includes
   expected: blueberry-other_flavorother_flavor-other_flavor
   template: |
@@ -3321,7 +3321,7 @@
       {%- assign product = all_products["other_product"] -%}
       {{ product.flavor }}-{{ all_products["other_product"].flavor -}}
 - name: RecordedTest#test_assign_which_raises_does_not_assign_and_does_not_output_error_7bd3f534f
-  required_features: [runtime_drops, shopify_filters]
+  features: [runtime_drops, shopify_filters]
   expected: |2+
 
 
@@ -3353,7 +3353,7 @@
   environment:
     a: []
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "a['size'] returns nil which is blank in Shopify. Standard Ruby nil lacks blank?"
 - name: RecordedTest#test_auto_methods_c35cdf16c
   expected: 4,blank
@@ -3365,7 +3365,7 @@
     - 3
     - wtf
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "a['size'] returns nil which is blank in Shopify. Standard Ruby nil lacks blank?"
 - name: RecordedTest#test_auto_methods_23431d0f8
   expected: 1,
@@ -3441,7 +3441,7 @@
     h:
       a: 1
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "h['size'] returns nil which is blank in Shopify. Standard Ruby nil lacks blank?"
 - name: RecordedTest#test_base64_decode_filter_54a7308e9
   expected: bar
@@ -3595,7 +3595,7 @@
   environment:
     x: false
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Shopify blank includes false. Standard liquid blank is just empty string."
 - name: RecordedTest#test_blank_a322ef41c
   expected: is not blank
@@ -3618,7 +3618,7 @@
   environment:
     h: {}
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Shopify blank includes empty hashes. Standard liquid blank is just empty string."
 - name: RecordedTest#test_blank_12cb41d0c
   expected: "n"
@@ -3633,7 +3633,7 @@
   environment:
     x: " "
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Shopify blank includes whitespace-only strings. Standard liquid blank is just empty string."
 - name: RecordedTest#test_blank_c068a3ab1
   expected: "y"
@@ -3641,10 +3641,10 @@
   environment:
     a: []
   filesystem: {}
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Shopify blank includes empty arrays. Standard liquid blank is just empty string."
 - name: RecordedTest#test_bool_key_c7d471301
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -3653,7 +3653,7 @@
       true: "y"
   filesystem: {}
 - name: RecordedTest#test_bool_key_053c698c0
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -3662,7 +3662,7 @@
       true: "y"
   filesystem: {}
 - name: RecordedTest#test_bool_key_f2a45499d
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -3671,7 +3671,7 @@
       true: "y"
   filesystem: {}
 - name: RecordedTest#test_bool_key_9c9d20806
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -3749,7 +3749,7 @@
   environment:
     encoded_bytes: SWJ3wY8OTdgJ+GjR
   filesystem: {}
-  required_features: [shopify_string_access]
+  features: [shopify_string_access]
   hint: "Shopify supports string.first to get first character. Standard liquid-ruby doesn't."
 - name: RecordedTest#test_bytes_last_1ac9e3dfb
   expected: e
@@ -3757,7 +3757,7 @@
   environment:
     name: mike
   filesystem: {}
-  required_features: [shopify_string_access]
+  features: [shopify_string_access]
   hint: "Shopify supports string.last to get last character. Standard liquid-ruby doesn't."
 - name: RecordedTest#test_bytes_size_ee552c07e
   expected: ''
@@ -4222,7 +4222,7 @@
     b: 2
   filesystem: {}
 - name: RecordedTest#test_compiles_files_with_unconventional_names_52e6df11b
-  required_features:
+  features:
     - shopify_includes
   expected: |-
     case-extension
@@ -4246,7 +4246,7 @@
     '': no-basename
     a b: spaces
 - name: RecordedTest#test_contains_188808998
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4263,7 +4263,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_e0b16b4bf
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4278,7 +4278,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_63cadb7e8
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4293,7 +4293,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_691d731c9
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if a contains b%}y{%else%}n{%endif%}"
@@ -4309,7 +4309,7 @@
     - true
   filesystem: {}
 - name: RecordedTest#test_contains_dc8ba9547
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{%if a contains b%}y{%else%}n{%endif%}"
@@ -4325,7 +4325,7 @@
     - true
   filesystem: {}
 - name: RecordedTest#test_contains_c91ceee8f
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if a contains b%}y{%else%}n{%endif%}"
@@ -4339,7 +4339,7 @@
     - true
   filesystem: {}
 - name: RecordedTest#test_contains_a01f9e979
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{%if a contains b%}y{%else%}n{%endif%}"
@@ -4353,7 +4353,7 @@
     - true
   filesystem: {}
 - name: RecordedTest#test_contains_66f7834f6
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4368,7 +4368,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_b30528265
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4383,7 +4383,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_d3921c296
-  required_features:
+  features:
     - activesupport
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4398,7 +4398,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_83c205efd
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4415,7 +4415,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_05d00bfac
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
@@ -4430,7 +4430,7 @@
       - 2
   filesystem: {}
 - name: RecordedTest#test_contains_always_false_for_falsy_targets_c906fc9dc
-  required_features:
+  features:
     - activesupport
   expected: 'no'
   template: "{% if a contains b %}yes{% else %}no{% endif %}"
@@ -4440,7 +4440,7 @@
     b: false
   filesystem: {}
 - name: RecordedTest#test_contains_casts_to_string_if_left_is_string_39ca4d1a1
-  required_features:
+  features:
     - activesupport
   expected: 'yes'
   template: "{% if a contains b %}yes{% else %}no{% endif %}"
@@ -4449,7 +4449,7 @@
     b: 2
   filesystem: {}
 - name: RecordedTest#test_contains_operator_with_array_not_matching_type_e7aecf6a7
-  required_features:
+  features:
     - activesupport
   expected: 'no'
   template: "{% if a contains b %}yes{% else %}no{% endif %}"
@@ -4461,7 +4461,7 @@
     b: '2'
   filesystem: {}
 - name: RecordedTest#test_contains_operator_with_string_and_false_87aa46715
-  required_features:
+  features:
     - activesupport
   expected: ''
   template: "{% if a contains b %}yes{% endif %}"
@@ -4470,7 +4470,7 @@
     b: false
   filesystem: {}
 - name: RecordedTest#test_contains_operator_with_string_and_nil_4d77ff9b8
-  required_features:
+  features:
     - activesupport
   expected: ''
   template: "{% if a contains b %}yes{% endif %}"
@@ -4479,7 +4479,7 @@
     b:
   filesystem: {}
 - name: RecordedTest#test_contains_operator_with_strings_b532debf2
-  required_features:
+  features:
     - activesupport
   expected: 'yes'
   template: "{% if a contains b %}yes{% else %}no{% endif %}"
@@ -4512,7 +4512,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_data_escaping_9e876fe0d
-  required_features:
+  features:
     - lax_parsing
   expected: "\n\r\t'\"\\\U0001F44B\U0001F3FB"
   template: "\n\r\t'\"\\\U0001F44B\U0001F3FB{{_✅}}"
@@ -4530,7 +4530,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_display_non_utf8_string_6d9a4e58e
-  required_features: [binary_data]
+  features: [binary_data]
   expected: !binary |-
     SGVsbG8sIMA=
   template: "{{ input }}"
@@ -4539,7 +4539,7 @@
       SGVsbG8sIMA=
   filesystem: {}
 - name: RecordedTest#test_dynamic_include_not_found_9d6ba106c
-  required_features: [shopify_error_handling]
+  features: [shopify_error_handling]
   expected: 'Liquid error (line 1): Could not find asset baz'
   template: "{% include template %}"
   environment:
@@ -4547,7 +4547,7 @@
   filesystem:
     foo: bar
 - name: RecordedTest#test_dynamic_include_not_found_two_9d6ba106a
-  required_features: [shopify_error_handling]
+  features: [shopify_error_handling]
   expected: 'Liquid error (line 1): Could not find asset BAz'
   template: "{% include template %}"
   environment:
@@ -4636,7 +4636,7 @@
     flavors: []
   filesystem: {}
 - name: RecordedTest#test_equality_a815b7f6a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,2)n"
   template: "(4,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4646,7 +4646,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_4ba0c4dad
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,3)n"
   template: "(4,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4655,7 +4655,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_78afa6653
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,4)y"
   template: "(4,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4663,7 +4663,7 @@
     b: *9
   filesystem: {}
 - name: RecordedTest#test_equality_080c1667e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,7)y"
   template: "(3,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4673,7 +4673,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_572248119
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,6)n"
   template: "(3,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4684,7 +4684,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_b73d04416
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,6)n"
   template: "(4,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4694,7 +4694,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_1acd92938
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,7)n"
   template: "(4,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4703,7 +4703,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_79d48239f
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,0)n"
   template: "(5,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4712,7 +4712,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_b8d575167
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,1)y"
   template: "(5,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4722,7 +4722,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_c191dcccb
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,2)n"
   template: "(5,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4733,7 +4733,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_bf03b78eb
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,3)y"
   template: "(5,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4743,7 +4743,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_ba794d264
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,4)n"
   template: "(5,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4752,7 +4752,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_6f852d8e3
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,5)y"
   template: "(3,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4762,7 +4762,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_651574345
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,3)y"
   template: "(3,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4771,7 +4771,7 @@
     b: *10
   filesystem: {}
 - name: RecordedTest#test_equality_c03ff9183
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,4)n"
   template: "(3,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4780,7 +4780,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_d79c4cb55
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,6)n"
   template: "(5,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4791,7 +4791,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_3b0db3259
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,1)y"
   template: "(1,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4800,7 +4800,7 @@
     b: *11
   filesystem: {}
 - name: RecordedTest#test_equality_bd0680f5a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,0)y"
   template: "(4,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4808,7 +4808,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_746213c6d
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,7)n"
   template: "(6,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4819,7 +4819,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_ee9b21e78
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,7)n"
   template: "(0,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4828,7 +4828,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_2ea0b47d4
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,6)n"
   template: "(0,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4838,7 +4838,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_f1db4f13e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,2)n"
   template: "(1,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4849,7 +4849,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_a95f5e3a9
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,3)y"
   template: "(1,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4859,7 +4859,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_11e1e4e8c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,4)n"
   template: "(1,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4868,7 +4868,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_d95e6f8fc
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,5)y"
   template: "(1,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4878,7 +4878,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_c07131bea
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,0)n"
   template: "(7,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4887,7 +4887,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_4fdad3c27
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,5)n"
   template: "(0,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4896,7 +4896,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_8fd696fe9
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,4)y"
   template: "(0,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4904,7 +4904,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_19e5ac63e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,6)y"
   template: "(6,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4914,7 +4914,7 @@
     b: *12
   filesystem: {}
 - name: RecordedTest#test_equality_6bb657da3
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,5)n"
   template: "(6,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4925,7 +4925,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_737ac4596
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,4)n"
   template: "(6,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4935,7 +4935,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_4cd40ee19
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,3)n"
   template: "(6,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4946,7 +4946,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_8c99c5e09
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,2)y"
   template: "(6,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4958,7 +4958,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_9c07ffbc5
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,1)n"
   template: "(6,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4969,7 +4969,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_cdc5b02af
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,0)n"
   template: "(1,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4978,7 +4978,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_363196cb6
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(6,0)n"
   template: "(6,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4988,7 +4988,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_667e2baa1
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,1)y"
   template: "(7,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -4998,7 +4998,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_0988d5bf2
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,6)n"
   template: "(1,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5009,7 +5009,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_bc128c27a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(1,7)y"
   template: "(1,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5019,7 +5019,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_8bcb67279
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,0)n"
   template: "(2,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5029,7 +5029,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_de06d7025
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,1)n"
   template: "(2,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5040,7 +5040,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_0148d6700
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,2)y"
   template: "(2,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5050,7 +5050,7 @@
     b: *13
   filesystem: {}
 - name: RecordedTest#test_equality_9108aba65
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,3)n"
   template: "(2,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5061,7 +5061,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_ffb667541
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,3)n"
   template: "(0,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5070,7 +5070,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_3629b980e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,4)n"
   template: "(2,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5080,7 +5080,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_046e1b5d0
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,2)n"
   template: "(0,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5090,7 +5090,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_53bb9e5b2
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,5)n"
   template: "(2,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5101,7 +5101,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_bc36f44d6
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,6)y"
   template: "(2,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5113,7 +5113,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_9f580f4a4
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(2,7)n"
   template: "(2,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5124,7 +5124,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_1d2d3788c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,0)n"
   template: "(3,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5133,7 +5133,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_cc53da9ab
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,7)y"
   template: "(5,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5143,7 +5143,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_2e000f0ff
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,1)n"
   template: "(0,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5152,7 +5152,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_4109f0676
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,2)n"
   template: "(7,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5163,7 +5163,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_bb299a5d6
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(0,0)y"
   template: "(0,0){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5171,7 +5171,7 @@
     b: *14
   filesystem: {}
 - name: RecordedTest#test_equality_80790cf44
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,2)n"
   template: "(3,2){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5182,7 +5182,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_0604d6615
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(3,1)y"
   template: "(3,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5192,7 +5192,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_a4c345725
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(5,5)y"
   template: "(5,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5201,7 +5201,7 @@
     b: *15
   filesystem: {}
 - name: RecordedTest#test_equality_3f5b4f148
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,5)n"
   template: "(4,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5210,7 +5210,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_6c1374a33
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,7)y"
   template: "(7,7){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5219,7 +5219,7 @@
     b: *16
   filesystem: {}
 - name: RecordedTest#test_equality_3408a7d9b
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,6)n"
   template: "(7,6){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5230,7 +5230,7 @@
       b: 2
   filesystem: {}
 - name: RecordedTest#test_equality_37610c451
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,5)y"
   template: "(7,5){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5240,7 +5240,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_849ea560e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(4,1)n"
   template: "(4,1){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5249,7 +5249,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_equality_e4a24d991
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,4)n"
   template: "(7,4){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5258,7 +5258,7 @@
     b: {}
   filesystem: {}
 - name: RecordedTest#test_equality_033b8b1d3
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "(7,3)y"
   template: "(7,3){% if a == b %}y{%else%}n{%endif%}"
   environment:
@@ -5268,7 +5268,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_05fff3843
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5314,7 +5314,7 @@
     b: a
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_07a79164e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5338,7 +5338,7 @@
     b: 1.0
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_0e4b4dde0
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5362,7 +5362,7 @@
     b:
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_ba4c0069b
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5393,7 +5393,7 @@
     b: false
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_0ce277577
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5431,7 +5431,7 @@
     b: true
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_750a27a39
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5551,7 +5551,7 @@
     b: a
   filesystem: {}
 - name: RecordedTest#test_errors_when_comparing_uncomparable_types_624e423c0
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{% if a < b %}something{% endif %}"
   environment:
@@ -5576,7 +5576,7 @@
       alt:
   filesystem: {}
 - name: RecordedTest#test_filter_hash_argument_has_correct_key_order_e77960f36
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "primary: test\n\"a\" => 1, \"b\" => 2, \"c\" => 3, \"d\" => 4, \"e\"
     => 5, "
   template: "{{ 'test' | args_to_s: a: 1, b: 2, c: 3, d: 4, e: 5 }}"
@@ -12793,7 +12793,7 @@
     - bro
   filesystem: {}
 - name: RecordedTest#test_for_loop_on_object_with_limit_a6030f943
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: 'foobarbazqux
 
     '
@@ -12805,7 +12805,7 @@
       :hello: world
   filesystem: {}
 - name: RecordedTest#test_for_loop_on_object_with_offset_f66369261
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: 'helloworld
 
     '
@@ -21382,7 +21382,7 @@
     i: true
   filesystem: {}
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_50099cb54
-  required_features:
+  features:
     - shopify_includes
   expected: |
     other_product-
@@ -21405,7 +21405,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_56687d174
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-
@@ -21429,7 +21429,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_7d6f093f7
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-
@@ -21452,7 +21452,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_4213e9b69
-  required_features:
+  features:
     - shopify_includes
   expected: |
     foo is not a product-
@@ -21475,7 +21475,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_d446dd9a8
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-product
@@ -21498,7 +21498,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_a3b152cc9
-  required_features:
+  features:
     - shopify_includes
   expected: |
     other_product-
@@ -21521,7 +21521,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_d2d5a2c4d
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-
@@ -21546,7 +21546,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_bfa86ade0
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-
@@ -21571,7 +21571,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_367b036ba
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-other_product
@@ -21594,7 +21594,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_binds_the_expression_name_or_the_template_name_15942a706
-  required_features:
+  features:
     - shopify_includes
   expected: |
     product-product
@@ -21619,7 +21619,7 @@
     product: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
     foo: "{{ product.name }}-{{ other_product_with_explicit_binding.name }}\n"
 - name: RecordedTest#test_include_recursive_af1515727
-  required_features:
+  features:
     - shopify_includes
   expected: |+
     0
@@ -21827,7 +21827,7 @@
       {{depth}}{% assign depth = depth | plus: 1 %}
       {% include 'foo' %}
 - name: RecordedTest#test_include_recursive_after_long_chain_of_ifs_fd300544e
-  required_features:
+  features:
     - shopify_includes
   expected: |+
     rendered
@@ -22105,7 +22105,7 @@
     - foo
   filesystem: {}
 - name: RecordedTest#test_int_key_b2d924401
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -22114,7 +22114,7 @@
       1: "y"
   filesystem: {}
 - name: RecordedTest#test_int_key_959411012
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -22123,7 +22123,7 @@
       1: "y"
   filesystem: {}
 - name: RecordedTest#test_int_key_f26e1d4c8
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -22132,7 +22132,7 @@
       1: "y"
   filesystem: {}
 - name: RecordedTest#test_int_key_d82edf6d2
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -22153,7 +22153,7 @@
     b: "666666\0"
   filesystem: {}
 - name: RecordedTest#test_integer_key_7b669b10c
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: huh
   template: "{{h[2]}}"
   environment:
@@ -22161,7 +22161,7 @@
       2: huh
   filesystem: {}
 - name: RecordedTest#test_integer_key_539a5b206
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: huh
   template: "{{h[b]}}"
   environment:
@@ -22170,7 +22170,7 @@
       2: huh
   filesystem: {}
 - name: RecordedTest#test_integer_key_737d732a6
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -22219,7 +22219,7 @@
     - a
   filesystem: {}
 - name: RecordedTest#test_jwt_0b15043ff
-  required_features:
+  features:
     - shopify_filters
   expected: '"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzbm93ZGV2aWwuY2EiLCJzdWIiOjEyMzQsImlhdCI6ICIwIgogICAgICAgICwiZXhwIjogIjAiCiAgICAgICAgLCJlbWFpbCI6InRvYmlAZXhhbXBsZS5jb20ifQ.KiA"'
   template: |
@@ -22347,19 +22347,19 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_native_filter_invalid_arity_99a37cdd0
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   expected: 'Liquid error (line 1): wrong number of arguments (given 1, expected 2..3)'
   template: "{{ 'hello world' | replace | asset_url }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_native_filter_invalid_arity_8ba189846
-  required_features: [runtime_drops, shopify_filters]
+  features: [runtime_drops, shopify_filters]
   expected: 'Liquid error (line 1): wrong number of arguments (given 2, expected 1)'
   template: "{{ 'foo.png' | asset_url: '200x' }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_native_filter_invalid_arity_1e6cd7909
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   expected: 'Liquid error (line 1): wrong number of arguments (given 1, expected 2..3)'
   template: "{{ 'hello world' | replace }}"
   environment: {}
@@ -22392,7 +22392,7 @@
     - 3
   filesystem: {}
 - name: RecordedTest#test_nil_key_c8c21159a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -22401,7 +22401,7 @@
       ! '': "y"
   filesystem: {}
 - name: RecordedTest#test_nil_key_e442c9113
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -22410,7 +22410,7 @@
       ! '': "y"
   filesystem: {}
 - name: RecordedTest#test_nil_key_3d271b639
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -22443,35 +22443,35 @@
     x: 1
   filesystem: {}
 - name: RecordedTest#test_number_variables_784001a16
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: '1'
   template: "{{ x }}"
   environment:
     x: 1
   filesystem: {}
 - name: RecordedTest#test_number_variables_edae2a053
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: NaN
   template: "{{ x }}"
   environment:
     x: .nan
   filesystem: {}
 - name: RecordedTest#test_number_variables_9dc50eeff
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: '1.1'
   template: "{{ x }}"
   environment:
     x: 1.1
   filesystem: {}
 - name: RecordedTest#test_number_variables_a6d2a17b7
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: Infinity
   template: "{{ x }}"
   environment:
     x: .inf
   filesystem: {}
 - name: RecordedTest#test_number_variables_9709b923e
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: '20.060000000000002'
   template: "{{ x }}"
   environment:
@@ -22513,7 +22513,7 @@
     h: {}
   filesystem: {}
 - name: RecordedTest#test_output_of_filters_is_html_safe_for_integers_f3d4c8ee7
-  required_features:
+  features:
     - lax_parsing
   expected: 1000&lt;
   template: '{{ foo | truncate:  5, "<",  | escape }}'
@@ -22620,7 +22620,7 @@
   template: "{%for item in (2147483645..2147483647) %}->{{item}}{%endfor%}"
   filesystem: {}
 - name: RecordedTest#test_read_current_tags_correctly_6bb14e24f
-  required_features: [shopify_filters]
+  features: [shopify_filters]
   expected: hello,world
   template: "{{'hello' | read_current_tags | join: ','}}"
   environment:
@@ -22629,7 +22629,7 @@
     - world
   filesystem: {}
 - name: RecordedTest#test_read_current_tags_correctly_a11c1d3be
-  required_features: [shopify_filters]
+  features: [shopify_filters]
   expected: foo,bar
   template: "{% assign current_tags = 'foo,bar' | split: ',' %}{{'hello' | read_current_tags
     | join: ','}}"
@@ -22639,14 +22639,14 @@
     - world
   filesystem: {}
 - name: RecordedTest#test_read_template_correctly_d4c8dd1ec
-  required_features: [shopify_filters]
+  features: [shopify_filters]
   expected: blog
   template: "{{ 'hello' | read_template }}"
   environment:
     template: blog
   filesystem: {}
 - name: RecordedTest#test_read_template_correctly_2b5202fc1
-  required_features: [shopify_filters]
+  features: [shopify_filters]
   expected: article
   template: "{% assign template = 'article' %}{{ 'hello' | read_template }}"
   environment:
@@ -22730,13 +22730,13 @@
       %}{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}{% endif
       %}{% endif %}{% endif %}{% endif %}"
 - name: RecordedTest#test_render_for_missing_snippet_8c3eb0359
-  required_features: [shopify_error_handling]
+  features: [shopify_error_handling]
   expected: 'Liquid error (line 1): Could not find asset missing'
   template: "{% render 'missing' %}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_render_for_missing_snippet_with_case_1a518dd67
-  required_features: [shopify_error_handling]
+  features: [shopify_error_handling]
   expected: 'Liquid error (line 1): Could not find asset MISSSing'
   template: "{% render 'MISSSing' %}"
   environment: {}
@@ -22881,33 +22881,33 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_67c93827d
-  required_features: [runtime_drops, shopify_filters]
+  features: [runtime_drops, shopify_filters]
   expected: muffin (fake)
   template: "{{ muffin | fakey }}"
   environment:
     muffin: muffin
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_cannot_reach_instance_eval_cb4a6a167
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   expected: object_id
   template: "{{ 'object_id' | instance_eval }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_miss_f98681654
-  required_features: [runtime_drops]
+  features: [runtime_drops]
   expected: test
   template: "{{ 'test' | unknown }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_which_raises_e40958296
-  required_features: [runtime_drops, shopify_filters]
+  features: [runtime_drops, shopify_filters]
   expected: 'Liquid error (line 1): internal'
   template: "{{ muffin | raisy }}"
   environment:
     muffin: muffin
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_with_hash_parameter_1a5314d7d
-  required_features: [runtime_drops, shopify_filters]
+  features: [runtime_drops, shopify_filters]
   expected: MUFFIN
   template: '{{ muffin | modify_case: case: "upcase" }}'
   environment:
@@ -22993,7 +22993,7 @@
   filesystem:
     my snippet: All good here
 - name: RecordedTest#test_static_includes_delegates_to_file_system_4bc51e66c
-  required_features:
+  features:
     - shopify_includes
   expected: |
     child.liquid: child.liquid content
@@ -23006,7 +23006,7 @@
     child.liquid: child.liquid content
     child: child content
 - name: RecordedTest#test_static_render_delegates_to_file_system_a3f69e304
-  required_features:
+  features:
     - shopify_includes
   expected: |
     child.liquid: child.liquid content
@@ -23025,7 +23025,7 @@
   filesystem:
     snippet.with.dots: Hello
 - name: RecordedTest#test_string_first_4cdb3e099
-  required_features:
+  features:
     - lax_parsing
   expected: m
   template: "{{ name.first }}"
@@ -23033,7 +23033,7 @@
     name: mike
   filesystem: {}
 - name: RecordedTest#test_string_first_ca67215ba
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if name.first == blank %}correct{% endif %}"
@@ -23041,7 +23041,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_first_2b3ae31a3
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if name.first == empty %}correct{% endif %}"
@@ -23049,7 +23049,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_first_65823d54f
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if !name.first %}correct{% endif %}"
@@ -23057,7 +23057,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_first_9077c9ae0
-  required_features:
+  features:
     - lax_parsing
   expected: ''
   template: "{{ name.first }}"
@@ -23065,7 +23065,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_first_b6aeab42d
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if name.first == '' %}correct{% endif %}"
@@ -23073,7 +23073,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_first_6cd361f51
-  required_features:
+  features:
     - lax_parsing
   expected: 고
   template: "{{ name.first }}"
@@ -23081,7 +23081,7 @@
     name: 고규빈
   filesystem: {}
 - name: RecordedTest#test_string_key_da6504da9
-  required_features:
+  features:
     - activesupport
   expected: ''
   template: "{{h[b]}}"
@@ -23091,7 +23091,7 @@
       word: "y"
   filesystem: {}
 - name: RecordedTest#test_string_key_48d7b0c61
-  required_features:
+  features:
     - activesupport
   expected: ''
   template: "{{h[b]}}"
@@ -23101,7 +23101,7 @@
       word: "y"
   filesystem: {}
 - name: RecordedTest#test_string_key_00509b222
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{{h[b]}}"
@@ -23111,7 +23111,7 @@
       word: "y"
   filesystem: {}
 - name: RecordedTest#test_string_key_fe38efada
-  required_features:
+  features:
     - activesupport
   expected: "y"
   template: "{{h[b]}}"
@@ -23131,7 +23131,7 @@
       word: "y"
   filesystem: {}
 - name: RecordedTest#test_string_last_035516211
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if !name.last %}correct{% endif %}"
@@ -23139,7 +23139,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_last_bd7cab30f
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if name.last == blank %}correct{% endif %}"
@@ -23147,7 +23147,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_last_c4fbb6fd6
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if name.last == empty %}correct{% endif %}"
@@ -23155,7 +23155,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_last_292076b0f
-  required_features:
+  features:
     - lax_parsing
   expected: correct
   template: "{% if name.last == '' %}correct{% endif %}"
@@ -23163,7 +23163,7 @@
     name: ''
   filesystem: {}
 - name: RecordedTest#test_string_last_f6e46feef
-  required_features:
+  features:
     - lax_parsing
   expected: e
   template: "{{ name.last }}"
@@ -23171,7 +23171,7 @@
     name: mike
   filesystem: {}
 - name: RecordedTest#test_string_last_dd7c79283
-  required_features:
+  features:
     - lax_parsing
   expected: 빈
   template: "{{ name.last }}"
@@ -23179,7 +23179,7 @@
     name: 고규빈
   filesystem: {}
 - name: RecordedTest#test_string_last_fc92b0a8a
-  required_features:
+  features:
     - lax_parsing
   expected: ''
   template: "{{ name.last }}"
@@ -23360,7 +23360,7 @@
       - c: 2
   filesystem: {}
 - name: RecordedTest#test_truncate_does_not_double_escape_suffix_fa67cd2ab
-  required_features:
+  features:
     - activesupport
   expected: 1 &gt;
   template: "{{ input | truncate: 6, suffix }}"
@@ -23385,7 +23385,7 @@
       instantiate:SafeBuffer:
         value: you&#39;re doing great
   filesystem: {}
-  required_features:
+  features:
     - activesupport
 - name: RecordedTest#test_truncate_with_ut8_uses_char_count_not_bytesize_0e6b525e3
   expected: L'homme à la tête de lion
@@ -23394,7 +23394,7 @@
     text: L'homme à la tête de lion
   filesystem: {}
 - name: RecordedTest#test_truncatewords_for_html_6782ac38f
-  required_features:
+  features:
     - activesupport
   expected: you&#39;re doing<
   template: "{{ description | truncatewords: 2, '<' }}"
@@ -23480,7 +23480,7 @@
     baz: baz
   filesystem: {}
 - name: RecordedTest#test_weird_keys_9494c968a
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -23493,7 +23493,7 @@
       : "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_189fe4118
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -23502,7 +23502,7 @@
       1.1234: "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_420cf20a4
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -23515,7 +23515,7 @@
       : "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_ff594362d
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -23524,7 +23524,7 @@
       1.1234: "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_8d0cd456b
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -23534,7 +23534,7 @@
       !binary "/w==": "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_3884a16bb
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -23545,7 +23545,7 @@
       : "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_7cd25d108
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: ''
   template: "{{h[b]}}"
   environment:
@@ -23556,7 +23556,7 @@
       : "y"
   filesystem: {}
 - name: RecordedTest#test_weird_keys_d48a90abf
-  required_features: [ruby_types]
+  features: [ruby_types]
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -23642,7 +23642,7 @@
     a: "asdf\v"
   filesystem: {}
 - name: RecordedTest#test_missing_operator_and_rhs_in_conditional_6dc36bcf
-  required_features:
+  features:
     - strict_parsing
   template: "{% if blank %}true{% endif %}"
   expected: 'true'
@@ -23650,7 +23650,7 @@
     Using 'blank' as a standalone conditional value has inconsistent behavior
     in lax mode on some Liquid versions. Restrict to strict parsing.
 - name: RecordedTest#test_missing_operator_in_conditional_fedb552c
-  required_features:
+  features:
     - lax_parsing
   template: "{% if blank foo %}true{% endif %}"
   expected: 'Liquid error (line 1): Unknown operator foo'
@@ -23719,7 +23719,7 @@
     {%- endcase -%}
   expected: OK
 - name: RecordedTest#test_rendering_assign_whitespace_with_for_97e11238
-  required_features: [shopify_blank]
+  features: [shopify_blank]
   hint: "Uses != blank to check for non-empty collections. Requires Shopify's blank implementation."
   template: |+
     <ul class="site-nav list--inline {{ nav_alignment }}" id="SiteNav">
@@ -24777,7 +24777,7 @@
       outer:
         inner: value
 - name: RecordedTest#test_render_recursive_hash_60c54eef
-  required_features: [ruby_types]
+  features: [ruby_types]
   template: "{{ my_hash }}"
   expected: '{"self"=>{"self"=>{...}}}'
   environment:
@@ -24791,7 +24791,7 @@
     my_hash:
       numbers: []
 - name: RecordedTest#test_render_hash_with_array_values_hash_b49125a7
-  required_features: [ruby_types]
+  features: [ruby_types]
   template: "{{ my_hash }}"
   expected: '{"numbers"=>[{:foo=>42}]}'
   environment:
@@ -24799,7 +24799,7 @@
       numbers:
       - :foo: 42
 - name: RecordedTest#test_render_hash_with_hash_key_00c16c83
-  required_features: [ruby_types]
+  features: [ruby_types]
   template: "{{ my_hash }}"
   expected: '{{"foo"=>"bar"}=>42}'
   environment:
