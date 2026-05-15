@@ -11,8 +11,7 @@ hint: |
   These specs are designed for performance measurement.
   Run with: liquid-spec my_adapter.rb -s benchmarks --bench
 
-required_features:
-  - core
+features:
 
 defaults:
   render_errors: false

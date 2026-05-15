@@ -10,11 +10,11 @@ module Liquid
       TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
       TEST_TZ = "America/New_York"
 
-      attr_reader :name, :features, :ctx
+      attr_reader :name, :missing_features, :ctx
 
       def initialize(name: nil)
         @name = name
-        @features = Set.new([:core])
+        @missing_features = Set.new
         @setup_block = nil
         @compile_block = nil
         @render_block = nil
@@ -43,8 +43,8 @@ module Liquid
         @render_block = ::LiquidSpec.instance_variable_get(:@render_block)
 
         config = ::LiquidSpec.instance_variable_get(:@config)
-        if config&.respond_to?(:features)
-          set_features(config.features)
+        if config&.respond_to?(:missing_features)
+          set_missing_features(config.missing_features)
         end
 
         # Validate block signatures
@@ -145,15 +145,14 @@ module Liquid
         @render_block = block
       end
 
-      # Set features
-      def set_features(features)
-        @features = Set.new(features.map(&:to_sym))
-        @features << :core unless @features.include?(:core)
+      # Set missing features
+      def set_missing_features(missing_features)
+        @missing_features = Set.new(missing_features.map(&:to_sym))
       end
 
       # Check if adapter can run a spec
       def can_run?(spec)
-        spec.runnable_with?(@features)
+        !spec.skipped_by?(@missing_features)
       end
 
       # Run a batch of specs
@@ -189,7 +188,7 @@ module Liquid
           return SpecResult.new(
             spec: spec,
             status: :skipped,
-            reason: "Missing features: #{(spec.required_features - @features.to_a).join(", ")}",
+            reason: "Adapter does not support: #{(spec.features & @missing_features.to_a).join(", ")}",
           )
         end
 

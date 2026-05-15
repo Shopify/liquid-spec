@@ -49,6 +49,60 @@ task :matrix do
   system("bundle", "exec", "ruby", "bin/liquid-spec", "matrix", "--all") || abort
 end
 
+desc "Verify every spec feature tag is covered by at least one reference adapter"
+task :coverage_check do
+  require "yaml"
+  require "set"
+
+  base = File.expand_path(__dir__)
+
+  # Collect all feature tags used across spec YAML files
+  spec_tags = Set.new
+  Dir.glob(File.join(base, "specs/**/*.yml")).each do |f|
+    begin
+      data = YAML.safe_load(File.read(f), permitted_classes: [Symbol, Range], aliases: true)
+      next unless data
+
+      meta = data.is_a?(Hash) ? (data["_metadata"] || {}) : {}
+      (meta["features"] || []).each { |t| spec_tags << t.to_sym }
+
+      specs = data.is_a?(Hash) ? (data["specs"] || []) : (data.is_a?(Array) ? data : [])
+      specs.each do |spec|
+        (spec["features"] || []).each { |t| spec_tags << t.to_sym } if spec.is_a?(Hash)
+      end
+    rescue
+    end
+  end
+
+  # Extract missing_features from each reference adapter via static analysis.
+  # We parse the config.missing_features = [...] line rather than loading the
+  # adapter (which would require all adapter dependencies to be installed).
+  adapter_files = Dir.glob(File.join(base, "examples/*.rb"))
+  adapter_missing = {}
+  adapter_files.each do |path|
+    source = File.read(path)
+    if (m = source.match(/config\.missing_features\s*=\s*\[(.*?)\]/m))
+      symbols = m[1].scan(/:(\w+)/).flatten.map(&:to_sym)
+      adapter_missing[File.basename(path)] = symbols.to_set
+    end
+  end
+
+  if adapter_missing.empty?
+    abort "Coverage check FAILED — no reference adapters found in examples/"
+  end
+
+  # Check: every tag must be NOT-missing in at least one adapter
+  orphans = spec_tags.reject do |tag|
+    adapter_missing.any? { |_, missing| !missing.include?(tag) }
+  end
+
+  if orphans.any?
+    abort "Coverage check FAILED — no reference adapter covers these tags:\n  #{orphans.sort.join(', ')}\n\nAdd an example adapter that does not include these in missing_features."
+  else
+    puts "Coverage check passed: all #{spec_tags.size} feature tags covered across #{adapter_missing.size} reference adapters."
+  end
+end
+
 # Spec generation tasks (only needed for development)
 import("tasks/liquid_ruby.rake")
 import("tasks/standard_filters.rake")

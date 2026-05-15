@@ -20,3 +20,5 @@ jobs:
       run: bundle exec rake test
     - name: Run liquid-spec
       run: bundle exec rake run
+    - name: Check feature tag coverage
+      run: bundle exec rake coverage_check

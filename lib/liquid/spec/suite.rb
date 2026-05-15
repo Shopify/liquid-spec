@@ -8,7 +8,7 @@ module Liquid
     class Suite
       SUITE_FILE = "suite.yml"
 
-      attr_reader :path, :name, :description, :hint, :required_features, :defaults, :minimum_complexity,
+      attr_reader :path, :name, :description, :hint, :features, :defaults, :minimum_complexity,
         :default_iteration_seconds
 
       def initialize(path)
@@ -17,7 +17,7 @@ module Liquid
         @name = @config["name"] || File.basename(path)
         @description = @config["description"]
         @hint = @config["hint"]
-        @required_features = (@config["required_features"] || []).map(&:to_sym)
+        @features = (@config["features"] || []).map(&:to_sym)
         @defaults = (@config["defaults"] || {}).transform_keys(&:to_sym)
         @minimum_complexity = @config["minimum_complexity"]
         @timings = @config["timings"] || false
@@ -34,18 +34,12 @@ module Liquid
         @config.fetch("default", true)
       end
 
-      # Check if this suite can run with the given features
-      def runnable_with?(features)
-        return true if required_features.empty?
+      # Check if this suite should be skipped given a set of missing features
+      def skipped_by?(missing_features)
+        return false if features.empty?
 
-        features_set = features.map(&:to_sym).to_set
-        required_features.all? { |f| features_set.include?(f) }
-      end
-
-      # List of missing features
-      def missing_features(features)
-        features_set = features.map(&:to_sym).to_set
-        required_features.reject { |f| features_set.include?(f) }
+        missing_set = missing_features.is_a?(Set) ? missing_features : Set.new(missing_features.map(&:to_sym))
+        features.any? { |f| missing_set.include?(f) }
       end
 
       # Suite identifier (directory name)

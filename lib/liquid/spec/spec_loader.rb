@@ -53,10 +53,10 @@ module Liquid
     module SpecLoader
       # Valid keys at each level - unknown keys raise errors
       VALID_FILE_KEYS = %w[_metadata specs].freeze
-      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity required_features data_files].freeze
+      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity features data_files].freeze
       VALID_SPEC_KEYS = %w[
         name template expected expected_pattern environment filesystem complexity hint doc
-        error_mode render_errors required_features errors template_name resource_limits
+        error_mode render_errors features errors template_name resource_limits
       ].freeze
 
       class << self
@@ -195,7 +195,7 @@ module Liquid
           source_doc = metadata["doc"]
           source_required_options = (metadata["required_options"] || {}).transform_keys(&:to_sym)
           minimum_complexity = suite&.minimum_complexity || metadata["minimum_complexity"] || metadata["complexity"] || 1000
-          source_required_features = (metadata["required_features"] || []).map(&:to_s)
+          source_features = (metadata["features"] || []).map(&:to_s)
 
           # Suite defaults
           suite_defaults = suite&.defaults || {}
@@ -253,7 +253,7 @@ module Liquid
               complexity: spec_data["complexity"] || minimum_complexity,
               error_mode: spec_error_mode,
               render_errors: spec_render_errors || false,
-              required_features: (source_required_features + (spec_data["required_features"] || [])).uniq,
+              features: (source_features + (spec_data["features"] || [])).uniq,
               source_file: path,
               line_number: spec_line_number,
               raw_environment: raw_env,
@@ -314,7 +314,7 @@ module Liquid
             complexity: minimum_complexity,
             error_mode: nil,
             render_errors: false,
-            required_features: suite&.required_features || [],
+            features: suite&.features || [],
             source_file: template_file,
             line_number: nil,
             raw_environment: raw_environment,

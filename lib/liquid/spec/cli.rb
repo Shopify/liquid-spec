@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "cli/bench"
 require_relative "cli/runner"
 require_relative "cli/init"
 require_relative "cli/inspect"
@@ -21,7 +22,7 @@ module Liquid
 
         Commands:
           run ADAPTER         Run specs using the specified adapter file
-          bench               Run benchmarks across adapters (alias for: matrix --bench)
+          bench [ADAPTER]     Run benchmarks (all adapters, or ADAPTER vs liquid_ruby)
           test                Run specs against all available example adapters
           matrix              Run specs across multiple adapters and compare results
           report              Analyze and compare benchmark results
@@ -36,6 +37,9 @@ module Liquid
           liquid-spec init                              # Creates liquid_adapter.rb
           liquid-spec run adapter.rb                    # Run all specs
           liquid-spec run adapter.rb -n for             # Run specs matching 'for'
+          liquid-spec bench                             # Benchmark all builtin adapters
+          liquid-spec bench my_adapter.rb               # Benchmark my_adapter vs liquid_ruby
+          liquid-spec bench my_adapter.rb -n storefront # Benchmark specific specs
           liquid-spec inspect adapter.rb -n "case.*empty"  # Inspect failing spec
           liquid-spec eval adapter.rb -l "{{ 'hi' | upcase }}"  # Quick test
 
@@ -103,8 +107,7 @@ module Liquid
         when "run"
           Runner.run(args)
         when "bench"
-          # bench is an alias for matrix --bench
-          Matrix.run(["--bench"] + args)
+          Bench.run(args)
         when "test"
           Test.run(args)
         when "matrix"

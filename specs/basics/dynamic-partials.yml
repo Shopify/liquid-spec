@@ -504,7 +504,7 @@ specs:
     output:
       - Illegal template name
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   complexity: 550
   hint: |
     Same as dynamic_include_nil_name but with inline error rendering.
@@ -527,7 +527,7 @@ specs:
     output:
       - Could not find
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   complexity: 550
   hint: |
     Same as dynamic_include_empty_string_name but with inline error rendering.
@@ -548,7 +548,7 @@ specs:
     output:
       - Could not find
   render_errors: true
-  required_features: [inline_errors]
+  features: [inline_errors]
   complexity: 550
   hint: |
     Same as dynamic_include_missing_partial but with inline error rendering.

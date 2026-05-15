@@ -3,7 +3,7 @@ _metadata:
   hint: |
     These specs require lax parsing mode. The syntax tested here was never valid
     Liquid - it was accidentally tolerated by the lax parser.
-  required_features: [lax_parsing]
+  features: [lax_parsing]
   required_options:
     error_mode: :lax
 specs:

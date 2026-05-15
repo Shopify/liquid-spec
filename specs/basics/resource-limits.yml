@@ -4,7 +4,7 @@ _metadata:
     Cumulative scores survive reset() across partial renders,
     preventing unbounded work via many small partials.
   complexity: 300
-  required_features:
+  features:
     - core
 
 specs:
