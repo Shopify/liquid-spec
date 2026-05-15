@@ -5,6 +5,7 @@ _metadata:
     preventing unbounded work via many small partials.
   complexity: 300
   features:
+    - core
 
 specs:
 - name: cumulative_render_score_across_partials
