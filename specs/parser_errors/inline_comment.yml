@@ -1,0 +1,47 @@
+---
+- name: inline_comment-003
+  template: |-
+    {% # ok
+    foo %}
+  errors:
+    parse_error:
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
+  complexity: 100
+- name: inline_comment-004
+  template: |-
+    {% # ok
+    # ok
+    foo %}
+  errors:
+    parse_error:
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
+  complexity: 100
+- name: inline_comment-005
+  template: |-
+    {% # ok
+
+    foo %}
+  errors:
+    parse_error:
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
+  complexity: 100
+- name: inline_comment-007
+  template: "{% # ok\n \t foo %}"
+  errors:
+    parse_error:
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
+  complexity: 100
+- name: inline_comment-008
+  template: |-
+    {% #
+    foo
+    bar %}
+  errors:
+    parse_error:
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
+  complexity: 100

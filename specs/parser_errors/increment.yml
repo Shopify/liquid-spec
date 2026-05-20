@@ -1,0 +1,169 @@
+---
+- name: increment-mut-end-trail-close_round
+  template: "{% increment x ) %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found close_round
+  complexity: 100
+- name: increment-mut-end-trail-close_square
+  template: "{% increment x ] %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found close_square
+  complexity: 100
+- name: increment-mut-end-trail-colon
+  template: "{% increment x : %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found colon
+  complexity: 100
+- name: increment-mut-end-trail-comma
+  template: "{% increment x , %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found comma
+  complexity: 100
+- name: increment-mut-end-trail-comparison
+  template: "{% increment x == %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found comparison
+  complexity: 100
+- name: increment-mut-end-trail-dash
+  template: "{% increment x - %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found dash
+  complexity: 100
+- name: increment-mut-end-trail-dot
+  template: "{% increment x . %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found dot
+  complexity: 100
+- name: increment-mut-end-trail-id
+  template: "{% increment x extra %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found id
+  complexity: 100
+- name: increment-mut-end-trail-number
+  template: "{% increment x 42 %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found number
+  complexity: 100
+- name: increment-mut-end-trail-open_round
+  template: "{% increment x ( %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found open_round
+  complexity: 100
+- name: increment-mut-end-trail-open_square
+  template: "{% increment x [ %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found open_square
+  complexity: 100
+- name: increment-mut-end-trail-pipe
+  template: "{% increment x | %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found pipe
+  complexity: 100
+- name: increment-mut-end-trail-question
+  template: "{% increment x ? %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found question
+  complexity: 100
+- name: increment-mut-end-trail-string
+  template: "{% increment x 'hi' %}"
+  errors:
+    parse_error:
+    - Expected end_of_string but found string
+  complexity: 100
+- name: increment-mut-variable_name-eos
+  template: "{% increment  %}"
+  errors:
+    parse_error:
+    - Expected id but found end_of_string
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-ampersand
+  template: "{% increment & %}"
+  errors:
+    parse_error:
+    - Unexpected character &
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-asterisk
+  template: "{% increment * %}"
+  errors:
+    parse_error:
+    - Unexpected character *
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-at
+  template: "{% increment @ %}"
+  errors:
+    parse_error:
+    - Unexpected character @
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-backslash
+  template: "{% increment \\ %}"
+  errors:
+    parse_error:
+    - Unexpected character \
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-backtick
+  template: "{% increment ` %}"
+  errors:
+    parse_error:
+    - Unexpected character `
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-caret
+  template: "{% increment ^ %}"
+  errors:
+    parse_error:
+    - Unexpected character ^
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-dollar
+  template: "{% increment $ %}"
+  errors:
+    parse_error:
+    - Unexpected character $
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-hash
+  template: "{% increment # %}"
+  errors:
+    parse_error:
+    - 'Unexpected character #'
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-semicolon
+  template: "{% increment ; %}"
+  errors:
+    parse_error:
+    - Unexpected character ;
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-tilde
+  template: "{% increment ~ %}"
+  errors:
+    parse_error:
+    - Unexpected character ~
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-unclosed_double_quote
+  template: '{% increment "hello %}'
+  errors:
+    parse_error:
+    - Unexpected character "
+  complexity: 100
+- name: increment-mut-variable_name-lexerr-unclosed_single_quote
+  template: "{% increment 'hello %}"
+  errors:
+    parse_error:
+    - Unexpected character '
+  complexity: 100
+- name: increment-mut-variable_name-number
+  template: "{% increment 42 %}"
+  errors:
+    parse_error:
+    - Expected id but found number
+  complexity: 100

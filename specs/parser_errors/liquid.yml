@@ -1,0 +1,66 @@
+---
+- name: liquid-200
+  template: |-
+    {% liquid
+    hello world
+    %}
+  errors:
+    parse_error:
+    - Unknown tag 'hello'
+  complexity: 100
+- name: liquid-201
+  template: |-
+    {% liquid
+    foobar baz
+    %}
+  errors:
+    parse_error:
+    - Unknown tag 'foobar'
+  complexity: 100
+- name: liquid-203
+  template: |-
+    {% liquid
+    endfor
+    %}
+  errors:
+    parse_error:
+    - "'endfor' is not a valid delimiter for liquid tags. use %}"
+  complexity: 100
+- name: liquid-204
+  template: |-
+    {% liquid
+    assign
+    %}
+  errors:
+    parse_error:
+    - Syntax Error in 'assign'
+  complexity: 100
+- name: liquid-205
+  template: |-
+    {% liquid
+    assign x = 1
+    assign
+    %}
+  errors:
+    parse_error:
+    - Syntax Error in 'assign'
+  complexity: 100
+- name: liquid-207
+  template: |-
+    {% liquid
+    for i
+    %}
+  errors:
+    parse_error:
+    - For loops require an 'in' clause
+  complexity: 100
+- name: liquid-208
+  template: |-
+    {% liquid
+    for i in (1..3)
+    echo i
+    %}
+  errors:
+    parse_error:
+    - "'for' tag was never closed"
+  complexity: 100

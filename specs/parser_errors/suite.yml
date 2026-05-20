@@ -1,0 +1,16 @@
+---
+name: "Parser Errors"
+description: "Parse error specs for error_mode: :strict2 syntax validation"
+
+default: false
+
+hint: |
+  These specs test that invalid Liquid syntax produces the correct parse errors
+  under error_mode: :strict2.
+
+features:
+  - strict2_parsing
+
+defaults:
+  error_mode: :strict2
+  render_errors: false
