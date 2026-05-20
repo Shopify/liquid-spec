@@ -315,7 +315,7 @@
   template: "{% echo x | x : [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: echo-mut-filter_first_arg-close_round-004
   template: "{% echo x | x : ) %}"
@@ -861,7 +861,7 @@
   template: "{% echo [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: echo-mut-value-close_round-004
   template: "{% echo ) %}"

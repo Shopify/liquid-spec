@@ -3,7 +3,7 @@
   template: "{% case [0] %}{% endcase %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: case-mut-case_expression-close_round-004
   template: "{% case ) %}{% endcase %}"
@@ -627,7 +627,7 @@
   template: "{% case x %}{% when [0] %}{% endcase %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: case-mut-when_value-close_round-004
   template: "{% case x %}{% when ) %}{% endcase %}"

@@ -93,7 +93,7 @@
   template: "{% render 'snippet' for [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: render-mut-binding_value-close_round-004
   template: "{% render 'snippet' for ) %}"
@@ -723,5 +723,5 @@
   template: "{% render  %}"
   errors:
     parse_error:
-    - Syntax error in tag 'render' - Expected a string or identifier, found nothing
+    - Expected string but found end_of_string
   complexity: 100

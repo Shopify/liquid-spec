@@ -525,7 +525,7 @@
   template: "{% if x == [0] %}{% endif %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: if-mut-comparison_rhs-close_round-004
   template: "{% if x == ) %}{% endif %}"
@@ -753,7 +753,7 @@
   template: "{% if [0] %}{% endif %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: if-mut-condition-close_round-004
   template: "{% if ) %}{% endif %}"

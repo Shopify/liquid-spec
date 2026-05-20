@@ -271,7 +271,7 @@
   template: "{% tablerow x in [0] %}{% endtablerow %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: table_row-mut-collection-close_round-004
   template: "{% tablerow x in ) %}{% endtablerow %}"
