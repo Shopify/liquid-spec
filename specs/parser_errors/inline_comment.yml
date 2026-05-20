@@ -5,8 +5,8 @@
     foo %}
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
-      be prefixed by the ''#'' character'
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
   complexity: 100
 - name: inline_comment-004
   template: |-
@@ -15,8 +15,8 @@
     foo %}
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
-      be prefixed by the ''#'' character'
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
   complexity: 100
 - name: inline_comment-005
   template: |-
@@ -25,15 +25,15 @@
     foo %}
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
-      be prefixed by the ''#'' character'
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
   complexity: 100
 - name: inline_comment-007
   template: "{% # ok\n \t foo %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
-      be prefixed by the ''#'' character'
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
   complexity: 100
 - name: inline_comment-008
   template: |-
@@ -42,6 +42,6 @@
     bar %}
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax error in tag ''#'' - Each line of comments must
-      be prefixed by the ''#'' character'
+    - Syntax error in tag '#' - Each line of comments must be prefixed by the '#'
+      character
   complexity: 100

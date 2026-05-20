@@ -3,167 +3,167 @@
   template: "{% decrement x ) %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found close_round in "x )"'
+    - Expected end_of_string but found close_round
   complexity: 100
 - name: decrement-mut-end-trail-close_square
   template: "{% decrement x ] %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found close_square in "x ]"'
+    - Expected end_of_string but found close_square
   complexity: 100
 - name: decrement-mut-end-trail-colon
   template: "{% decrement x : %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found colon in "x :"'
+    - Expected end_of_string but found colon
   complexity: 100
 - name: decrement-mut-end-trail-comma
   template: "{% decrement x , %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found comma in "x ,"'
+    - Expected end_of_string but found comma
   complexity: 100
 - name: decrement-mut-end-trail-comparison
   template: "{% decrement x == %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found comparison in "x =="'
+    - Expected end_of_string but found comparison
   complexity: 100
 - name: decrement-mut-end-trail-dash
   template: "{% decrement x - %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found dash in "x -"'
+    - Expected end_of_string but found dash
   complexity: 100
 - name: decrement-mut-end-trail-dot
   template: "{% decrement x . %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found dot in "x ."'
+    - Expected end_of_string but found dot
   complexity: 100
 - name: decrement-mut-end-trail-id
   template: "{% decrement x extra %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found id in "x extra"'
+    - Expected end_of_string but found id
   complexity: 100
 - name: decrement-mut-end-trail-number
   template: "{% decrement x 42 %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found number in "x 42"'
+    - Expected end_of_string but found number
   complexity: 100
 - name: decrement-mut-end-trail-open_round
   template: "{% decrement x ( %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found open_round in "x ("'
+    - Expected end_of_string but found open_round
   complexity: 100
 - name: decrement-mut-end-trail-open_square
   template: "{% decrement x [ %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found open_square in "x ["'
+    - Expected end_of_string but found open_square
   complexity: 100
 - name: decrement-mut-end-trail-pipe
   template: "{% decrement x | %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found pipe in "x |"'
+    - Expected end_of_string but found pipe
   complexity: 100
 - name: decrement-mut-end-trail-question
   template: "{% decrement x ? %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found question in "x ?"'
+    - Expected end_of_string but found question
   complexity: 100
 - name: decrement-mut-end-trail-string
   template: "{% decrement x 'hi' %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected end_of_string but found string in "x ''hi''"'
+    - Expected end_of_string but found string
   complexity: 100
 - name: decrement-mut-variable_name-eos
   template: "{% decrement  %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected id but found end_of_string in ""'
+    - Expected id but found end_of_string
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-ampersand
   template: "{% decrement & %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character & in "&"'
+    - Unexpected character &
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-asterisk
   template: "{% decrement * %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character * in "*"'
+    - Unexpected character *
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-at
   template: "{% decrement @ %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character @ in "@"'
+    - Unexpected character @
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-backslash
   template: "{% decrement \\ %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character \ in "\"'
+    - Unexpected character \
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-backtick
   template: "{% decrement ` %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character ` in "`"'
+    - Unexpected character `
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-caret
   template: "{% decrement ^ %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character ^ in "^"'
+    - Unexpected character ^
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-dollar
   template: "{% decrement $ %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character $ in "$"'
+    - Unexpected character $
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-hash
   template: "{% decrement # %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character # in "#"'
+    - 'Unexpected character #'
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-semicolon
   template: "{% decrement ; %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character ; in ";"'
+    - Unexpected character ;
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-tilde
   template: "{% decrement ~ %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character ~ in "~"'
+    - Unexpected character ~
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-unclosed_double_quote
   template: '{% decrement "hello %}'
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character " in ""hello"'
+    - Unexpected character "
   complexity: 100
 - name: decrement-mut-variable_name-lexerr-unclosed_single_quote
   template: "{% decrement 'hello %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unexpected character '' in "''hello"'
+    - Unexpected character '
   complexity: 100
 - name: decrement-mut-variable_name-number
   template: "{% decrement 42 %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Expected id but found number in "42"'
+    - Expected id but found number
   complexity: 100

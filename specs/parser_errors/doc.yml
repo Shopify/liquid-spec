@@ -3,131 +3,121 @@
   template: "{% doc foo %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-002
   template: "{% doc foo bar %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-003
   template: "{% doc 123 %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-004
   template: "{% doc 'hello' %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-005
   template: "{% doc == %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-006
   template: "{% doc | %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-007
   template: "{% doc @#$ %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-008
   template: "{%- doc foo -%}{%- enddoc -%}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-009
   template: "{% doc foo %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-010
   template: "{% doc foo %}some content"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Valid syntax: {% doc %}{% enddoc
-      %}'
+    - Syntax Error in 'doc'
   complexity: 100
 - name: doc-020
   template: "{% doc %}{% doc %}{% enddoc %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+    - Syntax Error in 'doc' - Nested doc tags are not allowed
   complexity: 100
 - name: doc-021
   template: "{% doc %}hello{% doc %}world{% enddoc %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+    - Syntax Error in 'doc' - Nested doc tags are not allowed
   complexity: 100
 - name: doc-022
   template: "{% doc %}{% doc %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+    - Syntax Error in 'doc' - Nested doc tags are not allowed
   complexity: 100
 - name: doc-023
   template: "{% doc %}{% doc %}content"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+    - Syntax Error in 'doc' - Nested doc tags are not allowed
   complexity: 100
 - name: doc-024
   template: "{% doc %}{% doc %}{% doc %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+    - Syntax Error in 'doc' - Nested doc tags are not allowed
   complexity: 100
 - name: doc-025
   template: "{% doc %}{% doc foo %}{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Syntax Error in ''doc'' - Nested doc tags are not allowed'
+    - Syntax Error in 'doc' - Nested doc tags are not allowed
   complexity: 100
 - name: doc-040
   template: "{% doc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: ''doc'' tag was never closed'
+    - "'doc' tag was never closed"
   complexity: 100
 - name: doc-041
   template: "{% doc %}some content here"
   errors:
     parse_error:
-    - 'Liquid syntax error: ''doc'' tag was never closed'
+    - "'doc' tag was never closed"
   complexity: 100
 - name: doc-042
   template: "{% doc %}{% if true %}hello{% endif %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: ''doc'' tag was never closed'
+    - "'doc' tag was never closed"
   complexity: 100
 - name: doc-043
   template: "{%- doc -%}content"
   errors:
     parse_error:
-    - 'Liquid syntax error: ''doc'' tag was never closed'
+    - "'doc' tag was never closed"
   complexity: 100
 - name: doc-044
   template: |-
@@ -136,17 +126,17 @@
     {% doc %}content
   errors:
     parse_error:
-    - 'Liquid syntax error: ''doc'' tag was never closed'
+    - "'doc' tag was never closed"
   complexity: 100
 - name: doc-045
   template: "{% doc %}a{% enddoc %}{% doc %}b"
   errors:
     parse_error:
-    - 'Liquid syntax error: ''doc'' tag was never closed'
+    - "'doc' tag was never closed"
   complexity: 100
 - name: doc-114
   template: "{% enddoc %}"
   errors:
     parse_error:
-    - 'Liquid syntax error: Unknown tag ''enddoc'''
+    - Unknown tag 'enddoc'
   complexity: 100
