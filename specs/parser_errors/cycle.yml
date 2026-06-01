@@ -537,7 +537,7 @@
   template: "{% cycle x : [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: cycle-mut-first_cycle_value-close_round-004
   template: "{% cycle x : ) %}"
@@ -765,7 +765,7 @@
   template: "{% cycle [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: cycle-mut-first_value-close_round-004
   template: "{% cycle ) %}"

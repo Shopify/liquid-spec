@@ -525,7 +525,7 @@
   template: "{% unless x == [0] %}{% endunless %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: unless-mut-comparison_rhs-close_round-004
   template: "{% unless x == ) %}{% endunless %}"
@@ -753,7 +753,7 @@
   template: "{% unless [0] %}{% endunless %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: unless-mut-condition-close_round-004
   template: "{% unless ) %}{% endunless %}"

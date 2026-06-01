@@ -93,7 +93,7 @@
   template: "{% include x for [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: include-mut-binding_value-close_round-004
   template: "{% include x for ) %}"
@@ -723,7 +723,7 @@
   template: "{% include [0] %}"
   errors:
     parse_error:
-    - Bare bracket access is not allowed in strict2 mode. Use self['...'] instead
+    - Bare bracket access is not allowed. Use self['...'] instead
   complexity: 100
 - name: include-mut-template_expr-close_round-004
   template: "{% include ) %}"
