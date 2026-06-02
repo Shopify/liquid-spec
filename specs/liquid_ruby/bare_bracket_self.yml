@@ -289,6 +289,212 @@
     assigned as a local variable). So self['key'] still does the
     normal scope-chain lookup and finds 'key'.
 
+- name: self_dotted_special_names_delegate_to_scope
+  template: "{% assign size = 17 %}{% assign first = 18 %}{% assign last = 19 %}{{ self.size }}|{{ self.first }}|{{ self.last }}"
+  expected: "17|18|19"
+  hint: |
+    The dotted names size, first, and last are usually special drop
+    dispatch paths, but SelfDrop delegates them through normal variable
+    lookup. A local variable with one of those names should be returned
+    instead of a built-in SelfDrop property.
+
+- name: assigned_self_compares_equal_to_itself
+  template: "{% assign s = self %}{% if s == s %}true{% else %}false{% endif %}"
+  expected: "true"
+  hint: |
+    Assigning self stores one SelfDrop object. Comparing that assigned
+    object to itself is true because both sides are the same object.
+
+- name: bare_self_compares_equal_to_bare_self
+  template: "{% if self == self %}true{% else %}false{% endif %}"
+  expected: "true"
+  hint: |
+    Each bare self lookup creates a distinct SelfDrop object, but both
+    objects point at the same variable context. SelfDrop equality follows
+    that shared context.
+
+- name: distinct_self_assignments_compare_equal
+  template: "{% assign a = self %}{% assign b = self %}{% if a == b %}true{% else %}false{% endif %}"
+  expected: "true"
+  hint: |
+    Separate assignments from separate self lookups store distinct
+    SelfDrop objects. They compare equal because both point at the same
+    variable context.
+
+- name: nested_self_ignores_static_environment_self_key
+  template: "{{ self.self }}|{{ self['self'] }}"
+  environment:
+    self: env
+  expected: "Liquid::SelfDrop|Liquid::SelfDrop"
+  hint: |
+    Looking up self through SelfDrop re-enters Context#find_variable,
+    including the special unbound-self shortcut. A static environment
+    key named self must not shadow that shortcut.
+
+- name: increment_self_does_not_shadow_self_drop
+  template: "{% increment self %}|{{ self }}|{{ self['x'] }}"
+  environment:
+    x: value
+  expected: "0|Liquid::SelfDrop|value"
+  hint: |
+    Increment counters do not count as local variable bindings for
+    the self shortcut. After increment self, bare self still resolves
+    to SelfDrop.
+
+- name: decrement_self_does_not_shadow_self_drop
+  template: "{% decrement self %}|{{ self }}|{{ self['x'] }}"
+  environment:
+    x: value
+  expected: "-1|Liquid::SelfDrop|value"
+  hint: |
+    Decrement counters do not count as local variable bindings for
+    the self shortcut. After decrement self, bare self still resolves
+    to SelfDrop.
+
+- name: self_in_render_without_passing_resolves_inner_scope
+  template: "{%- assign var = 42 -%}{%- render 'snippet1' -%}"
+  filesystem:
+    snippet1: "{%- assign var = 99 -%}{{- self.var -}}"
+  expected: "99"
+  hint: |
+    A fresh self lookup inside render uses the rendered snippet's
+    scope. It does not implicitly capture the caller's local scope.
+
+- name: self_passed_as_render_param_preserves_original_scope
+  template: "{%- assign var = 42 -%}{%- assign s = self -%}{%- render 'snippet1', other_self: s -%}"
+  filesystem:
+    snippet1: "{%- assign var = 43 -%}{{- other_self.var }}|{{ self.var -}}"
+  expected: "42|43"
+  hint: |
+    When a SelfDrop object is assigned and passed into render, that
+    object keeps looking through the original context, while a fresh
+    self lookup inside the snippet sees the snippet scope.
+
+- name: self_passed_to_nested_renders_preserves_each_level
+  template: "{%- assign a = 1 -%}{%- assign s1 = self -%}{%- render 'snippet1', outer: s1 -%}"
+  filesystem:
+    snippet1: "{%- assign a = 2 -%}{%- assign s2 = self -%}{%- render 'snippet2', outer: outer, middle: s2 -%}"
+    snippet2: "{%- assign a = 3 -%}{{- outer.a }}|{{ middle.a }}|{{ self.a -}}"
+  expected: "1|2|3"
+  hint: |
+    Captured SelfDrop objects preserve the context they came from
+    across multiple render boundaries. A SelfDrop captured in the
+    outer template sees the outer value, one captured in the middle
+    snippet sees the middle value, and a fresh self lookup in the
+    inner snippet sees the inner value.
+
+- name: self_reflects_variables_assigned_after_creation
+  template: "{%- assign s = self -%}{%- assign x = 42 %}{{ s.x -}}"
+  expected: "42"
+  hint: |
+    SelfDrop is a live context proxy, not a snapshot. If a variable is
+    assigned after self is captured, looking up that variable through
+    the captured SelfDrop should see the later assignment.
+
+- name: self_with_strict_variables_does_not_raise_for_defined_var
+  template: "{{ self.x }}"
+  environment:
+    x: 42
+  error_mode: strict2
+  expected: "42"
+  hint: |
+    Strict variables still allow SelfDrop lookups for keys that are
+    defined in the current context.
+
+- name: self_with_strict_variables_returns_empty_for_undefined_var
+  template: "{{ self.x }}"
+  error_mode: strict2
+  expected: ""
+  hint: |
+    Missing keys through SelfDrop return nil and render empty, even
+    when strict variable handling is enabled.
+
+- name: self_can_be_passed_as_bare_drop_to_render
+  template: "{%- assign x = 42 -%}{%- assign s = self -%}{%- render 'snippet1', drop: s -%}"
+  filesystem:
+    snippet1: "{{- drop.x -}}"
+  expected: "42"
+  hint: |
+    Passing SelfDrop with the generic render parameter name `drop`
+    still preserves the captured context and supports normal lookup.
+
+- name: captured_self_nested_self_ignores_static_environment_self_key
+  template: "{%- assign s = self -%}{%- render 'snippet1', drop: s -%}"
+  environment:
+    self: env
+  filesystem:
+    snippet1: "{{- drop.self }}|{{ drop['self'] -}}"
+  expected: "Liquid::SelfDrop|Liquid::SelfDrop"
+  hint: |
+    Looking up self through a captured SelfDrop re-enters the same
+    unbound-self shortcut as a fresh lookup. Static environment keys
+    named self must not shadow that shortcut, even across render.
+
+- name: self_size_filter_has_no_intrinsic_size
+  template: "{% assign size = 'SSS' %}{{ self.size }}|{{ self['size'] }}|{{ self | size }}"
+  expected: "SSS|SSS|0"
+  hint: |
+    SelfDrop delegates size lookups through the scope, but the size
+    filter sees the SelfDrop object itself. SelfDrop has no intrinsic
+    size, so the filter returns 0.
+
+- name: first_filter_returns_empty_for_self_with_first_key
+  template: "{% assign first = 'FIRST' %}{{ self | first }}|{{ self['first'] }}"
+  expected: "|FIRST"
+  hint: |
+    SelfDrop delegates bracket lookups through the scope, but the first
+    filter sees the SelfDrop object itself. SelfDrop has no intrinsic
+    first value, so the filter returns nil even when a variable named
+    first exists.
+
+- name: last_filter_returns_empty_for_self_with_last_key
+  template: "{% assign last = 'LAST' %}{{ self | last }}|{{ self['last'] }}"
+  expected: "|LAST"
+  hint: |
+    SelfDrop delegates bracket lookups through the scope, but the last
+    filter sees the SelfDrop object itself. SelfDrop has no intrinsic
+    last value, so the filter returns nil even when a variable named
+    last exists.
+
+- name: map_filter_looks_up_self_drop_properties
+  template: "{% assign x = 'X' %}{{ self | map: 'x' | join: ',' }}|{{ self | map: 'missing' | join: ',' }}"
+  expected: "X|"
+  hint: |
+    SelfDrop is iterable as one item for collection filters. Property
+    filters such as map should use normal SelfDrop lookup for each key.
+
+- name: escape_filter_stringifies_self_drop
+  template: "{{ self | escape }}"
+  expected: "Liquid::SelfDrop"
+  hint: |
+    String-oriented filters stringify SelfDrop through Liquid::Drop#to_s.
+
+- name: slice_filter_stringifies_self_drop
+  template: "{{ self | slice: 0, 6 }}|{{ self | slice: 8, 4 }}"
+  expected: "Liquid|Self"
+  hint: |
+    Slice works on SelfDrop after stringifying it to Liquid::SelfDrop.
+
+- name: truncate_filter_stringifies_self_drop
+  template: "{{ self | truncate: 9 }}|{% assign suffix = self %}{{ 'abcdef' | truncate: 5, suffix }}"
+  expected: "Liquid...|Liquid::SelfDrop"
+  hint: |
+    Truncate stringifies SelfDrop both as input and as a custom suffix.
+
+- name: truncatewords_filter_stringifies_self_drop
+  template: "{{ self | truncatewords: 1 }}|{% assign suffix = self %}{{ 'alpha beta gamma' | truncatewords: 1, suffix }}"
+  expected: "Liquid::SelfDrop|alphaLiquid::SelfDrop"
+  hint: |
+    Truncatewords stringifies SelfDrop both as input and as a custom
+    suffix.
+
+- name: url_encode_filter_stringifies_self_drop
+  template: "{{ self | url_encode }}"
+  expected: "Liquid%3A%3ASelfDrop"
+  hint: |
+    URL encoding first stringifies SelfDrop to Liquid::SelfDrop, then
+    percent-encodes the class-name string.
+
 - name: lax_allows_bare_bracket_access
   template: "{{ ['product'] }}"
   environment:
