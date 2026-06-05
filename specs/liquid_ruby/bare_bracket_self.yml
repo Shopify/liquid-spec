@@ -370,6 +370,15 @@
     object keeps looking through the original context, while a fresh
     self lookup inside the snippet sees the snippet scope.
 
+- name: self_passed_as_self_render_param_preserves_original_scope
+  template: "{%- assign x = 1 -%}{%- render 'snippet1', self: self -%}"
+  filesystem:
+    snippet1: "{%- assign x = 2 -%}{{- self['x'] }}|{{ x -}}"
+  expected: "1|2"
+  hint: |
+    Passing SelfDrop with the render parameter name `self` shadows the
+    snippet's fresh self lookup and preserves the caller's original scope.
+
 - name: self_passed_to_nested_renders_preserves_each_level
   template: "{%- assign a = 1 -%}{%- assign s1 = self -%}{%- render 'snippet1', outer: s1 -%}"
   filesystem:
