@@ -275,19 +275,15 @@
     self[...] works inside capture blocks. The captured value is
     rendered using the same variable lookup rules as anywhere else.
 
-- name: self_lookup_when_environment_has_self_key
-  template: "{{ self['key'] }}"
+- name: self_environment_key_shadows_self_drop
+  template: "{{ self }}"
   environment:
     self: env_value
-    key: value
-  expected: "value"
+  expected: "env_value"
   hint: |
-    Even when the environment defines a 'self' key, the `self`
-    keyword still resolves to the SelfDrop for bracket lookups.
-    SelfDrop is returned by find_variable for the 'self' key
-    before environment lookup occurs (unless 'self' was explicitly
-    assigned as a local variable). So self['key'] still does the
-    normal scope-chain lookup and finds 'key'.
+    A static environment variable named `self` shadows the synthetic
+    SelfDrop. Bare `self` only falls back to SelfDrop after normal
+    scope and environment lookup miss.
 
 - name: self_dotted_special_names_delegate_to_scope
   template: "{% assign size = 17 %}{% assign first = 18 %}{% assign last = 19 %}{{ self.size }}|{{ self.first }}|{{ self.last }}"
@@ -321,35 +317,30 @@
     SelfDrop objects. They compare equal because both point at the same
     variable context.
 
-- name: nested_self_ignores_static_environment_self_key
-  template: "{{ self.self }}|{{ self['self'] }}"
+- name: self_environment_key_is_bracket_receiver
+  template: "{{ self['key'] }}|{{ self.key }}"
   environment:
-    self: env
-  expected: "Liquid::SelfDrop|Liquid::SelfDrop"
+    self:
+      key: value
+  expected: "value|value"
   hint: |
-    Looking up self through SelfDrop re-enters Context#find_variable,
-    including the special unbound-self shortcut. A static environment
-    key named self must not shadow that shortcut.
+    When an environment defines `self`, bracket and dot access operate
+    on that environment value. The synthetic SelfDrop is only used when
+    the normal lookup chain doesn't find `self`.
 
-- name: increment_self_does_not_shadow_self_drop
-  template: "{% increment self %}|{{ self }}|{{ self['x'] }}"
-  environment:
-    x: value
-  expected: "0|Liquid::SelfDrop|value"
+- name: increment_self_shadows_self_drop
+  template: "{% increment self %}|{{ self }}"
+  expected: "0|1"
   hint: |
-    Increment counters do not count as local variable bindings for
-    the self shortcut. After increment self, bare self still resolves
-    to SelfDrop.
+    Increment writes its counter into the environment. That environment
+    value shadows the synthetic SelfDrop for later bare `self` lookups.
 
-- name: decrement_self_does_not_shadow_self_drop
-  template: "{% decrement self %}|{{ self }}|{{ self['x'] }}"
-  environment:
-    x: value
-  expected: "-1|Liquid::SelfDrop|value"
+- name: decrement_self_shadows_self_drop
+  template: "{% decrement self %}|{{ self }}"
+  expected: "-1|-1"
   hint: |
-    Decrement counters do not count as local variable bindings for
-    the self shortcut. After decrement self, bare self still resolves
-    to SelfDrop.
+    Decrement writes its counter into the environment. That environment
+    value shadows the synthetic SelfDrop for later bare `self` lookups.
 
 - name: self_in_render_without_passing_resolves_inner_scope
   template: "{%- assign var = 42 -%}{%- render 'snippet1' -%}"
@@ -427,17 +418,18 @@
     Passing SelfDrop with the generic render parameter name `drop`
     still preserves the captured context and supports normal lookup.
 
-- name: captured_self_nested_self_ignores_static_environment_self_key
+- name: captured_environment_self_preserves_environment_value_across_render
   template: "{%- assign s = self -%}{%- render 'snippet1', drop: s -%}"
   environment:
-    self: env
+    self:
+      value: env
   filesystem:
-    snippet1: "{{- drop.self }}|{{ drop['self'] -}}"
-  expected: "Liquid::SelfDrop|Liquid::SelfDrop"
+    snippet1: "{{- drop.value -}}"
+  expected: "env"
   hint: |
-    Looking up self through a captured SelfDrop re-enters the same
-    unbound-self shortcut as a fresh lookup. Static environment keys
-    named self must not shadow that shortcut, even across render.
+    If the environment defines `self`, assigning `self` captures that
+    environment value rather than the synthetic SelfDrop. Passing it
+    through render preserves the captured value as usual.
 
 - name: self_size_filter_has_no_intrinsic_size
   template: "{% assign size = 'SSS' %}{{ self.size }}|{{ self['size'] }}|{{ self | size }}"
