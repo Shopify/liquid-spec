@@ -277,6 +277,7 @@
 
 - name: self_environment_key_shadows_self_drop
   template: "{{ self }}"
+  features: [self_environment_shadowing]
   environment:
     self: env_value
   expected: "env_value"
@@ -319,6 +320,7 @@
 
 - name: self_environment_key_is_bracket_receiver
   template: "{{ self['key'] }}|{{ self.key }}"
+  features: [self_environment_shadowing]
   environment:
     self:
       key: value
@@ -330,6 +332,7 @@
 
 - name: increment_self_shadows_self_drop
   template: "{% increment self %}|{{ self }}"
+  features: [self_environment_shadowing]
   expected: "0|1"
   hint: |
     Increment writes its counter into the environment. That environment
@@ -337,6 +340,7 @@
 
 - name: decrement_self_shadows_self_drop
   template: "{% decrement self %}|{{ self }}"
+  features: [self_environment_shadowing]
   expected: "-1|-1"
   hint: |
     Decrement writes its counter into the environment. That environment
@@ -420,6 +424,7 @@
 
 - name: captured_environment_self_preserves_environment_value_across_render
   template: "{%- assign s = self -%}{%- render 'snippet1', drop: s -%}"
+  features: [self_environment_shadowing]
   environment:
     self:
       value: env
