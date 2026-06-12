@@ -387,6 +387,33 @@
     snippet sees the middle value, and a fresh self lookup in the
     inner snippet sees the inner value.
 
+- name: captured_self_distinguishes_original_and_snippet_scope_at_boundary
+  template: "{%- assign x = 'outer' -%}{%- assign s = self -%}{{- s.x -}}|{%- render 'snippet1', other_self: s -%}"
+  filesystem:
+    snippet1: "{%- assign x = 'snippet' -%}{{- other_self.x }}|{{ self.x -}}"
+  expected: "outer|outer|snippet"
+  hint: |
+    A SelfDrop captured in the outer template keeps resolving through
+    the original scope on BOTH sides of a render boundary: read before
+    the render it sees `outer`, and read again inside the snippet it
+    STILL sees `outer`, while a fresh `self` inside the snippet sees the
+    snippet's `snippet`. This is the partial-state-visibility behavior:
+    the captured self is re-evaluated against the snippet context at the
+    boundary but preserves its original variable resolution.
+
+- name: captured_self_tracks_each_scope_across_nested_render_boundaries
+  template: "{%- assign x = 1 -%}{%- assign s1 = self -%}{{- s1.x -}}|{%- render 'snippet1', outer: s1 -%}"
+  filesystem:
+    snippet1: "{%- assign x = 2 -%}{%- assign s2 = self -%}{{- outer.x }}/{{ s2.x -}}|{%- render 'snippet2', outer: outer, middle: s2 -%}"
+    snippet2: "{%- assign x = 3 -%}{{- outer.x }}/{{ middle.x }}/{{ self.x -}}"
+  expected: "1|1/2|1/2/3"
+  hint: |
+    Each captured SelfDrop preserves the scope it was captured in, read
+    repeatedly across every render boundary it crosses. The outer self
+    always sees 1, the middle self always sees 2, and a fresh self in
+    the innermost snippet sees 3 — proving per-level scope tracking is
+    stable when the same captured drops are re-read at deeper levels.
+
 - name: self_reflects_variables_assigned_after_creation
   template: "{%- assign s = self -%}{%- assign x = 42 %}{{ s.x -}}"
   expected: "42"
