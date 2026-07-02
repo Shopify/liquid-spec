@@ -317,6 +317,14 @@ specs:
   hint: 'Parameters work similarly to render.
 
     '
+- name: include_with_prefixed_keyword_arguments
+  template: "{% assign max_height = 320 %}{% include 'image-style' with image: 'hero', width: max_height, small_style: true %}"
+  filesystem:
+    image-style: "{{ image }}|{{ width }}|{{ small_style }}"
+  expected: "hero|320|true"
+  complexity: 200
+  hint: |
+    In include tags, `with` followed by `name:` starts keyword arguments instead of binding a value to the partial name.
 - name: include_sees_outer_variables
   template: "{% assign outer = 'visible' %}{% include 'snippet' %}"
   filesystem:
