@@ -19,7 +19,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.missing_features = [:shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :activesupport, :lax_parsing]
+  config.missing_features = [:self_environment_shadowing, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :activesupport, :lax_parsing]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|

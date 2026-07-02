@@ -61,6 +61,7 @@ module LiquidSpec
     ruby_types: "Supports Ruby-specific types (symbols in hash keys/output)",
     lax_parsing: "Supports error_mode: :lax for lenient parsing",
     strict2_parsing: "Supports error_mode: :strict2 (Liquid 5.12+ relaxed trailing comma/colon syntax)",
+    self_environment_shadowing: "Environment variables named self shadow the synthetic SelfDrop",
     shopify_tags: "Shopify-specific tags (schema, style, section, etc.)",
     shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
     shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
