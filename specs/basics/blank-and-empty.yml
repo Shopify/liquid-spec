@@ -246,6 +246,26 @@ specs:
     NotEquals comparison. Empty string != empty is false, so the
     else branch executes. This is the idiomatic way to check for content.
 
+- name: "captured_conditional_whitespace_is_blank"
+  template: |-
+    {%- capture maybe_content -%}
+      {% if show %}
+        <div>content</div>
+      {% endif %}
+    {%- endcapture -%}
+    {% if maybe_content != blank %}<section>{{ maybe_content }}</section>{% endif %}
+  environment:
+    show: false
+  expected: ""
+  complexity: 160
+  features: [shopify_blank]
+  hint: |
+    capture stores the rendered output of its body, not the raw template
+    source. If an inner conditional renders no content, the captured value
+    may be empty or whitespace-only and should compare as blank. Compare
+    maybe_content != blank against the captured rendered string; do not
+    treat the presence of tags or skipped markup inside the capture as content.
+
 - name: "complex_empty_guard"
   template: "{% if user != empty and user.name != empty %}{{ user.name }}{% else %}Anonymous{% endif %}"
   environment: { user: { name: "" } }
