@@ -139,6 +139,15 @@ cold load, and steady-state load time/allocations (the compile-once →
 persist → cold load+render production path). Adapters without these hooks
 are unaffected.
 
+### Optional: local suites
+
+Projects can ship their own spec/benchmark suites alongside their adapter:
+any `./specs/<name>/suite.yml` directory in the invoking project is
+discovered next to the gem's builtin suites and selected the same way
+(`-s <name>`). Set `timings: true` in the suite.yml to make it
+benchmarkable with `--bench`, and `default: false` to keep it out of
+regular runs.
+
 ## Test Suites
 
 | Suite | Tests | Description |

@@ -106,10 +106,11 @@ module Liquid
               puts ""
             end
 
+            invoked_from = Dir.pwd
             runs.adapters.each do |adapter|
               cmd = build_cmd(adapter.path, pass_through + ["--jsonl"])
               run_id = Config.generate_run_id
-              env = { "LIQUID_SPEC_RUN_ID" => run_id }
+              env = { "LIQUID_SPEC_RUN_ID" => run_id, "LIQUID_SPEC_LOCAL_DIR" => invoked_from }
 
               unless jsonl_mode
                 print "  \e[2m⏱\e[0m  #{adapter.name} …"
@@ -272,7 +273,8 @@ module Liquid
 
           def exec_adapter(cmd)
             gem_root = File.expand_path("../../../../..", __FILE__)
-            Dir.chdir(gem_root) { system(*cmd) }
+            env = { "LIQUID_SPEC_LOCAL_DIR" => Dir.pwd }
+            Dir.chdir(gem_root) { system(env, *cmd) }
           end
 
           # Scan an adapter file for LiquidSpec.rubyopt declarations

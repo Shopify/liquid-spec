@@ -48,11 +48,22 @@ module Liquid
       end
 
       class << self
-        # Find all suites in the specs directory
+        # Find all suites: the gem's specs directory plus local suites from
+        # ./specs/<name>/suite.yml in the invoking project (so implementations
+        # can ship their own benchmark/spec suites and select them with -s).
+        # LIQUID_SPEC_LOCAL_DIR carries the original working directory across
+        # the chdir that `liquid-spec bench` subprocesses perform.
         def all
-          @all ||= Dir[File.join(SPEC_DIR, "*")].select do |dir|
-            File.directory?(dir) && File.exist?(File.join(dir, SUITE_FILE))
-          end.map { |dir| new(dir) }
+          @all ||= begin
+            dirs = Dir[File.join(SPEC_DIR, "*")]
+            local_root = File.join(ENV["LIQUID_SPEC_LOCAL_DIR"] || Dir.pwd, "specs")
+            if File.expand_path(local_root) != File.expand_path(SPEC_DIR)
+              dirs += Dir[File.join(local_root, "*")]
+            end
+            dirs.select do |dir|
+              File.directory?(dir) && File.exist?(File.join(dir, SUITE_FILE))
+            end.map { |dir| new(dir) }
+          end
         end
 
         # Find default suites (included in :all runs)
