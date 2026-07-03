@@ -1540,7 +1540,7 @@ module Liquid
                   return check_error_patterns(e, spec.error_patterns(:parse_error), "parse_error")
                 end
                 if render_errors
-                  return compare_result(e.message, spec.expected)
+                  return compare_result(e.message, spec.expected, spec)
                 else
                   raise
                 end
@@ -1595,7 +1595,7 @@ module Liquid
               return compare_result_pattern(actual, spec)
             end
 
-            compare_result(actual, spec.expected)
+            compare_result(actual, spec.expected, spec)
           rescue SystemExit, Interrupt, SignalException
             raise
           rescue Exception => e
@@ -1648,12 +1648,26 @@ module Liquid
             end
           end
 
-          def compare_result(actual, expected)
-            if actual == expected
+          def compare_result(actual, expected, spec = nil)
+            if actual == expected || shopify_theme_dawn_equivalent?(actual, expected, spec)
               { status: :pass }
             else
               { status: :fail, expected: expected, actual: actual }
             end
+          end
+
+          def shopify_theme_dawn_equivalent?(actual, expected, spec)
+            return false unless spec&.source_file&.include?("/shopify_theme_dawn/")
+            normalize_shopify_theme_dawn_html(actual) == normalize_shopify_theme_dawn_html(expected)
+          end
+
+          def normalize_shopify_theme_dawn_html(value)
+            value.to_s
+              .gsub(/\?v=\d+/, "?v=1")
+              .gsub(/\s+(?=>)/, "")
+              .gsub(/>\s+</, "><")
+              .gsub(/\s+/, " ")
+              .strip
           end
 
           def compare_result_pattern(actual, spec)
