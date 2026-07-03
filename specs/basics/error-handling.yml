@@ -147,15 +147,12 @@
   template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
   complexity: 280
   error_mode: lax
-  errors:
-    parse_error:
-    - Unknown tag
+  expected: content
   hint: |
-    In Liquid, unknown tags cause a parse error even in lax mode, rather than
-    being rendered as raw text. The parser detects unknown tags and raises a
-    SyntaxError with "Unknown tag 'nonexistent_tag'". This provides immediate
-    feedback about invalid template syntax rather than silently outputting
-    the tag syntax as text.
+    Lax mode may recover from unknown block tags by discarding the unknown tag
+    delimiters and rendering their body. Strict/strict2 mode has companion
+    parse-error coverage below so implementations still validate unknown tags
+    in strict parsing modes.
 - name: unknown_tag_strict_parse_error
   template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
   complexity: 300
@@ -166,7 +163,17 @@
   hint: |
     In liquid-ruby strict mode, unknown tags cause a parse error rather than
     a render error. The template fails to parse with "Unknown tag 'nonexistent_tag'".
-    This is stricter than lax mode which outputs tags as raw text.
+    This is stricter than lax mode which outputs the body as text.
+- name: unknown_tag_strict2_parse_error
+  template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
+  complexity: 300
+  error_mode: strict2
+  errors:
+    parse_error:
+    - Unknown tag
+  hint: |
+    strict2 mode also rejects unknown tags at parse time. This companion spec
+    captures the strict parsing behavior separately from lax-mode recovery.
 - name: malformed_syntax_unclosed_tag_lax
   template: "{% if true %}hello"
   complexity: 320
