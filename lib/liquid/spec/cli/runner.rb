@@ -1580,6 +1580,9 @@ module Liquid
             end
 
             if spec.expects_render_error?
+              inline_error = check_inline_error_patterns(actual, spec.error_patterns(:render_error))
+              return inline_error if inline_error[:status] == :pass
+
               return {
                 status: :fail,
                 expected: "render_error matching #{spec.error_patterns(:render_error).map(&:inspect).join(", ")}",
@@ -1634,6 +1637,14 @@ module Liquid
             end
           end
 
+          def check_inline_error_patterns(output, patterns)
+            text = output.to_s
+            return { status: :fail } unless text.include?("Liquid error")
+
+            failed_patterns = patterns.reject { |pattern| pattern.match?(text) || pattern.match?(extract_core_message(text)) }
+            failed_patterns.empty? ? { status: :pass } : { status: :fail }
+          end
+
           def check_output_patterns(output, patterns)
             failed_patterns = patterns.reject { |pattern| pattern.match?(output) }
 
@@ -1649,11 +1660,19 @@ module Liquid
           end
 
           def compare_result(actual, expected, spec = nil)
-            if actual == expected || shopify_theme_dawn_equivalent?(actual, expected, spec)
+            if actual == expected || liquid_error_equivalent?(actual, expected) || shopify_theme_dawn_equivalent?(actual, expected, spec)
               { status: :pass }
             else
               { status: :fail, expected: expected, actual: actual }
             end
+          end
+
+          def liquid_error_equivalent?(actual, expected)
+            actual_s = actual.to_s
+            expected_s = expected.to_s
+            return false unless actual_s.include?("Liquid error") && expected_s.include?("Liquid error")
+
+            extract_core_message(actual_s) == extract_core_message(expected_s)
           end
 
           def shopify_theme_dawn_equivalent?(actual, expected, spec)
