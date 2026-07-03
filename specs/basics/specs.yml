@@ -1831,6 +1831,23 @@ specs:
   hint: |
     IMPORTANT: Empty strings are TRUTHY in Liquid! This is different from
     many languages. Use {{ str | size }} > 0 to check for non-empty.
+- name: truthy_empty_string_renders_conditional_attribute
+  template: |-
+    {%- liquid
+      assign tag = tag | default: 'section'
+      assign value = settings.value
+    -%}
+    <{{ tag }}{% if value %} data-empty="{{ value }}"{% endif %}>content</{{ tag }}>
+  environment:
+    settings:
+      value: ""
+  expected: '<section data-empty="">content</section>'
+  complexity: 150
+  hint: |
+    IMPORTANT: Empty strings are truthy in Liquid, so {% if value %} must
+    execute even when value is "". Do not reuse host-language truthiness
+    rules that treat empty strings as falsy. Only nil and false are falsy;
+    render the attribute and let {{ value }} output the empty string.
 - name: truthy_zero
   template: "{% if 0 %}yes{% endif %}"
   expected: 'yes'
