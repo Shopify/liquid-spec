@@ -849,6 +849,7 @@ shop:
   url: https://shop1.shopify.shopify-uh49.marcandre-cournoyer.eu.spin.dev
   description: ''
   email: dev@shopify.com
+  name: Shop 1
 theme:
   name: Dawn
   role: main
