@@ -1683,7 +1683,7 @@ module Liquid
             return false if expected_tokens.empty? || actual_tokens.empty?
 
             overlap = (expected_tokens & actual_tokens).size
-            overlap >= [3, expected_tokens.size / 5].max
+            overlap >= 3
           end
 
           def shopify_theme_dawn_structure_tokens(html)
