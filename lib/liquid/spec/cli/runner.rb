@@ -778,6 +778,24 @@ module Liquid
                  "\e[35m#{f.call(r[:render_max]).rjust(8)}\e[0m    " \
                  "[\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m]"
 
+            # Artifact: steady-state load + payload size + cold load
+            if r[:artifact_bytes]
+              kb = r[:artifact_bytes] / 1024.0
+              puts "  Load   (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                   "\e[1;32m#{f.call(r[:load_mean]).rjust(9)}\e[0m ± " \
+                   "\e[32m#{f.call(r[:load_stddev]).rjust(8)}\e[0m    " \
+                   "[\e[34m#{"%.1f" % kb}KB artifact\e[0m, " \
+                   "\e[34m#{Benchmark.fmt_allocs(r[:load_allocs] || 0)} allocs\e[0m, " \
+                   "\e[2m#{Benchmark.fmt_iters(r[:load_iters])} runs\e[0m]"
+              if r[:load_cold_1]
+                total = (r[:load_cold_1] || 0) + (r[:artifact_render_cold_1] || 0)
+                puts "  Load   (\e[33mcold\e[0m + \e[33m1st\e[0m):  " \
+                     "\e[33m#{f.call(r[:load_cold_1]).rjust(9)}\e[0m + " \
+                     "\e[33m#{f.call(r[:artifact_render_cold_1]).rjust(8)}\e[0m    " \
+                     "\e[2m= #{f.call(total)} cold total\e[0m"
+              end
+            end
+
             # Cold: @1 / @10
             if r[:render_cold_1]
               warm = r[:render_mean] || 0
@@ -855,6 +873,18 @@ module Liquid
               ratio = warm_avg > 0 ? cold1_avg / warm_avg : 0
               ratio_s = ratio > 1.05 ? " (%.1fx vs warm)" % ratio : ""
               puts "  \e[1mCold\e[0m    #{f.call(cold1_avg)} @1  /  #{f.call(cold10_avg)} @10#{ratio_s}"
+            end
+
+            loads = ok.map { |r| r[:result][:load_mean] }.compact
+            if loads.any?
+              load_total = loads.sum
+              bytes_total = ok.sum { |r| r[:result][:artifact_bytes] || 0 }
+              load_allocs_t = ok.sum { |r| r[:result][:load_allocs] || 0 }
+              load_iters_t = ok.sum { |r| r[:result][:load_iters] || 0 }
+              puts "  \e[1mLoad\e[0m    #{f.call(load_total / loads.size)} mean/op  │  " \
+                   "#{"%.1f" % (bytes_total / loads.size / 1024.0)}KB avg artifact  │  " \
+                   "#{Benchmark.fmt_allocs(load_allocs_t / loads.size)} allocs/op  │  " \
+                   "#{Benchmark.fmt_iters(load_iters_t)} total runs"
             end
 
             if n > 3
@@ -954,6 +984,31 @@ module Liquid
               }
             end
 
+            # Artifact protocol (optional): verify the dump → load → render
+            # roundtrip reproduces the same output before timing it.
+            dump_proc = nil
+            load_proc = nil
+            if LiquidSpec.artifact_capable?
+              begin
+                blob = LiquidSpec.do_dump_artifact(context)
+                LiquidSpec.do_load_artifact(blob, render_options, context)
+                roundtrip = LiquidSpec.do_render(env_master.dup, render_options, context)
+                if roundtrip != actual
+                  return {
+                    name: spec.name,
+                    iterations: 0,
+                    error: RuntimeError.new("Artifact roundtrip mismatch:\n  Compiled: #{actual.inspect[0..100]}\n  Loaded:   #{roundtrip.inspect[0..100]}"),
+                  }
+                end
+                # Restore the compiled (non-loaded) template
+                LiquidSpec.do_compile(spec.template, compile_options, context)
+                dump_proc = -> { LiquidSpec.do_dump_artifact(context) }
+                load_proc = ->(blob_) { LiquidSpec.do_load_artifact(blob_, render_options, context) }
+              rescue => e
+                return { name: spec.name, iterations: 0, error: RuntimeError.new("Artifact protocol failed: #{e.message}") }
+              end
+            end
+
             # Use shared benchmark infrastructure.
             # env_proc returns a shallow dup — templates may mutate top-level keys
             # via assign/include but won't mutate nested objects.
@@ -962,6 +1017,8 @@ module Liquid
               render_proc:  ->(env) { LiquidSpec.do_render(env, render_options, context) },
               env_proc:     -> { env_master.dup },
               duration:     duration_seconds,
+              dump_proc:    dump_proc,
+              load_proc:    load_proc,
             )
 
             if result[:error]
@@ -1085,6 +1142,21 @@ module Liquid
               at_1: result[:render_cold_1],
               at_10: result[:render_cold_10_mean],
             }
+
+            if result[:artifact_bytes]
+              entry[:artifact] = {
+                bytes: result[:artifact_bytes],
+                load_mean: result[:load_mean],
+                load_stddev: result[:load_stddev],
+                load_min: result[:load_min],
+                load_max: result[:load_max],
+                load_p95: result[:load_p95],
+                load_iters: result[:load_iters],
+                load_allocs: result[:load_allocs],
+                load_cold_1: result[:load_cold_1],
+                render_cold_1: result[:artifact_render_cold_1],
+              }
+            end
 
             if result[:yjit_compiled_iseqs]
               entry[:yjit] = {

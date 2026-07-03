@@ -114,6 +114,31 @@ The `options` hash in render includes:
 - `:strict_errors` - If true, raise errors; if false, render them inline
 - `:exception_renderer` - Custom exception handler (optional)
 
+### Optional: compiled-artifact protocol
+
+If your implementation can persist a compiled template as a string (e.g. an
+ISeq/bytecode blob stored in memcache or a database) and load it back in a
+process that never saw the source, declare both hooks:
+
+```ruby
+# Serialize the compiled template (ctx[:template]) into a String
+LiquidSpec.dump_artifact do |ctx|
+  ctx[:template].to_artifact
+end
+
+# Load an artifact string back into a renderable template
+LiquidSpec.load_artifact do |ctx, blob, options|
+  ctx[:template] = MyLiquid::Artifact.load(blob)
+end
+```
+
+`--bench` then adds an artifact stage per spec: it verifies the
+dump → load → render roundtrip reproduces the compiled template's output,
+and measures payload bytes, cold artifact load time, first render after a
+cold load, and steady-state load time/allocations (the compile-once →
+persist → cold load+render production path). Adapters without these hooks
+are unaffected.
+
 ## Test Suites
 
 | Suite | Tests | Description |

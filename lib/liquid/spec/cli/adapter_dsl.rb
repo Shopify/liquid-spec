@@ -104,7 +104,8 @@ module LiquidSpec
   class SkipAdapter < StandardError; end
 
   class << self
-    attr_reader :compile_block, :render_block, :config, :setup_block, :ctx
+    attr_reader :compile_block, :render_block, :dump_artifact_block, :load_artifact_block,
+      :config, :setup_block, :ctx
     attr_accessor :cli_options, :adapter_name
     attr_reader :adapter_timeout_seconds, :required_rubyopt
 
@@ -150,9 +151,37 @@ module LiquidSpec
       @render_block = block
     end
 
+    # OPTIONAL: define how to serialize the compiled template (ctx[:template])
+    # into a persistable artifact string — the thing an implementation would
+    # store in memcache/DB after compiling once.
+    # Block receives: ctx. Must return a String.
+    #
+    # Declaring BOTH dump_artifact and load_artifact enables the artifact
+    # benchmark stage (`--bench`): payload size, cold artifact load time,
+    # steady-state load time and allocations, plus a roundtrip correctness
+    # check (the loaded artifact must render identical output).
+    def dump_artifact(&block)
+      @dump_artifact_block = block
+    end
+
+    # OPTIONAL: define how to load an artifact string back into a renderable
+    # template, storing it in ctx[:template] (the regular render block is then
+    # used to render it — exactly the production cold path).
+    # Block receives: ctx, blob, load_options.
+    def load_artifact(&block)
+      @load_artifact_block = block
+    end
+
+    # True when the adapter implements the artifact protocol (both hooks).
+    def artifact_capable?
+      !@dump_artifact_block.nil? && !@load_artifact_block.nil?
+    end
+
     def reset!
       @compile_block = nil
       @render_block = nil
+      @dump_artifact_block = nil
+      @load_artifact_block = nil
       @setup_block = nil
       @config = nil
       @ctx = {}
@@ -196,6 +225,20 @@ module LiquidSpec
       raise "No render block defined. Use LiquidSpec.render { |ctx, assigns, render_options| ... }" unless @render_block
 
       invoke_adapter_phase(:render, context) { @render_block.call(@ctx, assigns, render_options) }
+    end
+
+    def do_dump_artifact(context = nil)
+      run_setup!
+      raise "No dump_artifact block defined. Use LiquidSpec.dump_artifact { |ctx| ... }" unless @dump_artifact_block
+
+      invoke_adapter_phase(:dump_artifact, context) { @dump_artifact_block.call(@ctx) }
+    end
+
+    def do_load_artifact(blob, load_options = {}, context = nil)
+      run_setup!
+      raise "No load_artifact block defined. Use LiquidSpec.load_artifact { |ctx, blob, options| ... }" unless @load_artifact_block
+
+      invoke_adapter_phase(:load_artifact, context) { @load_artifact_block.call(@ctx, blob, load_options) }
     end
 
     def adapter_timeout_seconds=(value)

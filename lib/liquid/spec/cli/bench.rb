@@ -171,6 +171,11 @@ module Liquid
                   ritr  = r.dig(:render, :iters) || r[:render_iters] || 0
                   cold1 = r.dig(:cold, :at_1) || r[:render_cold_1]
                   cold10 = r.dig(:cold, :at_10) || r[:render_cold_10_mean]
+                  abytes = r.dig(:artifact, :bytes) || r[:artifact_bytes]
+                  lmean  = r.dig(:artifact, :load_mean) || r[:load_mean]
+                  lstd   = r.dig(:artifact, :load_stddev) || r[:load_stddev] || 0
+                  litr   = r.dig(:artifact, :load_iters) || r[:load_iters] || 0
+                  lcold  = r.dig(:artifact, :load_cold_1) || r[:load_cold_1]
 
                   puts "  \e[1m#{name.ljust(pad)}\e[0m  " \
                        "Parse  (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
@@ -191,6 +196,16 @@ module Liquid
                        "\e[36m#{f.call(rmin).rjust(9)}\e[0m … " \
                        "\e[35m#{f.call(rmax).rjust(8)}\e[0m    " \
                        "[\e[2m#{Benchmark.fmt_iters(ritr)} runs\e[0m]"
+
+                  if abytes && lmean
+                    lcold_s = lcold ? "    \e[2m(cold @1 #{f.call(lcold)})\e[0m" : ""
+                    puts "  #{" " * pad}  " \
+                         "Load   (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
+                         "\e[1;32m#{f.call(lmean).rjust(9)}\e[0m ± " \
+                         "\e[32m#{f.call(lstd).rjust(8)}\e[0m    " \
+                         "[\e[34m#{"%.1f" % (abytes / 1024.0)}KB artifact\e[0m, " \
+                         "\e[2m#{Benchmark.fmt_iters(litr)} runs\e[0m]#{lcold_s}"
+                  end
 
                   if cold1
                     ratio = rmean > 0 ? cold1 / rmean : 0
@@ -289,6 +304,7 @@ module Liquid
 
             parse_ratios = Hash.new { |h, k| h[k] = [] }
             render_ratios = Hash.new { |h, k| h[k] = [] }
+            load_ratios = Hash.new { |h, k| h[k] = [] }
 
             common.each do |sn|
               ref = results_by_adapter[reference]&.find { |r| sk.call(r) == sn }
@@ -296,6 +312,7 @@ module Liquid
 
               ref_parse  = ref.dig(:parse, :mean) || ref[:parse_mean] || ref[:compile_mean]
               ref_render = ref.dig(:render, :mean) || ref[:render_mean]
+              ref_load   = ref.dig(:artifact, :load_mean) || ref[:load_mean]
 
               others.each do |other|
                 o = results_by_adapter[other]&.find { |r| sk.call(r) == sn }
@@ -303,9 +320,11 @@ module Liquid
 
                 o_parse  = o.dig(:parse, :mean) || o[:parse_mean] || o[:compile_mean]
                 o_render = o.dig(:render, :mean) || o[:render_mean]
+                o_load   = o.dig(:artifact, :load_mean) || o[:load_mean]
 
                 parse_ratios[other]  << o_parse / ref_parse   if ref_parse  && o_parse  && ref_parse  > 0
                 render_ratios[other] << o_render / ref_render if ref_render && o_render && ref_render > 0
+                load_ratios[other]   << o_load / ref_load     if ref_load   && o_load   && ref_load   > 0
               end
             end
 
@@ -334,6 +353,22 @@ module Liquid
                 puts "    \e[32m#{adapter}\e[0m is \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
               else
                 puts "    #{adapter} ≈ #{reference}"
+              end
+            end
+
+            if load_ratios.any? { |_, v| v.any? }
+              puts "  \e[1mArtifact load (geometric mean):\e[0m"
+              others.each do |adapter|
+                ratios = load_ratios[adapter]
+                next if ratios.empty?
+                gm = geometric_mean(ratios)
+                if gm > 1.05
+                  puts "    \e[32m#{reference}\e[0m loads \e[1;32m%.2fx faster\e[0m than #{adapter}" % gm
+                elsif gm < 0.95
+                  puts "    \e[32m#{adapter}\e[0m loads \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
+                else
+                  puts "    #{adapter} ≈ #{reference}"
+                end
               end
             end
 

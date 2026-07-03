@@ -32,9 +32,30 @@ module Liquid
           # @param render_proc  [Proc]   ->(env) { render with env }
           # @param env_proc     [Proc]   -> { fresh env shallow-dup }
           # @param duration     [Float]  total seconds (split compile/render)
+          # @param dump_proc    [Proc, nil] -> { serialize compiled template → String }
+          # @param load_proc    [Proc, nil] ->(blob) { load artifact → renderable template }
           # @return [Hash] result with all metrics, or { error: Exception }
-          def run(compile_proc:, render_proc:, env_proc:, duration:)
-            half = duration / 2.0
+          #
+          # When dump_proc AND load_proc are given, an artifact stage measures
+          # the compile-once → persist → cold load+render production path:
+          # payload bytes, cold artifact load, first render after a cold load,
+          # and steady-state load time/allocations. The load loop runs with GC
+          # ENABLED — every load allocates a fresh template (ISeq/proc), which
+          # is exactly the allocation profile of a production cold load.
+          def run(compile_proc:, render_proc:, env_proc:, duration:, dump_proc: nil, load_proc: nil)
+            artifact = !dump_proc.nil? && !load_proc.nil?
+            half = artifact ? duration / 3.0 : duration / 2.0
+
+            # ── 0. Artifact cold stage (before anything warms) ───────────
+            if artifact
+              GC.start(full_mark: true, immediate_sweep: true)
+              compile_proc.call
+              blob = dump_proc.call
+              payload_bytes = blob.bytesize
+              GC.start(full_mark: true, immediate_sweep: true)
+              load_cold_1 = time_once { load_proc.call(blob) }
+              artifact_render_cold_1 = time_once { render_proc.call(env_proc.call) }
+            end
 
             # ── 1. Cold renders (before any warmup) ──────────────────────
             # Snapshot YJIT before any render of this template
@@ -76,12 +97,38 @@ module Liquid
             # Snapshot YJIT after all renders (cold + warm + timed)
             yjit_after = yjit_snapshot
 
-            build_result(
+            # ── 7. Artifact steady-state stage (GC ON — see docstring) ───
+            if artifact
+              GC.start
+              load_allocs = measure_allocs(3) { load_proc.call(blob) }
+              load_stats = timed_loop(half) { load_proc.call(blob) }
+              # Leave ctx[:template] in the compiled (non-loaded) state
+              compile_proc.call
+            end
+
+            result = build_result(
               compile_stats, render_stats,
               compile_allocs, render_allocs,
               cold_1, cold_10,
               yjit_delta(yjit_before, yjit_after, render_stats[:iters]),
             )
+            if artifact
+              result.merge!(
+                artifact_bytes:         payload_bytes,
+                load_median:            load_stats[:median],
+                load_mean:              load_stats[:mean],
+                load_min:               load_stats[:min],
+                load_max:               load_stats[:max],
+                load_stddev:            load_stats[:stddev],
+                load_p95:               load_stats[:p95],
+                load_iters:             load_stats[:iters],
+                load_samples:           load_stats[:samples],
+                load_allocs:            load_allocs,
+                load_cold_1:            load_cold_1,
+                artifact_render_cold_1: artifact_render_cold_1,
+              )
+            end
+            result
           rescue => e
             GC.enable rescue nil
             { error: e }
