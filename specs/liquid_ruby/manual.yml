@@ -40,6 +40,7 @@
   filesystem:
     foo: "{% include 'bar' %}"
   render_errors: true
+  complexity: 300
   features: [inline_errors, shopify_error_format]
   errors:
     output:
@@ -79,6 +80,7 @@
       - invalid integer
       - after,end
   render_errors: true
+  complexity: 300
   features: [inline_errors]
   hint: |
     Tests inline error rendering in a partial. The error occurs on line 2
@@ -89,24 +91,28 @@
   template: "{% if 1.5 >= 1 %}YES{% endif %}"
   environment: {}
   expected: "YES"
+  complexity: 300
   filesystem: {}
 
 - name: For loop with limit that is an undefined variable
   template: "{% for item in array limit:a %}NO{% endfor %}"
   environment: {}
   expected: ""
+  complexity: 300
   filesystem: {}
 
 - name: For loop with offset that is an undefined variable
   template: "{% for item in array offset:a %}NO{% endfor %}"
   environment: {}
   expected: ""
+  complexity: 300
   filesystem: {}
 
 - name: Comparing undefined variables in if statement
   template: "{% if a <= b %}NO{% endif %}"
   environment: {}
   expected: ""
+  complexity: 300
   filesystem: {}
 
 - name: Lookup first on hash
@@ -116,6 +122,7 @@
       hello: world
       foo: bar
   expected: "helloworld"
+  complexity: 300
 
 - name: Lookup first on hash gives priority to existing key
   template: "{{ my_hash.first }}"
@@ -125,6 +132,7 @@
       foo: bar
       first: priority
   expected: "priority"
+  complexity: 300
 
 - name: Lookup last on hash returns none
   template: "{{ my_hash.last }}"
@@ -133,27 +141,32 @@
       hello: world
       foo: bar
   expected: ""
+  complexity: 300
 
 - name: Lookup first on range
   template: "{% assign my_range = (3..5) %}{{ my_range.first }}"
   expected: "3"
+  complexity: 300
 
 - name: Lookup last on range
   template: "{% assign my_range = (3..5) %}{{ my_range.last }}"
   environment: {}
   expected: "5"
+  complexity: 300
 
 - name: Range bound lax int string parsing
   template: "{{ (2..end) }}"
   environment:
     end: "6b"
   expected: "2..6"
+  complexity: 300
 
 - name: Range bound dynamic type check rejects float
   template: "{{ (1..end) }}"
   environment:
     end: 2.5
   render_errors: true
+  complexity: 300
   features: [inline_errors]
   errors:
     output:
@@ -162,6 +175,7 @@
 - name: Tablerow renders empty string when lookup returns nil
   template: "{% tablerow a in b %}{% endtablerow %}"
   expected: ""
+  complexity: 300
 
 - name: Tablerow renders single column when lookup is a string and limit is less than 1
   template: "{% tablerow a in 'abc' limit: 0 %}{{ a }}{% endtablerow %}"
@@ -178,6 +192,7 @@
 - name: Tablerow throws invalid integer error when limit isn't a number
   template: "{% tablerow a in '' limit: true %}{{ a }}{% endtablerow %}"
   render_errors: true
+  complexity: 300
   features: [inline_errors]
   errors:
     output:
@@ -186,46 +201,55 @@
 - name: Tablerow doesn't throw error when limit isn't a number and lookup is undefined
   template: "{% tablerow a in b limit: true %}{{ a }}{% endtablerow %}"
   expected: ""
+  complexity: 300
 
 - name: Tablerow with nil collection doesn't pop parent iterator
   template: "{% for i in (0..1) %}{% tablerow a in b %}{{ a }}{% endtablerow %}{{ i }}{% endfor %}"
   expected: "01"
+  complexity: 300
 
 - name: Comparing empty and blank resolves to false
   template: "{% if blank == empty %}NOPE{% endif %}"
   expected: ""
+  complexity: 300
 
 - name: Comparing empty and empty resolves to false
   template: "{% if empty == empty %}NOPE{% endif %}"
   expected: ""
+  complexity: 300
 
 - name: Comparing blank and blank resolves to false
   template: "{% if blank == blank %}NOPE{% endif %}"
   expected: ""
+  complexity: 300
 
 - name: Reading a variable before assigning it in a local scope
   environment:
     x: 1
   template: "{% for i in (1..1) %}{{ x }}{% assign x = 2 %}{{ x }}{% endfor %}"
   expected: "12"
+  complexity: 300
 
 - name: Truncatewords only splits by UTF-8 ASCII whitespaces
   environment:
     x: "There is non\u202fbreaking whitespace here"
   template: "{{ x | truncatewords: 3}}"
   expected: "There is non\u202fbreaking..."
+  complexity: 300
 
 - name: Truncatewords replaces UTF-8 ASCII whitespaces to a space character
   environment:
     x: "\vGround\tcontrol\nto\rMajor\nTom."
   template: "{{ x | truncatewords: 3}}"
   expected: "Ground control to..."
+  complexity: 300
 
 - name: Tablerow renders empty string when collection is false
   template: "{% tablerow a in collection %}{{ a }}{% endtablerow %}"
   environment:
     collection: false
   expected: ""
+  complexity: 300
 
 - name: Case statement flows through multiple truthy cases
   template: |-
@@ -238,6 +262,7 @@
         else
     {%- endcase -%}
   expected: "helloworld"
+  complexity: 300
 
 - name: Case statement flows through multiple Else cases
   template: |-
@@ -257,6 +282,7 @@
         another else
     {%- endcase -%}
   expected: "helloworld!"
+  complexity: 300
 
 - name: Case tag with Else case in between when
   template: |-
@@ -273,6 +299,7 @@
         another else
     {%- endcase -%}
   expected: "helloworld!"
+  complexity: 300
 
 - name: Case tag inside a Case tag
   template: |-
@@ -287,6 +314,7 @@
       else
     {%- endcase -%}
   expected: "helloworld"
+  complexity: 300
 
 - name: Short circuit operator precedence
   template:
@@ -337,6 +365,7 @@
     %}{% unless false or false and false %}a{% else %}b{% endunless %}{% unless false
     or false or false %}a{% else %}b{% endunless %}"
   expected: aaaabaaabaaabbaabbaabbbabbbabbbbbbbbabbbabbbaabbaabbaaabaaabaaaa
+  complexity: 300
   environment: {}
 
 - name: Render for with alias and args that match alias
@@ -346,6 +375,7 @@
   environment:
     items: 1,2,3
   expected: "123"
+  complexity: 300
 
 - name: Render for with alias and args where arg value equals alias value
   template: "{% render 'child' for items as item x:item %}"
@@ -354,6 +384,7 @@
   environment:
     items: [1, 2, 3]
   expected: ""
+  complexity: 300
 
 - name: Render for with alias and args where arg value equals alias and arg is defined
   template: "{% render 'child' for items as item x:item %}"
@@ -363,6 +394,7 @@
     items: [1, 2, 3]
     x: "a"
   expected: ""
+  complexity: 300
 
 - name: Render for with no args
   template: "{% render 'child' for items as item %}"
@@ -371,6 +403,7 @@
   environment:
     items: [1, 2, 3]
   expected: "123"
+  complexity: 300
 
 - name: Render for and arg name value equal to forloop drop name and value
   template: "{% render 'item' for items x:item %}"
@@ -379,12 +412,14 @@
   environment:
     items: [1, 2, 3]
   expected: "123"
+  complexity: 300
 
 - name: Render for with args where arg is assigned
   template: "{% assign item = 0 %}{% render 'child' for items as item item:item %}"
   filesystem:
     child: "{{ item }}"
   expected: "0"
+  complexity: 300
 
 - name: Render for with args where arg is assigned and items has values
   template: "{% assign item = 0 %}{% render 'child' for items as item item:item %}"
@@ -393,6 +428,7 @@
   environment:
     items: [1, 2, 3]
   expected: "123"
+  complexity: 300
 
 - name: Render for with string as collection
   template: "{% render 'child' for 'abd' as item item:item %}"
@@ -401,6 +437,7 @@
   environment:
     items: [1, 2, 3]
   expected: "abd"
+  complexity: 300
 
 - name: Parameter cannot access previous parameter
   template: "{% render 'child' a: 1, b: 2, c: a %}"
@@ -408,3 +445,4 @@
     child: "c:{{ c }}"
   environment: {}
   expected: "c:"
+  complexity: 300

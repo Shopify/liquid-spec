@@ -18,4 +18,4 @@ required_features:
 
 defaults:
   render_errors: false
-  complexity: 1000
+  complexity: 190

@@ -9,6 +9,7 @@
       assign y = false
     %}IF_BRANCH x={{ x }}{% else %}ELSE_BRANCH{% endif %}
   expected: ELSE_BRANCH
+  complexity: 500
   environment:
     show: false
     a: true
@@ -29,6 +30,7 @@
       endif
     %}IF_BRANCH x={{ x }} y={{ y }}{% else %}ELSE_BRANCH{% endif %}
   expected: IF_BRANCH x=true y=false
+  complexity: 500
   environment:
     product: something
     a: true
@@ -47,6 +49,7 @@
     echo greeting
     %}
   expected: hello
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
@@ -63,6 +66,7 @@
     endfor
     %}
   expected: '12'
+  complexity: 500
   environment:
     items:
     - 1
@@ -85,6 +89,7 @@
     echo result
     %}
   expected: hello
+  complexity: 500
   environment:
     x: a
     result: hello
@@ -95,6 +100,7 @@
   template: '{%- for i in items -%}{%- case i -%}{%- when "a" -%}A{%- endcase -%}{%-
     endfor -%}AFTER'
   expected: AFTER
+  complexity: 500
   environment:
     items: []
   filesystem:
@@ -113,6 +119,7 @@
     endif
     %}
   expected: B
+  complexity: 500
   environment:
     show: true
     x: b
@@ -130,6 +137,7 @@
     endcase
     %}
   expected: AB
+  complexity: 500
   environment:
     x: b
   filesystem:
@@ -146,6 +154,7 @@
     endcase
     %}
   expected: A
+  complexity: 500
   environment:
     x: a
   filesystem:
@@ -162,6 +171,7 @@
     endcase
     %}
   expected: two
+  complexity: 500
   environment:
     x: 2
   filesystem:
@@ -178,6 +188,7 @@
     endcase
     %}
   expected: A
+  complexity: 500
   environment:
     x: a
   filesystem:
@@ -194,6 +205,7 @@
     endcase
     %}
   expected: B
+  complexity: 500
   environment:
     x: b
   filesystem:
@@ -210,6 +222,7 @@
     endcase
     %}
   expected: ''
+  complexity: 500
   environment:
     x: z
   filesystem:
@@ -226,6 +239,7 @@
     endcase
     %}
   expected: default
+  complexity: 500
   environment:
     x: z
   filesystem:
@@ -245,6 +259,7 @@
     endcase
     %}
   expected: '1 2 3 '
+  complexity: 500
   environment:
     mode: list
     items:
@@ -265,6 +280,7 @@
     echo "B"
     %}
   expected: AB
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
@@ -276,6 +292,7 @@
     endfor
     %}
   expected: abcab
+  complexity: 500
   environment:
     items:
     - 1
@@ -293,6 +310,7 @@
     decrement x
     %}
   expected: "-1-2"
+  complexity: 500
   environment:
     x: -2
   filesystem:
@@ -314,6 +332,7 @@
     endif
     %}
   expected: two
+  complexity: 500
   environment:
     x: 2
   filesystem:
@@ -335,6 +354,7 @@
     endif
     %}
   expected: four
+  complexity: 500
   environment:
     x: 4
   filesystem:
@@ -356,6 +376,7 @@
     endif
     %}
   expected: other
+  complexity: 500
   environment:
     x: 5
   filesystem:
@@ -377,6 +398,7 @@
     endif
     %}
   expected: three
+  complexity: 500
   environment:
     x: 3
   filesystem:
@@ -398,6 +420,7 @@
     endif
     %}
   expected: one
+  complexity: 500
   environment:
     x: 1
   filesystem:
@@ -417,6 +440,7 @@
     endif
     %}
   expected: one
+  complexity: 500
   environment:
     x: 1
   filesystem:
@@ -436,6 +460,7 @@
     endif
     %}
   expected: two
+  complexity: 500
   environment:
     x: 2
   filesystem:
@@ -455,6 +480,7 @@
     endif
     %}
   expected: other
+  complexity: 500
   environment:
     x: 4
   filesystem:
@@ -474,6 +500,7 @@
     endif
     %}
   expected: three
+  complexity: 500
   environment:
     x: 3
   filesystem:
@@ -489,6 +516,7 @@
     endfor
     %}
   expected: empty
+  complexity: 500
   environment:
     items: []
   filesystem:
@@ -504,6 +532,7 @@
     endfor
     %}
   expected: '12'
+  complexity: 500
   environment:
     items:
     - 1
@@ -527,6 +556,7 @@
     endfor
     %}
   expected: 'one two ? '
+  complexity: 500
   environment:
     items:
     - 1
@@ -552,6 +582,7 @@
     endfor
     %}
   expected: onetwoother
+  complexity: 500
   environment:
     items:
     - 1
@@ -572,6 +603,7 @@
     endif
     %}
   expected: 'yes'
+  complexity: 500
   environment:
     x: true
   filesystem:
@@ -587,6 +619,7 @@
     endif
     %}
   expected: 'no'
+  complexity: 500
   environment:
     x: false
   filesystem:
@@ -622,6 +655,7 @@
     endfor
     %}
   expected: '123'
+  complexity: 500
   environment:
     items:
     - 1
@@ -640,6 +674,7 @@
     endfor
     %}
   expected: '1'
+  complexity: 500
   environment:
     items:
     - 1
@@ -658,6 +693,7 @@
     endfor
     %}
   expected: '123'
+  complexity: 500
   environment:
     items:
     - 1
@@ -676,6 +712,7 @@
     increment x
     %}
   expected: '012'
+  complexity: 500
   environment:
     x: 3
   filesystem:
@@ -689,6 +726,7 @@
     echo "B"
     %}
   expected: AB
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
@@ -705,6 +743,7 @@
     echo "B"
     %}
   expected: AB
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
@@ -714,6 +753,7 @@
     render 'snippet', name: 'World'
     %}
   expected: Hello World
+  complexity: 500
   filesystem:
     snippet: Hello {{ name }}
   caller_location: test/liquid_tag_test.rb:27
@@ -818,6 +858,7 @@
     endunless
     %}
   expected: 'yes'
+  complexity: 500
   environment:
     x: false
   filesystem:
@@ -833,6 +874,7 @@
     endunless
     %}
   expected: 'no'
+  complexity: 500
   environment:
     x: true
   filesystem:

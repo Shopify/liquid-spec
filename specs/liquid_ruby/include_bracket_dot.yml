@@ -2,6 +2,7 @@
 - name: RecordedTest#IncludeBracketDotTest#test_include_with_bracket_dot_expression_in_arg_cecbd434
   template: "{% include 'snippet', items: data[config.key].values %}"
   expected: "[a][b][c]"
+  complexity: 500
   environment:
     data:
       my_menu:
@@ -18,6 +19,7 @@
 - name: RecordedTest#IncludeBracketDotTest#test_include_with_simple_bracket_expression_in_arg_d0395a60
   template: "{% include 'snippet', items: data[key].values %}"
   expected: "[x][y]"
+  complexity: 500
   environment:
     data:
       my_menu:
@@ -33,6 +35,7 @@
   template: "{% assign a = 2 %}{% assign b = 1 %}{% if a > b or x == blank %}YES{%
     else %}NO{% endif %}"
   expected: 'YES'
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/include_bracket_dot_test.rb:30
@@ -40,6 +43,7 @@
   template: "{% assign a = 2 %}{% assign b = 1 %}{% if a > b or x == empty %}YES{%
     else %}NO{% endif %}"
   expected: 'YES'
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/include_bracket_dot_test.rb:30
@@ -47,6 +51,7 @@
   template: "{% assign d = 2 %}{% if d > 1 or items == blank %}YES{% else %}NO{% endif
     %}"
   expected: 'YES'
+  complexity: 500
   filesystem:
     _error-message: This liquid context does not allow includes.
   caller_location: test/include_bracket_dot_test.rb:30

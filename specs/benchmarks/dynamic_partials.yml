@@ -9,7 +9,7 @@ _metadata:
 specs:
 
 - name: bench_dynamic_partials
-  complexity: 1000
+  complexity: 190
   hint: |
     A page built from dynamic sections. Each section type maps to a different
     partial via {% assign tpl = section.type %}{% include tpl %}. The grid

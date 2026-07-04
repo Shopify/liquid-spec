@@ -4,21 +4,25 @@
   environment:
     a0: true
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_274595c0
   template: "{{ a0 | abs }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_2caaf9fe
   template: "{{ a0 | abs }}"
   environment:
     a0: -1234.003030303
   expected: '1234.003030303'
+  complexity: 40
 - name: StandardFilterTest#test_abs_2cdc63ba
   template: "{{ a0 | abs }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_abs_2ff2a03c
   template: "{{ a0 | abs }}"
   environment:
@@ -31,6 +35,7 @@
       - foo
       - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_4c0b4660
   template: "{{ a0 | abs }}"
   environment:
@@ -38,6 +43,7 @@
     - foo
     - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_6ba1148f
   template: "{{ a0 | abs }}"
   environment:
@@ -51,6 +57,7 @@
     - - foo
     - :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -61,6 +68,7 @@
     a0:
       foo: bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_96155aac
   template: "{{ a0 | abs }}"
   environment:
@@ -68,6 +76,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_abs_b248a944
@@ -75,17 +84,20 @@
   environment:
     a0: -99999999
   expected: '99999999'
+  complexity: 40
 - name: StandardFilterTest#test_abs_b3703c45
   template: "{{ a0 | abs }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_abs_b78aab2f
   template: "{{ a0 | abs }}"
   environment:
     a0:
       :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_abs_d18cb3bf
@@ -93,12 +105,14 @@
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_d684b86e
   template: "{{ a0 | abs }}"
   environment:
     a0:
       1: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_abs_d79d1bb4
@@ -106,16 +120,19 @@
   environment:
     a0: false
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_f4900ecf
   template: "{{ a0 | abs }}"
   environment:
     a0:
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_abs_fe4e2ade
   template: "{{ a0 | abs }}"
   environment:
     a0: foo
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_base64_decode_0524bc39
   template: "{{ a0 | base64_decode }}"
   environment:
@@ -127,6 +144,7 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_base64_decode_3a53835f
   template: "{{ a0 | base64_decode }}"
   environment:
@@ -138,11 +156,13 @@
   environment:
     a0: 4pyF
   expected: "✅"
+  complexity: 40
 - name: StandardFilterTest#test_base64_decode_a615cd66
   template: "{{ a0 | base64_decode }}"
   environment:
     a0: b25lIHR3byB0aHJlZQ==
   expected: one two three
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_05ef1d71
   template: "{{ a0 | base64_encode }}"
   environment:
@@ -156,6 +176,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -177,6 +198,7 @@
     a0:
       1: bar
   expected: ezE9PiJiYXIifQ==
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_base64_encode_18c6c9c8
@@ -184,16 +206,19 @@
   environment:
     a0: -99999999
   expected: LTk5OTk5OTk5
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_1a7245be
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: 0
   expected: MA==
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_2acb8869
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: false
   expected: ZmFsc2U=
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_3b4b7075
   template: "{{ a0 | base64_encode }}"
   environment:
@@ -206,32 +231,38 @@
       - foo
       - bar
   expected: W3siZm9vIj0+ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0+bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_583e4f19
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_5eae5d9e
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
       foo: bar
   expected: eyJmb28iPT4iYmFyIn0=
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_745dbfb3
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: -1234.003030303
   expected: LTEyMzQuMDAzMDMwMzAz
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_8ee87794
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: 1234.3838300038383
   expected: MTIzNC4zODM4MzAwMDM4Mzgz
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_a0236850
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: one two three
   expected: b25lIHR3byB0aHJlZQ==
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_aa1e677f
   template: "{{ a0 | base64_encode }}"
   environment:
@@ -239,6 +270,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: d29vdDogMA==
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_base64_encode_cbe9e66f
@@ -246,6 +278,7 @@
   environment:
     a0: foo
   expected: Zm9v
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_d7f23ad8
   template: "{{ a0 | base64_encode }}"
   environment:
@@ -253,22 +286,26 @@
     - foo
     - bar
   expected: WyJmb28iLCAiYmFyIl0=
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_d8c11de3
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: 123
   expected: MTIz
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_dc04f457
   template: "{{ a0 | base64_encode }}"
   environment:
     a0: true
   expected: dHJ1ZQ==
+  complexity: 40
 - name: StandardFilterTest#test_base64_encode_ede76037
   template: "{{ a0 | base64_encode }}"
   environment:
     a0:
       :foo: bar
   expected: ezpmb289PiJiYXIifQ==
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_base64_encode_f5c3c752
@@ -276,21 +313,25 @@
   environment:
     a0: 0.0
   expected: MC4w
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_decode_01dcd34c
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8
   expected: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_decode_064821cc
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_decode_567959c5
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: 4pyF
   expected: "✅"
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_decode_57dc2594
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
@@ -314,6 +355,7 @@
   environment:
     a0: 0.0
   expected: MC4w
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_266d1c9e
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -327,6 +369,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -347,16 +390,19 @@
   environment:
     a0: false
   expected: ZmFsc2U=
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_417f0e9c
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: -1234.003030303
   expected: LTEyMzQuMDAzMDMwMzAz
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_47542c68
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: 1234.3838300038383
   expected: MTIzNC4zODM4MzAwMDM4Mzgz
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_4aece6f5
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -369,12 +415,14 @@
       - foo
       - bar
   expected: W3siZm9vIj0-ImJhciJ9LCB7ImZvbyI9PjEyM30sIHsiZm9vIj0-bmlsfSwgeyJmb28iPT50cnVlfSwgeyJmb28iPT5bImZvbyIsICJiYXIiXX1d
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_4b6afce9
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
       1: bar
   expected: ezE9PiJiYXIifQ==
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_base64_url_safe_encode_5827a928
@@ -382,22 +430,26 @@
   environment:
     a0: 0
   expected: MA==
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_656b8a35
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: foo
   expected: Zm9v
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_65789965
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
       foo: bar
   expected: eyJmb28iPT4iYmFyIn0=
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_717153e1
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: 123
   expected: MTIz
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_84911ee7
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -405,17 +457,20 @@
     - foo
     - bar
   expected: WyJmb28iLCAiYmFyIl0=
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_94430c23
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: -99999999
   expected: LTk5OTk5OTk5
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_9475bdaf
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0:
       :foo: bar
   expected: ezpmb289PiJiYXIifQ==
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_base64_url_safe_encode_a5e8f0a9
@@ -423,16 +478,19 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_bddf3bc6
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: true
   expected: dHJ1ZQ==
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_d106fe79
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
     a0: abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()-=_+/?.:;[]{}\|
   expected: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXogQUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogMTIzNDU2Nzg5MCAhQCMkJV4mKigpLT1fKy8_Ljo7W117fVx8
+  complexity: 40
 - name: StandardFilterTest#test_base64_url_safe_encode_e58b3bc5
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -440,6 +498,7 @@
       'instantiate:ToSDrop:':
         foo: 0
   expected: d29vdDogMQ==
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_capitalize_04d26e85
@@ -447,12 +506,14 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_0d6f28a1
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_capitalize_17453339
@@ -460,17 +521,20 @@
   environment:
     a0: foo
   expected: Foo
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_1ee3a5c2
   template: "{{ a0 | capitalize }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_223a986d
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_capitalize_38a9a61f
@@ -486,6 +550,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -506,37 +571,44 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_6b50dfd3
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_73aa609e
   template: "{{ a0 | capitalize }}"
   environment:
     a0: true
   expected: 'True'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_7a0c7fd3
   template: "{{ a0 | capitalize }}"
   environment:
     a0: false
   expected: 'False'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_7a3dab5b
   template: "{{ a0 | capitalize }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_8c7efd4e
   template: "{{ a0 | capitalize }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_9495a91c
   template: "{{ a0 | capitalize }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_c219139a
   template: "{{ a0 | capitalize }}"
   environment:
@@ -557,11 +629,13 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_d4c32ba1
   template: "{{ a0 | capitalize }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_capitalize_d51d0c95
   template: "{{ a0 | capitalize }}"
   environment:
@@ -569,6 +643,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'Woot: 5'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_ceil_1f10ca85
@@ -577,6 +652,7 @@
     a0:
       1: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_ceil_20e88c97
@@ -585,6 +661,7 @@
     a0:
       :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_ceil_296cf205
@@ -592,16 +669,19 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_312070a0
   template: "{{ a0 | ceil }}"
   environment:
     a0: -1234.003030303
   expected: "-1234"
+  complexity: 40
 - name: StandardFilterTest#test_ceil_37a7100a
   template: "{{ a0 | ceil }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_3ca96ef2
   template: "{{ a0 | ceil }}"
   environment:
@@ -615,6 +695,7 @@
     - - foo
     - :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -624,22 +705,26 @@
   environment:
     a0: 1234.3838300038383
   expected: '1235'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_6eb27d27
   template: "{{ a0 | ceil }}"
   environment:
     a0: false
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_8288bd76
   template: "{{ a0 | ceil }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_ceil_8f210727
   template: "{{ a0 | ceil }}"
   environment:
     a0:
       foo: bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_9bf48bf1
   template: "{{ a0 | ceil }}"
   environment:
@@ -647,6 +732,7 @@
     - foo
     - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_c883baf9
   template: "{{ a0 | ceil }}"
   environment:
@@ -654,6 +740,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_ceil_e5a0f77f
@@ -661,16 +748,19 @@
   environment:
     a0:
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_ec282662
   template: "{{ a0 | ceil }}"
   environment:
     a0: foo
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_f472fc66
   template: "{{ a0 | ceil }}"
   environment:
     a0: 0.0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_f769d783
   template: "{{ a0 | ceil }}"
   environment:
@@ -683,21 +773,25 @@
       - foo
       - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_ceil_fa59e65e
   template: "{{ a0 | ceil }}"
   environment:
     a0: true
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_compact_0a69c9cc
   template: "{{ a0 | compact }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_compact_13fafe13
   template: "{{ a0 | compact }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_compact_1c685a84
   template: "{{ a0 | compact }}"
   environment:
@@ -705,6 +799,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 1'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_compact_2b01e238
@@ -720,6 +815,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -740,11 +836,13 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_compact_31ab8fc4
   template: "{{ a0 | compact }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_compact_3620392c
   template: "{{ a0 | compact }}"
   environment:
@@ -752,22 +850,26 @@
     - foo
     - bar
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_compact_3be2ddce
   template: "{{ a0 | compact }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_compact_4ade44b2
   template: "{{ a0 | compact }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_compact_4b7213b2
   template: "{{ a0 | compact }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_compact_8f8a64eb
@@ -775,17 +877,20 @@
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_compact_9dbc5c7b
   template: "{{ a0 | compact }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_compact_a6ee35bd
   template: "{{ a0 | compact }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_compact_c15694ad
   template: "{{ a0 | compact }}"
   environment:
@@ -798,22 +903,26 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+  complexity: 40
 - name: StandardFilterTest#test_compact_ccaffe07
   template: "{{ a0 | compact }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_compact_d92d2afb
   template: "{{ a0 | compact }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_compact_e0dc2496
   template: "{{ a0 | compact }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_compact_fc6ebab1
@@ -822,6 +931,7 @@
     a0: []
     a1: a
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_concat_3cc2b81f
   template: "{{ a0 | concat: a1 }}"
   environment:
@@ -832,6 +942,7 @@
     - 3
     - 4
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_concat_3dea5944
   template: "{{ a0 | concat: a1 }}"
   environment:
@@ -841,6 +952,7 @@
     a1:
     - a
   expected: 12a
+  complexity: 40
 - name: StandardFilterTest#test_concat_906718d8
   template: "{{ a0 | concat: a1 }}"
   environment:
@@ -850,130 +962,152 @@
     a1:
     - 10
   expected: '1210'
+  complexity: 40
 - name: StandardFilterTest#test_date_1b4f436a
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 2006-07-05 10:00:00.000000000 -04:00
     a1: "%B"
   expected: July
+  complexity: 40
 - name: StandardFilterTest#test_date_254039a5
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 1152098955
     a1: "%m/%d/%Y"
   expected: 07/05/2006
+  complexity: 40
 - name: StandardFilterTest#test_date_26252a9b
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-05-05 10:00:00'
     a1: "%B"
   expected: May
+  complexity: 40
 - name: StandardFilterTest#test_date_42fd707e
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: ''
     a1: "%B"
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_date_4ef9359a
   template: "{{ a0 | date: a1 }}"
   environment:
     a0:
     a1: "%B"
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_date_5a853799
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: Today
     a1: "%Y"
   expected: '2024'
+  complexity: 40
 - name: StandardFilterTest#test_date_5bc100c3
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-06-05 10:00:00'
     a1: "%B"
   expected: June
+  complexity: 40
 - name: StandardFilterTest#test_date_64097fb5
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-07-05 10:00:00'
     a1: "%m/%d/%Y"
   expected: 07/05/2006
+  complexity: 40
 - name: StandardFilterTest#test_date_6bc8d29d
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-07-05 10:00:00'
     a1: "%B"
   expected: July
+  complexity: 40
 - name: StandardFilterTest#test_date_741fb80e
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-07-05 10:00:00'
     a1: ''
   expected: '2006-07-05 10:00:00'
+  complexity: 40
 - name: StandardFilterTest#test_date_7a6d52ba
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: Fri Jul 16 01:00:00 2004
     a1: "%m/%d/%Y"
   expected: 07/16/2004
+  complexity: 40
 - name: StandardFilterTest#test_date_7d8d7e0f
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: today
     a1: "%Y"
   expected: '2024'
+  complexity: 40
 - name: StandardFilterTest#test_date_84b7dcec
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '1152098955'
     a1: "%m/%d/%Y"
   expected: 07/05/2006
+  complexity: 40
 - name: StandardFilterTest#test_date_917287b4
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 2006-06-05 10:00:00.000000000 -04:00
     a1: "%B"
   expected: June
+  complexity: 40
 - name: StandardFilterTest#test_date_b43c9613
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: 2006-05-05 10:00:00.000000000 -04:00
     a1: "%B"
   expected: May
+  complexity: 40
 - name: StandardFilterTest#test_date_e5c63040
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: now
     a1: "%Y"
   expected: '2024'
+  complexity: 40
 - name: StandardFilterTest#test_date_ed00d695
   template: "{{ a0 | date: a1 }}"
   environment:
     a0: '2006-07-05 10:00:00'
     a1:
   expected: '2006-07-05 10:00:00'
+  complexity: 40
 - name: StandardFilterTest#test_default_1281e6c9
   template: "{{ a0 | default: a1 }}"
   environment:
     a0: ''
     a1: bar
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_18b9c904
   template: "{{ a0 | default }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_default_19a88fce
   template: "{{ a0 | default: a1 }}"
   environment:
     a0: {}
     a1: bar
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_203ca4eb
   template: "{{ a0 | default }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_default_246cc9ec
   template: "{{ a0 | default: a1, allow_false: true }}"
   environment:
@@ -982,12 +1116,14 @@
     a2:
       allow_false: true
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_2858b76a
   template: "{{ a0 | default }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_default_2f14ba4e
@@ -996,12 +1132,14 @@
     a0:
     a1: bar
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_350c791c
   template: "{{ a0 | default: a1 }}"
   environment:
     a0: []
     a1: bar
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_37dc8148
   template: "{{ a0 | default: a1, allow_false: true }}"
   environment:
@@ -1010,16 +1148,19 @@
     a2:
       allow_false: true
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_3bce02da
   template: "{{ a0 | default }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_default_3cceaa49
   template: "{{ a0 | default }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_default_43dbbb97
   template: "{{ a0 | default }}"
   environment:
@@ -1027,6 +1168,7 @@
       'instantiate:ToSDrop:':
         foo: 7
   expected: 'woot: 9'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_default_446f9bac
@@ -1041,12 +1183,14 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+  complexity: 40
 - name: StandardFilterTest#test_default_46899810
   template: "{{ a0 | default }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_default_59e6b2cd
@@ -1054,27 +1198,32 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_default_5b3b96bd
   template: "{{ a0 | default }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_default_65b543df
   template: "{{ a0 | default }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_default_7c2b2d11
   template: "{{ a0 | default }}"
   environment:
     a0: false
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_default_84f30d94
   template: "{{ a0 | default: a1 }}"
   environment:
     a0: false
     a1: bar
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_85afd5ad
   template: "{{ a0 | default: a1, allow_false: true }}"
   environment:
@@ -1083,6 +1232,7 @@
     a2:
       allow_false: true
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_96ebf824
   template: "{{ a0 | default: a1, allow_false: true }}"
   environment:
@@ -1091,6 +1241,7 @@
     a2:
       allow_false: true
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_default_9944b1ef
   template: "{{ a0 | default: a1, allow_false: true }}"
   environment:
@@ -1099,6 +1250,7 @@
     a2:
       allow_false: true
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_default_9c498060
   template: "{{ a0 | default }}"
   environment:
@@ -1106,6 +1258,7 @@
     - foo
     - bar
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_default_9ee110c1
   template: "{{ a0 | default: a1, allow_false: true }}"
   environment:
@@ -1114,17 +1267,20 @@
     a2:
       allow_false: true
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_default_9ee50606
   template: "{{ a0 | default: a1 }}"
   environment:
     a0: foo
     a1: bar
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_default_9fb9f023
   template: "{{ a0 | default }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_default_a8c7a8f0
   template: "{{ a0 | default }}"
   environment:
@@ -1138,6 +1294,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -1158,12 +1315,14 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_default_e24094d3
   template: "{{ a0 | default }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_0d719d03
   template: "{{ a0 | downcase }}"
   environment:
@@ -1177,6 +1336,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -1197,11 +1357,13 @@
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_10868113
   template: "{{ a0 | downcase }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_15239390
   template: "{{ a0 | downcase }}"
   environment:
@@ -1209,6 +1371,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'woot: 5'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_downcase_385c4591
@@ -1216,37 +1379,44 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_54ac9796
   template: "{{ a0 | downcase }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_5d28ec5a
   template: "{{ a0 | downcase }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_5f1a5415
   template: "{{ a0 | downcase }}"
   environment:
     a0: Testing
   expected: testing
+  complexity: 40
 - name: StandardFilterTest#test_downcase_5f94219f
   template: "{{ a0 | downcase }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_downcase_6b8a78b8
   template: "{{ a0 | downcase }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_downcase_86297cb2
   template: "{{ a0 | downcase }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_downcase_92e1d269
@@ -1267,17 +1437,20 @@
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_c7375fc1
   template: "{{ a0 | downcase }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_downcase_d71f7e24
   template: "{{ a0 | downcase }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_e9ff2ac8
   template: "{{ a0 | downcase }}"
   environment:
@@ -1285,17 +1458,20 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_downcase_f0501f12
   template: "{{ a0 | downcase }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_downcase_f801a0a9
   template: "{{ a0 | downcase }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_escape_015bf946
@@ -1303,12 +1479,14 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_escape_23020003
   template: "{{ a0 | escape }}"
   environment:
     a0:
       :foo: bar
   expected: "{:foo=&gt;&quot;bar&quot;}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_escape_27b5ea83
@@ -1316,12 +1494,14 @@
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_escape_37b22d4f
   template: "{{ a0 | escape }}"
   environment:
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_escape_4269ff9d
@@ -1329,27 +1509,32 @@
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_escape_4845fffc
   template: "{{ a0 | escape }}"
   environment:
     a0: 1
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_escape_6b68e52c
   template: "{{ a0 | escape }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_escape_70a99bc2
   template: "{{ a0 | escape }}"
   environment:
     a0:
       foo: bar
   expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+  complexity: 40
 - name: StandardFilterTest#test_escape_7227a9c0
   template: "{{ a0 | escape }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_escape_80764d48
   template: "{{ a0 | escape }}"
   environment:
@@ -1363,6 +1548,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -1383,11 +1569,13 @@
   environment:
     a0: 2001-02-03
   expected: '2001-02-03'
+  complexity: 40
 - name: StandardFilterTest#test_escape_9873d8e5
   template: "{{ a0 | escape }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_escape_9ad53a32
   template: "{{ a0 | escape }}"
   environment:
@@ -1395,6 +1583,7 @@
     - foo
     - bar
   expected: "[&quot;foo&quot;, &quot;bar&quot;]"
+  complexity: 40
 - name: StandardFilterTest#test_escape_9c32bd69
   template: "{{ a0 | escape }}"
   environment:
@@ -1402,6 +1591,7 @@
       'instantiate:ToSDrop:':
         foo: 3
   expected: 'woot: 4'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_escape_db3990d0
@@ -1409,21 +1599,25 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_escape_de8fc715
   template: "{{ a0 | escape }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_escape_f1f0880b
   template: "{{ a0 | escape }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_escape_f80cd6bb
   template: "{{ a0 | escape }}"
   environment:
     a0: "<strong>"
   expected: "&lt;strong&gt;"
+  complexity: 40
 - name: StandardFilterTest#test_escape_fa9d5e38
   template: "{{ a0 | escape }}"
   environment:
@@ -1442,12 +1636,14 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_06b6f716
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
       foo: bar
   expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_0fadc690
   template: "{{ a0 | escape_once }}"
   environment:
@@ -1466,12 +1662,14 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_23d17827
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
       :foo: bar
   expected: "{:foo=&gt;&quot;bar&quot;}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_escape_once_24a25f87
@@ -1479,16 +1677,19 @@
   environment:
     a0: "&lt;strong&gt;Hulk</strong>"
   expected: "&lt;strong&gt;Hulk&lt;/strong&gt;"
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_4490ef5a
   template: "{{ a0 | escape_once }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_5a92397f
   template: "{{ a0 | escape_once }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_697ef598
   template: "{{ a0 | escape_once }}"
   environment:
@@ -1502,6 +1703,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -1522,11 +1724,13 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_701a8e81
   template: "{{ a0 | escape_once }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_81e5b732
   template: "{{ a0 | escape_once }}"
   environment:
@@ -1534,22 +1738,26 @@
     - foo
     - bar
   expected: "[&quot;foo&quot;, &quot;bar&quot;]"
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_823fc7d4
   template: "{{ a0 | escape_once }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_98cd7425
   template: "{{ a0 | escape_once }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_a7f64e39
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_escape_once_ae0ac47d
@@ -1559,6 +1767,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_escape_once_b1335893
@@ -1566,16 +1775,19 @@
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_cd1a61bb
   template: "{{ a0 | escape_once }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_escape_once_e05388e6
   template: "{{ a0 | escape_once }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_find_ca0151cc
   template: "{{ a0 | find: a1, a2 }}"
   environment:
@@ -1583,6 +1795,7 @@
     a1: foo
     a2: bar
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_find_index_c7159fd4
   template: "{{ a0 | find_index: a1, a2 }}"
   environment:
@@ -1590,6 +1803,7 @@
     a1: foo
     a2: bar
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_06bd56f6
   template: "{{ a0 | first }}"
   environment:
@@ -1597,6 +1811,7 @@
       'instantiate:ToSDrop:':
         foo: 7
   expected: ''
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_first_103b3aa9
@@ -1604,12 +1819,14 @@
   environment:
     a0: foo
   expected: f
+  complexity: 40
 - name: StandardFilterTest#test_first_1067f918
   template: "{{ a0 | first }}"
   environment:
     a0:
       1: bar
   expected: 1bar
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_first_2e9dd802
@@ -1617,11 +1834,13 @@
   environment:
     a0: []
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_2f148d93
   template: "{{ a0 | first }}"
   environment:
     a0: 0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_37f399a1
   template: "{{ a0 | first }}"
   environment:
@@ -1634,17 +1853,20 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_first_86c1404c
   template: "{{ a0 | first }}"
   environment:
     a0: -1234.003030303
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_89078879
   template: "{{ a0 | first }}"
   environment:
     a0:
       foo: bar
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_first_916bafce
   template: "{{ a0 | first }}"
   environment:
@@ -1658,6 +1880,7 @@
     - - foo
     - :foo: bar
   expected: foo
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -1667,11 +1890,13 @@
   environment:
     a0: 1234.3838300038383
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_9ba0095d
   template: "{{ a0 | first }}"
   environment:
     a0: -99999999
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_a8bc75aa
   template: "{{ a0 | first }}"
   environment:
@@ -1679,32 +1904,38 @@
     - foo
     - bar
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_first_b63531c8
   template: "{{ a0 | first }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_c694417c
   template: "{{ a0 | first }}"
   environment:
     a0: ''
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_cf1e4831
   template: "{{ a0 | first }}"
   environment:
     a0: 123
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_d14ee2e5
   template: "{{ a0 | first }}"
   environment:
     a0: 0.0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_d2020706
   template: "{{ a0 | first }}"
   environment:
     a0:
       :foo: bar
   expected: foobar
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_first_d9a563ef
@@ -1712,16 +1943,19 @@
   environment:
     a0: true
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_dcb51cea
   template: "{{ a0 | first }}"
   environment:
     a0: 고스트빈
   expected: 고
+  complexity: 40
 - name: StandardFilterTest#test_first_ddcadb4d
   template: "{{ a0 | first }}"
   environment:
     a0: false
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_first_eebd6e2f
   template: "{{ a0 | first }}"
   environment:
@@ -1730,11 +1964,13 @@
     - 2
     - 3
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_floor_01dd4de6
   template: "{{ a0 | floor }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_floor_1efc10a5
   template: "{{ a0 | floor }}"
   environment:
@@ -1748,6 +1984,7 @@
     - - foo
     - :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -1764,27 +2001,32 @@
       - foo
       - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_3ad45232
   template: "{{ a0 | floor }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_520fec2d
   template: "{{ a0 | floor }}"
   environment:
     a0: -1234.003030303
   expected: "-1235"
+  complexity: 40
 - name: StandardFilterTest#test_floor_736614c6
   template: "{{ a0 | floor }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_floor_78b085eb
   template: "{{ a0 | floor }}"
   environment:
     a0:
       :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_floor_79de08ab
@@ -1792,6 +2034,7 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_floor_7a6f72c6
   template: "{{ a0 | floor }}"
   environment:
@@ -1799,22 +2042,26 @@
     - foo
     - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_89b72167
   template: "{{ a0 | floor }}"
   environment:
     a0:
       foo: bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_8f18b4b5
   template: "{{ a0 | floor }}"
   environment:
     a0: foo
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_9394ec0c
   template: "{{ a0 | floor }}"
   environment:
     a0: 0.0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_9885b994
   template: "{{ a0 | floor }}"
   environment:
@@ -1822,6 +2069,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_floor_af74b0fe
@@ -1829,22 +2077,26 @@
   environment:
     a0:
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_c7a25940
   template: "{{ a0 | floor }}"
   environment:
     a0: false
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_dd81e266
   template: "{{ a0 | floor }}"
   environment:
     a0: true
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_floor_f89d3c3b
   template: "{{ a0 | floor }}"
   environment:
     a0:
       1: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_h_15d599cb
@@ -1853,6 +2105,7 @@
     a0:
       1: bar
   expected: "{1=&gt;&quot;bar&quot;}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_h_168177ce
@@ -1860,11 +2113,13 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_h_16c12518
   template: "{{ a0 | h }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_h_1a4be4f2
   template: "{{ a0 | h }}"
   environment:
@@ -1878,6 +2133,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -1898,32 +2154,38 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_h_35abf0be
   template: "{{ a0 | h }}"
   environment:
     a0: "<strong>"
   expected: "&lt;strong&gt;"
+  complexity: 40
 - name: StandardFilterTest#test_h_3bd5cc2f
   template: "{{ a0 | h }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_h_3d24a166
   template: "{{ a0 | h }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_h_463c04cc
   template: "{{ a0 | h }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_h_60dd6e2d
   template: "{{ a0 | h }}"
   environment:
     a0:
       :foo: bar
   expected: "{:foo=&gt;&quot;bar&quot;}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_h_82dc265e
@@ -1931,6 +2193,7 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_h_90aa2f49
   template: "{{ a0 | h }}"
   environment:
@@ -1951,11 +2214,13 @@
     - foo
     - bar
   expected: "[&quot;foo&quot;, &quot;bar&quot;]"
+  complexity: 40
 - name: StandardFilterTest#test_h_a316dc8f
   template: "{{ a0 | h }}"
   environment:
     a0: 2001-02-03
   expected: '2001-02-03'
+  complexity: 40
 - name: StandardFilterTest#test_h_b96bc5dd
   template: "{{ a0 | h }}"
   environment:
@@ -1963,6 +2228,7 @@
       'instantiate:ToSDrop:':
         foo: 8
   expected: 'woot: 9'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_h_c2040486
@@ -1970,27 +2236,32 @@
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_h_ce0da501
   template: "{{ a0 | h }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_h_d34223e7
   template: "{{ a0 | h }}"
   environment:
     a0: 1
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_h_f3cd1e67
   template: "{{ a0 | h }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_h_fd09005f
   template: "{{ a0 | h }}"
   environment:
     a0:
       foo: bar
   expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
+  complexity: 40
 - name: StandardFilterTest#test_has_abbdd009
   template: "{{ a0 | has: a1, a2 }}"
   environment:
@@ -1998,32 +2269,38 @@
     a1: foo
     a2: bar
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_join_0084b15a
   template: "{{ a0 | join }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_join_024b672a
   template: "{{ a0 | join }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_join_03815dba
   template: "{{ a0 | join }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_join_0788acdd
   template: "{{ a0 | join }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_join_12893eb0
   template: "{{ a0 | join }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_join_2b25189e
   template: "{{ a0 | join: a1 }}"
   environment:
@@ -2034,6 +2311,7 @@
         value: i did it
     a1: ", "
   expected: i did it, i did it
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_join_37113f09
@@ -2046,16 +2324,19 @@
     - 4
     a1: 1
   expected: '1121314'
+  complexity: 40
 - name: StandardFilterTest#test_join_3f853efa
   template: "{{ a0 | join }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_join_4a0ad0d3
   template: "{{ a0 | join }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_join_4f707377
   template: "{{ a0 | join }}"
   environment:
@@ -2076,6 +2357,7 @@
     - foo
     - bar
   expected: foo bar
+  complexity: 40
 - name: StandardFilterTest#test_join_77c17e2e
   template: "{{ a0 | join }}"
   environment:
@@ -2083,6 +2365,7 @@
       'instantiate:ToSDrop:':
         foo: 5
   expected: 'woot: 7'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_join_89aba551
@@ -2094,11 +2377,13 @@
     - 3
     - 4
   expected: 1 2 3 4
+  complexity: 40
 - name: StandardFilterTest#test_join_902bc907
   template: "{{ a0 | join }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_join_918aafb7
   template: "{{ a0 | join: a1 }}"
   environment:
@@ -2109,12 +2394,14 @@
     - 4
     a1: " - "
   expected: 1 - 2 - 3 - 4
+  complexity: 40
 - name: StandardFilterTest#test_join_a2cdd87d
   template: "{{ a0 | join }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_join_a43bcd49
@@ -2123,6 +2410,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_join_a91697b6
@@ -2130,11 +2418,13 @@
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_join_c7c214c7
   template: "{{ a0 | join }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_join_cb69175e
   template: "{{ a0 | join }}"
   environment:
@@ -2148,6 +2438,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -2168,16 +2459,19 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_last_0e1428a7
   template: "{{ a0 | last }}"
   environment:
     a0: false
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_0f0a8b10
   template: "{{ a0 | last }}"
   environment:
     a0: 1234.3838300038383
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_16eb1e04
   template: "{{ a0 | last }}"
   environment:
@@ -2190,12 +2484,14 @@
       - foo
       - bar
   expected: '{"foo"=>["foo", "bar"]}'
+  complexity: 40
 - name: StandardFilterTest#test_last_1aad0557
   template: "{{ a0 | last }}"
   environment:
     a0:
       1: bar
   expected: ''
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_last_1b048787
@@ -2211,6 +2507,7 @@
     - - foo
     - :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -2220,33 +2517,39 @@
   environment:
     a0: 0.0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_26b39f04
   template: "{{ a0 | last }}"
   environment:
     a0:
       foo: bar
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_291f9ac3
   template: "{{ a0 | last }}"
   environment:
     a0: 고스트빈
   expected: 빈
+  complexity: 40
 - name: StandardFilterTest#test_last_6eeb2255
   template: "{{ a0 | last }}"
   environment:
     a0: -1234.003030303
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_71402616
   template: "{{ a0 | last }}"
   environment:
     a0: ''
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_9633012b
   template: "{{ a0 | last }}"
   environment:
     a0:
       :foo: bar
   expected: ''
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_last_b12b4f55
@@ -2256,36 +2559,43 @@
     - foo
     - bar
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_last_b30d8ccd
   template: "{{ a0 | last }}"
   environment:
     a0: 123
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_c5c4586e
   template: "{{ a0 | last }}"
   environment:
     a0: -99999999
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_db8e4125
   template: "{{ a0 | last }}"
   environment:
     a0: []
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_e2d6a8d1
   template: "{{ a0 | last }}"
   environment:
     a0: 0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_e590e39b
   template: "{{ a0 | last }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_e785a892
   template: "{{ a0 | last }}"
   environment:
     a0: true
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_last_ef0291e8
   template: "{{ a0 | last }}"
   environment:
@@ -2294,6 +2604,7 @@
     - 2
     - 3
   expected: '3'
+  complexity: 40
 - name: StandardFilterTest#test_last_faf44a00
   template: "{{ a0 | last }}"
   environment:
@@ -2301,6 +2612,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: ''
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_last_fca759f7
@@ -2308,6 +2620,7 @@
   environment:
     a0: foo
   expected: o
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_1db23b1b
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2321,6 +2634,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -2341,23 +2655,27 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_368da2df
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_41fc0f85
   template: "{{ a0 | lstrip }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_65d1c7bc
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_lstrip_691fd32c
@@ -2365,11 +2683,13 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_8071cd4c
   template: "{{ a0 | lstrip }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_8da3db70
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2377,21 +2697,25 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_97c080be
   template: "{{ a0 | lstrip }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_a090a6df
   template: "{{ a0 | lstrip }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_d7ff71c5
   template: "{{ a0 | lstrip }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_ea81e581
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2411,6 +2735,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_lstrip_f4f42172
@@ -2418,16 +2743,19 @@
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_f59542d2
   template: "{{ a0 | lstrip }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_fa920ab5
   template: "{{ a0 | lstrip }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_lstrip_fc2aa840
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2435,6 +2763,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 7'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_map_519eec4b
@@ -2447,47 +2776,56 @@
     - a: 4
     a1: a
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_11c10291
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_1a12c1c2
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_2bbeff79
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_39ab0e30
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_43604aea
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_51a97a51
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_52938eb3
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_5b36a66d
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_newline_to_br_652ed44a
@@ -2497,12 +2835,14 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_83ccb915
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_newline_to_br_88717d1a
@@ -2510,6 +2850,7 @@
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_8e868ecc
   template: "{{ a0 | newline_to_br }}"
   environment:
@@ -2536,6 +2877,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -2556,17 +2898,20 @@
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_cdf518e5
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_f45921f4
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_newline_to_br_f8ffd2fd
   template: "{{ a0 | newline_to_br }}"
   environment:
@@ -2574,6 +2919,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: 'woot: 2'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_remove_147c7a7d
@@ -2582,18 +2928,21 @@
     a0: a a a a
     a1: a
   expected: "   "
+  complexity: 40
 - name: StandardFilterTest#test_remove_first_4a640728
   template: "{{ a0 | remove_first: a1 }}"
   environment:
     a0: a b a a
     a1: 'a '
   expected: b a a
+  complexity: 40
 - name: StandardFilterTest#test_remove_last_e85df76b
   template: "{{ a0 | remove_last: a1 }}"
   environment:
     a0: a a b a
     a1: " a"
   expected: a a b
+  complexity: 40
 - name: StandardFilterTest#test_replace_4627a8f1
   template: "{{ a0 | replace: a1, a2 }}"
   environment:
@@ -2601,6 +2950,7 @@
     a1: 2
     a2: 3
   expected: 1 1 1 1
+  complexity: 40
 - name: StandardFilterTest#test_replace_49a5d526
   template: "{{ a0 | replace: a1, a2 }}"
   environment:
@@ -2608,6 +2958,7 @@
     a1: a
     a2: ''
   expected: "   "
+  complexity: 40
 - name: StandardFilterTest#test_replace_61636a85
   template: "{{ a0 | replace: a1, a2 }}"
   environment:
@@ -2615,6 +2966,7 @@
     a1: a
     a2: b
   expected: b b b b
+  complexity: 40
 - name: StandardFilterTest#test_replace_937aab4c
   template: "{{ a0 | replace: a1, a2 }}"
   environment:
@@ -2622,6 +2974,7 @@
     a1: 1
     a2: 2
   expected: 2 2 2 2
+  complexity: 40
 - name: StandardFilterTest#test_replace_first_0d061ae1
   template: "{{ a0 | replace_first: a1, a2 }}"
   environment:
@@ -2629,6 +2982,7 @@
     a1: 1
     a2: 2
   expected: 2 1 1 1
+  complexity: 40
 - name: StandardFilterTest#test_replace_first_8bcf660d
   template: "{{ a0 | replace_first: a1, a2 }}"
   environment:
@@ -2636,6 +2990,7 @@
     a1: a
     a2: b
   expected: b a a a
+  complexity: 40
 - name: StandardFilterTest#test_replace_first_c348a1d5
   template: "{{ a0 | replace_first: a1, a2 }}"
   environment:
@@ -2643,6 +2998,7 @@
     a1: 'a '
     a2: ''
   expected: b a a
+  complexity: 40
 - name: StandardFilterTest#test_replace_first_ec828c94
   template: "{{ a0 | replace_first: a1, a2 }}"
   environment:
@@ -2650,6 +3006,7 @@
     a1: 2
     a2: 3
   expected: 1 1 1 1
+  complexity: 40
 - name: StandardFilterTest#test_replace_last_312a73ed
   template: "{{ a0 | replace_last: a1, a2 }}"
   environment:
@@ -2657,6 +3014,7 @@
     a1: " a"
     a2: ''
   expected: a a b
+  complexity: 40
 - name: StandardFilterTest#test_replace_last_44e0bf6c
   template: "{{ a0 | replace_last: a1, a2 }}"
   environment:
@@ -2664,6 +3022,7 @@
     a1: a
     a2: b
   expected: a a a b
+  complexity: 40
 - name: StandardFilterTest#test_replace_last_6b9ed879
   template: "{{ a0 | replace_last: a1, a2 }}"
   environment:
@@ -2671,6 +3030,7 @@
     a1: 2
     a2: 3
   expected: 1 1 1 1
+  complexity: 40
 - name: StandardFilterTest#test_replace_last_d4a40871
   template: "{{ a0 | replace_last: a1, a2 }}"
   environment:
@@ -2678,22 +3038,26 @@
     a1: 1
     a2: 2
   expected: 1 1 1 2
+  complexity: 40
 - name: StandardFilterTest#test_reverse_0127e20d
   template: "{{ a0 | reverse }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_reverse_28f3733c
   template: "{{ a0 | reverse }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_reverse_365ed512
   template: "{{ a0 | reverse }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_3b3b8b0b
   template: "{{ a0 | reverse }}"
   environment:
@@ -2706,17 +3070,20 @@
       - foo
       - bar
   expected: '{"foo"=>["foo", "bar"]}{"foo"=>true}{"foo"=>nil}{"foo"=>123}{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_3dd9b45b
   template: "{{ a0 | reverse }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_3f288885
   template: "{{ a0 | reverse }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_reverse_4a4b9b4a
@@ -2724,6 +3091,7 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_594e414a
   template: "{{ a0 | reverse }}"
   environment:
@@ -2737,6 +3105,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -2759,6 +3128,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'woot: 6'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_reverse_7d361a86
@@ -2766,6 +3136,7 @@
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_reverse_80c6b94d
   template: "{{ a0 | reverse }}"
   environment:
@@ -2773,27 +3144,32 @@
     - foo
     - bar
   expected: barfoo
+  complexity: 40
 - name: StandardFilterTest#test_reverse_81aa5182
   template: "{{ a0 | reverse }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_8d586369
   template: "{{ a0 | reverse }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_9e752362
   template: "{{ a0 | reverse }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_d714ad07
   template: "{{ a0 | reverse }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_reverse_e630c96e
@@ -2801,11 +3177,13 @@
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_f4a787ad
   template: "{{ a0 | reverse }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_reverse_fa5fad2e
   template: "{{ a0 | reverse }}"
   environment:
@@ -2815,6 +3193,7 @@
     - 3
     - 4
   expected: '4321'
+  complexity: 40
 - name: StandardFilterTest#test_reverse_fd89e13b
   template: "{{ a0 | reverse }}"
   environment:
@@ -2822,6 +3201,7 @@
       :a: 1
       :b: 2
   expected: "{:a=>1, :b=>2}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_round_0cc8a4b0
@@ -2829,11 +3209,13 @@
   environment:
     a0: -1234.003030303
   expected: "-1234"
+  complexity: 40
 - name: StandardFilterTest#test_round_17a8f23f
   template: "{{ a0 | round }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_round_5ddf32ab
   template: "{{ a0 | round }}"
   environment:
@@ -2847,6 +3229,7 @@
     - - foo
     - :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -2857,6 +3240,7 @@
     a0:
       1: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_round_64f27055
@@ -2864,11 +3248,13 @@
   environment:
     a0: foo
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_8a714a18
   template: "{{ a0 | round }}"
   environment:
     a0: false
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_8aba8608
   template: "{{ a0 | round }}"
   environment:
@@ -2876,6 +3262,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_round_93e6c0cb
@@ -2884,22 +3271,26 @@
     a0:
       foo: bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_95a64390
   template: "{{ a0 | round }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_9860e89b
   template: "{{ a0 | round }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_round_b6dcafc2
   template: "{{ a0 | round }}"
   environment:
     a0:
       :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_round_ca1b586c
@@ -2914,6 +3305,7 @@
       - foo
       - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_d2964074
   template: "{{ a0 | round }}"
   environment:
@@ -2921,26 +3313,31 @@
     - foo
     - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_d4e12b7f
   template: "{{ a0 | round }}"
   environment:
     a0: 0.0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_dbefafcf
   template: "{{ a0 | round }}"
   environment:
     a0:
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_dbf6c574
   template: "{{ a0 | round }}"
   environment:
     a0: true
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_round_e663b83f
   template: "{{ a0 | round }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_036978d1
   template: "{{ a0 | rstrip }}"
   environment:
@@ -2948,6 +3345,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 7'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_rstrip_0e32369a
@@ -2956,6 +3354,7 @@
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_rstrip_1f72cde9
@@ -2976,21 +3375,25 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_5a471975
   template: "{{ a0 | rstrip }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_6fda52e6
   template: "{{ a0 | rstrip }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_71018170
   template: "{{ a0 | rstrip }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_7ad0647f
   template: "{{ a0 | rstrip }}"
   environment:
@@ -3004,6 +3407,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -3024,27 +3428,32 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_96ef0d31
   template: "{{ a0 | rstrip }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_9c1cec69
   template: "{{ a0 | rstrip }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_9cf63ba7
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_bcf58881
   template: "{{ a0 | rstrip }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_c4b432ac
   template: "{{ a0 | rstrip }}"
   environment:
@@ -3052,22 +3461,26 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_e6b9ce33
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_e7faf381
   template: "{{ a0 | rstrip }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_rstrip_f0082356
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_size_11612dc3
@@ -3075,16 +3488,19 @@
   environment:
     a0: 0
   expected: '8'
+  complexity: 40
 - name: StandardFilterTest#test_size_160caa3c
   template: "{{ a0 | size }}"
   environment:
     a0:
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_size_19211e49
   template: "{{ a0 | size }}"
   environment:
     a0: foo
   expected: '3'
+  complexity: 40
 - name: StandardFilterTest#test_size_195c1efe
   template: "{{ a0 | size }}"
   environment:
@@ -3098,6 +3514,7 @@
     - - foo
     - :foo: bar
   expected: '8'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -3107,12 +3524,14 @@
   environment:
     a0: []
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_size_4b6a3ab5
   template: "{{ a0 | size }}"
   environment:
     a0:
       1: bar
   expected: '1'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_size_8b29fccf
@@ -3120,11 +3539,13 @@
   environment:
     a0: -1234.003030303
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_size_a2d44740
   template: "{{ a0 | size }}"
   environment:
     a0: false
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_size_b1737cff
   template: "{{ a0 | size }}"
   environment:
@@ -3132,12 +3553,14 @@
     - foo
     - bar
   expected: '2'
+  complexity: 40
 - name: StandardFilterTest#test_size_b7364ced
   template: "{{ a0 | size }}"
   environment:
     a0:
       :foo: bar
   expected: '1'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_size_bdbea2e5
@@ -3145,6 +3568,7 @@
   environment:
     a0: true
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_size_c118bf4c
   template: "{{ a0 | size }}"
   environment:
@@ -3153,17 +3577,20 @@
     - 2
     - 3
   expected: '3'
+  complexity: 40
 - name: StandardFilterTest#test_size_c240c6f9
   template: "{{ a0 | size }}"
   environment:
     a0: 123
   expected: '8'
+  complexity: 40
 - name: StandardFilterTest#test_size_c2a19f5e
   template: "{{ a0 | size }}"
   environment:
     a0:
       foo: bar
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_size_c7f49a2c
   template: "{{ a0 | size }}"
   environment:
@@ -3171,6 +3598,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_size_cca95d86
@@ -3178,11 +3606,13 @@
   environment:
     a0: -99999999
   expected: '8'
+  complexity: 40
 - name: StandardFilterTest#test_size_e214386f
   template: "{{ a0 | size }}"
   environment:
     a0: 1234.3838300038383
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_size_ed2e24a2
   template: "{{ a0 | size }}"
   environment:
@@ -3195,11 +3625,13 @@
       - foo
       - bar
   expected: '5'
+  complexity: 40
 - name: StandardFilterTest#test_size_f02829e8
   template: "{{ a0 | size }}"
   environment:
     a0: 0.0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_slice_038877e7
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3207,6 +3639,7 @@
     a1: 1
     a2: 3
   expected: oob
+  complexity: 40
 - name: StandardFilterTest#test_slice_070ad0df
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3220,6 +3653,7 @@
     a1: -9223372036854775808
     a2: 6
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_0866971a
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3233,6 +3667,7 @@
     a1: -2
     a2: 1000
   expected: ar
+  complexity: 40
 - name: StandardFilterTest#test_slice_2f0dee7a
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3246,6 +3681,7 @@
     a1: 1
     a2: 3
   expected: oob
+  complexity: 40
 - name: StandardFilterTest#test_slice_306b74a9
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3259,6 +3695,7 @@
     a1: 1
     a2: 1
   expected: o
+  complexity: 40
 - name: StandardFilterTest#test_slice_364352a9
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3266,6 +3703,7 @@
     a1: -2
     a2: 1000
   expected: ar
+  complexity: 40
 - name: StandardFilterTest#test_slice_6aea00c9
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3273,6 +3711,7 @@
     a1: '1'
     a2: '3'
   expected: oob
+  complexity: 40
 - name: StandardFilterTest#test_slice_6bbc3ccc
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3286,6 +3725,7 @@
     a1: 1
     a2: 0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_719cd8e5
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3293,6 +3733,7 @@
     a1: -100
     a2: 10
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_7a1908a2
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3300,6 +3741,7 @@
     a1: 1
     a2: 1
   expected: o
+  complexity: 40
 - name: StandardFilterTest#test_slice_9a45fe16
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3313,6 +3755,7 @@
     a1: 0
     a2: 9223372036854775808
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_slice_9ae49561
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3320,6 +3763,7 @@
     a1: 0
     a2: -18446744073709551616
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_a0e3c7d1
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3333,6 +3777,7 @@
     a1: -2
     a2: 2
   expected: ar
+  complexity: 40
 - name: StandardFilterTest#test_slice_a50bb253
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3340,12 +3785,14 @@
     a1: 9223372036854775808
     a2: 6
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_a565114d
   template: "{{ a0 | slice: a1 }}"
   environment:
     a0:
     a1: 0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_a962a1b7
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3353,6 +3800,7 @@
     a1: -2
     a2: 2
   expected: ar
+  complexity: 40
 - name: StandardFilterTest#test_slice_aa4d4669
   template: "{{ a0 | slice: a1 }}"
   environment:
@@ -3365,6 +3813,7 @@
     - r
     a1: -1
   expected: r
+  complexity: 40
 - name: StandardFilterTest#test_slice_bc9d2673
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3378,6 +3827,7 @@
     a1: 1
     a2: 1000
   expected: oobar
+  complexity: 40
 - name: StandardFilterTest#test_slice_bf11ad61
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3391,6 +3841,7 @@
     a1: 9223372036854775808
     a2: 6
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_c717f177
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3404,6 +3855,7 @@
     a1: 0
     a2: -18446744073709551616
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_cc438f6c
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3411,6 +3863,7 @@
     a1: 3
     a2: 3
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_slice_ceb36ea1
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3418,6 +3871,7 @@
     a1: 0
     a2: 9223372036854775808
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_slice_cebea965
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3425,6 +3879,7 @@
     a1: 100
     a2: 10
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_d1b8895d
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3438,6 +3893,7 @@
     a1: 100
     a2: 10
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_d8ad3fb8
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3445,6 +3901,7 @@
     a1: 1
     a2: 1000
   expected: oobar
+  complexity: 40
 - name: StandardFilterTest#test_slice_db684392
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3458,6 +3915,7 @@
     a1: -100
     a2: 10
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_e029ea13
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3465,12 +3923,14 @@
     a1: 1
     a2: 0
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_slice_ecb2cda8
   template: "{{ a0 | slice: a1 }}"
   environment:
     a0: foobar
     a1: -1
   expected: r
+  complexity: 40
 - name: StandardFilterTest#test_slice_fda1f44c
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3484,6 +3944,7 @@
     a1: 3
     a2: 3
   expected: bar
+  complexity: 40
 - name: StandardFilterTest#test_slice_fee54a24
   template: "{{ a0 | slice: a1, a2 }}"
   environment:
@@ -3491,12 +3952,14 @@
     a1: -9223372036854775808
     a2: 6
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_sort_024d7e26
   template: "{{ a0 | sort }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sort_02927a93
@@ -3505,22 +3968,26 @@
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_12dbc714
   template: "{{ a0 | sort: a1 }}"
   environment:
     a0: []
     a1: a
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_sort_14640d53
   template: "{{ a0 | sort }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_sort_196d5c9f
   template: "{{ a0 | sort }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_sort_1efd1ab9
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3541,6 +4008,7 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_sort_28deddb0
   template: "{{ a0 | sort }}"
   environment:
@@ -3548,6 +4016,7 @@
     - '10'
     - '2'
   expected: '102'
+  complexity: 40
 - name: StandardFilterTest#test_sort_2e36ac62
   template: "{{ a0 | sort }}"
   environment:
@@ -3555,11 +4024,13 @@
     - foo
     - bar
   expected: barfoo
+  complexity: 40
 - name: StandardFilterTest#test_sort_3cc3a60c
   template: "{{ a0 | sort }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_sort_46b0f3a8
   template: "{{ a0 | sort }}"
   environment:
@@ -3567,6 +4038,7 @@
       :a: 1
       :b: 2
   expected: "{:a=>1, :b=>2}"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sort_60fd1f75
@@ -3578,16 +4050,19 @@
     - 2
     - 1
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_sort_68f7d892
   template: "{{ a0 | sort }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_sort_7127fb58
   template: "{{ a0 | sort }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_sort_759bfa2e
   template: "{{ a0 | sort }}"
   environment:
@@ -3598,11 +4073,13 @@
     - 2
     - 1
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_sort_76f6cf6f
   template: "{{ a0 | sort }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sort_8ee73296
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3614,11 +4091,13 @@
     - a: 2
     a1: a
   expected: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}{}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_9fc23fe7
   template: "{{ a0 | sort }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_sort_aab06f79
   template: "{{ a0 | sort }}"
   environment:
@@ -3626,6 +4105,7 @@
     - 10
     - 2
   expected: '210'
+  complexity: 40
 - name: StandardFilterTest#test_sort_b1799e59
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3634,6 +4114,7 @@
     - a: 2
     a1: a
   expected: '{"a"=>2}{"a"=>10}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_d648c3af
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3642,6 +4123,7 @@
     - a: '2'
     a1: a
   expected: '{"a"=>"10"}{"a"=>"2"}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_dd081f85
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -3652,11 +4134,13 @@
     - a: 2
     a1: a
   expected: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_ed0af559
   template: "{{ a0 | sort }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_sort_efc9f89f
   template: "{{ a0 | sort }}"
   environment:
@@ -3664,6 +4148,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 8'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_sort_f6400a55
@@ -3671,12 +4156,14 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_sort_fb1e1cd5
   template: "{{ a0 | sort }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_067881c5
@@ -3686,17 +4173,20 @@
     - foo
     - bar
   expected: barfoo
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_0a9b0180
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_0abe394a
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
     a0: []
     a1: a
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_0f0bbd5d
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
@@ -3710,16 +4200,19 @@
     - key: c
     a1: key
   expected: '{"key"=>"a"}{"key"=>"b"}{"key"=>"c"}{"key"=>"X"}{"key"=>"Y"}{"key"=>"Z"}{"fake"=>"t"}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_13a166c8
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_2511d3ae
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_29a8066e
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -3729,17 +4222,20 @@
     - a
     - B
   expected: aBcD
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_3f6788cf
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_48a5142c
   template: "{{ a0 | sort_natural }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_5c26e91e
@@ -3747,11 +4243,13 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_75499166
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_793a91bf
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
@@ -3762,12 +4260,14 @@
     - a: B
     a1: a
   expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_7fd0dce9
   template: "{{ a0 | sort_natural }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_889ad3ca
@@ -3783,6 +4283,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -3803,11 +4304,13 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_92129fbd
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_98a92f5b
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
@@ -3829,6 +4332,7 @@
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_a5f5522b
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -3839,11 +4343,13 @@
     - a
     - B
   expected: aBcD
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_a9fd78a0
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_c7356c9f
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
@@ -3855,6 +4361,7 @@
     - a: B
     a1: a
   expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}{}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_cbf957fa
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -3862,6 +4369,7 @@
       'instantiate:ToSDrop:':
         foo: 3
   expected: 'woot: 5'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_sort_natural_cc938040
@@ -3875,6 +4383,7 @@
     - b
     - c
   expected: abcXYZ
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_e22ad853
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -3887,51 +4396,60 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
+  complexity: 40
 - name: StandardFilterTest#test_sort_natural_f040361f
   template: "{{ a0 | sort_natural }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_split_04aafd29
   template: "{{ a0 | split: a1 }}"
   environment:
     a0: A1Z
     a1: 1
   expected: AZ
+  complexity: 40
 - name: StandardFilterTest#test_split_290596b9
   template: "{{ a0 | split: a1 }}"
   environment:
     a0: A? ~ ~ ~ ,Z
     a1: "~ ~ ~"
   expected: A?  ,Z
+  complexity: 40
 - name: StandardFilterTest#test_split_4249e72b
   template: "{{ a0 | split: a1 }}"
   environment:
     a0: 12~34
     a1: "~"
   expected: '1234'
+  complexity: 40
 - name: StandardFilterTest#test_split_7d7f0444
   template: "{{ a0 | split: a1 }}"
   environment:
     a0:
     a1: " "
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_split_f09eee03
   template: "{{ a0 | split: a1 }}"
   environment:
     a0: A?Z
     a1: "~"
   expected: A?Z
+  complexity: 40
 - name: StandardFilterTest#test_squish_0b03a28a
   template: "{{ a0 | squish }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_squish_0dfff16d
   template: "{{ a0 | squish }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_squish_0e1e6986
   template: "{{ a0 | squish }}"
   environment:
@@ -3945,6 +4463,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -3965,12 +4484,14 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_squish_2f7a40bd
   template: "{{ a0 | squish }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_squish_33f01c11
@@ -3978,17 +4499,20 @@
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_squish_3da8f3e6
   template: "{{ a0 | squish }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_squish_4f6fc162
   template: "{{ a0 | squish }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_squish_56b51f7e
   template: "{{ a0 | squish }}"
   environment:
@@ -3996,6 +4520,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_squish_6301637d
@@ -4005,12 +4530,14 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_squish_89962bea
   template: "{{ a0 | squish }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_squish_97c21bbf
@@ -4018,21 +4545,25 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_squish_99e15977
   template: "{{ a0 | squish }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_squish_b113029b
   template: "{{ a0 | squish }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_squish_c04db4e1
   template: "{{ a0 | squish }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_squish_c30a81ae
   template: "{{ a0 | squish }}"
   environment:
@@ -4051,12 +4582,14 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_strip_1a8b7162
   template: "{{ a0 | strip }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_298c499e
@@ -4066,33 +4599,39 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_strip_2d6467a7
   template: "{{ a0 | strip }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_strip_2ff35ef7
   template: "{{ a0 | strip }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_strip_45d7d8f8
   template: "{{ a0 | strip }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_strip_7d627b30
   template: "{{ a0 | strip }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_strip_8bb8481a
   template: "{{ a0 | strip }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_a93bd80e
@@ -4100,11 +4639,13 @@
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_strip_ad9a9ae1
   template: "{{ a0 | strip }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_strip_b7e5355b
   template: "{{ a0 | strip }}"
   environment:
@@ -4112,6 +4653,7 @@
       'instantiate:ToSDrop:':
         foo: 6
   expected: 'woot: 7'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_strip_bb0e5336
@@ -4119,16 +4661,19 @@
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_strip_bedc4ea4
   template: "{{ a0 | strip }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_strip_c0377ace
   template: "{{ a0 | strip }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_strip_c1ea16c3
   template: "{{ a0 | strip }}"
   environment:
@@ -4155,6 +4700,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -4175,11 +4721,13 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_strip_f2e038a5
   template: "{{ a0 | strip }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_0c27088d
   template: "{{ a0 | strip_html }}"
   environment:
@@ -4198,27 +4746,32 @@
   environment:
     a0: "<div id='test'>test</div>"
   expected: test
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_30ef13bf
   template: "{{ a0 | strip_html }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_3744f384
   template: "{{ a0 | strip_html }}"
   environment:
     a0: "<!-- foo bar \n test -->test"
   expected: test
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_3e205680
   template: "{{ a0 | strip_html }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_40ce4cd8
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_html_4b83faf1
@@ -4226,41 +4779,49 @@
   environment:
     a0: "<script type='text/javascript'>document.write('some stuff');</script>"
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_500cb58d
   template: "{{ a0 | strip_html }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_511000c3
   template: "{{ a0 | strip_html }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_5607e244
   template: "{{ a0 | strip_html }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_5ab8c63f
   template: "{{ a0 | strip_html }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_6260cb2d
   template: "{{ a0 | strip_html }}"
   environment:
     a0: "<style type='text/css'>foo bar</style>"
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_68d98ba8
   template: "{{ a0 | strip_html }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_73d6bec2
   template: "{{ a0 | strip_html }}"
   environment:
     a0: "<div>test</div>"
   expected: test
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_7fcf0dc6
   template: "{{ a0 | strip_html }}"
   environment:
@@ -4268,17 +4829,20 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_96f1e975
   template: "{{ a0 | strip_html }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_9cd554a9
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_html_a3081ea4
@@ -4288,6 +4852,7 @@
       'instantiate:ToSDrop:':
         foo: 3
   expected: 'woot: 4'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_strip_html_ae94334b
@@ -4297,11 +4862,13 @@
       <div
       class='multiline'>test</div>
   expected: test
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_d0093c00
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_da209c4c
   template: "{{ a0 | strip_html }}"
   environment:
@@ -4315,6 +4882,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -4335,47 +4903,56 @@
   environment:
     a0: "<<<script </script>script>foo;</script>"
   expected: foo;
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_eb53934e
   template: "{{ a0 | strip_html }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_strip_html_eb76b57f
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_1087b1d7
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_1772e69d
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_3c5b22e7
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_3e40fad4
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_4943d5d4
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_6826588b
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_69934cfc
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -4389,6 +4966,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -4411,17 +4989,20 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_959bf032
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_971cf58c
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_9a2228de
@@ -4430,11 +5011,13 @@
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_ac17b986
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_b3714b5b
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -4442,6 +5025,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_strip_newlines_cb41d77d
@@ -4450,6 +5034,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_d61eb5c8
@@ -4470,16 +5055,19 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_strip_newlines_ff0c0ea8
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_sum_0366af25
   template: "{{ a0 | sum }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_sum_0eea0c63
   template: "{{ a0 | sum }}"
   environment:
@@ -4487,6 +5075,7 @@
     - foo
     - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_164ffae7
   template: "{{ a0 | sum }}"
   environment:
@@ -4496,11 +5085,13 @@
     - '3'
     - '4'
   expected: '10'
+  complexity: 40
 - name: StandardFilterTest#test_sum_170f339b
   template: "{{ a0 | sum }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_2190076e
   template: "{{ a0 | sum }}"
   environment:
@@ -4509,6 +5100,7 @@
     - '0.2'
     - '0.3'
   expected: '0.6'
+  complexity: 40
 - name: StandardFilterTest#test_sum_2785463a
   template: "{{ a0 | sum }}"
   environment:
@@ -4517,21 +5109,25 @@
     - 0.2
     - -0.3
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_3f11eb4f
   template: "{{ a0 | sum }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_sum_438588cf
   template: "{{ a0 | sum }}"
   environment:
     a0: foo
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_4582b435
   template: "{{ a0 | sum }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_sum_51658aad
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4542,6 +5138,7 @@
     - weight: 0.4
     a1: quantity
   expected: '1.2'
+  complexity: 40
 - name: StandardFilterTest#test_sum_559ecd1b
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4552,6 +5149,7 @@
     - weight: 0.4
     a1: subtotal
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_589f2c67
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4562,12 +5160,14 @@
     - weight: 4
     a1: quantity
   expected: '3'
+  complexity: 40
 - name: StandardFilterTest#test_sum_5d1d7992
   template: "{{ a0 | sum }}"
   environment:
     a0:
       :foo: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sum_5d8d0b22
@@ -4576,16 +5176,19 @@
     a0:
       foo: bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_72bb38dc
   template: "{{ a0 | sum }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_sum_77fb8f50
   template: "{{ a0 | sum }}"
   environment:
     a0:
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_7973916b
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4599,6 +5202,7 @@
       : 0.4
     a1:
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
   - ruby_types
@@ -4610,12 +5214,14 @@
     - -0.2
     - -0.3
   expected: "-0.4"
+  complexity: 40
 - name: StandardFilterTest#test_sum_819995f4
   template: "{{ a0 | sum }}"
   environment:
     a0:
       1: bar
   expected: '0'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_sum_81cb6a64
@@ -4631,6 +5237,7 @@
       : 0.4
     a1: ''
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
   - ruby_types
@@ -4643,6 +5250,7 @@
       weight: 3
     - weight: 4
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_85a24e90
   template: "{{ a0 | sum }}"
   environment:
@@ -4655,6 +5263,7 @@
       - foo
       - bar
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_8ac08e13
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4665,6 +5274,7 @@
     - weight: 0.4
     a1: weight
   expected: '0.1'
+  complexity: 40
 - name: StandardFilterTest#test_sum_903f7d22
   template: "{{ a0 | sum }}"
   environment:
@@ -4674,6 +5284,7 @@
       - - 3
         - 4
   expected: '10'
+  complexity: 40
 - name: StandardFilterTest#test_sum_9c500553
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4687,6 +5298,7 @@
       : 0.4
     a1: 1
   expected: "-0.3"
+  complexity: 40
   features:
   - ruby_drops
   - ruby_types
@@ -4695,6 +5307,7 @@
   environment:
     a0: true
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_9ef2ca1c
   template: "{{ a0 | sum }}"
   environment:
@@ -4704,6 +5317,7 @@
     - foo
     - quantity: 3
   expected: '3'
+  complexity: 40
 - name: StandardFilterTest#test_sum_a7ee6ebb
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4720,6 +5334,7 @@
       - 1
       - 5
   expected: '0.4'
+  complexity: 40
   features:
   - ruby_drops
   - ruby_types
@@ -4733,6 +5348,7 @@
     - weight: 4
     a1: weight
   expected: '7'
+  complexity: 40
 - name: StandardFilterTest#test_sum_b8f14e10
   template: "{{ a0 | sum }}"
   environment:
@@ -4740,6 +5356,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: '0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_sum_bb643a30
@@ -4751,6 +5368,7 @@
     -
     - quantity: 2
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_sum_bd1b8229
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4764,6 +5382,7 @@
       : 0.4
     a1: 1.0
   expected: '0.2'
+  complexity: 40
   features:
   - ruby_drops
   - ruby_types
@@ -4772,11 +5391,13 @@
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_dc00d088
   template: "{{ a0 | sum }}"
   environment:
     a0: false
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_e5054495
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4787,6 +5408,7 @@
     - weight: 4
     a1: subtotal
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_e7abf7a6
   template: "{{ a0 | sum }}"
   environment:
@@ -4800,6 +5422,7 @@
     - - foo
     - :foo: bar
   expected: '123'
+  complexity: 40
   features:
   - drop_class_output
   - ruby_drops
@@ -4813,6 +5436,7 @@
       weight: -0.3
     - weight: 0.4
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_sum_ed6d27f0
   template: "{{ a0 | sum }}"
   environment:
@@ -4820,6 +5444,7 @@
     - 1
     - 2
   expected: '3'
+  complexity: 40
 - name: StandardFilterTest#test_sum_f2dd6156
   template: "{{ a0 | sum: a1 }}"
   environment:
@@ -4833,6 +5458,7 @@
       : 0.4
     a1: true
   expected: '1'
+  complexity: 40
   features:
   - ruby_drops
   - ruby_types
@@ -4844,6 +5470,7 @@
     - 0.2
     - 0.3
   expected: '0.6'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_1e87e0e8
   template: "{{ a0 | truncate }}"
   environment:
@@ -4856,11 +5483,13 @@
       - foo
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_216dab95
   template: "{{ a0 | truncate }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_3e0e603a
   template: "{{ a0 | truncate }}"
   environment:
@@ -4868,6 +5497,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: 'woot: 0'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_truncate_4aa3cbc9
@@ -4876,42 +5506,50 @@
     a0: foobar
     a1: -9223372036854775808
   expected: "..."
+  complexity: 40
 - name: StandardFilterTest#test_truncate_55ffdcec
   template: "{{ a0 | truncate: a1 }}"
   environment:
     a0: foobar
     a1: 9223372036854775808
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_truncate_6e198250
   template: "{{ a0 | truncate }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_truncate_70ddc532
   template: "{{ a0 | truncate }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_truncate_84225f74
   template: "{{ a0 | truncate }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_8b8e9500
   template: "{{ a0 | truncate }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_8fa2cb7f
   template: "{{ a0 | truncate }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_956965e5
   template: "{{ a0 | truncate }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_979dbf2a
   template: "{{ a0 | truncate }}"
   environment:
@@ -4919,18 +5557,21 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_a3287629
   template: "{{ a0 | truncate: a1 }}"
   environment:
     a0: 测试测试测试测试
     a1: 5
   expected: 测试...
+  complexity: 40
 - name: StandardFilterTest#test_truncate_ad1f50ca
   template: "{{ a0 | truncate }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_truncate_b1979814
@@ -4938,28 +5579,33 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_truncate_c2cd91b7
   template: "{{ a0 | truncate: a1 }}"
   environment:
     a0: '1234567890'
     a1: 20
   expected: '1234567890'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_d454fed7
   template: "{{ a0 | truncate: a1 }}"
   environment:
     a0: '1234567890'
     a1: 0
   expected: "..."
+  complexity: 40
 - name: StandardFilterTest#test_truncate_d93e1613
   template: "{{ a0 | truncate }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_e8d7b6f7
   template: "{{ a0 | truncate }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_truncate_f061a4c6
   template: "{{ a0 | truncate }}"
   environment:
@@ -4973,6 +5619,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -4994,17 +5641,20 @@
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_f5dbf574
   template: "{{ a0 | truncate: a1 }}"
   environment:
     a0: '1234567890'
     a1: 7
   expected: 1234...
+  complexity: 40
 - name: StandardFilterTest#test_truncate_f64b3781
   template: "{{ a0 | truncate }}"
   environment:
     a0: '1234567890'
   expected: '1234567890'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_f684e511
   template: "{{ a0 | truncate: a1, a2 }}"
   environment:
@@ -5012,12 +5662,14 @@
     a1: 5
     a2: 1
   expected: '12341'
+  complexity: 40
 - name: StandardFilterTest#test_truncate_f929a304
   template: "{{ a0 | truncate }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_1bfd0354
@@ -5025,6 +5677,7 @@
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_1c9eaf37
   template: "{{ a0 | truncatewords }}"
   environment:
@@ -5032,12 +5685,14 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_235108be
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: 测试测试测试测试
     a1: 5
   expected: 测试测试测试测试
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_29f226da
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
@@ -5051,6 +5706,7 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_4896de83
   template: "{{ a0 | truncatewords }}"
   environment:
@@ -5070,12 +5726,14 @@
     a0: one two three four
     a1: 0
   expected: one...
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_51d418ae
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_54c75947
@@ -5083,6 +5741,7 @@
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_562358d6
   template: "{{ a0 | truncatewords }}"
   environment:
@@ -5096,6 +5755,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -5116,38 +5776,45 @@
   environment:
     a0: one two three
   expected: one two three
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_617f74e6
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_629f522c
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: "one  two\tthree\nfour"
     a1: 3
   expected: one two three...
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_64bf7d17
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: one two three four
     a1: -4294967296
   expected: one...
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_74c6cc66
   template: "{{ a0 | truncatewords }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_8490a57c
   template: "{{ a0 | truncatewords }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_9f732725
   template: "{{ a0 | truncatewords }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_a9fef756
   template: "{{ a0 | truncatewords }}"
   environment:
@@ -5155,6 +5822,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: 'woot: 2'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_truncatewords_b366b670
@@ -5162,18 +5830,21 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_beacf6d5
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_c7c9d33d
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: one two three four
     a1: 2
   expected: one two...
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_d1c492f2
   template: "{{ a0 | truncatewords: a1, a2 }}"
   environment:
@@ -5181,24 +5852,28 @@
     a1: 2
     a2: 1
   expected: one two1
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_dc483006
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: one two three four
     a1: 2147483648
   expected: one two three four
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_e0804961
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: one two three
     a1: 4
   expected: one two three
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_e98ee040
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_f331f0c8
@@ -5206,17 +5881,20 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_f4103f13
   template: "{{ a0 | truncatewords }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_truncatewords_f742b32e
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: one two three
     a1: 2
   expected: one two...
+  complexity: 40
 - name: StandardFilterTest#test_uniq_0b90eef9
   template: "{{ a0 | uniq }}"
   environment:
@@ -5227,6 +5905,7 @@
     - 'instantiate:StringDrop:':
         value: bar
   expected: foobar
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_uniq_0ce0fecb
@@ -5234,11 +5913,13 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_111083c0
   template: "{{ a0 | uniq }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_171ab0bf
   template: "{{ a0 | uniq }}"
   environment:
@@ -5246,39 +5927,46 @@
     - foo
     - bar
   expected: foobar
+  complexity: 40
 - name: StandardFilterTest#test_uniq_30a995e3
   template: "{{ a0 | uniq }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_3bfdc5d7
   template: "{{ a0 | uniq }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_438f239c
   template: "{{ a0 | uniq: a1 }}"
   environment:
     a0: []
     a1: a
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_uniq_5c4d3b4a
   template: "{{ a0 | uniq }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_7444de51
   template: "{{ a0 | uniq }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_uniq_7a8a52d6
   template: "{{ a0 | uniq }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_uniq_7ab73682
@@ -5296,6 +5984,7 @@
     - 2
     - 1
   expected: '1324'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_7c8b4bc8
   template: "{{ a0 | uniq }}"
   environment:
@@ -5309,6 +5998,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -5334,6 +6024,7 @@
         value: bar
     - foo
   expected: foobar
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_uniq_9c0e7ae6
@@ -5342,6 +6033,7 @@
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_uniq_a417ebce
@@ -5349,16 +6041,19 @@
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_uniq_bcc14bb3
   template: "{{ a0 | uniq }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_ce3457c1
   template: "{{ a0 | uniq }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_uniq_d238f19b
   template: "{{ a0 | uniq }}"
   environment:
@@ -5371,6 +6066,7 @@
       - foo
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_dcc88f46
   template: "{{ a0 | uniq: a1 }}"
   environment:
@@ -5381,6 +6077,7 @@
         value: test
     a1: value
   expected: TestDrop
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_uniq_dfc0bb7e
@@ -5393,16 +6090,19 @@
     - a: 2
     a1: a
   expected: '{"a"=>1}{"a"=>3}{"a"=>2}'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_eb044ee8
   template: "{{ a0 | uniq }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_uniq_fb01f507
   template: "{{ a0 | uniq }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_uniq_fd41650f
   template: "{{ a0 | uniq }}"
   environment:
@@ -5410,6 +6110,7 @@
       'instantiate:ToSDrop:':
         foo: 0
   expected: 'woot: 2'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_upcase_1ab477f2
@@ -5417,17 +6118,20 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_1f92b40f
   template: "{{ a0 | upcase }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_upcase_292e3d8c
   template: "{{ a0 | upcase }}"
   environment:
     a0:
       :foo: bar
   expected: '{:FOO=>"BAR"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_upcase_2a366551
@@ -5436,6 +6140,7 @@
     a0:
       1: bar
   expected: '{1=>"BAR"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_upcase_2abc21fb
@@ -5464,6 +6169,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -5484,22 +6190,26 @@
   environment:
     a0: true
   expected: 'TRUE'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_4f231817
   template: "{{ a0 | upcase }}"
   environment:
     a0: foo
   expected: FOO
+  complexity: 40
 - name: StandardFilterTest#test_upcase_657766c6
   template: "{{ a0 | upcase }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_6c60c1cb
   template: "{{ a0 | upcase }}"
   environment:
     a0:
       foo: bar
   expected: '{"FOO"=>"BAR"}'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_7feb0e13
   template: "{{ a0 | upcase }}"
   environment:
@@ -5507,6 +6217,7 @@
       'instantiate:ToSDrop:':
         foo: 4
   expected: 'WOOT: 5'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_upcase_971ad481
@@ -5514,6 +6225,7 @@
   environment:
     a0: false
   expected: 'FALSE'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_a8ff5b68
   template: "{{ a0 | upcase }}"
   environment:
@@ -5521,72 +6233,86 @@
     - foo
     - bar
   expected: '["FOO", "BAR"]'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_bcbd6ccf
   template: "{{ a0 | upcase }}"
   environment:
     a0: Testing
   expected: TESTING
+  complexity: 40
 - name: StandardFilterTest#test_upcase_c1ac23ab
   template: "{{ a0 | upcase }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_d5dc4ed3
   template: "{{ a0 | upcase }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_upcase_da3c7369
   template: "{{ a0 | upcase }}"
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_upcase_e519b089
   template: "{{ a0 | upcase }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_0c8aa78d
   template: "{{ a0 | url_decode }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_18e95e84
   template: "{{ a0 | url_decode }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_1ef18eac
   template: "{{ a0 | url_decode }}"
   environment:
     a0: 2001-02-03
   expected: '2001-02-03'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_4f96942b
   template: "{{ a0 | url_decode }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_5cbef1dc
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
       foo: bar
   expected: '{"foo"=>"bar"}'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_67aab6d0
   template: "{{ a0 | url_decode }}"
   environment:
     a0: 1
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_6e7b03d5
   template: "{{ a0 | url_decode }}"
   environment:
     a0: foo%20bar
   expected: foo bar
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_7083c83f
   template: "{{ a0 | url_decode }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_708a685e
   template: "{{ a0 | url_decode }}"
   environment:
@@ -5605,17 +6331,20 @@
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_71da5479
   template: "{{ a0 | url_decode }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_77b13aa7
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
       :foo: bar
   expected: '{:foo=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_url_decode_8007b58b
@@ -5623,12 +6352,14 @@
   environment:
     a0: foo+bar
   expected: foo bar
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_8ba01dcc
   template: "{{ a0 | url_decode }}"
   environment:
     a0:
       1: bar
   expected: '{1=>"bar"}'
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_url_decode_9580d768
@@ -5636,6 +6367,7 @@
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_b76522ca
   template: "{{ a0 | url_decode }}"
   environment:
@@ -5649,6 +6381,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -5669,6 +6402,7 @@
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_c140db7c
   template: "{{ a0 | url_decode }}"
   environment:
@@ -5676,6 +6410,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: 'woot: 2'
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_url_decode_c3985058
@@ -5683,6 +6418,7 @@
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_cd71baf1
   template: "{{ a0 | url_decode }}"
   environment:
@@ -5690,36 +6426,43 @@
     - foo
     - bar
   expected: '["foo", "bar"]'
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_db5f2730
   template: "{{ a0 | url_decode }}"
   environment:
     a0: foo%2B1%40example.com
   expected: foo+1@example.com
+  complexity: 40
 - name: StandardFilterTest#test_url_decode_fe512b6b
   template: "{{ a0 | url_decode }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_09378213
   template: "{{ a0 | url_encode }}"
   environment:
     a0: foo
   expected: foo
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_10567846
   template: "{{ a0 | url_encode }}"
   environment:
     a0: 1
   expected: '1'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_10f6a3f8
   template: "{{ a0 | url_encode }}"
   environment:
     a0: false
   expected: 'false'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_20d80c35
   template: "{{ a0 | url_encode }}"
   environment:
     a0: 0
   expected: '0'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_250a9d9c
   template: "{{ a0 | url_encode }}"
   environment:
@@ -5733,6 +6476,7 @@
     - - foo
     - :foo: bar
   expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  complexity: 40
   render_errors: true
   hint: |
     These specs expect an error when a filter encounters an array element
@@ -5753,11 +6497,13 @@
   environment:
     a0: 0.0
   expected: '0.0'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_3123d741
   template: "{{ a0 | url_encode }}"
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_3f8365d8
   template: "{{ a0 | url_encode }}"
   environment:
@@ -5765,6 +6511,7 @@
       'instantiate:ToSDrop:':
         foo: 1
   expected: woot%3A+2
+  complexity: 40
   features:
   - ruby_drops
 - name: StandardFilterTest#test_url_encode_41ca8a5e
@@ -5773,6 +6520,7 @@
     a0:
       foo: bar
   expected: "%7B%22foo%22%3D%3E%22bar%22%7D"
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_60c8b46a
   template: "{{ a0 | url_encode }}"
   environment:
@@ -5785,26 +6533,31 @@
       - foo
       - bar
   expected: "%5B%7B%22foo%22%3D%3E%22bar%22%7D%2C+%7B%22foo%22%3D%3E123%7D%2C+%7B%22foo%22%3D%3Enil%7D%2C+%7B%22foo%22%3D%3Etrue%7D%2C+%7B%22foo%22%3D%3E%5B%22foo%22%2C+%22bar%22%5D%7D%5D"
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_64e960b8
   template: "{{ a0 | url_encode }}"
   environment:
     a0: -99999999
   expected: "-99999999"
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_85e41adc
   template: "{{ a0 | url_encode }}"
   environment:
     a0: 123
   expected: '123'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_ad7c06ac
   template: "{{ a0 | url_encode }}"
   environment:
     a0:
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_b0bba5d2
   template: "{{ a0 | url_encode }}"
   environment:
     a0: foo+1@example.com
   expected: foo%2B1%40example.com
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_c6096ddb
   template: "{{ a0 | url_encode }}"
   environment:
@@ -5812,27 +6565,32 @@
     - foo
     - bar
   expected: "%5B%22foo%22%2C+%22bar%22%5D"
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_cf64984d
   template: "{{ a0 | url_encode }}"
   environment:
     a0: -1234.003030303
   expected: "-1234.003030303"
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_cfe184f6
   template: "{{ a0 | url_encode }}"
   environment:
     a0: 2001-02-03
   expected: '2001-02-03'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_da2b3c56
   template: "{{ a0 | url_encode }}"
   environment:
     a0: true
   expected: 'true'
+  complexity: 40
 - name: StandardFilterTest#test_url_encode_de0e4741
   template: "{{ a0 | url_encode }}"
   environment:
     a0:
       :foo: bar
   expected: "%7B%3Afoo%3D%3E%22bar%22%7D"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_url_encode_eb214d0d
@@ -5841,6 +6599,7 @@
     a0:
       1: bar
   expected: "%7B1%3D%3E%22bar%22%7D"
+  complexity: 40
   features:
   - ruby_types
 - name: StandardFilterTest#test_where_1553f876
@@ -5853,6 +6612,7 @@
     - delta
     a1: be
   expected: beta
+  complexity: 40
 - name: StandardFilterTest#test_where_30f8af31
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5866,6 +6626,7 @@
     a1: ok
     a2: true
   expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+  complexity: 40
 - name: StandardFilterTest#test_where_31d381ea
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5879,6 +6640,7 @@
     a1: language
     a2: French
   expected: '{"message"=>"Bonjour!", "language"=>"French"}'
+  complexity: 40
 - name: StandardFilterTest#test_where_37ab6f05
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5887,6 +6649,7 @@
     a1: ok
     a2: true
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_where_484d1818
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5900,6 +6663,7 @@
     a1: language
     a2: German
   expected: '{"message"=>"Hallo!", "language"=>"German"}'
+  complexity: 40
 - name: StandardFilterTest#test_where_4be85944
   template: "{{ a0 | where: a1 }}"
   environment:
@@ -5912,6 +6676,7 @@
       ok: true
     a1: ok
   expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
+  complexity: 40
 - name: StandardFilterTest#test_where_6d690131
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5925,6 +6690,7 @@
     a1: language
     a2: English
   expected: '{"message"=>"Hello!", "language"=>"English"}'
+  complexity: 40
 - name: StandardFilterTest#test_where_a8b3bd23
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5933,6 +6699,7 @@
     a1: a
     a2: ok
   expected: '{"a"=>"ok"}'
+  complexity: 40
 - name: StandardFilterTest#test_where_bc42658b
   template: "{{ a0 | where: a1 }}"
   environment:
@@ -5940,6 +6707,7 @@
     -
     a1: ok
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_where_d37126cc
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -5948,6 +6716,7 @@
     a1: a
     a2: ok
   expected: ''
+  complexity: 40
 - name: StandardFilterTest#test_where_fd4f86c4
   template: "{{ a0 | where: a1 }}"
   environment:
@@ -5958,3 +6727,4 @@
     - bar: true
     a1: foo
   expected: '{"foo"=>true}{"foo"=>"for sure"}'
+  complexity: 40

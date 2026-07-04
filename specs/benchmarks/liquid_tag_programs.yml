@@ -5,7 +5,7 @@ _metadata:
     Tests "program mode" Liquid — complex multi-line logic in a single block,
     using echo instead of {{ }}, and # comments instead of {% comment %}.
     Only standard Liquid features.
-  minimum_complexity: 1000
+  minimum_complexity: 190
 specs:
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -15,7 +15,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_liquid_tag_inventory_report
-  complexity: 1000
+  complexity: 190
   hint: |
     A complete data processing pipeline in a single {% liquid %} block.
     Parses pipe-delimited product data, groups by category, computes per-category
@@ -85,7 +85,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_liquid_tag_leaderboard
-  complexity: 1000
+  complexity: 190
   hint: |
     Builds a leaderboard from player data. Since Liquid can't sort objects
     by a property directly in liquid-tag mode, this uses a manual approach:
