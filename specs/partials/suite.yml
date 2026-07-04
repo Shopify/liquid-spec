@@ -1,0 +1,21 @@
+---
+name: "Partials"
+description: "Partial-heavy benchmark matrix: nested partials, theme pages, dynamic includes — the cold artifact load+render workload"
+
+# Bench-only: selected explicitly with -s partials
+default: false
+
+timings: true
+default_iteration_seconds: 5
+
+hint: |
+  These specs stress partial rendering and the compiled-artifact cold
+  path: many static render/include call sites, nested partials, loops
+  over partials, and dynamic partial names.
+
+required_features:
+  - core
+
+defaults:
+  render_errors: false
+  complexity: 1000
