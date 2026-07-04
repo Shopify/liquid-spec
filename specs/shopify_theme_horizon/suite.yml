@@ -6,8 +6,8 @@
 name: "Shopify Theme Horizon"
 description: "Shopify-specific filters and tags used by the Horizon theme"
 
-# Not included in default runs — requires Shopify features
-default: false
+# Included in default runs — specs are gated by features, not the suite flag
+default: true
 
 hint: |
   These specs test Shopify-specific filters and tags used by the Horizon theme
@@ -26,5 +26,5 @@ features:
 defaults:
   render_errors: false
 
-# Default complexity for specs without explicit complexity
-minimum_complexity: 500
+# These specs require full Shopify platform support — very high complexity
+minimum_complexity: 5000

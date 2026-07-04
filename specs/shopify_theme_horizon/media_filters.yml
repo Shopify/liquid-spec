@@ -10,7 +10,7 @@ specs:
     image:
       src: "https://cdn.shopify.com/s/files/1/0000/0001/products/shirt.jpg"
   expected: "<img src=\"https://cdn.shopify.com/s/files/1/0000/0001/products/shirt.jpg&width=100\" />"
-  complexity: 300
+  complexity: 5000
   hint: |
     image_tag generates an <img> tag from an image URL (after image_url).
     The URL from image_url includes width parameters.
@@ -21,7 +21,7 @@ specs:
     image:
       src: "https://cdn.shopify.com/s/files/1/0000/0001/products/shirt.jpg"
   expected: "<img src=\"https://cdn.shopify.com/s/files/1/0000/0001/products/shirt.jpg&width=200\" alt=\"Product Photo\" class=\"product-image\" />"
-  complexity: 320
+  complexity: 5000
   hint: |
     image_tag accepts keyword arguments for HTML attributes.
     Attributes are added to the generated <img> tag.
@@ -29,7 +29,7 @@ specs:
 - name: horizon_inline_asset_content
   template: "{{ 'icon-checkmark.svg' | inline_asset_content }}"
   expected: "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"
-  complexity: 250
+  complexity: 5000
   hint: |
     inline_asset_content returns the raw content of an asset file (typically SVG).
     Used to inline SVG icons directly in HTML instead of referencing them.
@@ -38,7 +38,7 @@ specs:
 - name: horizon_placeholder_svg_tag
   template: "{{ 'product-1' | placeholder_svg_tag }}"
   expected: "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"
-  complexity: 250
+  complexity: 5000
   hint: |
     placeholder_svg_tag generates an SVG placeholder image.
     Used in theme editor when no image is available yet.
@@ -46,7 +46,7 @@ specs:
 - name: horizon_payment_type_svg_tag
   template: "{{ 'visa' | payment_type_svg_tag }}"
   expected: "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"
-  complexity: 250
+  complexity: 5000
   hint: |
     payment_type_svg_tag generates an SVG icon for a payment type (e.g. visa).
 
@@ -58,7 +58,7 @@ specs:
         family: "Assistant"
         weight: 400
   expected: "https://fonts.shopifycdn.com/api/v3/css2?family=Assistant:wght@400"
-  complexity: 280
+  complexity: 5000
   hint: |
     font_url generates a Google Fonts CDN URL from a font settings object.
     The URL includes the font family and weight.
@@ -71,7 +71,7 @@ specs:
         family: "Assistant"
         weight: 400
   expected: "@font-face { font-family: 'Assistant'; font-weight: 400; }"
-  complexity: 280
+  complexity: 5000
   hint: |
     font_face generates a CSS @font-face declaration from a font settings object.
 
@@ -83,7 +83,7 @@ specs:
         family: "Assistant"
         weight: 400
   expected: "{\"family\":\"Assistant\",\"weight\":700}"
-  complexity: 300
+  complexity: 5000
   hint: |
     font_modify returns a new font object with a modified property.
     'weight': 'bold' changes the weight to 700.
