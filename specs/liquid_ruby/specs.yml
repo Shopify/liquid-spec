@@ -1141,6 +1141,13 @@
   expected: pass
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L220
 - name: ContextTest#test_length_query_294fd3e7
+  complexity: 160
+  hint: |
+    QUIRK: When a hash has an explicit `size` key, `numbers.size` returns
+    that key's value (1000) rather than the hash length (4). Liquid property
+    lookup prefers an explicit key/property named `size` over the synthetic
+    size/length accessor. So `numbers.size == 1000` is true. Requires
+    ruby_types for the hash environment.
   template: "{% if numbers.size == 1000 %}true{% endif %}"
   environment:
     numbers:
@@ -1658,6 +1665,12 @@
   expected: pass
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/expression_test.rb#L188
 - name: ExpressionTest#test_quirky_negative_sign_expression_markup_30074248
+  complexity: 350
+  hint: |
+    QUIRK: `{{ - 'theme.css' - }}` is not a valid filter expression (a bare
+    unary minus with no operand before the string). In lax error mode Liquid
+    parses this to an empty/blank output rather than raising. Requires lax
+    parsing; strict modes should reject this markup.
   template: "{{ - 'theme.css' - }}"
   error_mode: lax
   render_errors: false
@@ -4192,6 +4205,12 @@
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/parsing_quirks_test.rb#L85
 - name: ParsingQuirksTest#test_unexpected_characters_silently_eat_logic_lax_67cb28d0
+  complexity: 320
+  hint: |
+    QUIRK: In lax error mode, `&&` is not a valid Liquid operator. Liquid
+    silently consumes the unexpected `&&` as a no-op-ish token and the
+    condition `true && false` is parsed as just `true`, so the body renders.
+    Only strict/strict2 error modes should reject this. Requires lax parsing.
   template: "{% if true && false %} YES {% endif %}"
   error_mode: lax
   render_errors: false

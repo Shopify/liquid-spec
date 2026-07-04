@@ -29,6 +29,11 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/multiline_if_test.rb:17
 - name: RecordedTest#MultilineIfTest#test_multiple_or_then_and_or_5449e06b
+  complexity: 160
+  hint: |
+    `and` binds tighter than `or`. Parse `a or b or c and d or e` as
+    `a or b or (c and d) or e`. With a=false, b=false, c=true, d=true,
+    e=false the (c and d) term is true so the whole expression is true.
   template: "{% if a or b or c and d or e %}YES{% endif %}"
   expected: 'YES'
   environment:
@@ -41,6 +46,13 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/multiline_if_test.rb:17
 - name: RecordedTest#MultilineIfTest#test_or_and_with_deep_property_and_comparison_00f3719a
+  complexity: 170
+  hint: |
+    `and` binds tighter than `or`. Parse as
+    `obj.a > 0 or obj.b or (obj.c and val == true) or obj.d`.
+    Property access (dot) and comparisons bind tighter than the boolean
+    operators. obj.c=true and val==true makes the (obj.c and val == true)
+    term true, so output YES.
   template: "{% if obj.a > 0 or obj.b or obj.c and val == true or obj.d %}YES{% endif
     %}"
   expected: 'YES'
@@ -55,6 +67,13 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/multiline_if_test.rb:17
 - name: RecordedTest#MultilineIfTest#test_or_and_with_property_lookups_736601d3
+  complexity: 175
+  hint: |
+    `and` binds tighter than `or`. Parse as
+    `a.size > 0 or b.settings.newsletter or (b.settings.show_social and d == true) or b.settings.follow`.
+    Chained property access (b.settings.show_social) and comparisons bind
+    tighter than the boolean operators. b.settings.show_social=true and
+    d=true makes the and-term true, so output YES.
   template: "{% if a.size > 0 or b.settings.newsletter or b.settings.show_social and
     d == true or b.settings.follow %}YES{% endif %}"
   expected: 'YES'

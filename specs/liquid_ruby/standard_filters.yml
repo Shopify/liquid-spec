@@ -1320,6 +1320,10 @@
   features:
   - ruby_drops
 - name: StandardFilterTest#test_escape_db3990d0
+  complexity: 40
+  hint: |
+    `escape` applied to a nil/empty value returns an empty string.
+    No HTML escaping is performed because there is nothing to escape.
   template: "{{ a0 | escape }}"
   environment:
     a0:
@@ -1763,6 +1767,10 @@
     a0: -99999999
   expected: "-99999999"
 - name: StandardFilterTest#test_h_16c12518
+  complexity: 45
+  hint: |
+    `h` is an alias for `escape`. Applied to a nil/empty value it returns
+    an empty string. Implement `h` as an alias of the `escape` filter.
   template: "{{ a0 | h }}"
   environment:
     a0:

@@ -127,6 +127,13 @@
   expected: "priority"
 
 - name: Lookup last on hash returns none
+  complexity: 160
+  hint: |
+    QUIRK: `last` on a Hash returns an empty string (no element), because
+    Liquid's synthetic `last`/`first` accessors are meant for Arrays/Ranges.
+    A Hash is unordered and has no meaningful last element, so Liquid returns
+    nil which renders as empty. Do not return a hash value for `last`/`first`
+    on a Hash.
   template: "{{ my_hash.last }}"
   environment:
     my_hash:
