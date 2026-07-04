@@ -1,0 +1,1781 @@
+# Exhaustive date/time strftime spec for the Liquid `date` filter.
+#
+# The entire API surface of Ruby's Time#strftime is part of the Liquid spec:
+# every format directive, every padding/case flag, every month, every weekday,
+# and a range of timezone inputs. Expected values were captured from the
+# reference Shopify/liquid (liquid-ruby) implementation.
+#
+# These specs do NOT depend on the ambient ENV["TZ"]. Timezone-sensitive
+# directives (%z %Z %:z %::z %s) are always given an input that carries its
+# own zone (an explicit "UTC" suffix or a numeric offset), so their output
+# is identical under any timezone. Wall-clock directives are parsed as
+# written and are likewise TZ-independent. 'now' is frozen to a Time.utc
+# object (2024-01-01 00:01:58 UTC), whose %z/%Z are TZ-independent too.
+#
+# Reference documentation:
+#   Ruby Time#strftime: https://ruby-doc.org/core/Time.html#method-i-strftime
+#   Liquid `date` filter: https://shopify.dev/docs/api/liquid/filters#date
+---
+_metadata:
+  hint: |
+    The `date` filter formats a date using Ruby's Time#strftime directives.
+    The entire Ruby strftime API surface is in scope: every %x directive
+    (%a %A %b %B %c %C %d %D %e %F %G %g %H %h %I %j %k %l %L %M %m %N %n
+    %p %P %R %r %S %s %t %T %U %u %V %W %w %X %x %Y %y %Z %z %%), the
+    padding/case flags (- _ 0 ^ #), the colon timezone variants (%:z %::z),
+    all 12 months, and all 7 weekdays.
+    Input may be: Unix timestamp (int or numeric string), ISO 8601 / parseable
+    date string, 'now', or 'today' (case-insensitive). 'now' is frozen to
+    2024-01-01 00:01:58 UTC (a Time.utc object). These specs do NOT rely on
+    the ambient ENV["TZ"]: every timezone-sensitive directive is given an
+    input that carries its own zone (explicit "UTC" or a numeric offset),
+    so expected values are stable under any timezone.
+    Reference: https://ruby-doc.org/core/Time.html#method-i-strftime
+  doc: filters/date.md
+specs:
+- name: date_month_01_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (January).
+  template: "{{ '2020-01-15' | date: '%B' }}"
+  expected: "January"
+- name: date_month_01_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Jan).
+  template: "{{ '2020-01-15' | date: '%b' }}"
+  expected: "Jan"
+- name: date_month_01_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Jan).
+  template: "{{ '2020-01-15' | date: '%h' }}"
+  expected: "Jan"
+- name: date_month_01_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (01).
+  template: "{{ '2020-01-15' | date: '%m' }}"
+  expected: "01"
+- name: date_month_01_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (1).
+  template: "{{ '2020-01-15' | date: '%-m' }}"
+  expected: "1"
+- name: date_month_01_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (JANUARY).
+  template: "{{ '2020-01-15' | date: '%^B' }}"
+  expected: "JANUARY"
+- name: date_month_01_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (JAN).
+  template: "{{ '2020-01-15' | date: '%^b' }}"
+  expected: "JAN"
+- name: date_month_02_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (February).
+  template: "{{ '2020-02-15' | date: '%B' }}"
+  expected: "February"
+- name: date_month_02_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Feb).
+  template: "{{ '2020-02-15' | date: '%b' }}"
+  expected: "Feb"
+- name: date_month_02_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Feb).
+  template: "{{ '2020-02-15' | date: '%h' }}"
+  expected: "Feb"
+- name: date_month_02_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (02).
+  template: "{{ '2020-02-15' | date: '%m' }}"
+  expected: "02"
+- name: date_month_02_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (2).
+  template: "{{ '2020-02-15' | date: '%-m' }}"
+  expected: "2"
+- name: date_month_02_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (FEBRUARY).
+  template: "{{ '2020-02-15' | date: '%^B' }}"
+  expected: "FEBRUARY"
+- name: date_month_02_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (FEB).
+  template: "{{ '2020-02-15' | date: '%^b' }}"
+  expected: "FEB"
+- name: date_month_03_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (March).
+  template: "{{ '2020-03-15' | date: '%B' }}"
+  expected: "March"
+- name: date_month_03_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Mar).
+  template: "{{ '2020-03-15' | date: '%b' }}"
+  expected: "Mar"
+- name: date_month_03_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Mar).
+  template: "{{ '2020-03-15' | date: '%h' }}"
+  expected: "Mar"
+- name: date_month_03_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (03).
+  template: "{{ '2020-03-15' | date: '%m' }}"
+  expected: "03"
+- name: date_month_03_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (3).
+  template: "{{ '2020-03-15' | date: '%-m' }}"
+  expected: "3"
+- name: date_month_03_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (MARCH).
+  template: "{{ '2020-03-15' | date: '%^B' }}"
+  expected: "MARCH"
+- name: date_month_03_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (MAR).
+  template: "{{ '2020-03-15' | date: '%^b' }}"
+  expected: "MAR"
+- name: date_month_04_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (April).
+  template: "{{ '2020-04-15' | date: '%B' }}"
+  expected: "April"
+- name: date_month_04_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Apr).
+  template: "{{ '2020-04-15' | date: '%b' }}"
+  expected: "Apr"
+- name: date_month_04_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Apr).
+  template: "{{ '2020-04-15' | date: '%h' }}"
+  expected: "Apr"
+- name: date_month_04_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (04).
+  template: "{{ '2020-04-15' | date: '%m' }}"
+  expected: "04"
+- name: date_month_04_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (4).
+  template: "{{ '2020-04-15' | date: '%-m' }}"
+  expected: "4"
+- name: date_month_04_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (APRIL).
+  template: "{{ '2020-04-15' | date: '%^B' }}"
+  expected: "APRIL"
+- name: date_month_04_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (APR).
+  template: "{{ '2020-04-15' | date: '%^b' }}"
+  expected: "APR"
+- name: date_month_05_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (May).
+  template: "{{ '2020-05-15' | date: '%B' }}"
+  expected: "May"
+- name: date_month_05_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (May).
+  template: "{{ '2020-05-15' | date: '%b' }}"
+  expected: "May"
+- name: date_month_05_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, May).
+  template: "{{ '2020-05-15' | date: '%h' }}"
+  expected: "May"
+- name: date_month_05_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (05).
+  template: "{{ '2020-05-15' | date: '%m' }}"
+  expected: "05"
+- name: date_month_05_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (5).
+  template: "{{ '2020-05-15' | date: '%-m' }}"
+  expected: "5"
+- name: date_month_05_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (MAY).
+  template: "{{ '2020-05-15' | date: '%^B' }}"
+  expected: "MAY"
+- name: date_month_05_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (MAY).
+  template: "{{ '2020-05-15' | date: '%^b' }}"
+  expected: "MAY"
+- name: date_month_06_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (June).
+  template: "{{ '2020-06-15' | date: '%B' }}"
+  expected: "June"
+- name: date_month_06_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Jun).
+  template: "{{ '2020-06-15' | date: '%b' }}"
+  expected: "Jun"
+- name: date_month_06_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Jun).
+  template: "{{ '2020-06-15' | date: '%h' }}"
+  expected: "Jun"
+- name: date_month_06_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (06).
+  template: "{{ '2020-06-15' | date: '%m' }}"
+  expected: "06"
+- name: date_month_06_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (6).
+  template: "{{ '2020-06-15' | date: '%-m' }}"
+  expected: "6"
+- name: date_month_06_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (JUNE).
+  template: "{{ '2020-06-15' | date: '%^B' }}"
+  expected: "JUNE"
+- name: date_month_06_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (JUN).
+  template: "{{ '2020-06-15' | date: '%^b' }}"
+  expected: "JUN"
+- name: date_month_07_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (July).
+  template: "{{ '2020-07-15' | date: '%B' }}"
+  expected: "July"
+- name: date_month_07_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Jul).
+  template: "{{ '2020-07-15' | date: '%b' }}"
+  expected: "Jul"
+- name: date_month_07_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Jul).
+  template: "{{ '2020-07-15' | date: '%h' }}"
+  expected: "Jul"
+- name: date_month_07_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (07).
+  template: "{{ '2020-07-15' | date: '%m' }}"
+  expected: "07"
+- name: date_month_07_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (7).
+  template: "{{ '2020-07-15' | date: '%-m' }}"
+  expected: "7"
+- name: date_month_07_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (JULY).
+  template: "{{ '2020-07-15' | date: '%^B' }}"
+  expected: "JULY"
+- name: date_month_07_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (JUL).
+  template: "{{ '2020-07-15' | date: '%^b' }}"
+  expected: "JUL"
+- name: date_month_08_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (August).
+  template: "{{ '2020-08-15' | date: '%B' }}"
+  expected: "August"
+- name: date_month_08_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Aug).
+  template: "{{ '2020-08-15' | date: '%b' }}"
+  expected: "Aug"
+- name: date_month_08_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Aug).
+  template: "{{ '2020-08-15' | date: '%h' }}"
+  expected: "Aug"
+- name: date_month_08_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (08).
+  template: "{{ '2020-08-15' | date: '%m' }}"
+  expected: "08"
+- name: date_month_08_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (8).
+  template: "{{ '2020-08-15' | date: '%-m' }}"
+  expected: "8"
+- name: date_month_08_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (AUGUST).
+  template: "{{ '2020-08-15' | date: '%^B' }}"
+  expected: "AUGUST"
+- name: date_month_08_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (AUG).
+  template: "{{ '2020-08-15' | date: '%^b' }}"
+  expected: "AUG"
+- name: date_month_09_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (September).
+  template: "{{ '2020-09-15' | date: '%B' }}"
+  expected: "September"
+- name: date_month_09_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Sep).
+  template: "{{ '2020-09-15' | date: '%b' }}"
+  expected: "Sep"
+- name: date_month_09_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Sep).
+  template: "{{ '2020-09-15' | date: '%h' }}"
+  expected: "Sep"
+- name: date_month_09_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (09).
+  template: "{{ '2020-09-15' | date: '%m' }}"
+  expected: "09"
+- name: date_month_09_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (9).
+  template: "{{ '2020-09-15' | date: '%-m' }}"
+  expected: "9"
+- name: date_month_09_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (SEPTEMBER).
+  template: "{{ '2020-09-15' | date: '%^B' }}"
+  expected: "SEPTEMBER"
+- name: date_month_09_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (SEP).
+  template: "{{ '2020-09-15' | date: '%^b' }}"
+  expected: "SEP"
+- name: date_month_10_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (October).
+  template: "{{ '2020-10-15' | date: '%B' }}"
+  expected: "October"
+- name: date_month_10_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Oct).
+  template: "{{ '2020-10-15' | date: '%b' }}"
+  expected: "Oct"
+- name: date_month_10_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Oct).
+  template: "{{ '2020-10-15' | date: '%h' }}"
+  expected: "Oct"
+- name: date_month_10_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (10).
+  template: "{{ '2020-10-15' | date: '%m' }}"
+  expected: "10"
+- name: date_month_10_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (10).
+  template: "{{ '2020-10-15' | date: '%-m' }}"
+  expected: "10"
+- name: date_month_10_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (OCTOBER).
+  template: "{{ '2020-10-15' | date: '%^B' }}"
+  expected: "OCTOBER"
+- name: date_month_10_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (OCT).
+  template: "{{ '2020-10-15' | date: '%^b' }}"
+  expected: "OCT"
+- name: date_month_11_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (November).
+  template: "{{ '2020-11-15' | date: '%B' }}"
+  expected: "November"
+- name: date_month_11_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Nov).
+  template: "{{ '2020-11-15' | date: '%b' }}"
+  expected: "Nov"
+- name: date_month_11_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Nov).
+  template: "{{ '2020-11-15' | date: '%h' }}"
+  expected: "Nov"
+- name: date_month_11_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (11).
+  template: "{{ '2020-11-15' | date: '%m' }}"
+  expected: "11"
+- name: date_month_11_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (11).
+  template: "{{ '2020-11-15' | date: '%-m' }}"
+  expected: "11"
+- name: date_month_11_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (NOVEMBER).
+  template: "{{ '2020-11-15' | date: '%^B' }}"
+  expected: "NOVEMBER"
+- name: date_month_11_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (NOV).
+  template: "{{ '2020-11-15' | date: '%^b' }}"
+  expected: "NOV"
+- name: date_month_12_B_full
+  complexity: 105
+  hint: |
+    %B outputs the full month name (December).
+  template: "{{ '2020-12-15' | date: '%B' }}"
+  expected: "December"
+- name: date_month_12_b_abbr
+  complexity: 105
+  hint: |
+    %b outputs the abbreviated month name (Dec).
+  template: "{{ '2020-12-15' | date: '%b' }}"
+  expected: "Dec"
+- name: date_month_12_h_abbr_alias
+  complexity: 105
+  hint: |
+    %h is an alias for %b (abbreviated month name, Dec).
+  template: "{{ '2020-12-15' | date: '%h' }}"
+  expected: "Dec"
+- name: date_month_12_m_padded
+  complexity: 105
+  hint: |
+    %m outputs the month as a zero-padded decimal (12).
+  template: "{{ '2020-12-15' | date: '%m' }}"
+  expected: "12"
+- name: date_month_12_m_unpadded
+  complexity: 140
+  hint: |
+    %-m removes zero padding for the month number (12).
+  template: "{{ '2020-12-15' | date: '%-m' }}"
+  expected: "12"
+- name: date_month_12_B_upper
+  complexity: 145
+  hint: |
+    %^B uppercases the full month name (DECEMBER).
+  template: "{{ '2020-12-15' | date: '%^B' }}"
+  expected: "DECEMBER"
+- name: date_month_12_b_upper
+  complexity: 145
+  hint: |
+    %^b uppercases the abbreviated month name (DEC).
+  template: "{{ '2020-12-15' | date: '%^b' }}"
+  expected: "DEC"
+- name: date_weekday_0_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Sunday). 2020-06-14 is a Sunday.
+  template: "{{ '2020-06-14' | date: '%A' }}"
+  expected: "Sunday"
+- name: date_weekday_0_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Sun).
+  template: "{{ '2020-06-14' | date: '%a' }}"
+  expected: "Sun"
+- name: date_weekday_0_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (0).
+  template: "{{ '2020-06-14' | date: '%w' }}"
+  expected: "0"
+- name: date_weekday_0_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (7).
+  template: "{{ '2020-06-14' | date: '%u' }}"
+  expected: "7"
+- name: date_weekday_0_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (SUNDAY).
+  template: "{{ '2020-06-14' | date: '%^A' }}"
+  expected: "SUNDAY"
+- name: date_weekday_0_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (SUN).
+  template: "{{ '2020-06-14' | date: '%^a' }}"
+  expected: "SUN"
+- name: date_weekday_1_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Monday). 2020-06-15 is a Monday.
+  template: "{{ '2020-06-15' | date: '%A' }}"
+  expected: "Monday"
+- name: date_weekday_1_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Mon).
+  template: "{{ '2020-06-15' | date: '%a' }}"
+  expected: "Mon"
+- name: date_weekday_1_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (1).
+  template: "{{ '2020-06-15' | date: '%w' }}"
+  expected: "1"
+- name: date_weekday_1_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (1).
+  template: "{{ '2020-06-15' | date: '%u' }}"
+  expected: "1"
+- name: date_weekday_1_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (MONDAY).
+  template: "{{ '2020-06-15' | date: '%^A' }}"
+  expected: "MONDAY"
+- name: date_weekday_1_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (MON).
+  template: "{{ '2020-06-15' | date: '%^a' }}"
+  expected: "MON"
+- name: date_weekday_2_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Tuesday). 2020-06-16 is a Tuesday.
+  template: "{{ '2020-06-16' | date: '%A' }}"
+  expected: "Tuesday"
+- name: date_weekday_2_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Tue).
+  template: "{{ '2020-06-16' | date: '%a' }}"
+  expected: "Tue"
+- name: date_weekday_2_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (2).
+  template: "{{ '2020-06-16' | date: '%w' }}"
+  expected: "2"
+- name: date_weekday_2_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (2).
+  template: "{{ '2020-06-16' | date: '%u' }}"
+  expected: "2"
+- name: date_weekday_2_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (TUESDAY).
+  template: "{{ '2020-06-16' | date: '%^A' }}"
+  expected: "TUESDAY"
+- name: date_weekday_2_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (TUE).
+  template: "{{ '2020-06-16' | date: '%^a' }}"
+  expected: "TUE"
+- name: date_weekday_3_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Wednesday). 2020-06-17 is a Wednesday.
+  template: "{{ '2020-06-17' | date: '%A' }}"
+  expected: "Wednesday"
+- name: date_weekday_3_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Wed).
+  template: "{{ '2020-06-17' | date: '%a' }}"
+  expected: "Wed"
+- name: date_weekday_3_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (3).
+  template: "{{ '2020-06-17' | date: '%w' }}"
+  expected: "3"
+- name: date_weekday_3_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (3).
+  template: "{{ '2020-06-17' | date: '%u' }}"
+  expected: "3"
+- name: date_weekday_3_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (WEDNESDAY).
+  template: "{{ '2020-06-17' | date: '%^A' }}"
+  expected: "WEDNESDAY"
+- name: date_weekday_3_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (WED).
+  template: "{{ '2020-06-17' | date: '%^a' }}"
+  expected: "WED"
+- name: date_weekday_4_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Thursday). 2020-06-18 is a Thursday.
+  template: "{{ '2020-06-18' | date: '%A' }}"
+  expected: "Thursday"
+- name: date_weekday_4_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Thu).
+  template: "{{ '2020-06-18' | date: '%a' }}"
+  expected: "Thu"
+- name: date_weekday_4_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (4).
+  template: "{{ '2020-06-18' | date: '%w' }}"
+  expected: "4"
+- name: date_weekday_4_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (4).
+  template: "{{ '2020-06-18' | date: '%u' }}"
+  expected: "4"
+- name: date_weekday_4_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (THURSDAY).
+  template: "{{ '2020-06-18' | date: '%^A' }}"
+  expected: "THURSDAY"
+- name: date_weekday_4_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (THU).
+  template: "{{ '2020-06-18' | date: '%^a' }}"
+  expected: "THU"
+- name: date_weekday_5_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Friday). 2020-06-19 is a Friday.
+  template: "{{ '2020-06-19' | date: '%A' }}"
+  expected: "Friday"
+- name: date_weekday_5_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Fri).
+  template: "{{ '2020-06-19' | date: '%a' }}"
+  expected: "Fri"
+- name: date_weekday_5_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (5).
+  template: "{{ '2020-06-19' | date: '%w' }}"
+  expected: "5"
+- name: date_weekday_5_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (5).
+  template: "{{ '2020-06-19' | date: '%u' }}"
+  expected: "5"
+- name: date_weekday_5_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (FRIDAY).
+  template: "{{ '2020-06-19' | date: '%^A' }}"
+  expected: "FRIDAY"
+- name: date_weekday_5_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (FRI).
+  template: "{{ '2020-06-19' | date: '%^a' }}"
+  expected: "FRI"
+- name: date_weekday_6_A_full
+  complexity: 125
+  hint: |
+    %A outputs the full weekday name (Saturday). 2020-06-20 is a Saturday.
+  template: "{{ '2020-06-20' | date: '%A' }}"
+  expected: "Saturday"
+- name: date_weekday_6_a_abbr
+  complexity: 125
+  hint: |
+    %a outputs the abbreviated weekday name (Sat).
+  template: "{{ '2020-06-20' | date: '%a' }}"
+  expected: "Sat"
+- name: date_weekday_6_w_sunday_zero
+  complexity: 130
+  hint: |
+    %w outputs the weekday with Sunday=0 (6).
+  template: "{{ '2020-06-20' | date: '%w' }}"
+  expected: "6"
+- name: date_weekday_6_u_monday_one
+  complexity: 130
+  hint: |
+    %u outputs the weekday with Monday=1, Sunday=7 (6).
+  template: "{{ '2020-06-20' | date: '%u' }}"
+  expected: "6"
+- name: date_weekday_6_A_upper
+  complexity: 145
+  hint: |
+    %^A uppercases the full weekday name (SATURDAY).
+  template: "{{ '2020-06-20' | date: '%^A' }}"
+  expected: "SATURDAY"
+- name: date_weekday_6_a_upper
+  complexity: 145
+  hint: |
+    %^a uppercases the abbreviated weekday name (SAT).
+  template: "{{ '2020-06-20' | date: '%^a' }}"
+  expected: "SAT"
+- name: date_dir_pct_A
+  complexity: 125
+  hint: |
+    %A full weekday name (Monday).
+  template: "{{ '2020-06-15 14:30:45' | date: '%A' }}"
+  expected: "Monday"
+- name: date_dir_pct_a
+  complexity: 125
+  hint: |
+    %a abbreviated weekday name (Mon).
+  template: "{{ '2020-06-15 14:30:45' | date: '%a' }}"
+  expected: "Mon"
+- name: date_dir_pct_B
+  complexity: 105
+  hint: |
+    %B full month name (June).
+  template: "{{ '2020-06-15 14:30:45' | date: '%B' }}"
+  expected: "June"
+- name: date_dir_pct_b
+  complexity: 105
+  hint: |
+    %b abbreviated month name (Jun).
+  template: "{{ '2020-06-15 14:30:45' | date: '%b' }}"
+  expected: "Jun"
+- name: date_dir_pct_h
+  complexity: 105
+  hint: |
+    %h alias for %b (Jun).
+  template: "{{ '2020-06-15 14:30:45' | date: '%h' }}"
+  expected: "Jun"
+- name: date_dir_pct_C
+  complexity: 110
+  hint: |
+    %C century (year/100, zero-padded to 2 digits).
+  template: "{{ '2020-06-15 14:30:45' | date: '%C' }}"
+  expected: "20"
+- name: date_dir_pct_c
+  complexity: 165
+  hint: |
+    %c locale's preferred date+time; C locale: 'Mon Jun 15 14:30:45 2020'.
+  template: "{{ '2020-06-15 14:30:45' | date: '%c' }}"
+  expected: "Mon Jun 15 14:30:45 2020"
+- name: date_dir_pct_d
+  complexity: 120
+  hint: |
+    %d day of month, zero-padded (01..31).
+  template: "{{ '2020-06-15 14:30:45' | date: '%d' }}"
+  expected: "15"
+- name: date_dir_pct_D
+  complexity: 165
+  hint: |
+    %D short date, equivalent to %m/%d/%y.
+  template: "{{ '2020-06-15 14:30:45' | date: '%D' }}"
+  expected: "06/15/20"
+- name: date_dir_pct_e
+  complexity: 120
+  hint: |
+    %e day of month, space-padded ( 1..31).
+  template: "{{ '2020-06-15 14:30:45' | date: '%e' }}"
+  expected: "15"
+- name: date_dir_pct_F
+  complexity: 165
+  hint: |
+    %F ISO 8601 date, equivalent to %Y-%m-%d.
+  template: "{{ '2020-06-15 14:30:45' | date: '%F' }}"
+  expected: "2020-06-15"
+- name: date_dir_pct_G
+  complexity: 155
+  hint: |
+    %G ISO 8601 week-based year (Dec 30 2019 -> 2020).
+  template: "{{ '2019-12-30' | date: '%G' }}"
+  expected: "2020"
+- name: date_dir_pct_g
+  complexity: 155
+  hint: |
+    %g 2-digit ISO week-based year (Dec 30 2019 -> 20).
+  template: "{{ '2019-12-30' | date: '%g' }}"
+  expected: "20"
+- name: date_dir_pct_H
+  complexity: 130
+  hint: |
+    %H hour, 24-hour, zero-padded (00..23).
+  template: "{{ '2020-06-15 14:30:45' | date: '%H' }}"
+  expected: "14"
+- name: date_dir_pct_I
+  complexity: 135
+  hint: |
+    %I hour, 12-hour, zero-padded (01..12).
+  template: "{{ '2020-06-15 14:30:45' | date: '%I' }}"
+  expected: "02"
+- name: date_dir_pct_j
+  complexity: 125
+  hint: |
+    %j day of year, zero-padded to 3 digits (001..366).
+  template: "{{ '2020-03-01' | date: '%j' }}"
+  expected: "061"
+- name: date_dir_pct_k
+  complexity: 140
+  hint: |
+    %k hour 24-hour, space-padded.
+  template: "{{ '2020-06-15 09:30:00' | date: '%k' }}"
+  expected: " 9"
+- name: date_dir_pct_l
+  complexity: 140
+  hint: |
+    %l hour 12-hour, space-padded.
+  template: "{{ '2020-06-15 09:30:00' | date: '%l' }}"
+  expected: " 9"
+- name: date_dir_pct_L
+  complexity: 150
+  hint: |
+    %L millisecond of the second, zero-padded to 3 digits.
+  template: "{{ '2020-06-15 14:30:45.123456' | date: '%L' }}"
+  expected: "123"
+- name: date_dir_pct_M
+  complexity: 135
+  hint: |
+    %M minute, zero-padded (00..59).
+  template: "{{ '2020-06-15 14:30:45' | date: '%M' }}"
+  expected: "30"
+- name: date_dir_pct_m
+  complexity: 110
+  hint: |
+    %m month, zero-padded (01..12).
+  template: "{{ '2020-06-15 14:30:45' | date: '%m' }}"
+  expected: "06"
+- name: date_dir_pct_N
+  complexity: 155
+  hint: |
+    %N fractional seconds digits (default 9 digits: nanoseconds).
+  template: "{{ '2020-06-15 14:30:45.123456' | date: '%N' }}"
+  expected: "123456000"
+- name: date_dir_pct_n
+  complexity: 160
+  hint: |
+    %n a newline character.
+  template: "{{ '2020-06-15 14:30:45' | date: '%n' }}"
+  expected: "\n"
+- name: date_dir_pct_p
+  complexity: 140
+  hint: |
+    %p meridian indicator uppercase AM/PM.
+  template: "{{ '2020-06-15 14:30:45' | date: '%p' }}"
+  expected: "PM"
+- name: date_dir_pct_P
+  complexity: 140
+  hint: |
+    %P meridian indicator lowercase am/pm.
+  template: "{{ '2020-06-15 14:30:45' | date: '%P' }}"
+  expected: "pm"
+- name: date_dir_pct_R
+  complexity: 165
+  hint: |
+    %R time, equivalent to %H:%M.
+  template: "{{ '2020-06-15 14:30:45' | date: '%R' }}"
+  expected: "14:30"
+- name: date_dir_pct_r
+  complexity: 170
+  hint: |
+    %r 12-hour time with AM/PM, equivalent to %I:%M:%S %p.
+  template: "{{ '2020-06-15 14:30:45' | date: '%r' }}"
+  expected: "02:30:45 PM"
+- name: date_dir_pct_S
+  complexity: 135
+  hint: |
+    %S second, zero-padded (00..60).
+  template: "{{ '2020-06-15 14:30:45' | date: '%S' }}"
+  expected: "45"
+- name: date_dir_pct_s
+  complexity: 145
+  hint: |
+    %s Unix timestamp (seconds since 1970-01-01 UTC).
+  template: "{{ '2020-06-15 12:00:00 UTC' | date: '%s' }}"
+  expected: "1592222400"
+- name: date_dir_pct_t
+  complexity: 160
+  hint: |
+    %t a tab character.
+  template: "{{ '2020-06-15 14:30:45' | date: '%t' }}"
+  expected: "\t"
+- name: date_dir_pct_T
+  complexity: 165
+  hint: |
+    %T 24-hour time with seconds, equivalent to %H:%M:%S.
+  template: "{{ '2020-06-15 14:30:45' | date: '%T' }}"
+  expected: "14:30:45"
+- name: date_dir_pct_U
+  complexity: 145
+  hint: |
+    %U week number, Sunday as first day (00..53).
+  template: "{{ '2020-01-05' | date: '%U' }}"
+  expected: "01"
+- name: date_dir_pct_u
+  complexity: 130
+  hint: |
+    %u weekday, Monday=1..7.
+  template: "{{ '2020-06-15 14:30:45' | date: '%u' }}"
+  expected: "1"
+- name: date_dir_pct_V
+  complexity: 150
+  hint: |
+    %V ISO 8601 week number (01..53).
+  template: "{{ '2020-01-01' | date: '%V' }}"
+  expected: "01"
+- name: date_dir_pct_W
+  complexity: 145
+  hint: |
+    %W week number, Monday as first day (00..53).
+  template: "{{ '2020-01-06' | date: '%W' }}"
+  expected: "01"
+- name: date_dir_pct_w
+  complexity: 130
+  hint: |
+    %w weekday, Sunday=0..6.
+  template: "{{ '2020-06-15 14:30:45' | date: '%w' }}"
+  expected: "1"
+- name: date_dir_pct_X
+  complexity: 165
+  hint: |
+    %X locale's preferred time; C locale: '14:30:45'.
+  template: "{{ '2020-06-15 14:30:45' | date: '%X' }}"
+  expected: "14:30:45"
+- name: date_dir_pct_x
+  complexity: 165
+  hint: |
+    %x locale's preferred date; C locale: '06/15/20'.
+  template: "{{ '2020-06-15 14:30:45' | date: '%x' }}"
+  expected: "06/15/20"
+- name: date_dir_pct_Y
+  complexity: 105
+  hint: |
+    %Y year with century.
+  template: "{{ '2020-06-15 14:30:45' | date: '%Y' }}"
+  expected: "2020"
+- name: date_dir_pct_y
+  complexity: 105
+  hint: |
+    %y 2-digit year (00..99).
+  template: "{{ '2020-06-15 14:30:45' | date: '%y' }}"
+  expected: "20"
+- name: date_dir_pct_Z
+  complexity: 160
+  hint: |
+    %Z timezone name/abbreviation. For explicit UTC -> 'UTC'.
+  template: "{{ '2020-06-15 14:30:45 UTC' | date: '%Z' }}"
+  expected: "UTC"
+- name: date_dir_pct_z
+  complexity: 150
+  hint: |
+    %z timezone offset from UTC (+/-HHMM).
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%z' }}"
+  expected: "-0400"
+- name: date_dir_pct__
+  complexity: 155
+  hint: |
+    %% a literal percent sign.
+  template: "{{ '2020-06-15 14:30:45' | date: '%%' }}"
+  expected: "%"
+- name: date_tz_0_z
+  complexity: 150
+  hint: |
+    %z for named UTC: signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 UTC' | date: '%z' }}"
+  expected: "+0000"
+- name: date_tz_0_colon_z
+  complexity: 155
+  hint: |
+    %:z for named UTC: offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 UTC' | date: '%:z' }}"
+  expected: "+00:00"
+- name: date_tz_0_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for named UTC: offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 UTC' | date: '%::z' }}"
+  expected: "+00:00:00"
+- name: date_tz_0_Z
+  complexity: 160
+  hint: |
+    %Z for named UTC: timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 UTC' | date: '%Z' }}"
+  expected: "UTC"
+- name: date_tz_0_s
+  complexity: 145
+  hint: |
+    %s for named UTC: epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 UTC' | date: '%s' }}"
+  expected: "1592231445"
+- name: date_tz_1_z
+  complexity: 150
+  hint: |
+    %z for numeric +0000: signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 +0000' | date: '%z' }}"
+  expected: "+0000"
+- name: date_tz_1_colon_z
+  complexity: 155
+  hint: |
+    %:z for numeric +0000: offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 +0000' | date: '%:z' }}"
+  expected: "+00:00"
+- name: date_tz_1_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for numeric +0000: offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 +0000' | date: '%::z' }}"
+  expected: "+00:00:00"
+- name: date_tz_1_s
+  complexity: 145
+  hint: |
+    %s for numeric +0000: epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 +0000' | date: '%s' }}"
+  expected: "1592231445"
+- name: date_tz_2_z
+  complexity: 150
+  hint: |
+    %z for numeric -0400 (Eastern): signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%z' }}"
+  expected: "-0400"
+- name: date_tz_2_colon_z
+  complexity: 155
+  hint: |
+    %:z for numeric -0400 (Eastern): offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%:z' }}"
+  expected: "-04:00"
+- name: date_tz_2_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for numeric -0400 (Eastern): offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%::z' }}"
+  expected: "-04:00:00"
+- name: date_tz_2_Z
+  complexity: 160
+  hint: |
+    %Z for numeric -0400 (Eastern): timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_2_s
+  complexity: 145
+  hint: |
+    %s for numeric -0400 (Eastern): epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%s' }}"
+  expected: "1592245845"
+- name: date_tz_3_z
+  complexity: 150
+  hint: |
+    %z for offset with colon -04:00: signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 -04:00' | date: '%z' }}"
+  expected: "-0400"
+- name: date_tz_3_colon_z
+  complexity: 155
+  hint: |
+    %:z for offset with colon -04:00: offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 -04:00' | date: '%:z' }}"
+  expected: "-04:00"
+- name: date_tz_3_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for offset with colon -04:00: offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 -04:00' | date: '%::z' }}"
+  expected: "-04:00:00"
+- name: date_tz_3_Z
+  complexity: 160
+  hint: |
+    %Z for offset with colon -04:00: timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 -04:00' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_3_s
+  complexity: 145
+  hint: |
+    %s for offset with colon -04:00: epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 -04:00' | date: '%s' }}"
+  expected: "1592245845"
+- name: date_tz_4_z
+  complexity: 150
+  hint: |
+    %z for numeric +0530 (India): signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 +0530' | date: '%z' }}"
+  expected: "+0530"
+- name: date_tz_4_colon_z
+  complexity: 155
+  hint: |
+    %:z for numeric +0530 (India): offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 +0530' | date: '%:z' }}"
+  expected: "+05:30"
+- name: date_tz_4_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for numeric +0530 (India): offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 +0530' | date: '%::z' }}"
+  expected: "+05:30:00"
+- name: date_tz_4_Z
+  complexity: 160
+  hint: |
+    %Z for numeric +0530 (India): timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 +0530' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_4_s
+  complexity: 145
+  hint: |
+    %s for numeric +0530 (India): epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 +0530' | date: '%s' }}"
+  expected: "1592211645"
+- name: date_tz_5_z
+  complexity: 150
+  hint: |
+    %z for offset with colon +05:30: signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 +05:30' | date: '%z' }}"
+  expected: "+0530"
+- name: date_tz_5_colon_z
+  complexity: 155
+  hint: |
+    %:z for offset with colon +05:30: offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 +05:30' | date: '%:z' }}"
+  expected: "+05:30"
+- name: date_tz_5_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for offset with colon +05:30: offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 +05:30' | date: '%::z' }}"
+  expected: "+05:30:00"
+- name: date_tz_5_Z
+  complexity: 160
+  hint: |
+    %Z for offset with colon +05:30: timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 +05:30' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_5_s
+  complexity: 145
+  hint: |
+    %s for offset with colon +05:30: epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 +05:30' | date: '%s' }}"
+  expected: "1592211645"
+- name: date_tz_6_z
+  complexity: 150
+  hint: |
+    %z for numeric +0900 (Japan): signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 +0900' | date: '%z' }}"
+  expected: "+0900"
+- name: date_tz_6_colon_z
+  complexity: 155
+  hint: |
+    %:z for numeric +0900 (Japan): offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 +0900' | date: '%:z' }}"
+  expected: "+09:00"
+- name: date_tz_6_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for numeric +0900 (Japan): offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 +0900' | date: '%::z' }}"
+  expected: "+09:00:00"
+- name: date_tz_6_Z
+  complexity: 160
+  hint: |
+    %Z for numeric +0900 (Japan): timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 +0900' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_6_s
+  complexity: 145
+  hint: |
+    %s for numeric +0900 (Japan): epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 +0900' | date: '%s' }}"
+  expected: "1592199045"
+- name: date_tz_7_z
+  complexity: 150
+  hint: |
+    %z for offset with colon +09:00: signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 +09:00' | date: '%z' }}"
+  expected: "+0900"
+- name: date_tz_7_colon_z
+  complexity: 155
+  hint: |
+    %:z for offset with colon +09:00: offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 +09:00' | date: '%:z' }}"
+  expected: "+09:00"
+- name: date_tz_7_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for offset with colon +09:00: offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 +09:00' | date: '%::z' }}"
+  expected: "+09:00:00"
+- name: date_tz_7_Z
+  complexity: 160
+  hint: |
+    %Z for offset with colon +09:00: timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 +09:00' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_7_s
+  complexity: 145
+  hint: |
+    %s for offset with colon +09:00: epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 +09:00' | date: '%s' }}"
+  expected: "1592199045"
+- name: date_tz_8_z
+  complexity: 150
+  hint: |
+    %z for numeric -0800 (Pacific): signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 -0800' | date: '%z' }}"
+  expected: "-0800"
+- name: date_tz_8_colon_z
+  complexity: 155
+  hint: |
+    %:z for numeric -0800 (Pacific): offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 -0800' | date: '%:z' }}"
+  expected: "-08:00"
+- name: date_tz_8_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for numeric -0800 (Pacific): offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 -0800' | date: '%::z' }}"
+  expected: "-08:00:00"
+- name: date_tz_8_Z
+  complexity: 160
+  hint: |
+    %Z for numeric -0800 (Pacific): timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 -0800' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_8_s
+  complexity: 145
+  hint: |
+    %s for numeric -0800 (Pacific): epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 -0800' | date: '%s' }}"
+  expected: "1592260245"
+- name: date_tz_9_z
+  complexity: 150
+  hint: |
+    %z for offset with colon -08:00: signed numeric offset HHMM.
+  template: "{{ '2020-06-15 14:30:45 -08:00' | date: '%z' }}"
+  expected: "-0800"
+- name: date_tz_9_colon_z
+  complexity: 155
+  hint: |
+    %:z for offset with colon -08:00: offset with a colon (HH:MM).
+  template: "{{ '2020-06-15 14:30:45 -08:00' | date: '%:z' }}"
+  expected: "-08:00"
+- name: date_tz_9_coloncolon_z
+  complexity: 158
+  hint: |
+    %::z for offset with colon -08:00: offset with colons (HH:MM:SS).
+  template: "{{ '2020-06-15 14:30:45 -08:00' | date: '%::z' }}"
+  expected: "-08:00:00"
+- name: date_tz_9_Z
+  complexity: 160
+  hint: |
+    %Z for offset with colon -08:00: timezone name; numeric-only offsets have no named zone, so expect empty.
+  template: "{{ '2020-06-15 14:30:45 -08:00' | date: '%Z' }}"
+  expected: ""
+- name: date_tz_9_s
+  complexity: 145
+  hint: |
+    %s for offset with colon -08:00: epoch seconds depend on the parsed offset.
+  template: "{{ '2020-06-15 14:30:45 -08:00' | date: '%s' }}"
+  expected: "1592260245"
+- name: date_hour_midnight_H
+  complexity: 130
+  hint: |
+    %H 24-hour zero-padded for midnight.
+  template: "{{ '2020-06-15 00:30:00' | date: '%H' }}"
+  expected: "00"
+- name: date_hour_midnight_I
+  complexity: 135
+  hint: |
+    %I 12-hour zero-padded for midnight.
+  template: "{{ '2020-06-15 00:30:00' | date: '%I' }}"
+  expected: "12"
+- name: date_hour_midnight_k
+  complexity: 140
+  hint: |
+    %k 24-hour space-padded for midnight.
+  template: "{{ '2020-06-15 00:30:00' | date: '%k' }}"
+  expected: " 0"
+- name: date_hour_midnight_l
+  complexity: 140
+  hint: |
+    %l 12-hour space-padded for midnight.
+  template: "{{ '2020-06-15 00:30:00' | date: '%l' }}"
+  expected: "12"
+- name: date_hour_midnight_p
+  complexity: 140
+  hint: |
+    %p uppercase AM/PM for midnight.
+  template: "{{ '2020-06-15 00:30:00' | date: '%p' }}"
+  expected: "AM"
+- name: date_hour_midnight_P
+  complexity: 140
+  hint: |
+    %P lowercase am/pm for midnight.
+  template: "{{ '2020-06-15 00:30:00' | date: '%P' }}"
+  expected: "am"
+- name: date_hour_noon_H
+  complexity: 130
+  hint: |
+    %H 24-hour zero-padded for noon.
+  template: "{{ '2020-06-15 12:00:00' | date: '%H' }}"
+  expected: "12"
+- name: date_hour_noon_I
+  complexity: 135
+  hint: |
+    %I 12-hour zero-padded for noon.
+  template: "{{ '2020-06-15 12:00:00' | date: '%I' }}"
+  expected: "12"
+- name: date_hour_noon_k
+  complexity: 140
+  hint: |
+    %k 24-hour space-padded for noon.
+  template: "{{ '2020-06-15 12:00:00' | date: '%k' }}"
+  expected: "12"
+- name: date_hour_noon_l
+  complexity: 140
+  hint: |
+    %l 12-hour space-padded for noon.
+  template: "{{ '2020-06-15 12:00:00' | date: '%l' }}"
+  expected: "12"
+- name: date_hour_noon_p
+  complexity: 140
+  hint: |
+    %p uppercase AM/PM for noon.
+  template: "{{ '2020-06-15 12:00:00' | date: '%p' }}"
+  expected: "PM"
+- name: date_hour_noon_P
+  complexity: 140
+  hint: |
+    %P lowercase am/pm for noon.
+  template: "{{ '2020-06-15 12:00:00' | date: '%P' }}"
+  expected: "pm"
+- name: date_hour_morning_H
+  complexity: 130
+  hint: |
+    %H 24-hour zero-padded for morning.
+  template: "{{ '2020-06-15 09:30:00' | date: '%H' }}"
+  expected: "09"
+- name: date_hour_morning_I
+  complexity: 135
+  hint: |
+    %I 12-hour zero-padded for morning.
+  template: "{{ '2020-06-15 09:30:00' | date: '%I' }}"
+  expected: "09"
+- name: date_hour_morning_k
+  complexity: 140
+  hint: |
+    %k 24-hour space-padded for morning.
+  template: "{{ '2020-06-15 09:30:00' | date: '%k' }}"
+  expected: " 9"
+- name: date_hour_morning_l
+  complexity: 140
+  hint: |
+    %l 12-hour space-padded for morning.
+  template: "{{ '2020-06-15 09:30:00' | date: '%l' }}"
+  expected: " 9"
+- name: date_hour_morning_p
+  complexity: 140
+  hint: |
+    %p uppercase AM/PM for morning.
+  template: "{{ '2020-06-15 09:30:00' | date: '%p' }}"
+  expected: "AM"
+- name: date_hour_morning_P
+  complexity: 140
+  hint: |
+    %P lowercase am/pm for morning.
+  template: "{{ '2020-06-15 09:30:00' | date: '%P' }}"
+  expected: "am"
+- name: date_hour_afternoon_H
+  complexity: 130
+  hint: |
+    %H 24-hour zero-padded for afternoon.
+  template: "{{ '2020-06-15 14:30:00' | date: '%H' }}"
+  expected: "14"
+- name: date_hour_afternoon_I
+  complexity: 135
+  hint: |
+    %I 12-hour zero-padded for afternoon.
+  template: "{{ '2020-06-15 14:30:00' | date: '%I' }}"
+  expected: "02"
+- name: date_hour_afternoon_k
+  complexity: 140
+  hint: |
+    %k 24-hour space-padded for afternoon.
+  template: "{{ '2020-06-15 14:30:00' | date: '%k' }}"
+  expected: "14"
+- name: date_hour_afternoon_l
+  complexity: 140
+  hint: |
+    %l 12-hour space-padded for afternoon.
+  template: "{{ '2020-06-15 14:30:00' | date: '%l' }}"
+  expected: " 2"
+- name: date_hour_afternoon_p
+  complexity: 140
+  hint: |
+    %p uppercase AM/PM for afternoon.
+  template: "{{ '2020-06-15 14:30:00' | date: '%p' }}"
+  expected: "PM"
+- name: date_hour_afternoon_P
+  complexity: 140
+  hint: |
+    %P lowercase am/pm for afternoon.
+  template: "{{ '2020-06-15 14:30:00' | date: '%P' }}"
+  expected: "pm"
+- name: date_hour_last_hour_H
+  complexity: 130
+  hint: |
+    %H 24-hour zero-padded for last_hour.
+  template: "{{ '2020-06-15 23:59:59' | date: '%H' }}"
+  expected: "23"
+- name: date_hour_last_hour_I
+  complexity: 135
+  hint: |
+    %I 12-hour zero-padded for last_hour.
+  template: "{{ '2020-06-15 23:59:59' | date: '%I' }}"
+  expected: "11"
+- name: date_hour_last_hour_k
+  complexity: 140
+  hint: |
+    %k 24-hour space-padded for last_hour.
+  template: "{{ '2020-06-15 23:59:59' | date: '%k' }}"
+  expected: "23"
+- name: date_hour_last_hour_l
+  complexity: 140
+  hint: |
+    %l 12-hour space-padded for last_hour.
+  template: "{{ '2020-06-15 23:59:59' | date: '%l' }}"
+  expected: "11"
+- name: date_hour_last_hour_p
+  complexity: 140
+  hint: |
+    %p uppercase AM/PM for last_hour.
+  template: "{{ '2020-06-15 23:59:59' | date: '%p' }}"
+  expected: "PM"
+- name: date_hour_last_hour_P
+  complexity: 140
+  hint: |
+    %P lowercase am/pm for last_hour.
+  template: "{{ '2020-06-15 23:59:59' | date: '%P' }}"
+  expected: "pm"
+- name: date_flag_pct__d_20200605
+  complexity: 190
+  hint: |
+    %-d uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-05' | date: '%-d' }}"
+  expected: "5"
+- name: date_flag_pct__m_20200605
+  complexity: 190
+  hint: |
+    %-m uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-05' | date: '%-m' }}"
+  expected: "6"
+- name: date_flag_pct__H_20200615093000
+  complexity: 190
+  hint: |
+    %-H uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-15 09:30:00' | date: '%-H' }}"
+  expected: "9"
+- name: date_flag_pct__I_20200615093000
+  complexity: 190
+  hint: |
+    %-I uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-15 09:30:00' | date: '%-I' }}"
+  expected: "9"
+- name: date_flag_pct__M_20200615140500
+  complexity: 190
+  hint: |
+    %-M uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-15 14:05:00' | date: '%-M' }}"
+  expected: "5"
+- name: date_flag_pct__S_20200615143007
+  complexity: 190
+  hint: |
+    %-S uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-15 14:30:07' | date: '%-S' }}"
+  expected: "7"
+- name: date_flag_pct__j_20200115
+  complexity: 190
+  hint: |
+    %-j uses the '-' flag to strip zero padding.
+  template: "{{ '2020-01-15' | date: '%-j' }}"
+  expected: "15"
+- name: date_flag_pct__Y_20200615
+  complexity: 190
+  hint: |
+    %-Y uses the '-' flag to strip zero padding.
+  template: "{{ '2020-06-15' | date: '%-Y' }}"
+  expected: "2020"
+- name: date_flag_pct__d_20200605
+  complexity: 190
+  hint: |
+    %_d uses the '_' flag for space padding.
+  template: "{{ '2020-06-05' | date: '%_d' }}"
+  expected: " 5"
+- name: date_flag_pct__m_20200605
+  complexity: 190
+  hint: |
+    %_m uses the '_' flag for space padding.
+  template: "{{ '2020-06-05' | date: '%_m' }}"
+  expected: " 6"
+- name: date_flag_pct__H_20200615093000
+  complexity: 190
+  hint: |
+    %_H uses the '_' flag for space padding.
+  template: "{{ '2020-06-15 09:30:00' | date: '%_H' }}"
+  expected: " 9"
+- name: date_flag_pct__I_20200615093000
+  complexity: 190
+  hint: |
+    %_I uses the '_' flag for space padding.
+  template: "{{ '2020-06-15 09:30:00' | date: '%_I' }}"
+  expected: " 9"
+- name: date_flag_pct__M_20200615140500
+  complexity: 190
+  hint: |
+    %_M uses the '_' flag for space padding.
+  template: "{{ '2020-06-15 14:05:00' | date: '%_M' }}"
+  expected: " 5"
+- name: date_flag_pct__S_20200615143007
+  complexity: 190
+  hint: |
+    %_S uses the '_' flag for space padding.
+  template: "{{ '2020-06-15 14:30:07' | date: '%_S' }}"
+  expected: " 7"
+- name: date_flag_pct_0d_20200605
+  complexity: 190
+  hint: |
+    %0d uses the '0' flag for explicit zero padding.
+  template: "{{ '2020-06-05' | date: '%0d' }}"
+  expected: "05"
+- name: date_flag_pct_0m_20200605
+  complexity: 190
+  hint: |
+    %0m uses the '0' flag for explicit zero padding.
+  template: "{{ '2020-06-05' | date: '%0m' }}"
+  expected: "06"
+- name: date_flag_pct_0H_20200615093000
+  complexity: 190
+  hint: |
+    %0H uses the '0' flag for explicit zero padding.
+  template: "{{ '2020-06-15 09:30:00' | date: '%0H' }}"
+  expected: "09"
+- name: date_flag_pct_0Y_20200615
+  complexity: 190
+  hint: |
+    %0Y uses the '0' flag for explicit zero padding.
+  template: "{{ '2020-06-15' | date: '%0Y' }}"
+  expected: "2020"
+- name: date_flag_pct__b_20200615
+  complexity: 195
+  hint: |
+    %^b uses the '^' flag to uppercase the result.
+  template: "{{ '2020-06-15' | date: '%^b' }}"
+  expected: "JUN"
+- name: date_flag_pct__B_20200615
+  complexity: 195
+  hint: |
+    %^B uses the '^' flag to uppercase the result.
+  template: "{{ '2020-06-15' | date: '%^B' }}"
+  expected: "JUNE"
+- name: date_flag_pct__a_20200615
+  complexity: 195
+  hint: |
+    %^a uses the '^' flag to uppercase the result.
+  template: "{{ '2020-06-15' | date: '%^a' }}"
+  expected: "MON"
+- name: date_flag_pct__A_20200615
+  complexity: 195
+  hint: |
+    %^A uses the '^' flag to uppercase the result.
+  template: "{{ '2020-06-15' | date: '%^A' }}"
+  expected: "MONDAY"
+- name: date_flag_pct__p_20200615143000
+  complexity: 195
+  hint: |
+    %^p uses the '^' flag to uppercase the result.
+  template: "{{ '2020-06-15 14:30:00' | date: '%^p' }}"
+  expected: "PM"
+- name: date_flag_pct__P_20200615143000
+  complexity: 195
+  hint: |
+    %^P uses the '^' flag to uppercase the result.
+  template: "{{ '2020-06-15 14:30:00' | date: '%^P' }}"
+  expected: "PM"
+- name: date_flag_pct__b_20200615
+  complexity: 195
+  hint: |
+    %#b uses the '#' flag to swap case. Ruby uppercases names that are normally mixed case.
+  template: "{{ '2020-06-15' | date: '%#b' }}"
+  expected: "JUN"
+- name: date_flag_pct__B_20200615
+  complexity: 195
+  hint: |
+    %#B uses the '#' flag to swap case. Ruby uppercases names that are normally mixed case.
+  template: "{{ '2020-06-15' | date: '%#B' }}"
+  expected: "JUNE"
+- name: date_flag_pct__a_20200615
+  complexity: 195
+  hint: |
+    %#a uses the '#' flag to swap case. Ruby uppercases names that are normally mixed case.
+  template: "{{ '2020-06-15' | date: '%#a' }}"
+  expected: "MON"
+- name: date_flag_pct__A_20200615
+  complexity: 195
+  hint: |
+    %#A uses the '#' flag to swap case. Ruby uppercases names that are normally mixed case.
+  template: "{{ '2020-06-15' | date: '%#A' }}"
+  expected: "MONDAY"
+- name: date_composite_pct_D
+  complexity: 165
+  hint: |
+    %D == %m/%d/%y short date.
+  template: "{{ '2020-06-15 14:30:45' | date: '%D' }}"
+  expected: "06/15/20"
+- name: date_composite_pct_F
+  complexity: 165
+  hint: |
+    %F == %Y-%m-%d ISO 8601 date.
+  template: "{{ '2020-06-15 14:30:45' | date: '%F' }}"
+  expected: "2020-06-15"
+- name: date_composite_pct_R
+  complexity: 165
+  hint: |
+    %R == %H:%M 24-hour time.
+  template: "{{ '2020-06-15 14:30:45' | date: '%R' }}"
+  expected: "14:30"
+- name: date_composite_pct_T
+  complexity: 165
+  hint: |
+    %T == %H:%M:%S 24-hour time with seconds.
+  template: "{{ '2020-06-15 14:30:45' | date: '%T' }}"
+  expected: "14:30:45"
+- name: date_composite_pct_r
+  complexity: 170
+  hint: |
+    %r == %I:%M:%S %p 12-hour time with AM/PM.
+  template: "{{ '2020-06-15 14:30:45' | date: '%r' }}"
+  expected: "02:30:45 PM"
+- name: date_composite_pct_c
+  complexity: 165
+  hint: |
+    %c locale's preferred date+time.
+  template: "{{ '2020-06-15 14:30:45' | date: '%c' }}"
+  expected: "Mon Jun 15 14:30:45 2020"
+- name: date_composite_pct_x
+  complexity: 165
+  hint: |
+    %x locale's preferred date.
+  template: "{{ '2020-06-15 14:30:45' | date: '%x' }}"
+  expected: "06/15/20"
+- name: date_composite_pct_X
+  complexity: 165
+  hint: |
+    %X locale's preferred time.
+  template: "{{ '2020-06-15 14:30:45' | date: '%X' }}"
+  expected: "14:30:45"
+- name: date_combined_rfc822
+  complexity: 175
+  hint: |
+    RFC 822/2822 email/RSS date format: 'Mon, 15 Jun 2020 14:30:45 -0400'.
+  template: "{{ '2020-06-15 14:30:45 -0400' | date: '%a, %d %b %Y %H:%M:%S %z' }}"
+  expected: "Mon, 15 Jun 2020 14:30:45 -0400"
+- name: date_combined_iso8601
+  complexity: 170
+  hint: |
+    ISO 8601 datetime: '2020-06-15T14:30:45'.
+  template: "{{ '2020-06-15 14:30:45' | date: '%Y-%m-%dT%H:%M:%S' }}"
+  expected: "2020-06-15T14:30:45"
+- name: date_combined_human
+  complexity: 170
+  hint: |
+    Human-readable date with literal text: 'June 15, 2020 at 02:30 PM'.
+  template: "{{ '2020-06-15 14:30:45' | date: '%B %d, %Y at %I:%M %p' }}"
+  expected: "June 15, 2020 at 02:30 PM"
+- name: date_doy_leap_feb29
+  complexity: 185
+  hint: |
+    2020 is a leap year; Feb 29 is day 060.
+  template: "{{ '2020-02-29' | date: '%j' }}"
+  expected: "060"
+- name: date_doy_leap_dec31
+  complexity: 185
+  hint: |
+    Dec 31 in a leap year is day 366.
+  template: "{{ '2020-12-31' | date: '%j' }}"
+  expected: "366"
+- name: date_doy_nonleap_dec31
+  complexity: 185
+  hint: |
+    Dec 31 in a non-leap year is day 365.
+  template: "{{ '2021-12-31' | date: '%j' }}"
+  expected: "365"
+- name: date_doy_jan1
+  complexity: 125
+  hint: |
+    Jan 1 is day 001.
+  template: "{{ '2020-01-01' | date: '%j' }}"
+  expected: "001"
