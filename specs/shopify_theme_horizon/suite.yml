@@ -1,0 +1,30 @@
+---
+# Shopify Theme Horizon Specs
+# Filter and tag specs derived from Shopify's Horizon theme
+# https://github.com/Shopify/horizon
+
+name: "Shopify Theme Horizon"
+description: "Shopify-specific filters and tags used by the Horizon theme"
+
+# Not included in default runs — requires Shopify features
+default: false
+
+hint: |
+  These specs test Shopify-specific filters and tags used by the Horizon theme
+  (Shopify's successor to Dawn). They cover filters not part of core Liquid:
+  image_tag, inline_asset_content, color filters, money filters, font filters,
+  handleize, metafield_tag, and more.
+
+  Your implementation must support these Shopify platform filters to pass.
+
+# Required features for this suite
+features:
+  - shopify_filters
+  - shopify_tags
+
+# Default options applied to all specs
+defaults:
+  render_errors: false
+
+# Default complexity for specs without explicit complexity
+minimum_complexity: 500

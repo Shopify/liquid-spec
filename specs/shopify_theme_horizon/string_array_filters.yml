@@ -1,0 +1,92 @@
+---
+_metadata:
+  hint: |
+    String and array filters specific to Shopify themes.
+specs:
+- name: horizon_handleize_basic
+  template: "{{ 'Women's T-Shirt' | handleize }}"
+  expected: "womens-t-shirt"
+  complexity: 150
+  hint: |
+    handleize converts a string to a URL handle: lowercase, spaces to hyphens,
+    special characters removed, apostrophes removed.
+
+- name: horizon_handleize_simple
+  template: "{{ 'Hello World' | handleize }}"
+  expected: "hello-world"
+  complexity: 150
+  hint: |
+    handleize: lowercase and replace spaces with hyphens.
+
+- name: horizon_handleize_special_chars
+  template: "{{ 'Café & Thé' | handleize }}"
+  expected: "cafe-the"
+  complexity: 160
+  hint: |
+    handleize strips accents and special characters.
+    'Café & Thé' becomes 'cafe-the'.
+
+- name: horizon_handleize_numbers
+  template: "{{ 'Product 123 Test' | handleize }}"
+  expected: "product-123-test"
+  complexity: 150
+  hint: |
+    handleize preserves numbers and alphanumeric characters.
+
+- name: horizon_find_by_property
+  template: "{% assign item = items | find: 'id', 2 %}{{ item.name }}"
+  environment:
+    items:
+      - id: 1
+        name: "First"
+      - id: 2
+        name: "Second"
+      - id: 3
+        name: "Third"
+  expected: "Second"
+  complexity: 180
+  hint: |
+    find: 'property', value searches an array of objects for the first
+    element where the given property equals the value. Returns the matching
+    object, or nil if not found.
+
+- name: horizon_find_no_match
+  template: "{% assign item = items | find: 'id', 99 %}{% if item %}{{ item.name }}{% else %}not found{% endif %}"
+  environment:
+    items:
+      - id: 1
+        name: "First"
+  expected: "not found"
+  complexity: 180
+  hint: |
+    find returns nil when no element matches. Check with {% if %}.
+
+- name: horizon_md_basic
+  template: "{{ '**Bold text**' | md }}"
+  expected: "<p><strong>Bold text</strong></p>"
+  complexity: 300
+  hint: |
+    md converts Markdown to HTML. **text** becomes <strong>text</strong>.
+    Output is wrapped in <p> tags.
+
+- name: horizon_md_link
+  template: "{{ '[Shopify](https://shopify.com)' | md }}"
+  expected: "<p><a href=\"https://shopify.com\">Shopify</a></p>"
+  complexity: 300
+  hint: |
+    md converts Markdown links: [text](url) becomes <a href="url">text</a>.
+
+- name: horizon_format_address
+  template: "{{ address | format_address }}"
+  environment:
+    address:
+      name: "John Doe"
+      address1: "123 Main St"
+      city: "Springfield"
+      province: "IL"
+      zip: "62701"
+      country: "United States"
+  expected: "John Doe<br/>123 Main St<br/>Springfield, IL 62701<br/>United States"
+  complexity: 250
+  hint: |
+    format_address renders an address object as HTML with <br/> line breaks.

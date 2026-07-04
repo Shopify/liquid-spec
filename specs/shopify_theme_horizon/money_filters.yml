@@ -1,0 +1,60 @@
+---
+_metadata:
+  hint: |
+    Money filters format numeric prices according to the shop's currency settings.
+    The input is always in cents (the smallest currency unit).
+specs:
+- name: horizon_money_basic
+  template: "{{ 1499 | money }}"
+  expected: "$14.99"
+  complexity: 200
+  hint: |
+    money formats a cent amount as a currency string.
+    1499 cents = $14.99 (with default USD formatting).
+
+- name: horizon_money_with_currency
+  template: "{{ 1499 | money_with_currency }}"
+  expected: "$14.99 USD"
+  complexity: 200
+  hint: |
+    money_with_currency formats cents with the currency code appended.
+    1499 cents = $14.99 USD.
+
+- name: horizon_money_without_currency
+  template: "{{ 1499 | money_without_currency }}"
+  expected: "14.99"
+  complexity: 200
+  hint: |
+    money_without_currency formats cents without the currency symbol.
+    1499 cents = 14.99.
+
+- name: horizon_money_without_trailing_zeros
+  template: "{{ 1500 | money_without_trailing_zeros }}"
+  expected: "$15"
+  complexity: 210
+  hint: |
+    money_without_trailing_zeros removes trailing zeros.
+    1500 cents = $15 (not $15.00).
+
+- name: horizon_money_without_trailing_zeros_with_cents
+  template: "{{ 1499 | money_without_trailing_zeros }}"
+  expected: "$14.99"
+  complexity: 210
+  hint: |
+    money_without_trailing_zeros keeps cents when they're non-zero.
+    1499 cents = $14.99 (no trailing zeros to strip).
+
+- name: horizon_money_zero
+  template: "{{ 0 | money }}"
+  expected: "$0.00"
+  complexity: 200
+  hint: |
+    money of 0 cents = $0.00.
+
+- name: horizon_money_large
+  template: "{{ 1234567 | money }}"
+  expected: "$12,345.67"
+  complexity: 210
+  hint: |
+    money formats large amounts with thousands separators.
+    1234567 cents = $12,345.67.
