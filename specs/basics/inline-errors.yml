@@ -17,7 +17,7 @@ specs:
       - Liquid error
       - divided by 0
   complexity: 300
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -35,7 +35,7 @@ specs:
       - line 2
       - divided by 0
   complexity: 400
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -55,7 +55,7 @@ specs:
       - bad_partial
       - divided by 0
   complexity: 450
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -68,7 +68,7 @@ specs:
     output:
       - divided by 0
   complexity: 350
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -82,7 +82,7 @@ specs:
     output:
       - divided by 0
   complexity: 350
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -99,7 +99,7 @@ specs:
       - divided by 0
       - after
   complexity: 320
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -114,7 +114,7 @@ specs:
       - Liquid error
       - divided by 0
   complexity: 310
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -129,7 +129,7 @@ specs:
       - Liquid error
       - invalid integer
   complexity: 330
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -148,7 +148,7 @@ specs:
       - inner
       - divided by 0
   complexity: 470
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -165,7 +165,7 @@ specs:
       - divided by 0
       - WORLD
   complexity: 340
-  error_mode: lax
+
   render_errors: true
   features: [inline_errors]
   hint: |

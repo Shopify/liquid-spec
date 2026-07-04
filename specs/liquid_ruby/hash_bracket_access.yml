@@ -1,0 +1,184 @@
+---
+_metadata:
+  hint: |
+    These specs test hash bracket access (hash[key]) with literal, variable,
+    and nested keys, plus first/last/size filters on the result.
+    These are parser-mode-neutral: the templates use qualified bracket access
+    (hash[...]) which is valid in lax, strict, and strict2 modes. They are
+    duplicated from specs/liquid_ruby_lax/variable_type_filters.yml without
+    the lax_ name prefix so they also run for strict2-only adapters that opt
+    out of lax_parsing.
+  minimum_complexity: 300
+specs:
+- name: hash_bracket_static_key
+  complexity: 520
+  hint: hash['literal'] accesses hash with string literal key
+  template: "{{ hash['a'] }}, {{ hash['b'] }}"
+  environment:
+    hash:
+      a: 1
+      b: 2
+  expected: 1, 2
+- name: hash_bracket_dynamic_key
+  complexity: 520
+  hint: hash[variable] accesses hash with variable's value as key
+  template: "{{ hash[key] }}"
+  environment:
+    hash:
+      x: found
+      "y": also found
+    key: x
+  expected: found
+- name: hash_bracket_first_last_size_array
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      arr:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    key: arr
+  expected: |
+    hash[key], first:1
+    hash[key], last:5
+    hash[key], size:5
+- name: hash_bracket_first_last_size_string
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      str: hello
+    key: str
+  expected: |
+    hash[key], first:h
+    hash[key], last:o
+    hash[key], size:5
+- name: hash_bracket_first_last_size_nested_hash
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      nested:
+        x: 10
+        "y": 20
+    key: nested
+  expected: |
+    hash[key], first:x10
+    hash[key], last:
+    hash[key], size:2
+- name: hash_bracket_first_last_size_int
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      num: 42
+    key: num
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:8
+- name: hash_bracket_first_last_size_float
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      f: 3.14
+    key: f
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:0
+- name: hash_bracket_first_last_size_nil
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      "n":
+    key: "n"
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:0
+- name: hash_bracket_first_last_size_bool
+  complexity: 520
+  template: |
+    hash[key], first:{{- hash[key] | first }}
+    hash[key], last:{{- hash[key] | last }}
+    hash[key], size:{{- hash[key] | size }}
+  environment:
+    hash:
+      b: true
+    key: b
+  expected: |
+    hash[key], first:
+    hash[key], last:
+    hash[key], size:0
+- name: hash_bracket_missing_key
+  complexity: 520
+  hint: hash[key] where key points to non-existent hash key
+  template: result:{{- hash[key] }}
+  environment:
+    hash:
+      a: 1
+    key: missing
+  expected: 'result:'
+- name: hash_bracket_undefined_key_variable
+  complexity: 520
+  hint: hash[undefined] where the key variable doesn't exist
+  template: result:{{- hash[missing] }}
+  environment:
+    hash:
+      a: 1
+  expected: 'result:'
+- name: hash_bracket_then_property_access
+  complexity: 530
+  hint: Hash bracket access followed by property access
+  template: |
+    hash[key].first:{{- hash[key].first }}
+    hash[key].last:{{- hash[key].last }}
+    hash[key].size:{{- hash[key].size }}
+  environment:
+    hash:
+      arr:
+      - 100
+      - 200
+      - 300
+    key: arr
+  expected: |
+    hash[key].first:100
+    hash[key].last:300
+    hash[key].size:3
+- name: hash_nested_bracket_access
+  complexity: 530
+  hint: 'Nested bracket access: hash[hash2[key]]'
+  template: "{{ hash[lookup[key]] }}"
+  environment:
+    hash:
+      x: found x
+      "y": found y
+    lookup:
+      a: x
+      b: "y"
+    key: a
+  expected: found x

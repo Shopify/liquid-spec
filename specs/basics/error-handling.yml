@@ -5,7 +5,6 @@
     render_error:
       - divided by 0
   complexity: 200
-  error_mode: lax
   hint: |
     Division by zero should raise a render error in lax mode.
     The error message should contain "divided by 0" (case-insensitive).
@@ -14,7 +13,6 @@
   template: "{{ 10.0 | divided_by: 0.0 }}"
   expected: Infinity
   complexity: 210
-  error_mode: lax
   hint: |
     Float division by zero in Liquid returns "Infinity" following standard
     floating-point arithmetic behavior. This differs from integer division by zero
@@ -26,7 +24,6 @@
     render_error:
       - divided by 0
   complexity: 215
-  error_mode: lax
   hint: |
     Modulo by zero should raise a render error in lax mode.
     The error message should contain "divided by 0" (case-insensitive).
@@ -36,7 +33,6 @@
   environment: {}
   expected: ''
   complexity: 205
-  error_mode: lax
   hint: |
     In lax mode, undefined variables render as empty strings (nil output).
     The variable lookup system should return nil for variables not found
@@ -47,7 +43,6 @@
   environment: {}
   expected: ''
   complexity: 230
-  error_mode: strict
   hint: |
     In liquid-ruby, strict mode only affects parsing, not runtime variable
     lookup. Undefined variables still render as empty strings. Other
@@ -57,7 +52,6 @@
   environment: {}
   expected: ''
   complexity: 220
-  error_mode: lax
   hint: |
     Accessing properties on nil/undefined values should fail gracefully in lax mode.
     When 'missing' resolves to nil, .property access should also return nil
@@ -69,7 +63,6 @@
   environment: {}
   expected: ''
   complexity: 245
-  error_mode: strict
   hint: |
     In liquid-ruby, strict mode only affects parsing. Property access on
     undefined variables still returns nil (empty output). Other implementations
@@ -80,7 +73,6 @@
     number: 42
   expected: ''
   complexity: 235
-  error_mode: lax
   hint: |
     Attempting to access properties on primitive types (numbers, strings)
     should return nil in lax mode. The number 42 doesn't have a 'property'
@@ -93,7 +85,6 @@
     string: hello
   expected: ''
   complexity: 240
-  error_mode: lax
   hint: |
     Bracket notation on non-indexable types should return nil in lax mode.
     While strings might support indexing in some implementations, attempting
@@ -104,7 +95,6 @@
   template: "{{ 'hello' | nonexistent_filter }}"
   expected: hello
   complexity: 250
-  error_mode: lax
   hint: |
     In lax mode, unknown filters should be silently ignored, passing through
     the input value unchanged. This allows templates to degrade gracefully
@@ -115,7 +105,6 @@
   template: "{{ 'hello' | nonexistent_filter }}"
   expected: hello
   complexity: 270
-  error_mode: strict
   hint: |
     In liquid-ruby, unknown filters are ignored even in strict mode.
     The filter passes through its input unchanged, like lax mode.
@@ -126,7 +115,6 @@
     render_error:
       - invalid integer
   complexity: 255
-  error_mode: lax
   hint: |
     Filters that expect numeric arguments should raise a render error when
     given invalid input. The slice filter expects an integer index but gets
@@ -136,7 +124,6 @@
   template: "{{ 'test' | nonexistent | upcase }}"
   expected: TEST
   complexity: 100
-  error_mode: lax
   hint: |
     When an unknown filter appears in a chain in lax mode, it passes through
     its input unchanged, and the chain continues. Here 'nonexistent' passes
@@ -156,7 +143,7 @@
 - name: unknown_tag_strict_parse_error
   template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
   complexity: 300
-  error_mode: strict
+  error_mode: strict2
   errors:
     parse_error:
     - Unknown tag
@@ -177,7 +164,7 @@
 - name: malformed_syntax_unclosed_tag_lax
   template: "{% if true %}hello"
   complexity: 320
-  error_mode: lax
+  error_mode: strict2
   errors:
     parse_error:
     - "'if' tag was never closed"
@@ -203,7 +190,6 @@
         length: 100000
   expected: '100000'
   complexity: 100
-  error_mode: lax
   hint: |
     Filters should handle very long strings without crashing. The size filter
     should work on strings of any length. While there may be practical limits
@@ -225,7 +211,6 @@
                     i: {}
   expected: ''
   complexity: 310
-  error_mode: lax
   hint: |
     Deep property access chains should work up to the point where a property
     doesn't exist. Here the chain reaches 'i' (an empty object), then accessing
@@ -238,7 +223,6 @@
   environment: {}
   expected: ''
   complexity: 225
-  error_mode: lax
   hint: |
     Filters applied to nil/undefined variables should handle nil input gracefully.
     The upcase filter receives nil as input (since 'missing' is undefined).
@@ -255,7 +239,6 @@
     - c
   expected: ''
   complexity: 100
-  error_mode: lax
   hint: |
     Negative array indices that go beyond the array bounds should return nil.
     The array has 3 elements, so [-10] would be index -7 when adjusted,
@@ -269,7 +252,6 @@
     render_error:
       - invalid integer
   complexity: 275
-  error_mode: lax
   hint: |
     When a filter argument references an undefined variable (nil), the slice
     filter should raise a render error since it expects an integer.
@@ -283,7 +265,6 @@
     - name: b
   expected: ''
   complexity: 100
-  error_mode: lax
   hint: |
     Errors inside loops or other block structures should be handled per-iteration
     in lax mode. Each iteration tries to access .missing on an item, which
@@ -297,7 +278,6 @@
       profile:
   expected: Anonymous
   complexity: 295
-  error_mode: strict
   hint: |
     Even in strict mode, nil-safe property access should work when the value
     is explicitly nil (not undefined). Here 'profile' exists but is nil, so
@@ -320,7 +300,6 @@
     b: "{{ a }}"
   expected: "{{ b }}"
   complexity: 100
-  error_mode: lax
   hint: |
     Variable values should not be recursively parsed as Liquid templates.
     When 'a' contains "{{ b }}", it should be output literally, not parsed
@@ -344,7 +323,6 @@
       - line 5
       - divided by 0
   complexity: 500
-  error_mode: lax
   hint: |
     HIGH COMPLEXITY: This spec checks that the error message includes the
     precise line number "line 5". Implementations must track line numbers
@@ -370,7 +348,6 @@
       - line 10
       - divided by 0
   complexity: 510
-  error_mode: lax
   hint: |
     HIGH COMPLEXITY: Verifies line 10 appears in the error. Tests that
     line counting works correctly for deeper templates. The modulo error
@@ -387,7 +364,6 @@
       - math_helper
       - divided by 0
   complexity: 520
-  error_mode: lax
   hint: |
     HIGH COMPLEXITY: Verifies the partial name "math_helper" appears in
     the exception message. Implementations should identify which partial
@@ -409,7 +385,6 @@
       - line 3
       - divided by 0
   complexity: 550
-  error_mode: lax
   hint: |
     HIGH COMPLEXITY: Verifies both partial name AND line number within
     the partial appear in the error. The error occurs on line 3 of the
@@ -430,7 +405,6 @@
       - inner_math
       - divided by 0
   complexity: 580
-  error_mode: lax
   hint: |
     HIGH COMPLEXITY: When an error occurs in a nested partial, the
     innermost partial name should appear in the exception. Here
@@ -446,7 +420,7 @@
     parse_error:
       - line 3
   complexity: 530
-  error_mode: lax
+  error_mode: strict2
   hint: |
     HIGH COMPLEXITY: Parse errors should also include precise line numbers.
     The malformed {% if tag is on line 3. The parse error message should

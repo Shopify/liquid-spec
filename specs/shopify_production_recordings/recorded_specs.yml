@@ -3690,6 +3690,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_break_in_capture_in_loop_12d168c32
+  error_mode: :strict
   expected: 'before,after,captured:inside
 
     '
@@ -3709,6 +3710,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_break_in_capture_not_in_loop_0e9a05bee
+  error_mode: :strict
   expected: before,
   template: |
     {% liquid
@@ -4488,6 +4490,7 @@
     b: meow
   filesystem: {}
 - name: RecordedTest#test_continue_in_capture_in_loop_1a17a2daf
+  error_mode: :strict
   expected: 'before,after,captured:inside
 
     '
@@ -22085,6 +22088,7 @@
       a: 1
   filesystem: {}
 - name: RecordedTest#test_indirect_variable_lookup_d3896568e
+  error_mode: :strict
   expected: '123'
   template: |
     {%- assign vars = "a,b,c" | split: "," -%}
@@ -23878,7 +23882,6 @@
           active: false
           current: false
           links: []
-  error_mode: :strict
 ...
 
 - name: RecordedTest#test_case_michael_case_else_nightmare_4355fa66

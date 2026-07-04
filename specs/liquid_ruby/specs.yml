@@ -231,6 +231,7 @@
   expected: Print this-thing
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/capture_test.rb#L17
 - name: CaptureTest#test_captures_block_content_in_variable_a587b04c
+  error_mode: :strict
   template: "{% capture 'var' %}test string{% endcapture %}{{var}}"
   render_errors: false
   expected: test string
@@ -343,7 +344,6 @@
     {%- endcase -%}
   environment:
     x: 2
-  error_mode: lax
   render_errors: false
   expected: 2 or empty
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L96
@@ -357,7 +357,6 @@
     {%- endcase -%}
   environment:
     x: 4
-  error_mode: lax
   render_errors: false
   expected: not 2 or empty
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L101
@@ -386,7 +385,6 @@
   environment:
     x:
       a: b
-  error_mode: lax
   render_errors: false
   expected: not 2 or empty
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L99
@@ -427,7 +425,6 @@
     {%- endcase -%}
   environment:
     x: []
-  error_mode: lax
   render_errors: false
   expected: 2 or empty
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L98
@@ -442,7 +439,6 @@
   environment:
     x:
     - a
-  error_mode: lax
   render_errors: false
   expected: not 2 or empty
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L100
@@ -470,7 +466,6 @@
     {%- endcase -%}
   environment:
     x: {}
-  error_mode: lax
   render_errors: false
   expected: 2 or empty
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L97
@@ -495,7 +490,6 @@
       {%- else -%}
         two
     {%- endcase -%}
-  error_mode: lax
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L66
@@ -523,6 +517,7 @@
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L66
 - name: CaseTagUnitTest#test_case_when_with_invalid_expression_67620f0d
+  error_mode: :strict
   template: |
     {%- case 'baz' -%}
       {%- when foo=>bar -%}
@@ -582,7 +577,6 @@
       {%- else -%}
         two
     {%- endcase -%}
-  error_mode: lax
   render_errors: false
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L81
@@ -599,6 +593,7 @@
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L45
 - name: CaseTagUnitTest#test_case_when_with_trailing_element_3597f047
+  error_mode: :strict
   template: |
     {%- case 1 -%}
       {%- when 1 bar -%}
@@ -625,6 +620,7 @@
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L117
 - name: CaseTagUnitTest#test_case_with_invalid_expression_cd9c0c85
+  error_mode: :strict
   template: |
     {%- case foo=>bar -%}
       {%- when 'baz' -%}
@@ -651,6 +647,7 @@
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L24
 - name: CaseTagUnitTest#test_case_with_trailing_element_53df2d40
+  error_mode: :strict
   template: |
     {%- case 1 bar -%}
       {%- when 1 -%}
@@ -922,6 +919,7 @@
   expected: deepsnow
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L289
 - name: ContextTest#test_access_variable_with_hash_notation_6afb1959
+  error_mode: :strict
   template: "{{ [bar] }}"
   environment:
     foo: baz
@@ -930,6 +928,7 @@
   expected: baz
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L300
 - name: ContextTest#test_access_variable_with_hash_notation_74ed5eac
+  error_mode: :strict
   template: '{{ ["foo"] }}'
   environment:
     foo: baz
@@ -1337,11 +1336,13 @@
   expected: '112233'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L50
 - name: CycleTagTest#test_cycle_tag_with_error_mode_2e06b45a
+  error_mode: :strict
   template: "{% assign 5 = 'b' %}{% cycle .5, .4 %}"
   render_errors: false
   expected: b
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L100
 - name: CycleTagTest#test_cycle_tag_with_error_mode_577d33f5
+  error_mode: :strict
   template: "{% cycle .5: 'a', 'b' %}"
   render_errors: false
   expected: a
@@ -1359,6 +1360,7 @@
   expected: b
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L100
 - name: CycleTagTest#test_cycle_with_trailing_elements_24de1b7f
+  error_mode: :strict
   template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle n  e: 'a', 'b', 'c'
     %}"
   render_errors: false
@@ -1372,6 +1374,7 @@
   expected: a
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L125
 - name: CycleTagTest#test_cycle_with_trailing_elements_5b8114bf
+  error_mode: :strict
   template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle n  e  'a', 'b', 'c'
     %}"
   render_errors: false
@@ -1385,12 +1388,14 @@
   expected: a
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L126
 - name: CycleTagTest#test_cycle_with_trailing_elements_692ee629
+  error_mode: :strict
   template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle       'a'  'b', 'c'
     %}"
   render_errors: false
   expected: a
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L125
 - name: CycleTagTest#test_cycle_with_trailing_elements_6d4832a1
+  error_mode: :strict
   template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle name: 'a'  'b', 'c'
     %}"
   render_errors: false
@@ -1411,6 +1416,7 @@
   expected: "N"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/cycle_tag_test.rb#L129
 - name: CycleTagTest#test_cycle_with_trailing_elements_c853a037
+  error_mode: :strict
   template: "{% assign a = 'A' %}{% assign n = 'N' %}{% cycle name: 'a', 'b'  'c'
     %}"
   render_errors: false
@@ -3767,6 +3773,7 @@
     snippet: hello {{ arg1 }} {{ arg2 }}
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L209
 - name: IncludeTagTest#test_strict2_parsing_errors_6548b667
+  error_mode: :strict
   template: '{% include "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
   render_errors: false
   expected: hello value1 value2
@@ -4282,6 +4289,7 @@
     break: "{% break %}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L170
 - name: RenderTagTest#test_decrement_is_isolated_between_renders_5fb97c46
+  error_mode: :strict
   template: '{% decrement %}{% decrement %}{% render "decr" %}'
   render_errors: false
   expected: "-1-2-1"
@@ -4310,6 +4318,7 @@
     test_include: '{% include "foo" %}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L191
 - name: RenderTagTest#test_increment_is_isolated_between_renders_d8dd11af
+  error_mode: :strict
   template: '{% increment %}{% increment %}{% render "incr" %}'
   render_errors: false
   expected: '010'
@@ -4531,6 +4540,7 @@
     snippet: hello {{ arg1 }} {{ arg2 }}
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L110
 - name: RenderTagTest#test_strict2_parsing_errors_76670775
+  error_mode: :strict
   template: '{% render "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
   render_errors: false
   expected: hello value1 value2
@@ -6696,20 +6706,20 @@
     <td class="col1"> 1 </td></tr>
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L215
 - name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_3da5d491
+  error_mode: :strict
   template: "{% tablerow n in (1...10) limit:true %} {{n}} {% endtablerow %}"
-  error_mode: warn
   render_errors: true
   expected: 'Liquid error (line 1): invalid integer'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L192
 - name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_8c42c394
+  error_mode: :strict
   template: "{% tablerow n in (1...10) cols:true %} {{n}} {% endtablerow %}"
-  error_mode: warn
   render_errors: true
   expected: 'Liquid error (line 1): invalid integer'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L206
 - name: TableRowTest#test_table_row_renders_correct_error_message_for_invalid_parameters_c9649632
+  error_mode: :strict
   template: "{% tablerow n in (1...10) offset:true %} {{n}} {% endtablerow %}"
-  error_mode: warn
   render_errors: true
   expected: 'Liquid error (line 1): invalid integer'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L199
@@ -6833,6 +6843,7 @@
     <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td><td class="col4">4</td><td class="col5">5</td></tr>
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L443
 - name: TableRowTest#test_tablerow_with_invalid_attribute_strict_vs_strict2_b293b0fe
+  error_mode: :strict
   template: "{% tablerow i in (1..5) invalid_attr: 10 %}{{ i }}{% endtablerow %}"
   render_errors: false
   expected: |
@@ -6840,6 +6851,7 @@
     <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td><td class="col4">4</td><td class="col5">5</td></tr>
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L443
 - name: TableRowTest#test_tablerow_with_invalid_expression_strict_vs_strict2_944ef6e0
+  error_mode: :strict
   template: "{% tablerow i in (1..5) limit: foo=>bar %}{{ i }}{% endtablerow %}"
   render_errors: false
   expected: |
@@ -7474,6 +7486,7 @@
   features:
   - ruby_drops
 - name: VariableTest#test_dynamic_find_var_8fd4cb4f
+  error_mode: :strict
   template: "{{ [key] }}"
   environment:
     key: foo
@@ -7482,6 +7495,7 @@
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L138
 - name: VariableTest#test_dynamic_find_var_with_drop_4ca2f954
+  error_mode: :strict
   template: '{{ [list[settings.zero]["foo"]] }}'
   environment:
     list:
@@ -7497,6 +7511,7 @@
   features:
   - ruby_drops
 - name: VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
+  error_mode: :strict
   template: "{{ [list[settings.zero]] }}"
   environment:
     list:
@@ -7520,6 +7535,7 @@
   expected: result
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L57
 - name: VariableTest#test_expression_with_whitespace_in_square_brackets_6f8ef4f8
+  error_mode: :strict
   template: "{{ a[ [ 'b' ] ] }}"
   environment:
     b: c
@@ -7743,6 +7759,7 @@
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L84
 - name: VariableTest#test_raw_value_variable_8fd4cb4f
+  error_mode: :strict
   template: "{{ [key] }}"
   environment:
     key: foo

@@ -7,19 +7,19 @@
 
 - name: StrictModeTest#test_assign_with_parentheses_rejected
   template: "{% assign foo = ('X' | downcase) %}"
-  error_mode: :strict
+  error_mode: :strict2
   errors:
     parse_error:
       - "but found pipe"
-  hint: "Filters cannot appear inside parentheses - lax mode tolerates this, strict rejects it"
+  hint: "Filters cannot appear inside parentheses - lax mode tolerates this, strict and strict2 reject it"
 
 - name: StrictModeTest#test_quirky_negative_sign_rejected
   template: "{{ - 'theme.css' - }}"
-  error_mode: :strict
+  error_mode: :strict2
   errors:
     parse_error:
       - "not a valid expression"
-  hint: "Leading/trailing dashes in variable output are invalid - lax mode tolerates this, strict rejects it"
+  hint: "Leading/trailing dashes in variable output are invalid - lax mode tolerates this, strict and strict2 reject it"
 
 - name: StrictModeTest#test_unclosed_bracket_lookup_rejected
   template: "{{['foo'}}"
