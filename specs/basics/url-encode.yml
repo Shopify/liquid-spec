@@ -1,0 +1,1223 @@
+# Exhaustive url_encode / url_decode charset spec for the Liquid filters.
+#
+# The entire API surface of Ruby's url-encoding (CGI.escape-compatible) is
+# part of the Liquid spec: every ASCII byte 0..127, the multibyte UTF-8
+# path, and the decode direction. Expected values were captured from the
+# reference Shopify/liquid (liquid-ruby) implementation.
+#
+# Reference documentation:
+#   Ruby CGI.escape: https://ruby-doc.org/stdlib/libdoc/cgi/rdoc/CGI.html#method-c-escape
+#   Liquid url_encode filter: https://shopify.dev/docs/api/liquid/filters#url_encode
+---
+_metadata:
+  hint: |
+    The `url_encode` filter percent-encodes a string (Ruby CGI.escape-compatible).
+    The entire encoding charset is in scope: unreserved ASCII (A-Z a-z 0-9 - _ . ~)
+    passes through unchanged; every other byte becomes %HH; space becomes '+';
+    multibyte characters are encoded as their UTF-8 byte sequence. `url_decode`
+    reverses this ('+' and %HH -> original bytes). Reference:
+    https://ruby-doc.org/stdlib/libdoc/cgi/rdoc/CGI.html#method-c-escape
+  doc: filters/url_encode.md
+specs:
+- name: url_encode_ascii_ctrl_0
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0000" (0) as %00.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0000"
+  expected: "%00"
+- name: url_encode_ascii_ctrl_1
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0001" (1) as %01.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0001"
+  expected: "%01"
+- name: url_encode_ascii_ctrl_2
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0002" (2) as %02.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0002"
+  expected: "%02"
+- name: url_encode_ascii_ctrl_3
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0003" (3) as %03.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0003"
+  expected: "%03"
+- name: url_encode_ascii_ctrl_4
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0004" (4) as %04.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0004"
+  expected: "%04"
+- name: url_encode_ascii_ctrl_5
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0005" (5) as %05.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0005"
+  expected: "%05"
+- name: url_encode_ascii_ctrl_6
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0006" (6) as %06.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0006"
+  expected: "%06"
+- name: url_encode_ascii_ctrl_7
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\a" (7) as %07.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\a"
+  expected: "%07"
+- name: url_encode_ascii_ctrl_8
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\b" (8) as %08.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\b"
+  expected: "%08"
+- name: url_encode_ascii_ctrl_9
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\t" (9) as %09.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\t"
+  expected: "%09"
+- name: url_encode_ascii_ctrl_10
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\n" (10) as %0A.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\n"
+  expected: "%0A"
+- name: url_encode_ascii_ctrl_11
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\v" (11) as %0B.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\v"
+  expected: "%0B"
+- name: url_encode_ascii_ctrl_12
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\f" (12) as %0C.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\f"
+  expected: "%0C"
+- name: url_encode_ascii_ctrl_13
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\r" (13) as %0D.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\r"
+  expected: "%0D"
+- name: url_encode_ascii_ctrl_14
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u000E" (14) as %0E.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u000E"
+  expected: "%0E"
+- name: url_encode_ascii_ctrl_15
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u000F" (15) as %0F.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u000F"
+  expected: "%0F"
+- name: url_encode_ascii_ctrl_16
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0010" (16) as %10.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0010"
+  expected: "%10"
+- name: url_encode_ascii_ctrl_17
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0011" (17) as %11.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0011"
+  expected: "%11"
+- name: url_encode_ascii_ctrl_18
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0012" (18) as %12.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0012"
+  expected: "%12"
+- name: url_encode_ascii_ctrl_19
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0013" (19) as %13.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0013"
+  expected: "%13"
+- name: url_encode_ascii_ctrl_20
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0014" (20) as %14.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0014"
+  expected: "%14"
+- name: url_encode_ascii_ctrl_21
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0015" (21) as %15.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0015"
+  expected: "%15"
+- name: url_encode_ascii_ctrl_22
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0016" (22) as %16.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0016"
+  expected: "%16"
+- name: url_encode_ascii_ctrl_23
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0017" (23) as %17.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0017"
+  expected: "%17"
+- name: url_encode_ascii_ctrl_24
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0018" (24) as %18.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0018"
+  expected: "%18"
+- name: url_encode_ascii_ctrl_25
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u0019" (25) as %19.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u0019"
+  expected: "%19"
+- name: url_encode_ascii_ctrl_26
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u001A" (26) as %1A.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u001A"
+  expected: "%1A"
+- name: url_encode_ascii_ctrl_27
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\e" (27) as %1B.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\e"
+  expected: "%1B"
+- name: url_encode_ascii_ctrl_28
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u001C" (28) as %1C.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u001C"
+  expected: "%1C"
+- name: url_encode_ascii_ctrl_29
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u001D" (29) as %1D.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u001D"
+  expected: "%1D"
+- name: url_encode_ascii_ctrl_30
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u001E" (30) as %1E.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u001E"
+  expected: "%1E"
+- name: url_encode_ascii_ctrl_31
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u001F" (31) as %1F.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u001F"
+  expected: "%1F"
+- name: url_encode_ascii_space
+  complexity: 95
+  hint: |
+    url_encode encodes space (32) as '+' (form-encoding convention, not %20).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: " "
+  expected: "+"
+- name: url_encode_ascii_ascii_33_"!"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "!" (33) as %21.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "!"
+  expected: "%21"
+- name: url_encode_ascii_ascii_34_"\""
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\"" (34) as %22.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\""
+  expected: "%22"
+- name: url_encode_ascii_ascii_35_"#"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "#" (35) as %23.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "#"
+  expected: "%23"
+- name: url_encode_ascii_ascii_36_"$"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "$" (36) as %24.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "$"
+  expected: "%24"
+- name: url_encode_ascii_ascii_37_"%"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "%" (37) as %25.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "%"
+  expected: "%25"
+- name: url_encode_ascii_ascii_38_"&"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "&" (38) as %26.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "&"
+  expected: "%26"
+- name: url_encode_ascii_ascii_39_"'"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "'" (39) as %27.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "'"
+  expected: "%27"
+- name: url_encode_ascii_ascii_40_"("
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "(" (40) as %28.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "("
+  expected: "%28"
+- name: url_encode_ascii_ascii_41_")"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII ")" (41) as %29.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: ")"
+  expected: "%29"
+- name: url_encode_ascii_ascii_42_"*"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "*" (42) as %2A.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "*"
+  expected: "%2A"
+- name: url_encode_ascii_ascii_43_"+"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "+" (43) as %2B.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "+"
+  expected: "%2B"
+- name: url_encode_ascii_ascii_44_","
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "," (44) as %2C.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: ","
+  expected: "%2C"
+- name: url_encode_ascii_ascii_45_"-"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "-" (45) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "-"
+  expected: "-"
+- name: url_encode_ascii_ascii_46_"."
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "." (46) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "."
+  expected: "."
+- name: url_encode_ascii_ascii_47_"/"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "/" (47) as %2F.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "/"
+  expected: "%2F"
+- name: url_encode_ascii_ascii_48_"0"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "0" (48) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "0"
+  expected: "0"
+- name: url_encode_ascii_ascii_49_"1"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "1" (49) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "1"
+  expected: "1"
+- name: url_encode_ascii_ascii_50_"2"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "2" (50) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "2"
+  expected: "2"
+- name: url_encode_ascii_ascii_51_"3"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "3" (51) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "3"
+  expected: "3"
+- name: url_encode_ascii_ascii_52_"4"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "4" (52) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "4"
+  expected: "4"
+- name: url_encode_ascii_ascii_53_"5"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "5" (53) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "5"
+  expected: "5"
+- name: url_encode_ascii_ascii_54_"6"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "6" (54) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "6"
+  expected: "6"
+- name: url_encode_ascii_ascii_55_"7"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "7" (55) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "7"
+  expected: "7"
+- name: url_encode_ascii_ascii_56_"8"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "8" (56) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "8"
+  expected: "8"
+- name: url_encode_ascii_ascii_57_"9"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "9" (57) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "9"
+  expected: "9"
+- name: url_encode_ascii_ascii_58_":"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII ":" (58) as %3A.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: ":"
+  expected: "%3A"
+- name: url_encode_ascii_ascii_59_";"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII ";" (59) as %3B.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: ";"
+  expected: "%3B"
+- name: url_encode_ascii_ascii_60_"<"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "<" (60) as %3C.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "<"
+  expected: "%3C"
+- name: url_encode_ascii_ascii_61_"="
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "=" (61) as %3D.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "="
+  expected: "%3D"
+- name: url_encode_ascii_ascii_62_">"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII ">" (62) as %3E.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: ">"
+  expected: "%3E"
+- name: url_encode_ascii_ascii_63_"?"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "?" (63) as %3F.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "?"
+  expected: "%3F"
+- name: url_encode_ascii_ascii_64_"@"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "@" (64) as %40.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "@"
+  expected: "%40"
+- name: url_encode_ascii_ascii_65_"A"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "A" (65) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "A"
+  expected: "A"
+- name: url_encode_ascii_ascii_66_"B"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "B" (66) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "B"
+  expected: "B"
+- name: url_encode_ascii_ascii_67_"C"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "C" (67) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "C"
+  expected: "C"
+- name: url_encode_ascii_ascii_68_"D"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "D" (68) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "D"
+  expected: "D"
+- name: url_encode_ascii_ascii_69_"E"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "E" (69) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "E"
+  expected: "E"
+- name: url_encode_ascii_ascii_70_"F"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "F" (70) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "F"
+  expected: "F"
+- name: url_encode_ascii_ascii_71_"G"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "G" (71) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "G"
+  expected: "G"
+- name: url_encode_ascii_ascii_72_"H"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "H" (72) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "H"
+  expected: "H"
+- name: url_encode_ascii_ascii_73_"I"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "I" (73) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "I"
+  expected: "I"
+- name: url_encode_ascii_ascii_74_"J"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "J" (74) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "J"
+  expected: "J"
+- name: url_encode_ascii_ascii_75_"K"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "K" (75) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "K"
+  expected: "K"
+- name: url_encode_ascii_ascii_76_"L"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "L" (76) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "L"
+  expected: "L"
+- name: url_encode_ascii_ascii_77_"M"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "M" (77) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "M"
+  expected: "M"
+- name: url_encode_ascii_ascii_78_"N"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "N" (78) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "N"
+  expected: "N"
+- name: url_encode_ascii_ascii_79_"O"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "O" (79) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "O"
+  expected: "O"
+- name: url_encode_ascii_ascii_80_"P"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "P" (80) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "P"
+  expected: "P"
+- name: url_encode_ascii_ascii_81_"Q"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "Q" (81) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "Q"
+  expected: "Q"
+- name: url_encode_ascii_ascii_82_"R"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "R" (82) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "R"
+  expected: "R"
+- name: url_encode_ascii_ascii_83_"S"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "S" (83) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "S"
+  expected: "S"
+- name: url_encode_ascii_ascii_84_"T"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "T" (84) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "T"
+  expected: "T"
+- name: url_encode_ascii_ascii_85_"U"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "U" (85) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "U"
+  expected: "U"
+- name: url_encode_ascii_ascii_86_"V"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "V" (86) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "V"
+  expected: "V"
+- name: url_encode_ascii_ascii_87_"W"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "W" (87) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "W"
+  expected: "W"
+- name: url_encode_ascii_ascii_88_"X"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "X" (88) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "X"
+  expected: "X"
+- name: url_encode_ascii_ascii_89_"Y"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "Y" (89) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "Y"
+  expected: "Y"
+- name: url_encode_ascii_ascii_90_"Z"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "Z" (90) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "Z"
+  expected: "Z"
+- name: url_encode_ascii_ascii_91_"["
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "[" (91) as %5B.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "["
+  expected: "%5B"
+- name: url_encode_ascii_ascii_92_"\\"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\\" (92) as %5C.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\\"
+  expected: "%5C"
+- name: url_encode_ascii_ascii_93_"]"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "]" (93) as %5D.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "]"
+  expected: "%5D"
+- name: url_encode_ascii_ascii_94_"^"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "^" (94) as %5E.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "^"
+  expected: "%5E"
+- name: url_encode_ascii_ascii_95_"_"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "_" (95) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "_"
+  expected: "_"
+- name: url_encode_ascii_ascii_96_"`"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "`" (96) as %60.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "`"
+  expected: "%60"
+- name: url_encode_ascii_ascii_97_"a"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "a" (97) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "a"
+  expected: "a"
+- name: url_encode_ascii_ascii_98_"b"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "b" (98) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "b"
+  expected: "b"
+- name: url_encode_ascii_ascii_99_"c"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "c" (99) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "c"
+  expected: "c"
+- name: url_encode_ascii_ascii_100_"d"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "d" (100) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "d"
+  expected: "d"
+- name: url_encode_ascii_ascii_101_"e"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "e" (101) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "e"
+  expected: "e"
+- name: url_encode_ascii_ascii_102_"f"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "f" (102) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "f"
+  expected: "f"
+- name: url_encode_ascii_ascii_103_"g"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "g" (103) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "g"
+  expected: "g"
+- name: url_encode_ascii_ascii_104_"h"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "h" (104) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "h"
+  expected: "h"
+- name: url_encode_ascii_ascii_105_"i"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "i" (105) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "i"
+  expected: "i"
+- name: url_encode_ascii_ascii_106_"j"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "j" (106) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "j"
+  expected: "j"
+- name: url_encode_ascii_ascii_107_"k"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "k" (107) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "k"
+  expected: "k"
+- name: url_encode_ascii_ascii_108_"l"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "l" (108) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "l"
+  expected: "l"
+- name: url_encode_ascii_ascii_109_"m"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "m" (109) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "m"
+  expected: "m"
+- name: url_encode_ascii_ascii_110_"n"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "n" (110) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "n"
+  expected: "n"
+- name: url_encode_ascii_ascii_111_"o"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "o" (111) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "o"
+  expected: "o"
+- name: url_encode_ascii_ascii_112_"p"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "p" (112) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "p"
+  expected: "p"
+- name: url_encode_ascii_ascii_113_"q"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "q" (113) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "q"
+  expected: "q"
+- name: url_encode_ascii_ascii_114_"r"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "r" (114) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "r"
+  expected: "r"
+- name: url_encode_ascii_ascii_115_"s"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "s" (115) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "s"
+  expected: "s"
+- name: url_encode_ascii_ascii_116_"t"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "t" (116) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "t"
+  expected: "t"
+- name: url_encode_ascii_ascii_117_"u"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "u" (117) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "u"
+  expected: "u"
+- name: url_encode_ascii_ascii_118_"v"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "v" (118) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "v"
+  expected: "v"
+- name: url_encode_ascii_ascii_119_"w"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "w" (119) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "w"
+  expected: "w"
+- name: url_encode_ascii_ascii_120_"x"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "x" (120) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "x"
+  expected: "x"
+- name: url_encode_ascii_ascii_121_"y"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "y" (121) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "y"
+  expected: "y"
+- name: url_encode_ascii_ascii_122_"z"
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "z" (122) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "z"
+  expected: "z"
+- name: url_encode_ascii_ascii_123_"{"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "{" (123) as %7B.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "{"
+  expected: "%7B"
+- name: url_encode_ascii_ascii_124_"|"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "|" (124) as %7C.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "|"
+  expected: "%7C"
+- name: url_encode_ascii_ascii_125_"}"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "}" (125) as %7D.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "}"
+  expected: "%7D"
+- name: url_encode_ascii_tilde
+  complexity: 95
+  hint: |
+    url_encode passes unreserved ASCII "~" (126) through unchanged.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "~"
+  expected: "~"
+- name: url_encode_ascii_ascii_127_"\u007F"
+  complexity: 95
+  hint: |
+    url_encode encodes ASCII "\u007F" (127) as %7F.
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "\u007F"
+  expected: "%7F"
+- name: url_encode_multibyte_e9
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+00E9 latin small e acute as UTF-8 bytes (%C3%A9).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "é"
+  expected: "%C3%A9"
+- name: url_encode_multibyte_4e2d
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+4E2D cjk ideograph as UTF-8 bytes (%E4%B8%AD).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "中"
+  expected: "%E4%B8%AD"
+- name: url_encode_multibyte_1f389
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+1F389 party popper (4-byte UTF-8) as UTF-8 bytes (%F0%9F%8E%89).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "🎉"
+  expected: "%F0%9F%8E%89"
+- name: url_encode_multibyte_20ac
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+20AC euro sign as UTF-8 bytes (%E2%82%AC).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "€"
+  expected: "%E2%82%AC"
+- name: url_encode_multibyte_d1
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+00D1 latin capital N tilde as UTF-8 bytes (%C3%91).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "Ñ"
+  expected: "%C3%91"
+- name: url_encode_multibyte_3b1
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+03B1 greek small alpha as UTF-8 bytes (%CE%B1).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "α"
+  expected: "%CE%B1"
+- name: url_encode_multibyte_ff
+  complexity: 120
+  hint: |
+    url_encode percent-encodes U+00FF latin small y diaeresis as UTF-8 bytes (%C3%BF).
+  template: "{{ ch | url_encode }}"
+  environment:
+    ch: "ÿ"
+  expected: "%C3%BF"
+- name: url_decode__20
+  complexity: 100
+  hint: |
+    url_decode decodes "%20" to " ". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "%20"
+  expected: " "
+- name: url_decode__
+  complexity: 100
+  hint: |
+    url_decode decodes "+" to " ". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "+"
+  expected: " "
+- name: url_decode__21
+  complexity: 100
+  hint: |
+    url_decode decodes "%21" to "!". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "%21"
+  expected: "!"
+- name: url_decode__2A
+  complexity: 100
+  hint: |
+    url_decode decodes "%2A" to "*". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "%2A"
+  expected: "*"
+- name: url_decode__C3_A9
+  complexity: 100
+  hint: |
+    url_decode decodes "%C3%A9" to "é". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "%C3%A9"
+  expected: "é"
+- name: url_decode__E4_B8_AD
+  complexity: 100
+  hint: |
+    url_decode decodes "%E4%B8%AD" to "中". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "%E4%B8%AD"
+  expected: "中"
+- name: url_decode_hello_20world
+  complexity: 100
+  hint: |
+    url_decode decodes "hello%20world" to "hello world". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "hello%20world"
+  expected: "hello world"
+- name: url_decode_a_b
+  complexity: 100
+  hint: |
+    url_decode decodes "a+b" to "a b". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "a+b"
+  expected: "a b"
+- name: url_decode__25
+  complexity: 100
+  hint: |
+    url_decode decodes "%25" to "%". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: "%25"
+  expected: "%"
+- name: url_decode_
+  complexity: 100
+  hint: |
+    url_decode decodes "" to "". (+ decodes to space; %HH to bytes.)
+  template: "{{ enc | url_decode }}"
+  environment:
+    enc: ""
+  expected: ""
+- name: url_roundtrip_phrase
+  complexity: 130
+  hint: |
+    url_encode then url_decode round-trips "hello world" back to "hello world".
+  template: "{{ ch | url_encode | url_decode }}"
+  environment:
+    ch: "hello world"
+  expected: "hello world"
+- name: url_roundtrip_with_reserved
+  complexity: 130
+  hint: |
+    url_encode then url_decode round-trips "a&b=c" back to "a&b=c".
+  template: "{{ ch | url_encode | url_decode }}"
+  environment:
+    ch: "a&b=c"
+  expected: "a&b=c"
+- name: url_roundtrip_multibyte
+  complexity: 130
+  hint: |
+    url_encode then url_decode round-trips "é中" back to "é中".
+  template: "{{ ch | url_encode | url_decode }}"
+  environment:
+    ch: "é中"
+  expected: "é中"
+- name: url_encode_nil
+  complexity: 110
+  hint: |
+    url_encode on nil (missing var) returns empty string.
+  template: "{{ missing | url_encode }}"
+  expected: ""
+- name: url_encode_empty
+  complexity: 110
+  hint: |
+    url_encode on an empty string returns empty string.
+  template: "{{ '' | url_encode }}"
+  expected: ""
+- name: url_encode_integer
+  complexity: 115
+  hint: |
+    url_encode on an integer coerces to string first ('42').
+  template: "{{ 42 | url_encode }}"
+  expected: "42"

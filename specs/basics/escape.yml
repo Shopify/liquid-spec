@@ -1,0 +1,420 @@
+# Exhaustive escape / escape_once HTML-escape spectrum spec for Liquid.
+#
+# The entire API surface of Liquid's HTML escaping is part of the spec:
+# every HTML-special character (& < > " '), the ordering rule (& first),
+# pass-through of every non-special character (control bytes, high-bit,
+# unicode, emoji), and escape_once idempotency. Expected values were
+# captured from the reference Shopify/liquid (liquid-ruby) implementation.
+#
+# Reference documentation:
+#   Ruby CGI.escapeHTML: https://ruby-doc.org/stdlib/libdoc/cgi/rdoc/CGI.html#method-c-escapeHTML
+#   Liquid escape filter: https://shopify.dev/docs/api/liquid/filters#escape
+---
+_metadata:
+  hint: |
+    The `escape` filter HTML-escapes a string (Ruby CGI.escapeHTML-compatible).
+    The entire escape spectrum is in scope: exactly five characters are
+    escaped -- & < > " ' -- with & escaped FIRST (& -> &amp;) so already-escaped
+    entities are NOT protected (use `escape_once` for that). Every other
+    character (control bytes, unicode, emoji, punctuation) passes through
+    unchanged. `escape_once` escapes bare specials but leaves already-escaped
+    entities alone. `h` is an alias for `escape`. Reference:
+    https://ruby-doc.org/stdlib/libdoc/cgi/rdoc/CGI.html#method-c-escapeHTML
+  doc: filters/escape.md
+specs:
+- name: escape_special_amp;
+  complexity: 70
+  hint: |
+    escape converts the ampersand (escaped FIRST so entities aren't double-escaped) "&" to &amp;.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "&"
+  expected: "&amp;"
+- name: escape_special_lt;
+  complexity: 70
+  hint: |
+    escape converts the less-than "<" to &lt;.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "<"
+  expected: "&lt;"
+- name: escape_special_gt;
+  complexity: 70
+  hint: |
+    escape converts the greater-than ">" to &gt;.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: ">"
+  expected: "&gt;"
+- name: escape_special_quot;
+  complexity: 70
+  hint: |
+    escape converts the double quote "\"" to &quot;.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\""
+  expected: "&quot;"
+- name: escape_special_#39;
+  complexity: 70
+  hint: |
+    escape converts the single quote (apostrophe) "'" to &#39;.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "'"
+  expected: "&#39;"
+- name: escape_passthrough_plain_letter
+  complexity: 75
+  hint: |
+    escape passes the plain letter ("a") through unchanged: "a".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "a"
+  expected: "a"
+- name: escape_passthrough_uppercase_letter
+  complexity: 75
+  hint: |
+    escape passes the uppercase letter ("Z") through unchanged: "Z".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "Z"
+  expected: "Z"
+- name: escape_passthrough_digit
+  complexity: 75
+  hint: |
+    escape passes the digit ("0") through unchanged: "0".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "0"
+  expected: "0"
+- name: escape_passthrough_space
+  complexity: 75
+  hint: |
+    escape passes the space (" ") through unchanged: " ".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: " "
+  expected: " "
+- name: escape_passthrough_exclamation
+  complexity: 75
+  hint: |
+    escape passes the exclamation ("!") through unchanged: "!".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "!"
+  expected: "!"
+- name: escape_passthrough_hash
+  complexity: 75
+  hint: |
+    escape passes the hash ("#") through unchanged: "#".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "#"
+  expected: "#"
+- name: escape_passthrough_percent
+  complexity: 75
+  hint: |
+    escape passes the percent ("%") through unchanged: "%".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "%"
+  expected: "%"
+- name: escape_passthrough_paren
+  complexity: 75
+  hint: |
+    escape passes the paren ("(") through unchanged: "(".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "("
+  expected: "("
+- name: escape_passthrough_paren
+  complexity: 75
+  hint: |
+    escape passes the paren (")") through unchanged: ")".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: ")"
+  expected: ")"
+- name: escape_passthrough_plus
+  complexity: 75
+  hint: |
+    escape passes the plus ("+") through unchanged: "+".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "+"
+  expected: "+"
+- name: escape_passthrough_equals
+  complexity: 75
+  hint: |
+    escape passes the equals ("=") through unchanged: "=".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "="
+  expected: "="
+- name: escape_passthrough_slash
+  complexity: 75
+  hint: |
+    escape passes the slash ("/") through unchanged: "/".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "/"
+  expected: "/"
+- name: escape_passthrough_at
+  complexity: 75
+  hint: |
+    escape passes the at ("@") through unchanged: "@".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "@"
+  expected: "@"
+- name: escape_passthrough_tilde
+  complexity: 75
+  hint: |
+    escape passes the tilde ("~") through unchanged: "~".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "~"
+  expected: "~"
+- name: escape_passthrough_backtick
+  complexity: 75
+  hint: |
+    escape passes the backtick ("`") through unchanged: "`".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "`"
+  expected: "`"
+- name: escape_passthrough_dollar
+  complexity: 75
+  hint: |
+    escape passes the dollar ("$") through unchanged: "$".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "$"
+  expected: "$"
+- name: escape_passthrough_caret
+  complexity: 75
+  hint: |
+    escape passes the caret ("^") through unchanged: "^".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "^"
+  expected: "^"
+- name: escape_passthrough_backslash
+  complexity: 75
+  hint: |
+    escape passes the backslash ("\\") through unchanged: "\\".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\\"
+  expected: "\\"
+- name: escape_passthrough_newline
+  complexity: 75
+  hint: |
+    escape passes the newline ("\n") through unchanged: "\n".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\n"
+  expected: "\n"
+- name: escape_passthrough_tab
+  complexity: 75
+  hint: |
+    escape passes the tab ("\t") through unchanged: "\t".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\t"
+  expected: "\t"
+- name: escape_passthrough_carriage_return
+  complexity: 75
+  hint: |
+    escape passes the carriage return ("\r") through unchanged: "\r".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\r"
+  expected: "\r"
+- name: escape_passthrough_null_byte
+  complexity: 75
+  hint: |
+    escape passes the null byte ("\u0000") through unchanged: "\u0000".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\u0000"
+  expected: "\u0000"
+- name: escape_passthrough_____byte
+  complexity: 75
+  hint: |
+    escape passes the DEL byte ("\u007F") through unchanged: "\u007F".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "\u007F"
+  expected: "\u007F"
+- name: escape_passthrough_copyright_sign
+  complexity: 75
+  hint: |
+    escape passes the copyright sign ("©") through unchanged: "©".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "©"
+  expected: "©"
+- name: escape_passthrough_u_with_umlaut
+  complexity: 75
+  hint: |
+    escape passes the u with umlaut ("ü") through unchanged: "ü".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "ü"
+  expected: "ü"
+- name: escape_passthrough_cjk_ideograph
+  complexity: 75
+  hint: |
+    escape passes the cjk ideograph ("中") through unchanged: "中".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "中"
+  expected: "中"
+- name: escape_passthrough_emoji
+  complexity: 75
+  hint: |
+    escape passes the emoji ("🎉") through unchanged: "🎉".
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "🎉"
+  expected: "🎉"
+- name: escape_multi_0
+  complexity: 90
+  hint: |
+    escape on ampersand in text: "a & b" -> "a &amp; b". Note & is escaped first, so already-escaped entities get double-escaped.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "a & b"
+  expected: "a &amp; b"
+- name: escape_multi_1
+  complexity: 90
+  hint: |
+    escape on full tag with quotes and apostrophe: "<a href=\"x\">'y'</a>" -> "&lt;a href=&quot;x&quot;&gt;&#39;y&#39;&lt;/a&gt;". Note & is escaped first, so already-escaped entities get double-escaped.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "<a href=\"x\">'y'</a>"
+  expected: "&lt;a href=&quot;x&quot;&gt;&#39;y&#39;&lt;/a&gt;"
+- name: escape_multi_2
+  complexity: 90
+  hint: |
+    escape on already-escaped ampersand (escape double-escapes it): "&amp;" -> "&amp;amp;". Note & is escaped first, so already-escaped entities get double-escaped.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "&amp;"
+  expected: "&amp;amp;"
+- name: escape_multi_3
+  complexity: 90
+  hint: |
+    escape on operators with double ampersand: "5 < 3 && 2 > 1" -> "5 &lt; 3 &amp;&amp; 2 &gt; 1". Note & is escaped first, so already-escaped entities get double-escaped.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "5 < 3 && 2 > 1"
+  expected: "5 &lt; 3 &amp;&amp; 2 &gt; 1"
+- name: escape_multi_4
+  complexity: 90
+  hint: |
+    escape on script tag: "<script>alert('x')</script>" -> "&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;". Note & is escaped first, so already-escaped entities get double-escaped.
+  template: "{{ ch | escape }}"
+  environment:
+    ch: "<script>alert('x')</script>"
+  expected: "&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;"
+- name: escape_once_0
+  complexity: 95
+  hint: |
+    escape_once bare ampersand gets escaped once: "&" -> "&amp;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "&"
+  expected: "&amp;"
+- name: escape_once_1
+  complexity: 95
+  hint: |
+    escape_once already-escaped ampersand is left alone: "&amp;" -> "&amp;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "&amp;"
+  expected: "&amp;"
+- name: escape_once_2
+  complexity: 95
+  hint: |
+    escape_once bare less-than gets escaped once: "<" -> "&lt;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "<"
+  expected: "&lt;"
+- name: escape_once_3
+  complexity: 95
+  hint: |
+    escape_once already-escaped less-than is left alone: "&lt;" -> "&lt;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "&lt;"
+  expected: "&lt;"
+- name: escape_once_4
+  complexity: 95
+  hint: |
+    escape_once tag chars escaped once: "<b>" -> "&lt;b&gt;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "<b>"
+  expected: "&lt;b&gt;"
+- name: escape_once_5
+  complexity: 95
+  hint: |
+    escape_once mixed bare/escaped: only bare & is escaped: "a &amp; b" -> "a &amp; b". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "a &amp; b"
+  expected: "a &amp; b"
+- name: escape_once_6
+  complexity: 95
+  hint: |
+    escape_once already-escaped entities left alone: "&amp;&lt;" -> "&amp;&lt;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "&amp;&lt;"
+  expected: "&amp;&lt;"
+- name: escape_once_7
+  complexity: 95
+  hint: |
+    escape_once quotes escaped once: "\"hello\"" -> "&quot;hello&quot;". It does not re-escape already-escaped entities.
+  template: "{{ ch | escape_once }}"
+  environment:
+    ch: "\"hello\""
+  expected: "&quot;hello&quot;"
+- name: escape_nil
+  complexity: 80
+  hint: |
+    escape on nil (missing var) returns empty string.
+  template: "{{ missing | escape }}"
+  expected: ""
+- name: escape_empty
+  complexity: 80
+  hint: |
+    escape on an empty string returns empty string.
+  template: "{{ '' | escape }}"
+  expected: ""
+- name: escape_integer
+  complexity: 85
+  hint: |
+    escape on an integer coerces to string first ('42'), no specials to escape.
+  template: "{{ n | escape }}"
+  environment:
+    n: 42
+  expected: "42"
+- name: escape_array
+  complexity: 90
+  hint: |
+    escape on an array coerces to its string form ('12' for [1,2]); no specials.
+  template: "{{ arr | escape }}"
+  environment:
+    arr: [1, 2]
+  expected: "[1, 2]"
+- name: escape_h_alias
+  complexity: 85
+  hint: |
+    `h` is an alias for `escape`. <b> -> &lt;b&gt;.
+  template: "{{ ch | h }}"
+  environment:
+    ch: "<b>"
+  expected: "&lt;b&gt;"
