@@ -267,15 +267,17 @@ Two raised-error forms exist:
 
 ### Matching error patterns
 
-Each entry under `parse_error:` / `render_error:` is a **case-insensitive,
-literal substring** matched against:
+Each entry under `parse_error:` / `render_error:` is matched against:
 
 1. The full exception message
 2. The "core" message (text after the last `): ` or `: `)
 3. The exception **class name** (e.g. `NoMethodError`, `Liquid::ArgumentError`)
 
-**All** listed patterns must match for the spec to pass. Use multiple
-patterns to pin down the error precisely without coupling to exact wording:
+A **string** pattern is a case-insensitive, literal substring (special
+characters are escaped). A **Regexp** pattern (`!ruby/regexp /.../i`) is
+used as-is, so metacharacters like `|`, `.+`, and anchors work. **All**
+listed patterns must match for the spec to pass. Use multiple patterns to
+pin down the error precisely without coupling to exact wording:
 
 ```yaml
 - name: sec_wide_open_object_name_raises_no_to_liquid
@@ -309,6 +311,18 @@ patterns to pin down the error precisely without coupling to exact wording:
   error_mode: lax
 ```
 
+A **Regexp** pattern (used as-is, unlike string patterns which are literal
+substrings) — useful for alternation without doubling up specs:
+
+```yaml
+- name: regexp_render_error_match
+  template: "{{ 10 | divided_by: 0 }}"
+  errors:
+    render_error:
+      - !ruby/regexp /ZeroDivision|divided by/i
+  complexity: 200
+```
+
 **Best practices for error patterns:**
 
 - **Match the error class name** (`NoMethodError`, `Liquid::SyntaxError`, …)
@@ -319,32 +333,15 @@ patterns to pin down the error precisely without coupling to exact wording:
 - **Match location info when relevant** — partial name and `line N` — but
   keep those as separate patterns so an implementation that lacks one of
   them fails clearly on that specific pattern.
-- **Never set `render_errors: true`** for a raised-error spec. That flag
-  switches the engine to inline-error mode, which is a different (and rarer)
-  behaviour tested with `errors: output:` + `features: [inline_errors]`.
-
-### Inline error specs (rare)
-
-Only use the inline form when you are specifically testing that an error is
-*rendered into the output* rather than raised. These specs require
-`render_errors: true` and `features: [inline_errors]`:
-
-```yaml
-- name: render_prohibits_include_inline
-  template: "{% render 'outer' %}"
-  filesystem:
-    outer: "{% include 'inner' %}"
-    inner: should not render
-  errors:
-    output:
-      - include usage is not allowed in this context
-  render_errors: true
-  features: [inline_errors]
-  complexity: 220
-```
-
-This is the exception, not the rule. When in doubt, let the error raise and
-use `errors: render_error:` / `errors: parse_error:`.
+- **Use a Regexp (`!ruby/regexp`)** when you need alternation or anchors
+  rather than a literal substring. Note: backslash escapes inside the YAML
+  regexp literal must be doubled (write `\\d`, not `\d`), because YAML
+  processes the scalar before the regexp is compiled. Prefer backslash-free
+  patterns where possible (e.g. `!ruby/regexp /ZeroDivision|divided by/i`).
+- **Never set `render_errors: true`** for new specs. New specs should always
+  let errors raise and match them with `errors: parse_error:` /
+  `errors: render_error:`. The inline form (`render_errors: true` with
+  `errors: output:`) is legacy and should not be added to new specs.
 
 ## Suite Configuration
 

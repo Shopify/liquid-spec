@@ -45,8 +45,11 @@ module Liquid
     end
 
     # Shared YAML loading with permitted classes for specs
+    # Regexp is permitted so error patterns can use !ruby/regexp /.../i for
+    # flexible matching (string patterns are matched case-insensitively as
+    # literal substrings; Regexp patterns are used as-is).
     def self.safe_yaml_load(content)
-      YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range], aliases: true)
+      YAML.safe_load(content, permitted_classes: [Symbol, Date, Time, Range, Regexp], aliases: true)
     end
 
     # Loads specs from YAML files without instantiating drop objects
@@ -124,12 +127,13 @@ module Liquid
           content = File.read(path)
           specs = []
 
-          # Fail fast if file contains !ruby/ tags - these must be converted to instantiate format
-          if content.include?("!ruby/")
-            # Find the line numbers with !ruby/ tags
+          # Fail fast if file contains dangerous !ruby/ tags (e.g. !ruby/object)
+          # which must be converted to instantiate format. !ruby/regexp is allowed
+          # for flexible error-pattern matching.
+          if content.match?(/!ruby\/(?!regexp\b)/)
             bad_lines = []
             content.each_line.with_index do |line, idx|
-              bad_lines << (idx + 1) if line.include?("!ruby/")
+              bad_lines << (idx + 1) if line.match?(/!ruby\/(?!regexp\b)/)
             end
             raise "YAML file contains !ruby/ tags which are not allowed. " \
               "Convert to instantiate format.\n" \

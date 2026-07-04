@@ -68,6 +68,29 @@ class LazySpecTest < Minitest::Test
     assert patterns[1].match?("UNEXPECTED token")
   end
 
+  def test_error_patterns_pass_regexp_through_unchanged
+    # A Regexp pattern is used as-is (not escaped), so metacharacters work.
+    regexp = /divided by \d+/i
+    spec = create_spec(errors: { "render_error" => [regexp] })
+    patterns = spec.error_patterns(:render_error)
+
+    assert_equal 1, patterns.size
+    assert_same regexp, patterns[0]
+    assert patterns[0].match?("Liquid error: divided by 0")
+    refute patterns[0].match?("divided by zero")
+  end
+
+  def test_error_patterns_mix_regexp_and_string
+    spec = create_spec(errors: { "render_error" => [/ZeroDivision|divided by/i, "divided by 0"] })
+    patterns = spec.error_patterns(:render_error)
+
+    assert_equal 2, patterns.size
+    assert patterns[0].is_a?(Regexp)
+    assert patterns[0].match?("ZeroDivision")
+    # String pattern is escaped + case-insensitive substring
+    assert patterns[1].match?("DIVIDED BY 0")
+  end
+
   def test_features
     spec = create_spec(features: [:shopify_tags, :shopify_filters])
     assert_equal [:shopify_tags, :shopify_filters], spec.features
