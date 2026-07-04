@@ -5,14 +5,35 @@ module Liquid
     module CLI
       module Init
         TEMPLATE = <<~RUBY
+          #!/usr/bin/env ruby
           # frozen_string_literal: true
 
-          # Liquid Spec Adapter
+          # Liquid Spec Adapter (Ruby)
           #
           # This file defines how your Liquid implementation compiles and renders templates.
           # Implement the methods below to test your implementation against the spec.
           #
-          # Run with: liquid-spec run %<filename>s
+          # Run directly:  ./%<filename>s              # runs all specs via liquid-spec
+          # Run directly:  ./%<filename>s -n assign    # filter specs by name
+          # Or load via:   liquid-spec %<filename>s
+          #
+          # Not using Ruby? liquid-spec can drive an implementation in any language
+          # (Rust, Go, Python, Node.js, ...) over JSON-RPC. Generate a JSON-RPC
+          # adapter instead:
+          #
+          #   liquid-spec init my_adapter.rb --jsonrpc
+          #
+          # See docs/json-rpc-protocol.md for the full protocol specification.
+
+          # When executed directly, re-launch through liquid-spec on this file.
+          # When loaded by liquid-spec, this guard is skipped and the adapter DSL runs.
+          if __FILE__ == $PROGRAM_NAME
+            cmd = ["liquid-spec", __FILE__, *ARGV]
+            cmd = ["bundle", "exec"] + cmd if File.exist?("Gemfile")
+            exec(*cmd)
+          end
+
+          require "liquid/spec/cli/adapter_dsl"
 
           LiquidSpec.setup do |ctx|
             # ctx is a hash for storing adapter state (environment, file_system, etc.)
@@ -34,12 +55,37 @@ module Liquid
           # @param options [Hash] Parse options (e.g., :error_mode, :line_numbers)
           # @return [Object] Your compiled template object (passed to render)
           #
+          # ERROR MODES
+          # -----------
+          # options[:error_mode] is set by the spec when a spec targets a specific mode.
+          # When no mode is requested, default to :strict2 (the modern Liquid 5.12+
+          # parser with relaxed trailing comma/colon syntax). This is the recommended
+          # default for new implementations.
+          #
+          # Legacy modes exist but are NOT recommended unless you need backwards
+          # compatibility with older Liquid versions or Shopify production:
+          #
+          #   :strict - The original strict parser. Rejects trailing commas/colons that
+          #             :strict2 accepts. Use only if you must match pre-5.12 behavior.
+          #   :lax    - Lenient parsing that silently ignores syntax errors and renders
+          #             broken tags as text. Legacy compatibility only; new
+          #             implementations should NOT support lax mode.
+          #   :raise  - Alias for :lax parsing with errors raised at render time instead
+          #             of rendered inline. Legacy behavior preserved for backwards
+          #             compatibility; new implementations should NOT support it.
+          #
+          # Unless you have a specific backwards-compatibility requirement, implement
+          # only :strict2 and let specs targeting :strict, :lax, or :raise be skipped.
+          #
           LiquidSpec.compile do |ctx, source, options|
+            # Default to strict2 when the spec doesn't request a specific error mode
+            options[:error_mode] ||= :strict2
+
             # Example for Shopify/liquid:
             #   Liquid::Template.parse(source, options)
             #
             # Example for a custom implementation:
-            #   MyLiquid::Template.new(source)
+            #   MyLiquid::Template.new(source, error_mode: options[:error_mode])
             #
             raise NotImplementedError, "Implement LiquidSpec.compile to parse templates"
           end
@@ -52,16 +98,24 @@ module Liquid
           # @param options [Hash] Render options (:registers, :strict_errors, :error_mode)
           # @return [String] The rendered output
           #
+          # RENDER ERROR HANDLING
+          # ----------------------
+          # options[:strict_errors] controls whether render-time errors are raised
+          # (thrown) or rendered inline as text in the output. liquid-spec defaults
+          # to strict_errors: true (raise) — only specs that opt into render_errors
+          # set it to false. Pass it through to your implementation so both modes work.
+          #
           LiquidSpec.render do |ctx, template, assigns, options|
             # Example for Shopify/liquid:
             #   context = Liquid::Context.build(
             #     static_environments: assigns,
-            #     registers: Liquid::Registers.new(options[:registers] || {})
+            #     registers: Liquid::Registers.new(options[:registers] || {}),
+            #     rethrow_errors: options[:strict_errors]
             #   )
             #   template.render(context)
             #
             # Example for a custom implementation:
-            #   template.render(assigns)
+            #   template.render(assigns, raise_errors: options[:strict_errors])
             #
             raise NotImplementedError, "Implement LiquidSpec.render to render templates"
           end
@@ -70,6 +124,14 @@ module Liquid
         JSON_RPC_TEMPLATE = <<~RUBY
           #!/usr/bin/env ruby
           # frozen_string_literal: true
+
+          # When executed directly, re-launch through liquid-spec on this file.
+          # When loaded by liquid-spec, this guard is skipped and the adapter DSL runs.
+          if __FILE__ == $PROGRAM_NAME
+            cmd = ["liquid-spec", __FILE__, *ARGV]
+            cmd = ["bundle", "exec"] + cmd if File.exist?("Gemfile")
+            exec(*cmd)
+          end
 
           require "liquid/spec/cli/adapter_dsl"
 
@@ -81,6 +143,7 @@ module Liquid
           # JSON-RPC 2.0 over stdin/stdout. Implement the protocol below in any language.
           #
           # Usage:
+          #   ./%<filename>s                         # run directly (re-launches via liquid-spec)
           #   liquid-spec %<filename>s
           #   liquid-spec %<filename>s --command="./my-liquid-server"
           #
@@ -113,7 +176,7 @@ module Liquid
           #     "params": {
           #       "template": "{{ x | upcase }}",
           #       "options": {
-          #         "error_mode": "strict",   // "strict", "lax", or null
+          #         "error_mode": "strict2", // "strict2" (default), "strict", "lax", "raise", or null
           #         "line_numbers": true
           #       },
           #       "filesystem": {             // templates for {% include %} / {% render %}
@@ -153,7 +216,7 @@ module Liquid
           #         "user": {"_rpc_drop": "drop_1", "type": "UserDrop"}
           #       },
           #       "options": {
-          #         "render_errors": false  // true = render errors as text, false = throw
+          #         "render_errors": false  // true = render errors as text, false = raise (default)
           #       }
           #     }
           #   }
@@ -233,23 +296,37 @@ module Liquid
           end
 
           LiquidSpec.configure do |config|
-            # Features are reported by your subprocess in the initialize response.
-            # If your subprocess doesn't support runtime_drops (bidirectional RPC),
-            # declare features = [] to opt out of drop-related specs.
+            # Opt out of specs your implementation doesn't support yet.
+            # List features here that should be SKIPPED (the adapter is "missing" them).
             #
-            # Common features:
-            #   :core           - Full Liquid implementation (implies :runtime_drops)
-            #   :runtime_drops  - Supports drop_get/drop_call/drop_iterate callbacks
-            #   :lax_parsing    - Supports error_mode: :lax
+            # For a JSON-RPC server that doesn't implement bidirectional drop
+            # callbacks (drop_get/drop_call/drop_iterate), opt out of :runtime_drops.
+            # Once you add drop callbacks, remove it from this list.
             #
-            # For most JSON-RPC implementations without drop callbacks:
-            config.features = []
+            # Common opt-out features:
+            #   :runtime_drops  - drop_get/drop_call/drop_iterate callbacks
+            #   :lax_parsing    - error_mode: :lax (lenient parsing)
+            #   :ruby_types     - Ruby-specific types (symbols, ranges, etc.)
+            config.missing_features = [:runtime_drops]
           end
 
+          # ERROR MODES
+          # -----------
+          # Default to :strict2 (the modern Liquid 5.12+ parser) when the spec
+          # doesn't request a specific mode. This default is sent to your subprocess
+          # in the compile request's options.error_mode field.
+          #
+          # Legacy modes (:strict, :lax, :raise) exist for backwards compatibility
+          # with older Liquid versions or Shopify production but are NOT recommended
+          # for new implementations unless you need that compatibility. Let specs
+          # targeting those modes be skipped.
           LiquidSpec.compile do |ctx, source, options|
+            options[:error_mode] ||= :strict2
             ctx[:adapter].compile(source, options)
           end
 
+          # Render errors are raised by default (strict_errors: true). Only specs
+          # that opt into render_errors set strict_errors to false.
           LiquidSpec.render do |ctx, template_id, assigns, options|
             ctx[:adapter].render(template_id, assigns, options)
           end
@@ -396,13 +473,14 @@ module Liquid
 
             ## Feature Flags
 
-            Some specs require specific features. Your adapter declares what it supports:
+            Some specs require specific features. Your adapter declares what it does NOT support
+            yet by listing them in `missing_features` (those specs are skipped):
 
             ```ruby
             LiquidSpec.configure do |config|
-              config.features = [
-                :core,           # Basic Liquid (always included)
-                :lax_parsing,    # Supports error_mode: :lax
+              config.missing_features = [
+                :runtime_drops,  # No drop callbacks yet (skip drop-related specs)
+                :lax_parsing,    # No error_mode: :lax yet
               ]
             end
             ```
@@ -468,9 +546,10 @@ module Liquid
             ```ruby
             LiquidSpec.compile do |ctx, source, options|
               # options may include:
-              #   :error_mode - :strict or :lax
+              #   :error_mode - :strict2 (default), :strict, :lax, or :raise
               #   :line_numbers - true/false
               #   :file_system - for include/render tags
+              options[:error_mode] ||= :strict2
               MyLiquid::Template.parse(source, environment: ctx[:environment])
             end
             ```
@@ -595,7 +674,7 @@ module Liquid
             // Request
             {"jsonrpc":"2.0","id":1,"method":"compile","params":{
               "template": "{{ x | upcase }}",
-              "options": {"error_mode": "strict"},
+              "options": {"error_mode": "strict2"},
               "filesystem": {"snippet.liquid": "Hello"}
             }}
 
@@ -638,12 +717,30 @@ module Liquid
         end
 
         LIQUID_RUBY_TEMPLATE = <<~RUBY
+          #!/usr/bin/env ruby
           # frozen_string_literal: true
 
           # Liquid Spec Adapter for Shopify/liquid
           #
-          # Run with: liquid-spec run %<filename>s
+          # Run directly:  ./%<filename>s              # runs all specs via liquid-spec
+          # Run directly:  ./%<filename>s -n assign    # filter specs by name
+          # Or load via:   liquid-spec %<filename>s
+          #
+          # Not using Ruby? liquid-spec can drive an implementation in any language
+          # (Rust, Go, Python, Node.js, ...) over JSON-RPC. Generate a JSON-RPC
+          # adapter instead:
+          #
+          #   liquid-spec init my_adapter.rb --jsonrpc
 
+          # When executed directly, re-launch through liquid-spec on this file.
+          # When loaded by liquid-spec, this guard is skipped and the adapter DSL runs.
+          if __FILE__ == $PROGRAM_NAME
+            cmd = ["liquid-spec", __FILE__, *ARGV]
+            cmd = ["bundle", "exec"] + cmd if File.exist?("Gemfile")
+            exec(*cmd)
+          end
+
+          require "liquid/spec/cli/adapter_dsl"
           require "liquid"
 
           LiquidSpec.setup do |ctx|
@@ -654,30 +751,77 @@ module Liquid
             config.suite = :liquid_ruby
           end
 
+          # ERROR MODES
+          # -----------
+          # Default to :strict2 (the modern Liquid 5.12+ parser) when the spec
+          # doesn't request a specific mode.
+          #
+          # Legacy modes (:strict, :lax, :raise) exist for backwards compatibility
+          # with older Liquid versions or Shopify production but are NOT recommended
+          # for new implementations unless you need that compatibility.
           LiquidSpec.compile do |ctx, source, options|
+            options[:error_mode] ||= :strict2
             Liquid::Template.parse(source, **options)
           end
 
+          # Render errors are raised by default (strict_errors: true). Only specs
+          # that opt into render_errors set strict_errors to false.
           LiquidSpec.render do |ctx, template, assigns, options|
             context = Liquid::Context.build(
               static_environments: assigns,
-              registers: Liquid::Registers.new(options[:registers] || {})
+              registers: Liquid::Registers.new(options[:registers] || {}),
+              rethrow_errors: options[:strict_errors]
             )
             template.render(context)
           end
         RUBY
 
         def self.run(args)
-          filename = args.shift || "liquid_adapter.rb"
-          template_type = :basic
+          filename = args.find { |a| !a.start_with?("-") }
 
           # Check for template type flags
-          if args.include?("--json-rpc") || args.include?("-j")
-            template_type = :json_rpc
-          elsif args.include?("--liquid-ruby") || args.include?("-l")
-            template_type = :liquid_ruby
-          end
+          # --json, --jsonrpc, and --json-rpc (plus -j) all select the JSON-RPC adapter
+          json_rpc_flag = args.intersect?(%w[--json-rpc --jsonrpc --json -j])
+          liquid_ruby_flag = args.intersect?(%w[--liquid-ruby -l])
 
+          if filename
+            # Single-file mode: generate one adapter, type determined by flags
+            template_type = if json_rpc_flag
+              :json_rpc
+            elsif liquid_ruby_flag
+              :liquid_ruby
+            else
+              :basic
+            end
+            generate_adapter(filename, template_type)
+            create_agents_md(filename, json_rpc: template_type == :json_rpc)
+            print_next_steps(filename, template_type)
+          else
+            # Default mode: generate both a Ruby adapter and a JSON-RPC adapter
+            puts "Generating both adapters..."
+            puts ""
+            generate_adapter("liquid_adapter.rb", :basic)
+            generate_adapter("liquid_adapter_jsonrpc.rb", :json_rpc)
+
+            # Create AGENTS.md once (covers both adapters)
+            create_agents_md("liquid_adapter.rb", json_rpc: false)
+
+            puts ""
+            puts "Next steps:"
+            puts "  Ruby implementation:"
+            puts "    1. Edit liquid_adapter.rb to implement compile and render"
+            puts "    2. Run: ./liquid_adapter.rb   (or: liquid-spec liquid_adapter.rb)"
+            puts ""
+            puts "  Any language (JSON-RPC):"
+            puts "    1. Edit DEFAULT_COMMAND in liquid_adapter_jsonrpc.rb"
+            puts "    2. Implement the JSON-RPC protocol in your server (see comments)"
+            puts "    3. Run: ./liquid_adapter_jsonrpc.rb   (or: liquid-spec liquid_adapter_jsonrpc.rb)"
+            puts ""
+            puts "If using an AI agent, point it at AGENTS.md for implementation guidance."
+          end
+        end
+
+        def self.generate_adapter(filename, template_type)
           if File.exist?(filename)
             $stderr.puts "Error: #{filename} already exists"
             $stderr.puts "Delete it first or choose a different name"
@@ -695,31 +839,34 @@ module Liquid
           end
 
           File.write(filename, template)
-          puts "Created #{filename}"
+          File.chmod(0o755, filename)
+          puts "Created #{filename} (executable)"
+        end
 
-          # Create AGENTS.md alongside the adapter
-          agents_md = agents_md_content(filename, json_rpc: template_type == :json_rpc)
+        def self.create_agents_md(filename, json_rpc:)
           agents_filename = "AGENTS.md"
           if File.exist?(agents_filename)
             puts "AGENTS.md already exists, skipping"
           else
+            agents_md = agents_md_content(filename, json_rpc: json_rpc)
             File.write(agents_filename, agents_md)
             puts "Created AGENTS.md"
           end
+        end
 
+        def self.print_next_steps(filename, template_type)
           puts ""
-
           case template_type
           when :json_rpc
             puts "Next steps:"
             puts "  1. Edit DEFAULT_COMMAND in #{filename} to point to your Liquid server"
             puts "  2. Implement the JSON-RPC protocol in your server (see comments in file)"
-            puts "  3. Run: liquid-spec #{filename}"
+            puts "  3. Run: ./#{filename}"
             puts "     Or:  liquid-spec #{filename} --command='./your-server'"
           else
             puts "Next steps:"
             puts "  1. Edit #{filename} to implement compile and render"
-            puts "  2. Run: liquid-spec run #{filename}"
+            puts "  2. Run: ./#{filename}   (or: liquid-spec #{filename})"
           end
 
           puts ""

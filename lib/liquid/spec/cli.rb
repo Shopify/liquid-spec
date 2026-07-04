@@ -28,7 +28,10 @@ module Liquid
           report              Analyze and compare benchmark results
           inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
           eval ADAPTER        Quick test a template against your adapter
-          init [FILE]         Generate an adapter template (default: liquid_adapter.rb)
+          init [FILE]         Generate adapter templates.
+                             No FILE: generates both liquid_adapter.rb and
+                             liquid_adapter_jsonrpc.rb (executable, self-launching).
+                             Flags: --jsonrpc (JSON-RPC), --liquid-ruby (reference)
           features            List available features and their test counts
           docs [NAME]         List or view implementer documentation
           help                Show this help message
