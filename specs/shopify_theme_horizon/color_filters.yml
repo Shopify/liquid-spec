@@ -7,7 +7,7 @@ specs:
 - name: horizon_color_brightness_hex
   template: "{{ '#ffffff' | color_brightness }}"
   expected: "255"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_brightness returns the perceived brightness of a color on a scale
     of 0-255. White (#ffffff) returns 255.
@@ -15,14 +15,14 @@ specs:
 - name: horizon_color_brightness_black
   template: "{{ '#000000' | color_brightness }}"
   expected: "0"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_brightness of black (#000000) returns 0.
 
 - name: horizon_color_brightness_mid
   template: "{{ '#7d7d7d' | color_brightness }}"
   expected: "125"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_brightness returns the perceived brightness (0-255).
     #7d7d7d = 125 in each channel, brightness returns 125.
@@ -30,7 +30,7 @@ specs:
 - name: horizon_color_modify_alpha
   template: "{{ '#000000' | color_modify: 'alpha', 0.5 }}"
   expected: "rgba(0, 0, 0, 0.5)"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_modify changes a single property of a color.
     Modifying 'alpha' to 0.5 on #000000 produces rgba(0, 0, 0, 0.5).
@@ -38,14 +38,14 @@ specs:
 - name: horizon_color_modify_red
   template: "{{ '#00ff00' | color_modify: 'red', 128 }}"
   expected: "#80ff00"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_modify: 'red', 128 changes the red channel of #00ff00 to 128 (0x80).
 
 - name: horizon_color_lighten
   template: "{{ '#000000' | color_lighten: 50 }}"
   expected: "#808080"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_lighten lightens a color by a percentage (0-100).
     Lightening #000000 by 50% produces #808080 (128 in each channel).
@@ -53,7 +53,7 @@ specs:
 - name: horizon_color_darken
   template: "{{ '#ffffff' | color_darken: 50 }}"
   expected: "#808080"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_darken darkens a color by a percentage (0-100).
     Darkening #ffffff by 50% produces #808080.
@@ -61,21 +61,21 @@ specs:
 - name: horizon_color_lighten_full
   template: "{{ '#333333' | color_lighten: 100 }}"
   expected: "#ffffff"
-  complexity: 5000
+  complexity: 1000
   hint: |
     Lightening by 100% produces white.
 
 - name: horizon_color_darken_full
   template: "{{ '#333333' | color_darken: 100 }}"
   expected: "#000000"
-  complexity: 5000
+  complexity: 1000
   hint: |
     Darkening by 100% produces black.
 
 - name: horizon_color_contrast
   template: "{{ '#ffffff' | color_contrast: '#000000' }}"
   expected: "21"
-  complexity: 5000
+  complexity: 1000
   hint: |
     color_contrast returns the contrast ratio between two colors.
     White vs black has a contrast ratio of 21 (the maximum).

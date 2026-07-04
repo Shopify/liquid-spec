@@ -27,4 +27,4 @@ defaults:
   render_errors: false
 
 # These specs require full Shopify platform support — very high complexity
-minimum_complexity: 5000
+minimum_complexity: 1000

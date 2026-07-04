@@ -6,7 +6,7 @@ specs:
 - name: horizon_handleize_basic
   template: "{{ 'Women's T-Shirt' | handleize }}"
   expected: "womens-t-shirt"
-  complexity: 5000
+  complexity: 1000
   hint: |
     handleize converts a string to a URL handle: lowercase, spaces to hyphens,
     special characters removed, apostrophes removed.
@@ -14,14 +14,14 @@ specs:
 - name: horizon_handleize_simple
   template: "{{ 'Hello World' | handleize }}"
   expected: "hello-world"
-  complexity: 5000
+  complexity: 1000
   hint: |
     handleize: lowercase and replace spaces with hyphens.
 
 - name: horizon_handleize_special_chars
   template: "{{ 'Café & Thé' | handleize }}"
   expected: "cafe-the"
-  complexity: 5000
+  complexity: 1000
   hint: |
     handleize strips accents and special characters.
     'Café & Thé' becomes 'cafe-the'.
@@ -29,7 +29,7 @@ specs:
 - name: horizon_handleize_numbers
   template: "{{ 'Product 123 Test' | handleize }}"
   expected: "product-123-test"
-  complexity: 5000
+  complexity: 1000
   hint: |
     handleize preserves numbers and alphanumeric characters.
 
@@ -44,7 +44,7 @@ specs:
       - id: 3
         name: "Third"
   expected: "Second"
-  complexity: 5000
+  complexity: 1000
   hint: |
     find: 'property', value searches an array of objects for the first
     element where the given property equals the value. Returns the matching
@@ -57,14 +57,14 @@ specs:
       - id: 1
         name: "First"
   expected: "not found"
-  complexity: 5000
+  complexity: 1000
   hint: |
     find returns nil when no element matches. Check with {% if %}.
 
 - name: horizon_md_basic
   template: "{{ '**Bold text**' | md }}"
   expected: "<p><strong>Bold text</strong></p>"
-  complexity: 5000
+  complexity: 1000
   hint: |
     md converts Markdown to HTML. **text** becomes <strong>text</strong>.
     Output is wrapped in <p> tags.
@@ -72,7 +72,7 @@ specs:
 - name: horizon_md_link
   template: "{{ '[Shopify](https://shopify.com)' | md }}"
   expected: "<p><a href=\"https://shopify.com\">Shopify</a></p>"
-  complexity: 5000
+  complexity: 1000
   hint: |
     md converts Markdown links: [text](url) becomes <a href="url">text</a>.
 
@@ -87,6 +87,6 @@ specs:
       zip: "62701"
       country: "United States"
   expected: "John Doe<br/>123 Main St<br/>Springfield, IL 62701<br/>United States"
-  complexity: 5000
+  complexity: 1000
   hint: |
     format_address renders an address object as HTML with <br/> line breaks.
