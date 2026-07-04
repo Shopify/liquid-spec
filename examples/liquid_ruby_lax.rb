@@ -11,6 +11,7 @@ require "liquid/spec/cli/adapter_dsl"
 
 LiquidSpec.setup do |ctx|
   require "liquid"
+  require "active_support/all"
 
   # Disable liquid-c if present
   if defined?(Liquid::C) && Liquid::C.respond_to?(:enabled=)
@@ -19,7 +20,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.missing_features = [:shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :activesupport]
+  config.missing_features = [:drop_class_output, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
