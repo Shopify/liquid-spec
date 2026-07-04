@@ -1623,8 +1623,12 @@ module Liquid
           def check_error_patterns(error, patterns, error_type)
             message = error.message
             core_message = extract_core_message(message)
-            # Match against both full message and core message for flexibility
-            failed_patterns = patterns.reject { |pattern| pattern.match?(message) || pattern.match?(core_message) }
+            class_name = error.class.name
+            # Match each pattern against the full message, the core message,
+            # and the error's class name (e.g. "NoMethodError", "Liquid::ArgumentError").
+            failed_patterns = patterns.reject do |pattern|
+              pattern.match?(message) || pattern.match?(core_message) || pattern.match?(class_name)
+            end
 
             if failed_patterns.empty?
               { status: :pass }

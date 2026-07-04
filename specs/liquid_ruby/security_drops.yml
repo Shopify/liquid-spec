@@ -903,6 +903,7 @@ specs:
       instantiate:WideOpenObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 220
   hint: |
@@ -917,6 +918,7 @@ specs:
       instantiate:WideOpenObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 220
 
@@ -927,6 +929,7 @@ specs:
       instantiate:WideOpenObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 220
 
@@ -937,6 +940,7 @@ specs:
       instantiate:WideOpenObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 220
 
@@ -947,6 +951,7 @@ specs:
       instantiate:WideOpenObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 220
 
@@ -957,6 +962,7 @@ specs:
       instantiate:UnsafeHashLikeObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 230
   hint: "A non-drop object whose [] delegates to send is still not treated as a drop; property access raises a NoMethodError on to_liquid."
@@ -968,6 +974,7 @@ specs:
       instantiate:UnsafeHashLikeObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 230
 
@@ -978,6 +985,7 @@ specs:
       instantiate:UnsafeHashLikeObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 230
 
@@ -988,6 +996,7 @@ specs:
       instantiate:UnsafeHashLikeObject: {}
   errors:
     render_error:
+    - NoMethodError
     - to_liquid
   complexity: 230
 

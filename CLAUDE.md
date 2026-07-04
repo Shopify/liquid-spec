@@ -228,6 +228,124 @@ YAML files can include a `_metadata` section for settings that apply to all spec
 
 Spec-level settings override source-level settings. For example, a spec with its own `error_mode` will use that instead of the `required_options.error_mode`.
 
+## Good Specs
+
+### Error specs: prefer raised errors over inline errors
+
+Most specs that exercise an error path should let the error **raise** and
+match it with `errors:`. Do **not** set `render_errors: true` (inline error
+rendering) unless the spec is specifically testing inline-error *display*
+behaviour — and those specs must declare `features: [inline_errors]`.
+
+Two raised-error forms exist:
+
+- `errors: parse_error:` — the template fails to **parse** (syntax errors,
+  unknown tags in strict mode, unclosed blocks, …).
+- `errors: render_error:` — the template parses but **rendering** raises
+  (division by zero, invalid filter arguments, accessing a non-drop object,
+  include-inside-render, …).
+
+```yaml
+- name: division_by_zero_lax
+  template: "{{ 10 | divided_by: 0 }}"
+  errors:
+    render_error:
+      - divided by 0
+  complexity: 200
+  error_mode: lax
+```
+
+```yaml
+- name: unknown_tag_strict_parse_error
+  template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
+  error_mode: strict
+  errors:
+    parse_error:
+      - Unknown tag
+  complexity: 300
+```
+
+### Matching error patterns
+
+Each entry under `parse_error:` / `render_error:` is a **case-insensitive,
+literal substring** matched against:
+
+1. The full exception message
+2. The "core" message (text after the last `): ` or `: `)
+3. The exception **class name** (e.g. `NoMethodError`, `Liquid::ArgumentError`)
+
+**All** listed patterns must match for the spec to pass. Use multiple
+patterns to pin down the error precisely without coupling to exact wording:
+
+```yaml
+- name: sec_wide_open_object_name_raises_no_to_liquid
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+      - NoMethodError        # the error class name
+      - to_liquid            # what's missing from the message
+  complexity: 220
+```
+
+```yaml
+- name: error_in_partial_line_3_precise
+  template: "{% render 'multiline' %}"
+  filesystem:
+    multiline.liquid: |
+      first line
+      second line
+      {{ bad | divided_by: 0 }}
+  environment:
+    bad: 99
+  errors:
+    render_error:
+      - multiline            # partial name appears in the error
+      - line 3               # line number within the partial
+      - divided by 0         # the underlying error
+  complexity: 550
+  error_mode: lax
+```
+
+**Best practices for error patterns:**
+
+- **Match the error class name** (`NoMethodError`, `Liquid::SyntaxError`, …)
+  to assert the *kind* of error, not just its message text.
+- **Match one stable substring of the message** that captures the meaningful
+  part (e.g. `divided by 0`, `to_liquid`, `Unknown tag`). Avoid matching the
+  full message — wording varies across implementations.
+- **Match location info when relevant** — partial name and `line N` — but
+  keep those as separate patterns so an implementation that lacks one of
+  them fails clearly on that specific pattern.
+- **Never set `render_errors: true`** for a raised-error spec. That flag
+  switches the engine to inline-error mode, which is a different (and rarer)
+  behaviour tested with `errors: output:` + `features: [inline_errors]`.
+
+### Inline error specs (rare)
+
+Only use the inline form when you are specifically testing that an error is
+*rendered into the output* rather than raised. These specs require
+`render_errors: true` and `features: [inline_errors]`:
+
+```yaml
+- name: render_prohibits_include_inline
+  template: "{% render 'outer' %}"
+  filesystem:
+    outer: "{% include 'inner' %}"
+    inner: should not render
+  errors:
+    output:
+      - include usage is not allowed in this context
+  render_errors: true
+  features: [inline_errors]
+  complexity: 220
+```
+
+This is the exception, not the rule. When in doubt, let the error raise and
+use `errors: render_error:` / `errors: parse_error:`.
+
 ## Suite Configuration
 
 Each suite directory contains a `suite.yml` file that configures the suite:
