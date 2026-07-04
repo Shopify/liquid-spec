@@ -1,0 +1,1157 @@
+# Security boundary specs for Liquid::Drop and the to_liquid protocol.
+#
+# These verify that the reference Shopify/liquid engine gates property access:
+#   * Liquid::Drop subclasses only expose explicitly defined methods. Every
+#     Object/Kernel method (class, send, instance_eval, inspect, methods,
+#     object_id, ...) is blocked and renders as empty.
+#   * Instance variables never leak unless an accessor method exposes them.
+#   * Bracket access (d[k]) is subject to the same whitelist as dot access.
+#   * The boundary holds across property chains, inside conditionals/loops,
+#     through assign/capture, and through filter chains.
+#   * Plain (non-Drop) objects are NOT treated as drops: property access raises
+#     a NoMethodError on to_liquid (a render error, matched on "to_liquid").
+#   * Objects implementing #to_liquid expose only what to_liquid returns; the
+#     original object's methods are unreachable afterwards.
+#
+# Imported from the liquid-il security test suite, normalised to match the
+# reference Shopify/liquid (5.x) behaviour.
+---
+_metadata:
+  hint: |
+    These specs verify the Drop security boundary. A Liquid::Drop only exposes
+    explicitly defined subclass methods; dangerous Object/Kernel methods
+    (class, send, instance_eval, inspect, methods, object_id, ...) return nil
+    and render as empty. Instance variables never leak unless an accessor
+    method exposes them. Plain (non-Drop) objects raise a NoMethodError on
+    to_liquid when any property is accessed.
+  minimum_complexity: 180
+  features:
+  - ruby_drops
+
+specs:
+
+# =============================================================================
+# 1. Dangerous Object/Kernel methods are blocked on drops (dot access)
+# =============================================================================
+
+- name: sec_drop_blocks_class
+  template: "{{ d.class }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+  hint: |
+    Liquid::Drop#invoke_drop only allows methods defined on the subclass.
+    `class` is an Object method, not a drop method, so d.class returns nil.
+
+- name: sec_drop_blocks_object_id
+  template: "{{ d.object_id }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_inspect
+  template: "{{ d.inspect }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_to_s
+  template: "{{ d.to_s }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+  hint: "QUIRK: Liquid::Drop defines to_s to return the class name, but to_s is NOT an invokable method, so d.to_s returns nil (empty). Note d.to_s differs from {{ d }} which calls to_s implicitly."
+
+- name: sec_drop_blocks_hash
+  template: "{{ d.hash }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_methods
+  template: "{{ d.methods }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_public_methods
+  template: "{{ d.public_methods }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_private_methods
+  template: "{{ d.private_methods }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_singleton_methods
+  template: "{{ d.singleton_methods }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_singleton_class
+  template: "{{ d.singleton_class }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_respond_to
+  template: "{{ d.respond_to? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_is_a
+  template: "{{ d.is_a? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_instance_of
+  template: "{{ d.instance_of? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_nil
+  template: "{{ d.nil? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_frozen
+  template: "{{ d.frozen? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_equal
+  template: "{{ d.equal? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_eql
+  template: "{{ d.eql? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_send
+  template: "{{ d.send }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+  hint: "send/__send__/public_send are blocked - these would allow arbitrary method invocation."
+
+- name: sec_drop_blocks___send__
+  template: "{{ d.__send__ }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_public_send
+  template: "{{ d.public_send }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_instance_eval
+  template: "{{ d.instance_eval }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+  hint: "instance_eval/instance_exec would allow arbitrary code execution - blocked."
+
+- name: sec_drop_blocks_instance_exec
+  template: "{{ d.instance_exec }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_method
+  template: "{{ d.method }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_public_method
+  template: "{{ d.public_method }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_singleton_method
+  template: "{{ d.singleton_method }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_instance_variable_get
+  template: "{{ d.instance_variable_get }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+  hint: "instance_variable_get/set would allow direct ivar access - blocked."
+
+- name: sec_drop_blocks_instance_variable_set
+  template: "{{ d.instance_variable_set }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_instance_variable_defined
+  template: "{{ d.instance_variable_defined? }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_instance_variables
+  template: "{{ d.instance_variables }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_freeze
+  template: "{{ d.freeze }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_clone
+  template: "{{ d.clone }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_dup
+  template: "{{ d.dup }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_extend
+  template: "{{ d.extend }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_define_singleton_method
+  template: "{{ d.define_singleton_method }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_tap
+  template: "{{ d.tap }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_then
+  template: "{{ d.then }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_yield_self
+  template: "{{ d.yield_self }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_enum_for
+  template: "{{ d.enum_for }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_to_enum
+  template: "{{ d.to_enum }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+- name: sec_drop_blocks_display
+  template: "{{ d.display }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 180
+
+# Allowed methods on the same drop (control group)
+
+- name: sec_drop_allows_name
+  template: "{{ d.name }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: Widget
+  complexity: 180
+  hint: "Only methods explicitly defined on the drop subclass are invokable. `name` is defined, so it returns the value."
+
+- name: sec_drop_allows_price
+  template: "{{ d.price }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: "42"
+  complexity: 180
+
+- name: sec_drop_secret_ivar_not_exposed
+  template: "{{ d.secret }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+  hint: |
+    The @secret ivar exists but no `secret` method is defined on the drop, so
+    d.secret returns nil. Instance variables only leak if an accessor method
+    exposes them.
+
+- name: sec_drop_internal_state_ivar_not_exposed
+  template: "{{ d.internal_state }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+  hint: "The @internal_state hash (containing db_password) is not exposed by any method, so it cannot leak."
+
+# =============================================================================
+# 2. Bracket access is subject to the same whitelist
+# =============================================================================
+
+- name: sec_bracket_blocks_class
+  template: '{% assign k = "class" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+  hint: "Bracket access (d[k]) goes through the same invoke_drop whitelist as dot access."
+
+- name: sec_bracket_blocks_send
+  template: '{% assign k = "send" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks___send__
+  template: '{% assign k = "__send__" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_instance_eval
+  template: '{% assign k = "instance_eval" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_instance_variable_get
+  template: '{% assign k = "instance_variable_get" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_instance_variables
+  template: '{% assign k = "instance_variables" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_object_id
+  template: '{% assign k = "object_id" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_methods
+  template: '{% assign k = "methods" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_public_send
+  template: '{% assign k = "public_send" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_method
+  template: '{% assign k = "method" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_blocks_singleton_class
+  template: '{% assign k = "singleton_class" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 190
+
+- name: sec_bracket_allows_whitelisted
+  template: '{% assign k = "name" %}{{ d[k] }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: Widget
+  complexity: 190
+  hint: "Bracket access with a whitelisted key returns the value, just like dot access."
+
+# =============================================================================
+# 3. Property chains - the boundary holds across nested lookups
+# =============================================================================
+
+- name: sec_chain_nested_allows_safe_method
+  template: "{{ d.child.name }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: nested_child
+  complexity: 200
+  hint: "d.child returns a drop, then .name is invoked on that drop through the same whitelist."
+
+- name: sec_chain_nested_blocks_class
+  template: "{{ d.child.class }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_chain_nested_blocks_send
+  template: "{{ d.child.send }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_chain_nested_blocks_instance_eval
+  template: "{{ d.child.instance_eval }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_chain_nested_blocks_object_id
+  template: "{{ d.child.object_id }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_chain_array_class_blocked
+  template: "{{ d.items.class }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 210
+  hint: "d.items returns an Array. Array#class is not exposed, so the class name 'Array' must not appear."
+
+- name: sec_chain_safe_method_then_string_method
+  template: "{{ d.child.name.size }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: "12"
+  complexity: 210
+  hint: "d.child.name returns the string 'nested_child' (12 chars). String#size is allowed on plain strings."
+
+- name: sec_chain_deep_blocks_class
+  template: "{{ d.child.name.class }}"
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 210
+  hint: "After reaching a String value, .class is still blocked - 'String' must not appear."
+
+# =============================================================================
+# 4. Conditional / loop probing - blocked methods are falsy
+# =============================================================================
+
+- name: sec_if_class_is_falsy
+  template: "{% if d.class %}LEAKED{% endif %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+  hint: "d.class returns nil which is falsy, so the if-block does not render."
+
+- name: sec_if_send_is_falsy
+  template: "{% if d.send %}LEAKED{% endif %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_if_respond_to_is_falsy
+  template: "{% if d.respond_to? %}LEAKED{% endif %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_if_methods_is_falsy
+  template: "{% if d.methods %}LEAKED{% endif %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_if_instance_variables_is_falsy
+  template: "{% if d.instance_variables %}LEAKED{% endif %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_for_over_methods_yields_nothing
+  template: "{% for m in d.methods %}{{ m }}{% endfor %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 210
+  hint: "d.methods returns nil, so the for-loop iterates zero times."
+
+- name: sec_for_over_instance_variables_yields_nothing
+  template: "{% for v in d.instance_variables %}{{ v }}{% endfor %}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 210
+
+- name: sec_class_equality_is_false
+  template: '{% if d.class == "VictimDrop" %}LEAKED{% endif %}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 210
+
+- name: sec_methods_contains_is_false
+  template: '{% if d.methods contains "name" %}LEAKED{% endif %}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 210
+
+- name: sec_methods_size_is_zero
+  template: "{{ d.methods | size }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: "0"
+  complexity: 210
+  hint: "d.methods returns nil; size of nil is 0."
+
+- name: sec_instance_variables_size_is_zero
+  template: "{{ d.instance_variables | size }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: "0"
+  complexity: 210
+
+# =============================================================================
+# 5. Assign / capture extraction
+# =============================================================================
+
+- name: sec_assign_class_is_nil
+  template: "{% assign c = d.class %}{{ c }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_assign_send_is_nil
+  template: "{% assign s = d.send %}{{ s }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_assign_instance_eval_is_nil
+  template: "{% assign e = d.instance_eval %}{{ e }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_assign_object_id_is_nil
+  template: "{% assign o = d.object_id %}{{ o }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 200
+
+- name: sec_capture_class_is_empty
+  template: "{% capture c %}{{ d.class }}{% endcapture %}[{{ c }}]"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: "[]"
+  complexity: 210
+
+- name: sec_capture_methods_is_empty
+  template: "{% capture m %}{{ d.methods }}{% endcapture %}[{{ m }}]"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: "[]"
+  complexity: 210
+
+- name: sec_map_class_from_drop_array
+  template: '{{ d.items | map: "class" }}'
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: ""
+  complexity: 220
+  hint: "map calls invoke_drop for 'class' on each drop in the array; blocked methods return nil so nothing renders."
+
+- name: sec_map_name_from_drop_array
+  template: '{{ d.items | map: "name" | join: "," }}'
+  environment:
+    d:
+      instantiate:SecurityNestedDrop: {}
+  expected: a,b
+  complexity: 220
+  hint: "Each SecurityVictimDrop in the array returns its name via map; joined with ','."
+
+# =============================================================================
+# 6. Filter chains on drops
+# =============================================================================
+
+- name: sec_default_filter_on_blocked_property
+  template: '{{ d.class | default: "fallback" }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: fallback
+  complexity: 210
+  hint: "d.class returns nil; the default filter substitutes the fallback for nil."
+
+- name: sec_default_filter_on_allowed_property
+  template: '{{ d.name | default: "fallback" }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: Widget
+  complexity: 210
+
+- name: sec_upcase_on_allowed_property
+  template: "{{ d.name | upcase }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: WIDGET
+  complexity: 210
+
+- name: sec_upcase_on_blocked_property
+  template: "{{ d.class | upcase }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: ""
+  complexity: 210
+  hint: "d.class is nil; upcase of nil is empty, and the class name must not appear."
+
+- name: sec_append_on_blocked_property
+  template: '{{ d.class | append: "suffix" }}'
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: suffix
+  complexity: 210
+  hint: "d.class is nil; append coerces nil to '' then appends 'suffix'. The class name must not appear."
+
+- name: sec_size_filter_on_drop
+  template: "{{ d | size }}"
+  environment:
+    d:
+      instantiate:SecurityVictimDrop: {}
+  expected: "0"
+  complexity: 220
+  hint: "QUIRK: size on a drop that has no size method/[] returns 0 (size of the drop's to_s? No - liquid-ruby returns 0 for a drop without size)."
+
+# =============================================================================
+# 7. Safe types (Hash, Array, String) - class never leaks
+# =============================================================================
+
+- name: sec_hash_allows_key_access
+  template: "{{ h.name }}"
+  environment:
+    h:
+      name: test
+  expected: test
+  complexity: 190
+
+- name: sec_hash_allows_size
+  template: "{{ h.size }}"
+  environment:
+    h:
+      a: 1
+      b: 2
+  expected: "2"
+  complexity: 190
+
+- name: sec_hash_key_named_class_returns_value
+  template: "{{ h.class }}"
+  environment:
+    h:
+      class: my_class
+  expected: my_class
+  complexity: 200
+  hint: "QUIRK: a Hash with a literal 'class' key returns the hash value for that key, NOT the Ruby class. Hash lookup takes precedence over Object#class."
+
+- name: sec_hash_without_class_key_returns_empty
+  template: "{{ h.class }}"
+  environment:
+    h:
+      a: 1
+  expected: ""
+  complexity: 200
+  hint: "A Hash without a 'class' key returns nil for h.class - the class name 'Hash' must NOT appear."
+
+- name: sec_array_allows_size
+  template: "{{ a.size }}"
+  environment:
+    a: [1, 2, 3]
+  expected: "3"
+  complexity: 190
+
+- name: sec_array_allows_first
+  template: "{{ a.first }}"
+  environment:
+    a: [1, 2, 3]
+  expected: "1"
+  complexity: 190
+
+- name: sec_array_allows_last
+  template: "{{ a.last }}"
+  environment:
+    a: [1, 2, 3]
+  expected: "3"
+  complexity: 190
+
+- name: sec_array_class_not_accessible
+  template: "{{ a.class }}"
+  environment:
+    a: [1, 2, 3]
+  expected: ""
+  complexity: 200
+  hint: "Array#class is not exposed; 'Array' must not appear."
+
+- name: sec_string_allows_size
+  template: "{{ s.size }}"
+  environment:
+    s: hello
+  expected: "5"
+  complexity: 190
+
+- name: sec_string_allows_first
+  template: "{{ s.first }}"
+  environment:
+    s: hello
+  expected: h
+  complexity: 190
+
+- name: sec_string_allows_last
+  template: "{{ s.last }}"
+  environment:
+    s: hello
+  expected: o
+  complexity: 190
+
+- name: sec_string_class_not_accessible
+  template: "{{ s.class }}"
+  environment:
+    s: hello
+  expected: ""
+  complexity: 200
+
+# =============================================================================
+# 8. Non-drop objects - property access raises a NoMethodError on to_liquid
+# =============================================================================
+
+- name: sec_wide_open_object_name_raises_no_to_liquid
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 220
+  hint: |
+    A plain (non-Drop) object is not treated as a drop. Even though `name` is a
+    public method, Liquid does not invoke it; property access raises a
+    NoMethodError because the object has no `to_liquid` method.
+
+- name: sec_wide_open_object_secret_raises_no_to_liquid
+  template: "{{ o.secret }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 220
+
+- name: sec_wide_open_object_system_call_raises_no_to_liquid
+  template: "{{ o.system_call }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 220
+
+- name: sec_wide_open_object_class_raises_no_to_liquid
+  template: "{{ o.class }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 220
+
+- name: sec_wide_open_object_send_raises_no_to_liquid
+  template: "{{ o.send }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 220
+
+- name: sec_unsafe_hash_like_name_raises_no_to_liquid
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:UnsafeHashLikeObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 230
+  hint: "A non-drop object whose [] delegates to send is still not treated as a drop; property access raises a NoMethodError on to_liquid."
+
+- name: sec_unsafe_hash_like_secret_raises_no_to_liquid
+  template: "{{ o.secret }}"
+  environment:
+    o:
+      instantiate:UnsafeHashLikeObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 230
+
+- name: sec_unsafe_hash_like_class_raises_no_to_liquid
+  template: "{{ o.class }}"
+  environment:
+    o:
+      instantiate:UnsafeHashLikeObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 230
+
+- name: sec_unsafe_hash_like_send_raises_no_to_liquid
+  template: "{{ o.send }}"
+  environment:
+    o:
+      instantiate:UnsafeHashLikeObject: {}
+  errors:
+    render_error:
+    - NoMethodError
+    - to_liquid
+  complexity: 230
+
+# =============================================================================
+# 9. to_liquid protocol - only the returned value is exposed
+# =============================================================================
+
+- name: sec_to_liquid_hash_exposes_keys
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:ToLiquidHashObject: {}
+  expected: from_to_liquid
+  complexity: 220
+  hint: "to_liquid returns a Hash; only the hash's keys are then accessible."
+
+- name: sec_to_liquid_hash_exposes_second_key
+  template: "{{ o.status }}"
+  environment:
+    o:
+      instantiate:ToLiquidHashObject: {}
+  expected: ok
+  complexity: 220
+
+- name: sec_to_liquid_hash_blocks_object_methods
+  template: "{{ o.class }}"
+  environment:
+    o:
+      instantiate:ToLiquidHashObject: {}
+  expected: ""
+  complexity: 230
+  hint: "After to_liquid returns a hash, the original object's methods are unreachable. o.class returns nil (hash has no 'class' key)."
+
+- name: sec_to_liquid_hash_blocks_send
+  template: "{{ o.send }}"
+  environment:
+    o:
+      instantiate:ToLiquidHashObject: {}
+  expected: ""
+  complexity: 230
+
+- name: sec_to_liquid_hash_blocks_instance_eval
+  template: "{{ o.instance_eval }}"
+  environment:
+    o:
+      instantiate:ToLiquidHashObject: {}
+  expected: ""
+  complexity: 230
+
+- name: sec_to_liquid_string_size
+  template: "{{ o.size }}"
+  environment:
+    o:
+      instantiate:ToLiquidStringObject: {}
+  expected: "13"
+  complexity: 220
+  hint: "to_liquid returns the string 'i_am_a_string' (13 chars); String#size is then allowed."
+
+- name: sec_to_liquid_array_size
+  template: "{{ o.size }}"
+  environment:
+    o:
+      instantiate:ToLiquidArrayObject: {}
+  expected: "3"
+  complexity: 220
+
+- name: sec_to_liquid_array_first
+  template: "{{ o.first }}"
+  environment:
+    o:
+      instantiate:ToLiquidArrayObject: {}
+  expected: "10"
+  complexity: 220
+
+- name: sec_to_liquid_nil_blocks_all
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:ToLiquidNilObject: {}
+  expected: ""
+  complexity: 220
+  hint: "to_liquid returning nil means nothing is accessible; o.name renders empty."
+
+- name: sec_to_liquid_nil_blocks_class
+  template: "{{ o.class }}"
+  environment:
+    o:
+      instantiate:ToLiquidNilObject: {}
+  expected: ""
+  complexity: 220
+
+# =============================================================================
+# 10. Fake drop - to_liquid returns self but is not a Liquid::Drop
+# =============================================================================
+
+- name: sec_fake_drop_blocks_name
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:FakeDropObject: {}
+  expected: ""
+  complexity: 230
+  hint: |
+    to_liquid returns self, but the object is not a Liquid::Drop, so it has no
+    invoke_drop whitelist. No method is callable; o.name renders empty.
+
+- name: sec_fake_drop_blocks_secret
+  template: "{{ o.secret }}"
+  environment:
+    o:
+      instantiate:FakeDropObject: {}
+  expected: ""
+  complexity: 230
+
+- name: sec_fake_drop_blocks_class
+  template: "{{ o.class }}"
+  environment:
+    o:
+      instantiate:FakeDropObject: {}
+  expected: ""
+  complexity: 230
+
+# =============================================================================
+# 11. Enumerable drop - mixed-in Enumerable methods are not exposed
+# =============================================================================
+
+- name: sec_enumerable_drop_allows_defined_method
+  template: "{{ d.title }}"
+  environment:
+    d:
+      instantiate:SecurityEnumerableDrop: {}
+  expected: my list
+  complexity: 220
+
+- name: sec_enumerable_drop_blocks_class
+  template: "{{ d.class }}"
+  environment:
+    d:
+      instantiate:SecurityEnumerableDrop: {}
+  expected: ""
+  complexity: 220
+
+- name: sec_enumerable_drop_blocks_send
+  template: "{{ d.send }}"
+  environment:
+    d:
+      instantiate:SecurityEnumerableDrop: {}
+  expected: ""
+  complexity: 220
+
+- name: sec_enumerable_drop_blocks_methods
+  template: "{{ d.methods }}"
+  environment:
+    d:
+      instantiate:SecurityEnumerableDrop: {}
+  expected: ""
+  complexity: 220
+  hint: "Even though Enumerable adds many methods, only the drop's own defined methods are invokable."

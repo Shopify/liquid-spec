@@ -228,6 +228,121 @@ YAML files can include a `_metadata` section for settings that apply to all spec
 
 Spec-level settings override source-level settings. For example, a spec with its own `error_mode` will use that instead of the `required_options.error_mode`.
 
+## Good Specs
+
+### Error specs: prefer raised errors over inline errors
+
+Most specs that exercise an error path should let the error **raise** and
+match it with `errors:`. Do **not** set `render_errors: true` (inline error
+rendering) unless the spec is specifically testing inline-error *display*
+behaviour — and those specs must declare `features: [inline_errors]`.
+
+Two raised-error forms exist:
+
+- `errors: parse_error:` — the template fails to **parse** (syntax errors,
+  unknown tags in strict mode, unclosed blocks, …).
+- `errors: render_error:` — the template parses but **rendering** raises
+  (division by zero, invalid filter arguments, accessing a non-drop object,
+  include-inside-render, …).
+
+```yaml
+- name: division_by_zero_lax
+  template: "{{ 10 | divided_by: 0 }}"
+  errors:
+    render_error:
+      - divided by 0
+  complexity: 200
+  error_mode: lax
+```
+
+```yaml
+- name: unknown_tag_strict_parse_error
+  template: "{% nonexistent_tag %}content{% endnonexistent_tag %}"
+  error_mode: strict
+  errors:
+    parse_error:
+      - Unknown tag
+  complexity: 300
+```
+
+### Matching error patterns
+
+Each entry under `parse_error:` / `render_error:` is matched against:
+
+1. The full exception message
+2. The "core" message (text after the last `): ` or `: `)
+3. The exception **class name** (e.g. `NoMethodError`, `Liquid::ArgumentError`)
+
+A **string** pattern is a case-insensitive, literal substring (special
+characters are escaped). A **Regexp** pattern (`!ruby/regexp /.../i`) is
+used as-is, so metacharacters like `|`, `.+`, and anchors work. **All**
+listed patterns must match for the spec to pass. Use multiple patterns to
+pin down the error precisely without coupling to exact wording:
+
+```yaml
+- name: sec_wide_open_object_name_raises_no_to_liquid
+  template: "{{ o.name }}"
+  environment:
+    o:
+      instantiate:WideOpenObject: {}
+  errors:
+    render_error:
+      - NoMethodError        # the error class name
+      - to_liquid            # what's missing from the message
+  complexity: 220
+```
+
+```yaml
+- name: error_in_partial_line_3_precise
+  template: "{% render 'multiline' %}"
+  filesystem:
+    multiline.liquid: |
+      first line
+      second line
+      {{ bad | divided_by: 0 }}
+  environment:
+    bad: 99
+  errors:
+    render_error:
+      - multiline            # partial name appears in the error
+      - line 3               # line number within the partial
+      - divided by 0         # the underlying error
+  complexity: 550
+  error_mode: lax
+```
+
+A **Regexp** pattern (used as-is, unlike string patterns which are literal
+substrings) — useful for alternation without doubling up specs:
+
+```yaml
+- name: regexp_render_error_match
+  template: "{{ 10 | divided_by: 0 }}"
+  errors:
+    render_error:
+      - !ruby/regexp /ZeroDivision|divided by/i
+  complexity: 200
+```
+
+**Best practices for error patterns:**
+
+- **Match the error class name** (`NoMethodError`, `Liquid::SyntaxError`, …)
+  to assert the *kind* of error, not just its message text.
+- **Match one stable substring of the message** that captures the meaningful
+  part (e.g. `divided by 0`, `to_liquid`, `Unknown tag`). Avoid matching the
+  full message — wording varies across implementations.
+- **Match location info when relevant** — partial name and `line N` — but
+  keep those as separate patterns so an implementation that lacks one of
+  them fails clearly on that specific pattern.
+- **Use a Regexp (`!ruby/regexp`)** when you need alternation or anchors
+  rather than a literal substring. Note: backslash escapes inside the YAML
+  regexp literal must be doubled (write `\\d`, not `\d`), because YAML
+  processes the scalar before the regexp is compiled. Prefer backslash-free
+  patterns where possible (e.g. `!ruby/regexp /ZeroDivision|divided by/i`).
+- **Never set `render_errors: true`** for new specs. New specs should always
+  let errors raise and match them with `errors: parse_error:` /
+  `errors: render_error:`. The inline form (`render_errors: true` with
+  `errors: output:`) is legacy and should not be added to new specs.
+
 ## Suite Configuration
 
 Each suite directory contains a `suite.yml` file that configures the suite:

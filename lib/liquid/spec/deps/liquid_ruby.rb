@@ -440,6 +440,81 @@ class StubExceptionRenderer
   end
 end
 
+# ============================================================================
+# Security test drops and objects
+# These model the security boundary of Liquid::Drop: only explicitly defined
+# subclass methods are invokable. Dangerous Object/Kernel methods (class,
+# send, instance_eval, inspect, ...) are blocked. Instance variables are never
+# exposed unless wrapped by an accessor method.
+# See specs/liquid_ruby/security_drops.yml for the behavioural specs.
+# ============================================================================
+
+# A drop that exposes a couple of safe methods but keeps a secret ivar and an
+# internal-state hash that must never leak through the template.
+class SecurityVictimDrop < Liquid::Drop
+  def initialize(params = {})
+    params = { "name" => params } unless params.is_a?(Hash)
+    @name = params["name"] || params[:name] || "Widget"
+    @secret = "TOP_SECRET_API_KEY"
+    @internal_state = { "db_password" => "hunter2" }
+  end
+
+  def name; @name; end
+  def price; 42; end
+end
+
+# A drop whose methods return other drops / arrays of drops, used to test that
+# the security boundary holds across property chains.
+class SecurityNestedDrop < Liquid::Drop
+  def initialize(_params = {}); end
+
+  def child; SecurityVictimDrop.new("name" => "nested_child"); end
+  def items; [SecurityVictimDrop.new("name" => "a"), SecurityVictimDrop.new("name" => "b")]; end
+end
+
+# An Enumerable drop: Enumerable is mixed in, but only the explicitly defined
+# subclass methods (title) should be invokable from templates.
+class SecurityEnumerableDrop < Liquid::Drop
+  include Enumerable
+
+  def initialize(_params = {}); end
+
+  def each(&block); [1, 2, 3].each(&block); end
+  def title; "my list"; end
+end
+
+# A plain (non-Drop) object whose every method is public. Liquid does NOT treat
+# arbitrary objects as drops, so accessing any property raises an internal error
+# (rendered inline as "Liquid error: internal" when render_errors is on).
+class WideOpenObject
+  def name; "wide_open"; end
+  def secret; "TOP_SECRET"; end
+  def system_call; "pwned"; end
+end
+
+# A plain object whose #[] delegates to #send, modelling a hash-like object that
+# would leak via bracket access if Liquid called [] on non-drops.
+class UnsafeHashLikeObject
+  def [](key); send(key) rescue nil; end
+  def secret; "LEAKED_VIA_BRACKET"; end
+  def name; "unsafe"; end
+end
+
+# A plain object whose #to_liquid returns a plain Hash. Liquid should expose only
+# the hash's keys and block access to the original object's methods.
+class SafeProxyObject
+  def to_liquid; { "name" => "proxied", "safe" => true }; end
+  def secret; "NEVER_SEE_THIS"; end
+end
+
+# A plain object whose #to_liquid returns self but which is NOT a Liquid::Drop.
+# Because it lacks Drop's invoke_drop whitelist, no method should be callable.
+class FakeDropObject
+  def to_liquid; self; end
+  def name; "fake_drop"; end
+  def secret; "FAKE_SECRET"; end
+end
+
 # Register all test classes with the ClassRegistry
 # Each lambda creates a fresh instance for every test
 Liquid::Spec::ClassRegistry.register("ValueDrop") { |p| ValueDrop.new(p) }
@@ -467,6 +542,13 @@ Liquid::Spec::ClassRegistry.register("SafeBuffer") { |p| (p["value"] || p[:value
 Liquid::Spec::ClassRegistry.register("LoaderDrop") { |p| LoaderDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("ArrayDrop") { |p| ArrayDrop.new(p) }
 Liquid::Spec::ClassRegistry.register("LongString") { |p| "X" * (p["length"] || p[:length] || 0) }
+Liquid::Spec::ClassRegistry.register("SecurityVictimDrop") { |p| SecurityVictimDrop.new(p) }
+Liquid::Spec::ClassRegistry.register("SecurityNestedDrop") { |p| SecurityNestedDrop.new(p) }
+Liquid::Spec::ClassRegistry.register("SecurityEnumerableDrop") { |p| SecurityEnumerableDrop.new(p) }
+Liquid::Spec::ClassRegistry.register("WideOpenObject") { |p| WideOpenObject.new }
+Liquid::Spec::ClassRegistry.register("UnsafeHashLikeObject") { |p| UnsafeHashLikeObject.new }
+Liquid::Spec::ClassRegistry.register("SafeProxyObject") { |p| SafeProxyObject.new }
+Liquid::Spec::ClassRegistry.register("FakeDropObject") { |p| FakeDropObject.new }
 
 
 # Range - special handling for array format [start, end]
@@ -527,3 +609,4 @@ end
 # Load test drops and filters after base classes are defined
 require_relative "../test_drops"
 require_relative "../test_filters"
+require_relative "security_objects"
