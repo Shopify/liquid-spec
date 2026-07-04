@@ -22,7 +22,7 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234.3838300038383'
-  complexity: 40
+  complexity: 200
 - name: StandardFilterTest#test_abs_2ff2a03c
   template: "{{ a0 | abs }}"
   environment:
@@ -57,7 +57,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - drop_class_output
   - ruby_drops
@@ -76,7 +76,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - ruby_drops
 - name: StandardFilterTest#test_abs_b248a944
@@ -695,7 +695,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - drop_class_output
   - ruby_drops
@@ -705,7 +705,7 @@
   environment:
     a0: 1234.3838300038383
   expected: '1235'
-  complexity: 40
+  complexity: 200
 - name: StandardFilterTest#test_ceil_6eb27d27
   template: "{{ a0 | ceil }}"
   environment:
@@ -740,7 +740,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - ruby_drops
 - name: StandardFilterTest#test_ceil_e5a0f77f
@@ -1984,7 +1984,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - drop_class_output
   - ruby_drops
@@ -2019,7 +2019,7 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234'
-  complexity: 40
+  complexity: 200
 - name: StandardFilterTest#test_floor_78b085eb
   template: "{{ a0 | floor }}"
   environment:
@@ -2069,7 +2069,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - ruby_drops
 - name: StandardFilterTest#test_floor_af74b0fe
@@ -3229,7 +3229,7 @@
     - - foo
     - :foo: bar
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - drop_class_output
   - ruby_drops
@@ -3262,7 +3262,7 @@
       'instantiate:ToSDrop:':
         foo: -1
   expected: '0'
-  complexity: 40
+  complexity: 200
   features:
   - ruby_drops
 - name: StandardFilterTest#test_round_93e6c0cb
@@ -3283,7 +3283,7 @@
   environment:
     a0: 1234.3838300038383
   expected: '1234'
-  complexity: 40
+  complexity: 200
 - name: StandardFilterTest#test_round_b6dcafc2
   template: "{{ a0 | round }}"
   environment:

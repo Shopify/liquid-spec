@@ -5050,7 +5050,7 @@
 - name: StandardFiltersTest#test_abs_2b0c1b12
   template: "{{ '17' | abs }}"
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '17'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L745
 - name: StandardFiltersTest#test_abs_4fd9b504
@@ -5068,7 +5068,7 @@
 - name: StandardFiltersTest#test_abs_5b6ca349
   template: "{{ '0' | abs }}"
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '0'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L748
 - name: StandardFiltersTest#test_abs_5c19148b
@@ -5150,7 +5150,7 @@
       'instantiate:NumberLikeThing:':
         amount: 4
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L839
   features:
@@ -5162,7 +5162,7 @@
       'instantiate:NumberLikeThing:':
         amount: 6
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L840
   features:
@@ -5174,7 +5174,7 @@
       'instantiate:NumberLikeThing:':
         amount: 6
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L838
   features:
@@ -5186,7 +5186,7 @@
       'instantiate:NumberLikeThing:':
         amount: 6
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L827
   features:
@@ -5198,7 +5198,7 @@
       'instantiate:NumberLikeThing:':
         amount: 4
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L829
   features:
@@ -5210,7 +5210,7 @@
       'instantiate:NumberLikeThing:':
         amount: 4
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L828
   features:
@@ -5266,7 +5266,7 @@
       'instantiate:NumberLikeThing:':
         amount: 4.6
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L808
   features:
@@ -5368,7 +5368,7 @@
       'instantiate:NumberLikeThing:':
         amount: 10
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L777
   features:
@@ -5504,7 +5504,7 @@
       'instantiate:NumberLikeThing:':
         amount: 5.4
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L818
   features:
@@ -5733,7 +5733,7 @@
       'instantiate:NumberLikeThing:':
         amount: 7
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L739
   features:
@@ -5750,7 +5750,7 @@
 - name: StandardFiltersTest#test_minus_f928f8f4
   template: "{{ '4.3' | minus:'2' }}"
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '2.3'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L737
 - name: StandardFiltersTest#test_modulo_b3186ea4
@@ -5760,7 +5760,7 @@
       'instantiate:NumberLikeThing:':
         amount: 3
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '1'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L786
   features:
@@ -5811,7 +5811,7 @@
 - name: StandardFiltersTest#test_plus_79568f07
   template: "{{ '1' | plus:'1.0' }}"
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '2.0'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L730
 - name: StandardFiltersTest#test_plus_e90b7ed6
@@ -5821,7 +5821,7 @@
       'instantiate:NumberLikeThing:':
         amount: 3
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L732
   features:
@@ -5941,7 +5941,7 @@
       'instantiate:NumberLikeThing:':
         amount: 4.6
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L797
   features:
@@ -5961,7 +5961,7 @@
       'instantiate:NumberLikeThing:':
         amount: 4.3
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L798
   features:
@@ -6135,7 +6135,7 @@
       'instantiate:NumberLikeThing:':
         amount: 2
   render_errors: false
-  complexity: 45
+  complexity: 200
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L762
   features:
