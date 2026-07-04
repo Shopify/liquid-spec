@@ -9,8 +9,7 @@
 #   * The boundary holds across property chains, inside conditionals/loops,
 #     through assign/capture, and through filter chains.
 #   * Plain (non-Drop) objects are NOT treated as drops: property access raises
-#     an internal error, rendered inline as "Liquid error (line N): internal"
-#     when render_errors is on.
+#     a NoMethodError on to_liquid (a render error, matched on "to_liquid").
 #   * Objects implementing #to_liquid expose only what to_liquid returns; the
 #     original object's methods are unreachable afterwards.
 #
@@ -23,8 +22,8 @@ _metadata:
     explicitly defined subclass methods; dangerous Object/Kernel methods
     (class, send, instance_eval, inspect, methods, object_id, ...) return nil
     and render as empty. Instance variables never leak unless an accessor
-    method exposes them. Plain (non-Drop) objects raise an internal error on
-    property access (rendered as "Liquid error (line N): internal").
+    method exposes them. Plain (non-Drop) objects raise a NoMethodError on
+    to_liquid when any property is accessed.
   minimum_complexity: 180
   features:
   - ruby_drops
@@ -894,94 +893,102 @@ specs:
   complexity: 200
 
 # =============================================================================
-# 8. Non-drop objects - property access raises an internal error
+# 8. Non-drop objects - property access raises a NoMethodError on to_liquid
 # =============================================================================
 
-- name: sec_wide_open_object_name_raises_internal
+- name: sec_wide_open_object_name_raises_no_to_liquid
   template: "{{ o.name }}"
   environment:
     o:
       instantiate:WideOpenObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 220
   hint: |
     A plain (non-Drop) object is not treated as a drop. Even though `name` is a
-    public method, Liquid does not invoke it; accessing any property raises an
-    internal error (NoMethodError on to_liquid), rendered as
-    "Liquid error (line 1): internal".
+    public method, Liquid does not invoke it; property access raises a
+    NoMethodError because the object has no `to_liquid` method.
 
-- name: sec_wide_open_object_secret_raises_internal
+- name: sec_wide_open_object_secret_raises_no_to_liquid
   template: "{{ o.secret }}"
   environment:
     o:
       instantiate:WideOpenObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 220
 
-- name: sec_wide_open_object_system_call_raises_internal
+- name: sec_wide_open_object_system_call_raises_no_to_liquid
   template: "{{ o.system_call }}"
   environment:
     o:
       instantiate:WideOpenObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 220
 
-- name: sec_wide_open_object_class_raises_internal
+- name: sec_wide_open_object_class_raises_no_to_liquid
   template: "{{ o.class }}"
   environment:
     o:
       instantiate:WideOpenObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 220
 
-- name: sec_wide_open_object_send_raises_internal
+- name: sec_wide_open_object_send_raises_no_to_liquid
   template: "{{ o.send }}"
   environment:
     o:
       instantiate:WideOpenObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 220
 
-- name: sec_unsafe_hash_like_name_raises_internal
+- name: sec_unsafe_hash_like_name_raises_no_to_liquid
   template: "{{ o.name }}"
   environment:
     o:
       instantiate:UnsafeHashLikeObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 230
-  hint: "A non-drop object whose [] delegates to send is still not treated as a drop; property access raises an internal error."
+  hint: "A non-drop object whose [] delegates to send is still not treated as a drop; property access raises a NoMethodError on to_liquid."
 
-- name: sec_unsafe_hash_like_secret_raises_internal
+- name: sec_unsafe_hash_like_secret_raises_no_to_liquid
   template: "{{ o.secret }}"
   environment:
     o:
       instantiate:UnsafeHashLikeObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 230
 
-- name: sec_unsafe_hash_like_class_raises_internal
+- name: sec_unsafe_hash_like_class_raises_no_to_liquid
   template: "{{ o.class }}"
   environment:
     o:
       instantiate:UnsafeHashLikeObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 230
 
-- name: sec_unsafe_hash_like_send_raises_internal
+- name: sec_unsafe_hash_like_send_raises_no_to_liquid
   template: "{{ o.send }}"
   environment:
     o:
       instantiate:UnsafeHashLikeObject: {}
-  render_errors: true
-  expected: "Liquid error (line 1): internal"
+  errors:
+    render_error:
+    - to_liquid
   complexity: 230
 
 # =============================================================================
