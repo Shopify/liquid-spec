@@ -52,6 +52,7 @@
     - :foo: bar
   expected: '0'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_abs_8169b90f
@@ -154,8 +155,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: WyJmb28iLCAxMjMsIG5pbCwgdHJ1ZSwgZmFsc2UsIExpcXVpZDo6RHJvcCwgWyJmb28iXSwgezpmb289PiJiYXIifV0=
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_base64_encode_1107ae74
@@ -313,8 +326,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: WyJmb28iLCAxMjMsIG5pbCwgdHJ1ZSwgZmFsc2UsIExpcXVpZDo6RHJvcCwgWyJmb28iXSwgezpmb289PiJiYXIifV0=
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_base64_url_safe_encode_2d47c17d
@@ -460,8 +485,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, liquid::drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_capitalize_3ff86554
@@ -579,6 +616,7 @@
     - :foo: bar
   expected: '0'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_ceil_4f5c4da1
@@ -681,8 +719,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: foo123truefalseLiquid::Dropfoo{:foo=>"bar"}
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_compact_2fdb07df
@@ -1087,8 +1137,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: foo123truefalseLiquid::Dropfoo{:foo=>"bar"}
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_default_a963f327
@@ -1114,8 +1176,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, liquid::drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_downcase_0fe5e452
@@ -1288,9 +1362,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: "[&quot;foo&quot;, 123, nil, true, false, Liquid::Drop, [&quot;foo&quot;],
-    {:foo=&gt;&quot;bar&quot;}]"
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_escape_8d927a70
@@ -1420,9 +1505,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: "[&quot;foo&quot;, 123, nil, true, false, Liquid::Drop, [&quot;foo&quot;],
-    {:foo=&gt;&quot;bar&quot;}]"
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_escape_once_6c11fb5b
@@ -1567,6 +1663,7 @@
     - :foo: bar
   expected: foo
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_first_9546f643
@@ -1656,6 +1753,7 @@
     - :foo: bar
   expected: '0'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_floor_29259403
@@ -1787,9 +1885,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: "[&quot;foo&quot;, 123, nil, true, false, Liquid::Drop, [&quot;foo&quot;],
-    {:foo=&gt;&quot;bar&quot;}]"
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_h_2ef8277e
@@ -2046,8 +2155,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: foo 123  true false Liquid::Drop foo {:foo=>"bar"}
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_join_fcf4f163
@@ -2099,6 +2220,7 @@
     - :foo: bar
   expected: '{:foo=>"bar"}'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_last_2125a94f
@@ -2206,8 +2328,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_lstrip_287bf5e9
@@ -2409,8 +2543,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_newline_to_br_91643ffe
@@ -2598,8 +2744,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '{:foo=>"bar"}fooLiquid::Dropfalsetrue123foo'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_reverse_612dbe14
@@ -2698,6 +2856,7 @@
     - :foo: bar
   expected: '0'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_round_64f03f6e
@@ -2852,8 +3011,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_rstrip_87a01f76
@@ -2936,6 +3107,7 @@
     - :foo: bar
   expected: '8'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_size_350f32de
@@ -3618,8 +3790,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: 123falsefoofooLiquid::Droptrue{:foo=>"bar"}
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sort_natural_88efd2cb
@@ -3768,8 +3952,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_squish_145ca951
@@ -3966,8 +4162,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_strip_ef9277f9
@@ -4114,8 +4322,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_strip_html_dc4a80f8
@@ -4176,8 +4396,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_7c67b363
@@ -4577,6 +4809,7 @@
     - :foo: bar
   expected: '123'
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_sum_e855bd12
@@ -4747,8 +4980,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["...'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_truncate_f1369736
@@ -4858,8 +5103,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_truncatewords_5b3e76bb
@@ -5059,8 +5316,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: foo123truefalseLiquid::Drop{:foo=>"bar"}
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_uniq_879d03c3
@@ -5202,8 +5471,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["FOO", 123, NIL, TRUE, FALSE, LIQUID::DROP, ["FOO"], {:FOO=>"BAR"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_upcase_406bfebc
@@ -5375,8 +5656,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: '["foo", 123, nil, true, false, Liquid::Drop, ["foo"], {:foo=>"bar"}]'
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_url_decode_bf1f382b
@@ -5447,8 +5740,20 @@
     - 'instantiate:LiquidDropClass:': {}
     - - foo
     - :foo: bar
-  expected: "%5B%22foo%22%2C+123%2C+nil%2C+true%2C+false%2C+Liquid%3A%3ADrop%2C+%5B%22foo%22%5D%2C+%7B%3Afoo%3D%3E%22bar%22%7D%5D"
+  expected: "Liquid error (line 1): Liquid::Drop cannot be printed"
+  render_errors: true
+  hint: |
+    These specs expect an error when a filter encounters an array element
+    that has no to_liquid method (here: the Liquid::Drop class object).
+    Reference liquid currently leaks the class name via to_s instead of
+    erroring. The correct behavior is to raise a render error: objects
+    without to_liquid cannot be printed.
+      that has no to_liquid method (here: the Liquid::Drop class object).
+      Reference liquid currently leaks the class name via to_s instead of
+      erroring. The correct behavior is to raise a render error: objects
+      without to_liquid cannot be printed.
   features:
+  - drop_class_output
   - ruby_drops
   - ruby_types
 - name: StandardFilterTest#test_url_encode_26a6b4f3

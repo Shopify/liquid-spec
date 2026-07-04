@@ -16,6 +16,7 @@
 
 require "json"
 require "liquid"
+require "active_support/all"
 require "time"
 
 module RemoteLiquid

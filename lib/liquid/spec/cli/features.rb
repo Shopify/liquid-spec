@@ -97,11 +97,6 @@ module Liquid
             recommendation: :unnecessary,
             note: "Binary data can't be transmitted in JSON without base64 encoding.",
           },
-          activesupport: {
-            description: "Tests requiring ActiveSupport (Rails) extensions",
-            recommendation: :unnecessary,
-            note: "Only needed if targeting Rails environments. SafeBuffer, etc.",
-          },
         }.freeze
 
         RECOMMENDATION_LABELS = {

@@ -110,6 +110,7 @@ end
 
 LiquidSpec.setup do |ctx|
   require "liquid"
+  require "active_support/all"
 
   if defined?(Liquid::C) && Liquid::C.respond_to?(:enabled=)
     Liquid::C.enabled = false
@@ -183,7 +184,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.missing_features = [:lax_parsing]
+  config.missing_features = [:drop_class_output, :lax_parsing]
   config.suites = [:benchmarks]
   config.filter = "shopify_"
 end
