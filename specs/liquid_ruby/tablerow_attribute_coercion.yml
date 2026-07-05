@@ -1,0 +1,47 @@
+---
+# tablerow attribute coercion: offset/limit/cols coerce duck-typed via #to_i
+# (Liquid::TableRow#to_integer is `value.to_i rescue NoMethodError -> raise`),
+# so ANY string coerces ("bad" -> 0) and nil -> 0; only values without #to_i
+# (booleans, hashes, arrays) raise "invalid integer" — that error case is
+# already pinned in manual.yml ("Tablerow throws invalid integer error when
+# limit isn't a number", which uses `limit: true`).
+#
+# QUIRK: this is deliberately INCONSISTENT with the for tag, whose offset:/
+# limit: validate strictly and raise "invalid integer" for the same
+# non-numeric strings. See QUIRKS.md "Tablerow vs For Attribute Coercion".
+# All expectations validated verbatim against reference liquid.
+
+specs:
+
+- name: tablerow_offset_non_numeric_string_coerces_to_zero
+  template: "{% tablerow a in (1..4) offset: xs %}{{ a }}{% endtablerow %}"
+  environment:
+    xs: "bad"
+  expected: "<tr class=\"row1\">\n<td class=\"col1\">1</td><td class=\"col2\">2</td><td class=\"col3\">3</td><td class=\"col4\">4</td></tr>\n"
+  complexity: 700
+  hint: |
+    tablerow's offset: coerces with #to_i, so a non-numeric string becomes 0
+    and every item renders. NOTE the contrast with {% for %}, where the same
+    offset value raises "invalid integer" — the two tags validate differently.
+
+- name: tablerow_limit_non_numeric_string_coerces_to_zero
+  template: "{% tablerow a in (1..4) limit: xs %}{{ a }}{% endtablerow %}"
+  environment:
+    xs: "bad"
+  expected: "<tr class=\"row1\">\n</tr>\n"
+  complexity: 700
+  hint: |
+    tablerow's limit: coerces with #to_i, so a non-numeric string becomes a
+    limit of 0: the row structure still renders, with zero cells. (A boolean
+    limit, which has no #to_i, is the case that raises "invalid integer".)
+
+- name: tablerow_cols_non_numeric_string_never_wraps
+  template: "{% tablerow a in (1..4) cols: xs %}{{ a }}{% endtablerow %}"
+  environment:
+    xs: "bad"
+  expected: "<tr class=\"row1\">\n<td class=\"col1\">1</td><td class=\"col2\">2</td><td class=\"col3\">3</td><td class=\"col4\">4</td></tr>\n"
+  complexity: 700
+  hint: |
+    cols: also #to_i-coerces; a resulting cols of 0 behaves like no cols at
+    all — the row never wraps, and every item lands in row1 with sequential
+    col classes.

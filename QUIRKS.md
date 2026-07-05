@@ -9,6 +9,7 @@ A collection of surprising, inconsistent, or quirky behaviors in Liquid that imp
 3. [Filter vs Property Access Differences](#filter-vs-property-access-differences)
 4. [Case Has No Break](#case-has-no-break)
 5. [Blank Bodies Suppress Render-Error Text](#blank-bodies-suppress-render-error-text)
+6. [Tablerow vs For Attribute Coercion](#tablerow-vs-for-attribute-coercion)
 
 ---
 
@@ -181,11 +182,45 @@ stay invisible when they error.
 
 ### Impact
 
-Silent failure of erroring conditions. **Spec decision (2026-07-05):** this
-suppression is specified for LAX mode only; strict and strict2 must surface
-the error text (reference currently suppresses in all parse modes — the
-strict specs define required behavior ahead of reference). Full matrix:
+Silent failure of erroring conditions. **Spec decision (2026-07-05, rev. 2):**
+the historical suppression is specified for lax AND strict (both matching
+current reference liquid); strict2 is the new contract where an evaluated
+error must surface regardless of body blankness. Raised-error mode is
+orthogonal — all modes raise. Full matrix:
 `liquid_ruby/blank_body_error_handling.yml`.
+
+---
+
+## Tablerow vs For Attribute Coercion
+
+**Severity:** Surprising
+**Discovered:** Differential fuzzing
+
+### The Quirk
+
+The same attribute value is an error in one tag and silently coerced in its
+sibling:
+
+```liquid
+{% for a in (1..4) offset: str %}...       → Liquid error: invalid integer
+{% tablerow a in (1..4) offset: str %}...  → renders all four items
+```
+(with `str = "bad"`.)
+
+### Why This Happens
+
+`Liquid::TableRow#to_integer` is duck-typed — `value.to_i rescue
+NoMethodError => raise "invalid integer"` — so any String coerces
+("bad".to_i == 0) and only #to_i-less values (booleans, hashes) raise. The
+for tag validates integers strictly. A cols of 0 additionally means
+"never wrap": one row.
+
+### Impact
+
+Implementations that share one attribute-validation helper between for and
+tablerow get one of the two wrong. Specs:
+`liquid_ruby/tablerow_attribute_coercion.yml` (coercion side) and
+`liquid_ruby/manual.yml` (the boolean error side).
 
 ---
 
