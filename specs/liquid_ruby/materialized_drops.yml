@@ -12,7 +12,7 @@ _metadata:
   - ruby_drops
 specs:
 - name: VariableTest#test_case_tag_calls_to_liquid_value_b1c40961
-  complexity: 500
+  complexity: 220
   template: "{% case foo %}{% when 1 %}One{% endcase %}"
   environment:
     foo:
@@ -22,7 +22,7 @@ specs:
   expected: One
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L48
 - name: VariableTest#test_condition_calls_to_liquid_value_0cd93b1a
-  complexity: 500
+  complexity: 220
   template: "{% if foo == true %}true{% endif %}"
   environment:
     foo:
@@ -32,7 +32,7 @@ specs:
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L35
 - name: VariableTest#test_condition_calls_to_liquid_value_46cfd9a7
-  complexity: 500
+  complexity: 220
   template: "{% if foo == 1 %}one{% endif %}"
   environment:
     foo:
@@ -42,7 +42,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L36
 - name: VariableTest#test_condition_calls_to_liquid_value_5fa55b53
-  complexity: 500
+  complexity: 220
   template: "{% if foo and true %}SHOULD NOT HAPPEN{% endif %}"
   environment:
     foo:
@@ -52,7 +52,7 @@ specs:
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L37
 - name: VariableTest#test_condition_calls_to_liquid_value_8be4f14d
-  complexity: 500
+  complexity: 220
   template: "{% if foo == eqv %}one{% endif %}"
   environment:
     foo:
@@ -65,7 +65,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L38
 - name: VariableTest#test_condition_calls_to_liquid_value_91b71f70
-  complexity: 500
+  complexity: 220
   template: "{% if foo > 0 %}one{% endif %}"
   environment:
     foo:
@@ -75,7 +75,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L39
 - name: VariableTest#test_condition_calls_to_liquid_value_b103509d
-  complexity: 500
+  complexity: 220
   template: "{% if a contains x %}one{% endif %}"
   environment:
     a:
@@ -87,7 +87,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L40
 - name: VariableTest#test_condition_calls_to_liquid_value_d62c87dd
-  complexity: 500
+  complexity: 220
   template: "{% if b > a %}one{% endif %}"
   environment:
     b:
@@ -100,7 +100,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L41
 - name: VariableTest#test_condition_calls_to_liquid_value_de41fb54
-  complexity: 500
+  complexity: 220
   template: "{% if 0 < foo %}one{% endif %}"
   environment:
     foo:
@@ -110,7 +110,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L42
 - name: VariableTest#test_condition_calls_to_liquid_value_e7e6cd79
-  complexity: 500
+  complexity: 220
   template: "{% if foo == true %}True{% endif %}"
   environment:
     foo:
@@ -159,7 +159,7 @@ specs:
   expected: ''
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_069de095
   features: [ruby_types]
-  complexity: 500
+  complexity: 220
   template: "{{ list[foo] }}"
   environment:
     foo:
@@ -171,7 +171,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L73
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_a45f8c05
-  complexity: 500
+  complexity: 220
   template: "{{ list[foo] }}"
   environment:
     foo:
@@ -185,7 +185,7 @@ specs:
   expected: '2'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L74
 - name: VariableTest#test_variable_render_calls_to_liquid_value_02b7f6ef
-  complexity: 500
+  complexity: 220
   template: "{{ foo }}"
   environment:
     foo:
@@ -194,7 +194,7 @@ specs:
   render_errors: false
   expected: Yay
 - name: VariableTest#test_variable_render_calls_to_liquid_value_4f8b3a7e
-  complexity: 500
+  complexity: 220
   template: "{{ foo | upcase }}"
   environment:
     foo:
@@ -203,7 +203,7 @@ specs:
   render_errors: false
   expected: YAY
 - name: VariableTest#test_variable_render_calls_to_liquid_value_d9a3e842
-  complexity: 500
+  complexity: 220
   template: "{{ foo }}"
   environment:
     foo:
@@ -389,7 +389,7 @@ specs:
   render_errors: false
   expected: Yay
 - name: StandardFiltersTest#test_first_calls_to_liquid_6fc6e7a2
-  complexity: 500
+  complexity: 220
   features: [ruby_drops]
   template: "{{ foo | first }}"
   environment:
@@ -399,7 +399,7 @@ specs:
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L584
 - name: StandardFiltersTest#test_last_calls_to_liquid_a5d8c9b7
-  complexity: 500
+  complexity: 220
   features: [ruby_drops]
   template: "{{ foo | last }}"
   environment:
@@ -409,7 +409,7 @@ specs:
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L585
 - name: VariableTest#test_variable_render_calls_to_liquid_0a0a68b2
-  complexity: 500
+  complexity: 220
   features: [ruby_drops]
   template: "{{ foo }}"
   environment:

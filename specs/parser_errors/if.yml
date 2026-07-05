@@ -4,1060 +4,1060 @@
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-close_round-004
   template: "{% if x and x x == ) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-close_square-003
   template: "{% if x and x x == ] %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-colon-002
   template: "{% if x and x x == : %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comma-001
   template: "{% if x and x x == , %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-009
   template: "{% if x and x x == == %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-010
   template: "{% if x and x x == != %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-011
   template: "{% if x and x x == < %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-012
   template: "{% if x and x x == > %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-013
   template: "{% if x and x x == <= %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-014
   template: "{% if x and x x == >= %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-comparison-015
   template: "{% if x and x x == contains %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-dash-006
   template: "{% if x and x x == - %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-dot-007
   template: "{% if x and x x == . %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-dotdot-008
   template: "{% if x and x x == .. %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-eos-016
   template: "{% if x and x x == %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-ampersand
   template: "{% if x and x x == & %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character &
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-asterisk
   template: "{% if x and x x == * %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character *
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-at
   template: "{% if x and x x == @ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character @
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-backslash
   template: "{% if x and x x == \\ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character \
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-backtick
   template: "{% if x and x x == ` %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character `
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-caret
   template: "{% if x and x x == ^ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ^
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-dollar
   template: "{% if x and x x == $ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character $
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-hash
   template: "{% if x and x x == # %}{% endif %}"
   errors:
     parse_error:
     - 'Unexpected character #'
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-semicolon
   template: "{% if x and x x == ; %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ;
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-tilde
   template: "{% if x and x x == ~ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ~
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-unclosed_double_quote
   template: '{% if x and x x == "hello %}{% endif %}'
   errors:
     parse_error:
     - Unexpected character "
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lexerr-unclosed_single_quote
   template: "{% if x and x x == 'hello %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character '
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-bracket_wrong_content
   template: "{% if x and x x == x[,] %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-dot_number
   template: "{% if x and x x == x.123 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-dot_string
   template: '{% if x and x x == x."y" %}{% endif %}'
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-range_bad_separator
   template: "{% if x and x x == (1, 5) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-range_missing_end
   template: "{% if x and x x == (1..) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-trailing_dot
   template: "{% if x and x x == x. %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-unclosed_bracket
   template: "{% if x and x x == x[0 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-lookup-unclosed_range
   template: "{% if x and x x == (1..5 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-pipe-000
   template: "{% if x and x x == | %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_comparison_rhs-question-005
   template: "{% if x and x x == ? %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-close_round-004
   template: "{% if x and x ) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found close_round
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-close_square-003
   template: "{% if x and x ] %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found close_square
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-colon-002
   template: "{% if x and x : %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found colon
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comma-001
   template: "{% if x and x , %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found comma
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-009
   template: "{% if x and x == %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-010
   template: "{% if x and x != %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-011
   template: "{% if x and x < %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-012
   template: "{% if x and x > %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-013
   template: "{% if x and x <= %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-014
   template: "{% if x and x >= %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-comparison-015
   template: "{% if x and x contains %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-dash-006
   template: "{% if x and x - %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found dash
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-dot-007
   template: "{% if x and x . %}{% endif %}"
   errors:
     parse_error:
     - Expected id but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-dotdot-008
   template: "{% if x and x .. %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found dotdot
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-ampersand
   template: "{% if x and x & %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character &
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-asterisk
   template: "{% if x and x * %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character *
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-at
   template: "{% if x and x @ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character @
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-backslash
   template: "{% if x and x \\ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character \
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-backtick
   template: "{% if x and x ` %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character `
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-caret
   template: "{% if x and x ^ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ^
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-dollar
   template: "{% if x and x $ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character $
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-hash
   template: "{% if x and x # %}{% endif %}"
   errors:
     parse_error:
     - 'Unexpected character #'
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-semicolon
   template: "{% if x and x ; %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ;
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-tilde
   template: "{% if x and x ~ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ~
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-unclosed_double_quote
   template: '{% if x and x "hello %}{% endif %}'
   errors:
     parse_error:
     - Unexpected character "
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lexerr-unclosed_single_quote
   template: "{% if x and x 'hello %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character '
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-bracket_wrong_content
   template: "{% if x and x x[,] %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-dot_number
   template: "{% if x and x x.123 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-dot_string
   template: '{% if x and x x."y" %}{% endif %}'
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-range_bad_separator
   template: "{% if x and x (1, 5) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found open_round
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-range_missing_end
   template: "{% if x and x (1..) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found open_round
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-trailing_dot
   template: "{% if x and x x. %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-unclosed_bracket
   template: "{% if x and x x[0 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-lookup-unclosed_range
   template: "{% if x and x (1..5 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found open_round
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-pipe-000
   template: "{% if x and x | %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found pipe
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_expr-question-005
   template: "{% if x and x ? %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found question
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-eos
   template: "{% if x and %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-ampersand
   template: "{% if x and & %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character &
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-asterisk
   template: "{% if x and * %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character *
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-at
   template: "{% if x and @ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character @
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-backslash
   template: "{% if x and \\ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character \
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-backtick
   template: "{% if x and ` %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character `
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-caret
   template: "{% if x and ^ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ^
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-dollar
   template: "{% if x and $ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character $
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-hash
   template: "{% if x and # %}{% endif %}"
   errors:
     parse_error:
     - 'Unexpected character #'
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-semicolon
   template: "{% if x and ; %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ;
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-tilde
   template: "{% if x and ~ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ~
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-unclosed_double_quote
   template: '{% if x and "hello %}{% endif %}'
   errors:
     parse_error:
     - Unexpected character "
-  complexity: 100
+  complexity: 500
 - name: if-mut-boolean_op-lexerr-unclosed_single_quote
   template: "{% if x and 'hello %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character '
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-bare_bracket
   template: "{% if x == [0] %}{% endif %}"
   errors:
     parse_error:
     - Bare bracket access is not allowed. Use self['...'] instead
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-close_round-004
   template: "{% if x == ) %}{% endif %}"
   errors:
     parse_error:
     - '[:close_round, ")"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-close_square-003
   template: "{% if x == ] %}{% endif %}"
   errors:
     parse_error:
     - '[:close_square, "]"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-colon-002
   template: "{% if x == : %}{% endif %}"
   errors:
     parse_error:
     - '[:colon, ":"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comma-001
   template: "{% if x == , %}{% endif %}"
   errors:
     parse_error:
     - '[:comma, ","] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-009
   template: "{% if x == == %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "=="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-010
   template: "{% if x == != %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "!="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-011
   template: "{% if x == < %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "<"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-012
   template: "{% if x == > %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, ">"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-013
   template: "{% if x == <= %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "<="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-014
   template: "{% if x == >= %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, ">="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-comparison-015
   template: "{% if x == contains %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "contains"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-dash-006
   template: "{% if x == - %}{% endif %}"
   errors:
     parse_error:
     - '[:dash, "-"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-dot-007
   template: "{% if x == . %}{% endif %}"
   errors:
     parse_error:
     - '[:dot, "."] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-dotdot-008
   template: "{% if x == .. %}{% endif %}"
   errors:
     parse_error:
     - '[:dotdot, ".."] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-eos-016
   template: "{% if x == %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-ampersand
   template: "{% if x == & %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character &
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-asterisk
   template: "{% if x == * %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character *
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-at
   template: "{% if x == @ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character @
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-backslash
   template: "{% if x == \\ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character \
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-backtick
   template: "{% if x == ` %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character `
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-caret
   template: "{% if x == ^ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ^
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-dollar
   template: "{% if x == $ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character $
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-hash
   template: "{% if x == # %}{% endif %}"
   errors:
     parse_error:
     - 'Unexpected character #'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-semicolon
   template: "{% if x == ; %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ;
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-tilde
   template: "{% if x == ~ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ~
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-unclosed_double_quote
   template: '{% if x == "hello %}{% endif %}'
   errors:
     parse_error:
     - Unexpected character "
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lexerr-unclosed_single_quote
   template: "{% if x == 'hello %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character '
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-bracket_wrong_content
   template: "{% if x == x[,] %}{% endif %}"
   errors:
     parse_error:
     - '[:comma, ","] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-dot_number
   template: "{% if x == x.123 %}{% endif %}"
   errors:
     parse_error:
     - Expected id but found number
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-dot_string
   template: '{% if x == x."y" %}{% endif %}'
   errors:
     parse_error:
     - Expected id but found string
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-range_bad_separator
   template: "{% if x == (1, 5) %}{% endif %}"
   errors:
     parse_error:
     - Expected dotdot but found comma
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-range_missing_end
   template: "{% if x == (1..) %}{% endif %}"
   errors:
     parse_error:
     - '[:close_round, ")"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-trailing_dot
   template: "{% if x == x. %}{% endif %}"
   errors:
     parse_error:
     - Expected id but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-unclosed_bracket
   template: "{% if x == x[0 %}{% endif %}"
   errors:
     parse_error:
     - Expected close_square but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-lookup-unclosed_range
   template: "{% if x == (1..5 %}{% endif %}"
   errors:
     parse_error:
     - Expected close_round but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-pipe-000
   template: "{% if x == | %}{% endif %}"
   errors:
     parse_error:
     - '[:pipe, "|"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-comparison_rhs-question-005
   template: "{% if x == ? %}{% endif %}"
   errors:
     parse_error:
     - '[:question, "?"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-bare_bracket
   template: "{% if [0] %}{% endif %}"
   errors:
     parse_error:
     - Bare bracket access is not allowed. Use self['...'] instead
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-close_round-004
   template: "{% if ) %}{% endif %}"
   errors:
     parse_error:
     - '[:close_round, ")"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-close_square-003
   template: "{% if ] %}{% endif %}"
   errors:
     parse_error:
     - '[:close_square, "]"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-colon-002
   template: "{% if : %}{% endif %}"
   errors:
     parse_error:
     - '[:colon, ":"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comma-001
   template: "{% if , %}{% endif %}"
   errors:
     parse_error:
     - '[:comma, ","] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-009
   template: "{% if == %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "=="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-010
   template: "{% if != %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "!="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-011
   template: "{% if < %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "<"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-012
   template: "{% if > %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, ">"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-013
   template: "{% if <= %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "<="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-014
   template: "{% if >= %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, ">="] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-comparison-015
   template: "{% if contains %}{% endif %}"
   errors:
     parse_error:
     - '[:comparison, "contains"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-dash-006
   template: "{% if - %}{% endif %}"
   errors:
     parse_error:
     - '[:dash, "-"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-dot-007
   template: "{% if . %}{% endif %}"
   errors:
     parse_error:
     - '[:dot, "."] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-dotdot-008
   template: "{% if .. %}{% endif %}"
   errors:
     parse_error:
     - '[:dotdot, ".."] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-eos-016
   template: "{% if  %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-ampersand
   template: "{% if & %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character &
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-asterisk
   template: "{% if * %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character *
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-at
   template: "{% if @ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character @
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-backslash
   template: "{% if \\ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character \
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-backtick
   template: "{% if ` %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character `
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-caret
   template: "{% if ^ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ^
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-dollar
   template: "{% if $ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character $
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-hash
   template: "{% if # %}{% endif %}"
   errors:
     parse_error:
     - 'Unexpected character #'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-semicolon
   template: "{% if ; %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ;
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-tilde
   template: "{% if ~ %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character ~
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-unclosed_double_quote
   template: '{% if "hello %}{% endif %}'
   errors:
     parse_error:
     - Unexpected character "
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lexerr-unclosed_single_quote
   template: "{% if 'hello %}{% endif %}"
   errors:
     parse_error:
     - Unexpected character '
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-bracket_wrong_content
   template: "{% if x[,] %}{% endif %}"
   errors:
     parse_error:
     - '[:comma, ","] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-dot_number
   template: "{% if x.123 %}{% endif %}"
   errors:
     parse_error:
     - Expected id but found number
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-dot_string
   template: '{% if x."y" %}{% endif %}'
   errors:
     parse_error:
     - Expected id but found string
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-range_bad_separator
   template: "{% if (1, 5) %}{% endif %}"
   errors:
     parse_error:
     - Expected dotdot but found comma
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-range_missing_end
   template: "{% if (1..) %}{% endif %}"
   errors:
     parse_error:
     - '[:close_round, ")"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-trailing_dot
   template: "{% if x. %}{% endif %}"
   errors:
     parse_error:
     - Expected id but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-unclosed_bracket
   template: "{% if x[0 %}{% endif %}"
   errors:
     parse_error:
     - Expected close_square but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-lookup-unclosed_range
   template: "{% if (1..5 %}{% endif %}"
   errors:
     parse_error:
     - Expected close_round but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-pipe-000
   template: "{% if | %}{% endif %}"
   errors:
     parse_error:
     - '[:pipe, "|"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-condition-question-005
   template: "{% if ? %}{% endif %}"
   errors:
     parse_error:
     - '[:question, "?"] is not a valid expression'
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-close_round
   template: "{% if x ) %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found close_round
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-close_square
   template: "{% if x ] %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found close_square
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-colon
   template: "{% if x : %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found colon
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-comma
   template: "{% if x , %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found comma
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-comparison
   template: "{% if x == %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-dash
   template: "{% if x - %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found dash
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-dot
   template: "{% if x . %}{% endif %}"
   errors:
     parse_error:
     - Expected id but found end_of_string
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-id
   template: "{% if x extra %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found id
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-number
   template: "{% if x 42 %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found number
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-open_round
   template: "{% if x ( %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found open_round
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-open_square
   template: "{% if x [ %}{% endif %}"
   errors:
     parse_error:
     - "[:end_of_string] is not a valid expression"
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-pipe
   template: "{% if x | %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found pipe
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-question
   template: "{% if x ? %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found question
-  complexity: 100
+  complexity: 500
 - name: if-mut-end-trail-string
   template: "{% if x 'hi' %}{% endif %}"
   errors:
     parse_error:
     - Expected end_of_string but found string
-  complexity: 100
+  complexity: 500

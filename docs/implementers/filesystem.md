@@ -51,8 +51,14 @@ run on case-insensitive filesystems in production.
 
 ### Extension Handling
 
-The `.liquid` extension is optional in both the template tag and the file
-system key. If omitted, it's appended automatically:
+In liquid-spec fixtures, **always write filesystem keys with the `.liquid` extension**
+(e.g. `foo.liquid`, `snippets/card.liquid`). This keeps specs clear about
+what is a file name versus what is a template lookup string.
+
+Reference liquid still normalizes both sides of lookup for backwards
+compatibility: the `.liquid` extension is optional in the template tag, and
+legacy file-system keys without the extension are normalized by the test
+harness. If omitted, `.liquid` is appended automatically:
 
 | Template tag              | File system key       | Match? |
 |---------------------------|-----------------------|--------|

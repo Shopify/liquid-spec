@@ -128,7 +128,7 @@ specs:
 
 # CountingDrop - tracks access count (state changes during rendering)
 - name: StandardFiltersTest#test_map_calls_to_liquid_ac8bb77d
-  complexity: 300
+  complexity: 220
   features: [runtime_drops]
   template: '{{ foo | map: "whatever" }}'
   environment:
@@ -178,7 +178,7 @@ specs:
 
 # SettingsDrop - dynamic property access via liquid_method_missing
 - name: VariableTest#test_double_nested_variable_lookup_b9f99226
-  complexity: 300
+  complexity: 180
   features: [runtime_drops]
   template: '{{ list[list[settings.zero]]["foo"] }}'
   environment:
@@ -195,7 +195,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L168
 
 - name: VariableTest#test_dynamic_find_var_with_drop_4ca2f954
-  complexity: 300
+  complexity: 180
   features: [runtime_drops]
   template: '{{ [list[settings.zero]["foo"]] }}'
   environment:
@@ -211,7 +211,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L156
 
 - name: VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
-  complexity: 300
+  complexity: 180
   features: [runtime_drops]
   template: "{{ [list[settings.zero]] }}"
   environment:

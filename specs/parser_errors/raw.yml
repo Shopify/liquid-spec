@@ -4,103 +4,103 @@
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-002
   template: "{% raw foo bar %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-003
   template: "{% raw 123 %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-004
   template: "{% raw 'hello' %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-005
   template: "{% raw == %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-006
   template: "{% raw | %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-007
   template: "{% raw @#$ %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-008
   template: "{% raw . %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-009
   template: "{% raw : %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-010
   template: "{% raw x = 1 %}{% endraw %}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-011
   template: "{%- raw foo -%}{%- endraw -%}"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-012
   template: "{% raw foo %}content"
   errors:
     parse_error:
     - Syntax Error in 'raw'
-  complexity: 100
+  complexity: 500
 - name: raw-020
   template: "{% raw %}"
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-021
   template: "{% raw %}some content"
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-022
   template: "{% raw %}{% if true %}{% endif %}"
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-023
   template: "{%- raw -%}content"
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-024
   template: "{% raw %}a{% endraw %}{% raw %}b"
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-025
   template: |-
     hello
@@ -109,16 +109,16 @@
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-026
   template: "{% raw %}{% raw %}content"
   errors:
     parse_error:
     - "'raw' tag was never closed"
-  complexity: 100
+  complexity: 500
 - name: raw-107
   template: "{% endraw %}"
   errors:
     parse_error:
     - Unknown tag 'endraw'
-  complexity: 100
+  complexity: 500
