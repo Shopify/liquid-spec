@@ -1,0 +1,93 @@
+---
+# Scalar lookup and iteration edge rules: property/bracket access on a
+# number is nil, a string iterates as a single-element collection, range
+# endpoints coerce nil to 0, cycle renders literal booleans and advances
+# per invocation, and whitespace trim markers operate on source-adjacent
+# literal text only (they never reach across a preceding tag or into a
+# raw block's output). Discovered via differential fuzzing; validated
+# verbatim against reference liquid.
+
+specs:
+- name: property_access_on_number_returns_nil
+  template: a{{ n.title }}b
+  environment:
+    "n": 5
+  expected: ab
+  complexity: 200
+  hint: |
+    Dotted property access on a number yields nil (rendered as empty), not an
+    error. Only strings, arrays, hashes, and drops expose members; every other
+    type resolves any member access to nil. This keeps `{{ number.anything }}`
+    safe instead of raising a type error.
+- name: bracket_access_on_number_returns_nil
+  template: a{{ n["title"] }}b
+  environment:
+    "n": 5
+  expected: ab
+  complexity: 205
+  hint: |
+    Bracket access on a number (or any scalar that is not a string, array,
+    hash, or drop) yields nil, which renders as empty -- it is not an error.
+    A number does not respond to key lookup, so n["title"] is nil. Resolve
+    property/key access on unsupported types to nil rather than raising.
+- name: for_over_string_yields_whole_string_once
+  template: "{% for c in s %}[{{ c }}]{% endfor %}"
+  environment:
+    s: hi
+  expected: "[hi]"
+  complexity: 200
+  hint: |
+    A String is treated as a single-element collection: {% for c in s %} runs
+    exactly one iteration binding the whole string ("[hi]"), never splitting it
+    into characters. Non-enumerable scalars (numbers, booleans) are not
+    single-element collections and iterate zero times.
+- name: range_literal_nil_endpoint_coerces_to_zero
+  template: "{% for i in (nil..2) %}{{ i }},{% endfor %}"
+  expected: '0,1,2,'
+  complexity: 200
+  hint: |
+    Range endpoints coerce to integers; nil (and any non-numeric value) becomes
+    0. So (nil..2) is the range 0..2 and (nil..nil) is 0..0, a single-element
+    range. A descending coerced range such as (2..nil) == (2..0) yields nothing.
+- name: cycle_renders_literal_booleans_and_advances
+  template: "{% cycle true, false %}{% cycle true, false %}"
+  expected: truefalse
+  complexity: 190
+  hint: |
+    cycle outputs the string form of its current value and advances one position
+    per invocation within a group. Boolean literals render as "true"/"false"
+    (not empty). Unnamed cycles with identical literal argument lists share one
+    counter, so the two invocations here yield "true" then "false".
+- name: raw_output_not_trimmed_by_following_tag
+  template: "{% raw %}a {% endraw %}{%- assign v = 1 -%}"
+  expected: 'a '
+  complexity: 300
+  hint: |
+    Whitespace control ({%- ... -%}) trims literal template text adjacent to the
+    tag, but it does not reach into the rendered output of a preceding
+    {% raw %} block. The trailing space produced by the raw block survives the
+    {%- on the following tag, so the output is "a " (with the space).
+- name: whitespace_trim_does_not_reach_across_preceding_tag
+  template: |-
+    A
+    {% comment %}{% endcomment %}{%- if nil -%}{% endif %}
+  expected: 'A
+
+    '
+  complexity: 210
+  hint: |
+    A left-trim marker ({%-, {{-) strips whitespace only from the literal text
+    node immediately before it in the source. When another tag sits between the
+    text and the trim marker (here {% comment %}{% endcomment %}), there is no
+    adjacent literal text to strip, so the earlier "A\n" is preserved. Trimming
+    is a source-adjacency operation, not a reach-back through rendered output.
+- name: whitespace_trim_preserves_raw_block_content
+  template: "{% raw %}  {% endraw %}{{- nil -}}"
+  expected: "  "
+  complexity: 210
+  hint: |
+    The content emitted by a {% raw %} block is not trimmable literal template
+    text. A following {{- (or {%-) trims only whitespace in the source text
+    adjacent to it; the "  " lives inside the raw block, so it survives. Left/
+    right trim markers never reach into a preceding raw (or comment) block's
+    output.

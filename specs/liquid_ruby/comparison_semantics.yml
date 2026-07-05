@@ -1,0 +1,52 @@
+---
+# Ordering-comparison semantics for mixed operand types. The contract is
+# asymmetric and precise: number-vs-string RAISES (both operands are
+# comparable, the comparison is attempted and fails), while comparisons
+# involving types that are not order-comparable at all (booleans, nil,
+# arrays, hashes) are silently FALSE. Two strings compare
+# lexicographically. Discovered via differential fuzzing; validated
+# verbatim against reference liquid.
+
+specs:
+- name: comparison_of_number_and_string_is_an_error
+  template: '{% if 5 > "x" %}hit{% endif %}'
+  render_errors: true
+  expected: 'Liquid error (line 1): comparison of Integer with String failed'
+  complexity: 520
+  hint: |
+    The ordering operators <, >, <=, >= are only valid between operands that
+    are mutually comparable. A number and a string are NOT: both respond to the
+    operator, so the comparison is attempted and fails, producing
+    "comparison of <NumberClass> with String failed". (Two numbers, or two
+    strings, compare fine.) The if body here is non-blank, so the error text is
+    rendered into the output.
+- name: comparison_with_non_ordered_type_is_false
+  template: "{% if 5 > true %}Y{% else %}N{% endif %}"
+  expected: "N"
+  complexity: 520
+  hint: |
+    Ordering operators (<, >, <=, >=) silently yield false -- with NO error --
+    when either operand is a type that is not order-comparable at all, such as
+    a boolean, nil, an array, or a hash. Only operand pairs where BOTH respond
+    to the operator are actually compared. So `5 > true` is neither an error
+    nor true: it is false, and the else branch runs. (Note the contrast with a
+    number-vs-string comparison, which DOES raise, because a string is
+    order-comparable.)
+- name: strings_compare_lexicographically
+  template: '{% if "apple" < "banana" %}Y{% else %}N{% endif %}'
+  expected: "Y"
+  complexity: 160
+  hint: |
+    The ordering operators <, >, <=, >= work on two strings, comparing them
+    lexicographically (byte/codepoint order), the same way Ruby's String#<=>
+    does. `"apple" < "banana"` is true. String-vs-string comparison must not be
+    rejected as a type error.
+- name: string_less_than_or_equal_ordering
+  template: '{% if "apple" <= "apple" %}yes{% else %}no{% endif %}'
+  expected: 'yes'
+  complexity: 170
+  hint: |
+    The ordering operators <, >, <=, >= work between two strings using
+    lexicographic comparison. Equal strings satisfy <= and >=, so
+    "apple" <= "apple" is true. (Mixed number-vs-string ordering is a different
+    case and raises a comparison error.)

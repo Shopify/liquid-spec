@@ -1,0 +1,111 @@
+---
+# Filter input/argument handling rules: nil-input guards run BEFORE
+# argument coercion (truncate family), non-numeric strings coerce to 0
+# for numeric filters, unknown filters pass their input through
+# unchanged, missing required arguments error, {% assign %} swallows
+# filter render errors (there is no output slot to print them into),
+# and array filters wrap scalars. Discovered via differential fuzzing;
+# validated verbatim against reference liquid.
+
+specs:
+- name: abs_non_numeric_string_is_zero
+  template: '{{ "abc" | abs }}'
+  expected: '0'
+  complexity: 340
+  hint: |
+    The numeric filters abs, ceil, floor, and round coerce their input to a
+    number before operating. A string that does not parse as a number coerces
+    to 0 (not an error, and not the string itself). So abs("abc") = abs(0) = 0.
+    The same rule gives {{ "abc" | ceil }}, {{ "abc" | floor }} and
+    {{ "abc" | round }} all equal to 0.
+- name: ceil_non_numeric_string_is_zero
+  template: '{{ "abc" | ceil }}'
+  expected: '0'
+  complexity: 340
+  hint: |
+    ceil coerces its input to a number first. A non-numeric string parses as 0,
+    so ceil("abc") = 0. Numeric strings still work: {{ "5.1" | ceil }} is 6.
+    abs, floor, and round follow the same coerce-to-number rule.
+- name: truncate_nil_input_skips_length_coercion
+  template: "{{ nil | truncate: nil }}"
+  expected: ''
+  complexity: 500
+  hint: |
+    truncate returns empty immediately when its input is nil, before it looks
+    at the length argument. Because the argument is never coerced, a nil (or
+    otherwise non-numeric) length does NOT raise "invalid integer" here. Only a
+    non-nil input reaches length coercion: {{ "hi" | truncate: nil }} does
+    raise.
+- name: truncatewords_nil_input_skips_length_coercion
+  template: "{{ nil | truncatewords: nil }}"
+  expected: ''
+  complexity: 500
+  hint: |
+    Like truncate, truncatewords short-circuits to empty on nil input before
+    coercing its word-count argument, so a nil argument does not raise. A
+    non-nil input with a non-numeric count still raises "invalid integer".
+- name: filter_missing_required_argument_raises
+  template: '{{ "a-b-c" | split }}'
+  render_errors: true
+  expected: 'Liquid error (line 1): wrong number of arguments (given 1, expected 2)'
+  complexity: 500
+  hint: |
+    A filter with a required positional argument raises a render error when
+    invoked without one; it is not a silent no-op. `split` requires a pattern,
+    so `| split` with no argument fails. The error is caught and rendered
+    inline. (The "given 1" counts the piped input as the first argument.)
+- name: assign_swallows_filter_error
+  template: 'before{% assign v = "x" | truncate: nil %}after[{{ v }}]'
+  expected: beforeafter[]
+  complexity: 500
+  hint: |
+    A filter that raises during the expression of an {% assign %} does not
+    surface an error into the page. The assignment is abandoned, the target
+    variable is left undefined (renders as empty), and rendering continues.
+    Here `truncate: nil` would raise "invalid integer" in an output tag, but
+    inside {% assign %} it is swallowed. This differs from {{ ... }} and
+    {% echo ... %}, which render the "Liquid error: ..." text.
+- name: unknown_filter_returns_input_unchanged
+  template: '{{ "hello" | no_such_filter }}'
+  expected: hello
+  complexity: 200
+  hint: |
+    By default Liquid does not error on an undefined filter: it returns the
+    input unchanged. `no_such_filter` is not registered, so "hello" is emitted
+    as-is. (Environments that opt into strict filters may instead raise; the
+    default and the specs here use lenient passthrough.)
+- name: unknown_filter_on_number_returns_input
+  template: "{{ 42 | made_up_filter }}"
+  expected: '42'
+  complexity: 205
+  hint: |
+    The unknown-filter passthrough is type-agnostic: a non-string input is also
+    returned unchanged. `made_up_filter` is not registered, so the number 42
+    flows through and renders as "42".
+- name: unknown_filter_in_chain_passes_through
+  template: '{{ "hello" | no_such_filter | upcase }}'
+  expected: HELLO
+  complexity: 205
+  hint: |
+    An unrecognized filter passes its input through unchanged, so it composes
+    transparently in a chain: `no_such_filter` leaves "hello" untouched and the
+    following `upcase` sees "hello". Unknown filters are no-ops, not chain
+    breakers.
+- name: array_filter_reverse_wraps_scalar
+  template: "{{ 5 | reverse }}"
+  expected: '5'
+  complexity: 335
+  hint: |
+    Array filters accept a non-array input by treating it as a single-element
+    array. `reverse` of the one-item array [5] is [5], and an array renders by
+    concatenating its elements with no separator, so the output is "5" -- not
+    a bracketed "[5]". The same coercion applies to sort, uniq, and compact.
+- name: array_filter_uniq_wraps_scalar
+  template: '{{ 5 | uniq | join: "," }}'
+  expected: '5'
+  complexity: 330
+  hint: |
+    Filters in the array family (uniq, sort, compact, reverse, first, last,
+    join) wrap a scalar input in a one-element array before operating. Here
+    `uniq` sees [5]; `join` then produces "5". Do not error on a non-array
+    input and do not render the array with brackets.
