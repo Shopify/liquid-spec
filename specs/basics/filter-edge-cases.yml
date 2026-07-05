@@ -107,10 +107,14 @@
   expected: "0"
   complexity: 65
   hint: |
-    Split on an empty string produces an empty array [].
-    In Ruby, "".split(",") returns [], not [""]. This is different
-    from JavaScript where "".split(",") returns [""]. The size of
-    an empty array is 0.
+    QUIRK for JavaScript/Python implementers: Liquid follows Ruby here.
+    Splitting an empty string with a non-empty separator produces an empty
+    array [], not an array containing one empty string. So `"" | split: ','`
+    must evaluate to [], and the following `size` filter must return 0.
+
+    Common pitfall: delegating directly to JavaScript `''.split(',')`, which
+    returns [""] and makes this render "1". Special-case empty input before
+    calling the host language split, or normalize the result to Ruby semantics.
 
 - name: "split_with_empty_delimiter"
   template: "{{ text | split: '' | join: '-' }}"
@@ -220,10 +224,14 @@
   expected: "0"
   complexity: 65
   hint: |
-    Where filters an array by a property value. On an empty array, there
-    are no items to filter, so return empty array. The size of empty is 0.
-    Where should iterate through items, but handle the empty case by
-    returning empty immediately.
+    `where` is an array filter: for each item, read the named property and keep
+    items whose property equals the requested value. For an empty input array,
+    do not treat the input as nil, false, or an error. Return a real empty
+    array [] so the following `size` filter returns 0.
+
+    Common pitfall: implementing `where` only for non-empty arrays and returning
+    nil/empty string for [] input. That may render blank by itself, but it breaks
+    chained filters like `| size` and later `| join`/`| map` combinations.
 
 - name: "where_no_matches"
   template: "{{ items | where: 'active', true | size }}"
@@ -350,9 +358,14 @@
   expected: "0"
   complexity: 65
   hint: |
-    Concat combines two arrays. When both are empty, the result is empty.
-    Concatenating [] + [] produces []. The size of empty is 0. Handle
-    empty arrays by returning a new empty array (don't assume non-empty).
+    `concat` combines two arrays and returns an array. When both operands are
+    empty, the result is a real empty array [], so the following `size` filter
+    returns 0.
+
+    Common pitfall: treating empty arrays as falsy/missing, or rendering them
+    to strings too early. Filters should pass typed values to the next filter in
+    the chain: `a | concat: b` should pass [] to `size`, not "", nil, or a
+    stringified representation.
 
 - name: "prepend_to_empty_string"
   template: "{{ text | prepend: 'start' }}"

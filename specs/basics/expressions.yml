@@ -100,10 +100,16 @@
   expected: "Vancouver"
   complexity: 65
   hint: |
-    Parse multiple chained dot accesses. Build a nested
-    PropertyAccess structure (user -> address -> city).
-    Evaluate left-to-right: resolve user, then access address,
-    then access city. Each step returns an object for the next.
+    Parse dotted paths as ONE variable lookup with multiple path segments, not
+    as separate output expressions. `user.address.city` should become something
+    like base=`user`, lookups=[`address`, `city`]. During evaluation, resolve
+    left-to-right: context[`user`] -> hash key `address` -> hash key `city`.
+
+    Common pitfall: only implementing a single dot (`user.name`) and then
+    treating the rest as raw text or as a property name containing a dot. Hash
+    keys in these specs are Ruby/JSON strings, so lookup `"address"`, not a
+    symbol-only key. If any intermediate value is nil/missing, later specs
+    expect the whole lookup to render as empty rather than crashing.
 
 - name: "bracket_notation_string_literal"
   template: "{{ user['name'] }}"

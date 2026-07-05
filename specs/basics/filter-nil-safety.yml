@@ -108,10 +108,15 @@
   expected: ""
   complexity: 65
   hint: |
-    The join filter combines array elements with a separator. When input
-    is nil, return empty string regardless of separator. Nil is not an
-    array with elements to join, so return "". The separator argument
-    is irrelevant when there's nothing to join.
+    `join` combines array elements with a separator, but nil input is a
+    nil-safety case: return the empty string "" and ignore the separator.
+    Missing variables resolve to nil in Liquid, so `missing | join: ','` should
+    render blank, not raise and not render the separator.
+
+    Common pitfall: blindly calling the host language's join method on nil, or
+    coercing nil to [nil]. The correct Liquid behavior is: if input is nil,
+    short-circuit to ""; otherwise join array elements, rendering nil elements
+    as empty strings in later specs.
 
 - name: "plus_on_nil"
   template: "{{ missing | plus: 5 }}"
