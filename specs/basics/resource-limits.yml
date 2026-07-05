@@ -3,7 +3,7 @@ _metadata:
     Tests for resource limit enforcement during rendering.
     Cumulative scores survive reset() across partial renders,
     preventing unbounded work via many small partials.
-  complexity: 300
+  complexity: 500
   features:
     - core
 

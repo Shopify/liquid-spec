@@ -136,7 +136,7 @@ Subtle, but still part of a serious standard Liquid implementation.
 | Score | Feature | Examples |
 |-------|---------|----------|
 | 230-260 | Advanced lookup and filesystem behavior | Subpaths, dynamic include names, parentloop interactions |
-| 270-320 | Parser/resource/runtime accounting edge cases | Trailing punctuation, strict-mode unknown tags, render-score limits |
+| 270-320 | Parser and syntax edge cases | Trailing punctuation, odd whitespace, strict-mode unknown tags |
 | 330-400 | Obscure filter/type coercion behavior | Hash/array/drop coercions, generated matrix edge cases |
 
 ### 500-900: Compatibility, Legacy, and Deep Edge Cases
@@ -145,7 +145,7 @@ These specs validate mature compatibility. They should not block the first imple
 
 | Score | Feature | Examples |
 |-------|---------|----------|
-| 500 | Parser error mutation/fuzz matrices | Generated malformed syntax cases, precise parse errors |
+| 500 | Parser error mutation/fuzz matrices and resource-limit accounting | Generated malformed syntax cases, precise parse errors, render-score limits |
 | 600 | Recursion and deep partial behavior | Nesting too deep, deep include/render chains |
 | 700 | Security-sensitive/reference quirks | Literal `..` filesystem lookup behavior, surprising compatibility choices |
 | 800 | Date/time and platform-specific quirks | Timezones, invalid date behavior, Ruby-specific `strftime` flags |
@@ -196,8 +196,8 @@ When building a new Liquid implementation, work through specs in complexity orde
 2. **Phase 1 (30-50):** Variables, missing variables, simple filters, assign.
 3. **Phase 2 (55-100):** Basic conditionals, loops, comparisons, capture/case/forloop basics.
 4. **Phase 3 (105-180):** Standard filters, comments/raw, whitespace control, interrupts, collection helpers, cycle/tablerow.
-5. **Phase 4 (190-400):** Partials/filesystem, scope interactions, generated compatibility breadth, resource-limit accounting.
-6. **Phase 5 (500-900):** Parser error matrices, recursion/deep nesting, security/reference quirks, date/time and Ruby compatibility.
+5. **Phase 4 (190-400):** Partials/filesystem, scope interactions, generated compatibility breadth.
+6. **Phase 5 (500-900):** Parser error matrices, resource-limit accounting, recursion/deep nesting, security/reference quirks, date/time and Ruby compatibility.
 7. **Phase 6 (1000):** Production recordings and unscored mature-compatibility checks.
 
 Fix failures in the order they appear. If the first failure is surprising, the spec probably needs a better hint or a higher complexity score.

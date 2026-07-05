@@ -4,6 +4,7 @@ require_relative "test_helper"
 require "json"
 require "open3"
 require "rbconfig"
+require "tempfile"
 
 class RunnerDiagnosticsTest < Minitest::Test
   ROOT = File.expand_path("..", __dir__)
@@ -87,5 +88,31 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_includes stdout, "Error:    SyntaxError: dumb compile boom"
     assert_includes stdout, "Hint: START HERE"
     assert_includes stdout, "Max complexity reached: 0/0"
+  end
+
+  def test_printed_failures_are_lowest_complexity_across_prioritized_and_suite_specs
+    Tempfile.create(["liquid-spec-high-complexity", ".yml"]) do |file|
+      file.write(<<~YML)
+        ---
+        - name: high_added_failure
+          template: "{{ nope }}"
+          expected: "not source echo"
+          complexity: 1000
+          hint: "High-complexity added spec used to verify failure sorting."
+      YML
+      file.close
+
+      stdout, _stderr, status = run_liquid_spec(
+        "source_echo_adapter.rb",
+        "--add-specs", file.path,
+        "-n", "/^(object_string_literal|high_added_failure)$/",
+        "--max-failures", "1"
+      )
+
+      assert_equal 1, status
+      assert_includes stdout, "1) object_string_literal"
+      refute_includes stdout, "1) high_added_failure"
+      assert_includes stdout, "(... 1 more failures not shown due to --max-failures 1 ...)"
+    end
   end
 end

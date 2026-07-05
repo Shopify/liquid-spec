@@ -433,8 +433,8 @@ module Liquid
             | 1 | 30-50 | Variables, missing variables, simple filters, assign |
             | 2 | 55-100 | Basic conditionals, loops, comparisons, capture/case/forloop basics |
             | 3 | 105-180 | Standard filters/tags, comments/raw, whitespace control, interrupts, collection helpers |
-            | 4 | 190-400 | Partials/filesystem, scope interactions, generated compatibility breadth, resource-limit accounting |
-            | 5 | 500-900 | Parser error matrices, recursion/deep nesting, security/date/time/Ruby quirks |
+            | 4 | 190-400 | Partials/filesystem, scope interactions, generated compatibility breadth |
+            | 5 | 500-900 | Parser error matrices, resource-limit accounting, recursion/deep nesting, security/date/time/Ruby quirks |
             | 6 | 1000 | Production recordings and unscored mature-compatibility checks |
 
             ### Complexity Reference

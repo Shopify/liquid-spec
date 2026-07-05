@@ -5,7 +5,7 @@ require_relative "test_helper"
 
 class SpecQualityTest < Minitest::Test
   EARLY_HINT_CEILING = 220
-  RESOURCE_LIMIT_FLOOR = 250
+  RESOURCE_LIMIT_FLOOR = 500
   COMPLEXITY_CEILING = 1000
 
   def all_specs

@@ -433,8 +433,8 @@ Each spec should have a `complexity` field indicating implementation difficulty.
 | 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
 | 105-150 | Common filters/tags: string filters, comment/raw, increment, interrupts, loop modifiers, whitespace control |
 | 160-220 | Generated filter breadth, truthy/falsy edge cases, cycle/tablerow, first partials/filesystem, Ruby/reference quirks |
-| 230-400 | Long-tail standard behavior: advanced lookup, parser edge cases, scope/filesystem interactions, resource-limit accounting |
-| 500-900 | Mature compatibility: parser mutation matrices, recursion/deep nesting, security-sensitive quirks, date/time/Ruby quirks |
+| 230-400 | Long-tail standard behavior: advanced lookup, parser edge cases, scope/filesystem interactions |
+| 500-900 | Mature compatibility: parser mutation matrices, resource-limit accounting, recursion/deep nesting, security-sensitive quirks, date/time/Ruby quirks |
 | 1000 | Production recordings and unscored specs (default) |
 
 See [`liquid-spec docs complexity`](`liquid-spec docs complexity`) for the full guide with examples.

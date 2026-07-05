@@ -15,7 +15,7 @@ module Liquid
         # Time used for all spec runs (matches liquid test suite)
         TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
         TEST_TZ = "UTC"
-        MAX_FAILURES_DEFAULT = 10
+        MAX_FAILURES_DEFAULT = 5
         RESULTS_LOG_DIR = "/tmp"
 
         # Manages known failure patterns (exact match only)
@@ -1373,9 +1373,9 @@ module Liquid
               max_possible_complexity: max_possible_complexity,
               missing_features: missing_features.map(&:to_s),
               skipped_suites: skipped_suites,
-              failures: failures.map { |entry| run_entry_json(entry) },
-              known_failures: known_failures.map { |entry| run_entry_json(entry) },
-              known_fixed: known_fixed.map { |entry| run_entry_json(entry) },
+              failures: sort_result_entries(failures).map { |entry| run_entry_json(entry) },
+              known_failures: sort_result_entries(known_failures).map { |entry| run_entry_json(entry) },
+              known_fixed: sort_result_entries(known_fixed).map { |entry| run_entry_json(entry) },
             }
             payload[:passed] = passed_specs.map { |entry| run_entry_json(entry) } if passed_specs.any?
 
@@ -1404,6 +1404,19 @@ module Liquid
             data
           end
 
+          def sort_result_entries(entries)
+            entries.sort_by do |entry|
+              spec = entry[:spec]
+              [
+                spec.complexity || 1000,
+                entry[:suite].to_s,
+                spec.source_file.to_s,
+                spec.line_number || 0,
+                spec.name.to_s,
+              ]
+            end
+          end
+
           def print_failures(failures, max_failures = nil)
             return if failures.empty?
 
@@ -1412,11 +1425,12 @@ module Liquid
             puts ""
 
             shown_hints = Set.new
+            sorted_failures = sort_result_entries(failures)
 
             # Determine how many to print
-            print_count = max_failures ? [failures.size, max_failures].min : failures.size
+            print_count = max_failures ? [sorted_failures.size, max_failures].min : sorted_failures.size
 
-            failures.first(print_count).each_with_index do |f, i|
+            sorted_failures.first(print_count).each_with_index do |f, i|
               spec = f[:spec]
               result = f[:result]
 
@@ -1464,8 +1478,8 @@ module Liquid
             end
 
             # Show truncation message if we limited output
-            if max_failures && failures.size > max_failures
-              puts "\e[2m(... #{failures.size - max_failures} more failures not shown due to --max-failures #{max_failures} ...)\e[0m"
+            if max_failures && sorted_failures.size > max_failures
+              puts "\e[2m(... #{sorted_failures.size - max_failures} more failures not shown due to --max-failures #{max_failures} ...)\e[0m"
               puts ""
             end
           end
