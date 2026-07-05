@@ -400,80 +400,52 @@ module Liquid
                argue.** When an expectation looks insane, it is usually a real, documented
                quirk: read the spec's hint, then `QUIRKS.md` in the liquid-spec repository.
                Liquid has many deliberate oddities (they are what "compatible" means).
-            3. **Use `missing_features` honestly.** It exists for platform surface you are
-               deliberately not building (e.g. Shopify-specific filters), not for dodging
-               hard specs. Every entry is debt that keeps specs from running.
+            3. **Use `missing_features` honestly.** It exists for surface you are
+               deliberately not building — `shopify_*` features (needed only to render
+               Shopify themes) and legacy parse modes are the legitimate entries. It is
+               not for dodging hard specs; every entry is debt that keeps specs from
+               running.
             4. **Never delete or edit specs to make them pass.**
             5. **Keep your engine's behavior in ONE place per rule.** If you find yourself
                patching the same symptom at several call sites, you modeled the rule at the
                wrong layer.
 
-            ## The error model (read this before complexity 100)
+            ## Error modes: build for strict2 (read this before complexity 100)
 
-            More failed climbs die on error handling than on any feature. Liquid has two
-            independent dials, and specs exercise both:
+            **Target `:strict2` from the start** — it is the modern parser contract
+            (Liquid 5.12+) and the adapters generated here default to it. The legacy
+            parse modes exist only for compatibility:
 
-            **1. Parse-time: `error_mode`** (an option your `compile` receives)
-            - `:lax` — recover from almost anything; garbage markup often renders as text.
-            - `:strict` — malformed syntax raises a parse error.
-            - `:strict2` — stricter still (e.g. bare bracket access `{{ [x] }}` is
-              rejected; the spec suite documents each strict2-only rule).
-            - Parse errors render as `Liquid syntax error (line N): <message>` or are
-              raised, depending on harness settings — specs that expect them say so.
+            - `:strict` / `:lax` — implement these ONLY if compatibility with older
+              Liquid or Shopify production behavior matters to you. Until then, let the
+              specs that target those modes skip; do not contort your parser around
+              them. (One example of what lives there: lax mode suppresses the error
+              TEXT of blank-bodied tags — a backwards-compatibility quirk with its own
+              spec suite whose hints explain it if and when you take it on.)
+            - `shopify_*` feature-gated specs (Shopify platform filters and tags)
+              matter only if you want to render Shopify themes. Declare them in
+              `missing_features` until that is a goal.
 
-            **2. Render-time errors**
-            - Undefined variables are NOT errors: they render as empty string and lookups
-              on them return nil. (`{{ missing }}` → ``, `{{ missing.a.b }}` → ``.)
+            Render-time error rules apply in every mode — get these right early:
+
+            - Undefined variables are NOT errors: they render as empty string and
+              lookups on them return nil. (`{{ missing }}` → ``, `{{ missing.a.b }}` → ``.)
             - Real runtime errors (bad comparison, invalid filter argument, ...) render
               inline as `Liquid error (line N): <message>` when the spec sets
-              `render_errors: true`; otherwise rendering raises. Match the message TEXT —
-              specs pin it.
-            - `{% assign x = <erroring filter> %}` swallows the error text (there is no
-              output slot); the error is recorded but nothing prints.
-            - **Blank-body suppression:** a block tag whose entire body is blank
-              (whitespace/comments/assigns/captures) suppresses its render-error TEXT in
-              `:lax` mode — the condition still evaluates and strict rendering still
-              raises. In `:strict`/`:strict2` the text surfaces. The full matrix is in the
-              `blank_body_error_handling` specs; implement it once, early.
-            - Unknown filters are no-ops: `{{ 5 | no_such_filter }}` → `5`.
-
-            ## Semantics that surprise every implementer
-
-            Learned the hard way (differential fuzzing against reference); each has specs:
-
-            - **Truthiness:** only `false` and `nil` are falsy. `0`, `""`, and `[]` are all
-              truthy. `empty`/`blank` are special comparison literals, not values.
-            - **`case` has NO break.** Every matching `when` clause renders, in order; a
-              duplicated value in one clause renders the body once per match; `else` runs
-              only if nothing matched. The per-match renders are real (stateful tags like
-              `cycle` advance each time).
-            - **Comparisons are asymmetric:** two strings compare lexicographically;
-              number-vs-string RAISES ("comparison of Integer with String failed");
-              ordering against bool/nil/array/hash is silently FALSE. Implement all three
-              branches — over-generalizing any one of them fails specs.
-            - **Number output:** integers print bare (`1`), floats keep their point
-              (`1.0`); `/` does not exist — math is filters (`plus`, `divided_by`, ...) and
-              integer division truncates while float division doesn't.
-            - **Filters coerce before they compute** — but nil-input guards run FIRST:
-              `nil | truncate: nil` is `""`, never an "invalid integer" error. Non-numeric
-              strings coerce to 0 for numeric filters. Array filters (`uniq`, `reverse`,
-              `sort`, ...) wrap scalars into one-element arrays.
-            - **Property access on scalars is nil** (`{{ 5.title }}` → ``), with a handful
-              of special keys (`size`, `first`, `last`) that DO work on some types — see
-              `liquid-spec docs core-abstractions` and QUIRKS for the size oddities.
-            - **Iteration:** `{% for c in "hi" %}` yields the WHOLE string once (strings
-              are single-element collections); hashes yield `[key, value]` pairs; range
-              endpoints coerce (`(nil..2)` is `(0..2)`).
-            - **Whitespace control is source-adjacency:** `{%-`/`{{-` strip whitespace
-              only from the literal text node touching them in the SOURCE. They never
-              reach across another tag or into a `{% raw %}` block's output.
-            - **`forloop`** carries index/index0/rindex/first/last/length and, when loops
-              nest, `parentloop`. Get `offset:`/`limit:`/`reversed` and
-              `offset: continue` right from the guide, not by trial and error.
+              `render_errors: true`; otherwise rendering raises. Match the message
+              TEXT — specs pin it.
+            - Parse errors render as `Liquid syntax error (line N): <message>` or
+              raise; specs that expect them say so.
+            - When a failing spec's expected output surprises you, the rule you are
+              missing is almost always stated in its `hint:` — the suite is designed
+              to teach the semantics just-in-time, in complexity order. Read the hint
+              before reading anything else.
 
             ## Documentation
 
-            Run `liquid-spec docs <name>` (works from this directory; no paths needed):
+            All implementer guides are served by the CLI — `liquid-spec docs` lists
+            them, `liquid-spec docs <name>` prints one (works from this directory; no
+            paths or checkouts needed):
 
             | `liquid-spec docs ...` | What it explains |
             |---|---|
