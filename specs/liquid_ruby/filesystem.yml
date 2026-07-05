@@ -1,0 +1,326 @@
+---
+_metadata:
+  hint: |
+    These specs test filesystem-based partial template lookup for
+    {% include %} and {% render %}. See `liquid-spec docs filesystem` for
+    a full explanation of extension handling, case sensitivity, and path
+    traversal behavior.
+specs:
+
+# =============================================================================
+# GENTLE INTRO: The simplest possible filesystem spec (1 lower complexity)
+# =============================================================================
+
+- name: fs_intro_include_simple
+  template: "{% include 'greeting' %}"
+  filesystem:
+    greeting.liquid: "Hello from partial!"
+  expected: "Hello from partial!"
+  complexity: 189
+  hint: |
+    The simplest filesystem test: {% include 'greeting' %} looks up
+    'greeting' in the filesystem, finds 'greeting.liquid', and renders it.
+
+    The filesystem is a hash mapping template names to their content.
+    The .liquid extension is automatically appended if not present.
+
+    See `liquid-spec docs filesystem` for full documentation on how
+    template name lookup works, including extension handling, case
+    sensitivity, and path traversal behavior.
+
+# =============================================================================
+# Extension handling
+# =============================================================================
+
+- name: fs_include_with_liquid_extension
+  template: "{% include 'foo.liquid' %}"
+  filesystem:
+    foo.liquid: "With ext"
+  expected: "With ext"
+  complexity: 190
+  hint: |
+    Including with the .liquid extension explicitly works fine.
+    The name "foo.liquid" is looked up as-is (already has extension).
+
+- name: fs_include_without_liquid_extension
+  template: "{% include 'foo' %}"
+  filesystem:
+    foo.liquid: "Without ext"
+  expected: "Without ext"
+  complexity: 190
+  hint: |
+    Including without .liquid: the extension is appended automatically.
+    "foo" becomes "foo.liquid" for lookup.
+
+- name: fs_include_bare_key_no_extension
+  template: "{% include 'foo' %}"
+  filesystem:
+    foo: "Bare key"
+  expected: "Bare key"
+  complexity: 190
+  hint: |
+    The filesystem key "foo" (without .liquid) is normalized to "foo.liquid"
+    when the filesystem is built. So {% include 'foo' %} matches.
+
+- name: fs_render_with_liquid_extension
+  template: "{% render 'foo.liquid' %}"
+  filesystem:
+    foo.liquid: "Render with ext"
+  expected: "Render with ext"
+  complexity: 190
+  hint: |
+    {% render %} with explicit .liquid extension works the same as include.
+
+- name: fs_render_without_liquid_extension
+  template: "{% render 'foo' %}"
+  filesystem:
+    foo.liquid: "Render without ext"
+  expected: "Render without ext"
+  complexity: 190
+  hint: |
+    {% render %} also appends .liquid automatically, same as include.
+
+- name: fs_render_bare_key_no_extension
+  template: "{% render 'foo' %}"
+  filesystem:
+    foo: "Render bare key"
+  expected: "Render bare key"
+  complexity: 190
+  hint: |
+    Filesystem keys are normalized on both sides. "foo" key becomes
+    "foo.liquid", and {% render 'foo' %} looks for "foo.liquid".
+
+# =============================================================================
+# Subpaths
+# =============================================================================
+
+- name: fs_subpath_without_extension
+  template: "{% include 'snippets/header' %}"
+  filesystem:
+    snippets/header.liquid: "Header from subpath"
+  expected: "Header from subpath"
+  complexity: 190
+  hint: |
+    Forward-slash subpaths are preserved. "snippets/header" becomes
+    "snippets/header.liquid". The key must include the full path.
+
+- name: fs_subpath_with_extension
+  template: "{% include 'snippets/header.liquid' %}"
+  filesystem:
+    snippets/header.liquid: "Header with ext"
+  expected: "Header with ext"
+  complexity: 190
+  hint: |
+    Subpaths with explicit .liquid extension work the same way.
+
+- name: fs_subpath_bare_key
+  template: "{% include 'snippets/header' %}"
+  filesystem:
+    snippets/header: "Header bare subpath key"
+  expected: "Header bare subpath key"
+  complexity: 190
+  hint: |
+    Subpath keys without .liquid are also normalized. "snippets/header"
+    becomes "snippets/header.liquid".
+
+- name: fs_subpath_render
+  template: "{% render 'sections/product-card' %}"
+  filesystem:
+    sections/product-card.liquid: "Product card"
+  expected: "Product card"
+  complexity: 190
+  hint: |
+    {% render %} supports subpaths too, same normalization as include.
+
+- name: fs_deep_subpath
+  template: "{% include 'a/b/c/d/deep' %}"
+  filesystem:
+    a/b/c/d/deep.liquid: "Deep!"
+  expected: "Deep!"
+  complexity: 190
+  hint: |
+    Multi-level subpaths work. "a/b/c/d/deep" → "a/b/c/d/deep.liquid".
+
+# =============================================================================
+# Case sensitivity
+# =============================================================================
+
+- name: fs_case_upper_template_lower_key
+  template: "{% include 'FOO' %}"
+  filesystem:
+    foo.liquid: "Case match"
+  expected: "Case match"
+  complexity: 190
+  hint: |
+    Template lookup is CASE-INSENSITIVE. "FOO" is lowercased to "foo"
+    and matches "foo.liquid". This matches Shopify's case-insensitive
+    production filesystems.
+
+- name: fs_case_lower_template_upper_key
+  template: "{% include 'foo' %}"
+  filesystem:
+    FOO.liquid: "Upper key match"
+  expected: "Upper key match"
+  complexity: 190
+  hint: |
+    Keys are also lowercased when the filesystem is built. "FOO.liquid"
+    is stored as "foo.liquid", so {% include 'foo' %} matches.
+
+- name: fs_case_mixed_case
+  template: "{% include 'MySnippet' %}"
+  filesystem:
+    mysnippet.liquid: "Mixed case"
+  expected: "Mixed case"
+  complexity: 190
+  hint: |
+    Mixed case "MySnippet" is lowercased to "mysnippet" and matches
+    "mysnippet.liquid".
+
+- name: fs_case_mixed_key
+  template: "{% include 'mysnippet' %}"
+  filesystem:
+    MySnippet.liquid: "Mixed key"
+  expected: "Mixed key"
+  complexity: 190
+  hint: |
+    Mixed-case keys are lowercased on build. "MySnippet.liquid" → "mysnippet".
+
+- name: fs_case_subpath_mixed
+  template: "{% include 'Snippets/Header' %}"
+  filesystem:
+    snippets/header.liquid: "Subpath case"
+  expected: "Subpath case"
+  complexity: 190
+  hint: |
+    Case-insensitivity applies to subpaths too. "Snippets/Header" →
+    "snippets/header.liquid".
+
+# =============================================================================
+# Path traversal (..)
+# =============================================================================
+
+- name: fs_dotdot_direct
+  template: "{% include '../secret' %}"
+  filesystem:
+    ../secret.liquid: "Secret"
+  expected: "Secret"
+  complexity: 190
+  hint: |
+    QUIRK: Path traversal with .. is NOT sanitized. "../secret" is looked
+    up literally as "../secret.liquid". The filesystem does not normalize
+    or block directory traversal. Production implementations should add
+    their own security checks.
+
+- name: fs_dotdot_in_path_not_normalized
+  template: "{% include 'foo/../bar' %}"
+  filesystem:
+    foo/../bar.liquid: "Not normalized"
+  expected: "Not normalized"
+  complexity: 190
+  hint: |
+    QUIRK: "foo/../bar" is NOT normalized to "bar". The literal path
+    "foo/../bar.liquid" is looked up. Path normalization is the
+    filesystem implementation's responsibility, not Liquid's.
+
+- name: fs_dotdot_does_not_match_normalized
+  template: "{% include 'foo/../bar' %}"
+  filesystem:
+    bar.liquid: "Bar only"
+  expected: "Liquid error: Could not find asset foo/../bar"
+  complexity: 190
+  render_errors: true
+  hint: |
+    "foo/../bar" does NOT match "bar.liquid" because no path normalization
+    occurs. The lookup is for the literal "foo/../bar.liquid".
+
+# =============================================================================
+# Not found
+# =============================================================================
+
+- name: fs_not_found_inline
+  template: "{% include 'missing' %}"
+  filesystem:
+    foo.liquid: "Exists"
+  expected: "Liquid error: Could not find asset missing"
+  complexity: 190
+  render_errors: true
+  hint: |
+    When a template is not found, the error is rendered inline as
+    "Liquid error: Could not find asset <name>". The name in the error
+    is the ORIGINAL path, not the normalized one.
+
+- name: fs_not_found_render_inline
+  template: "{% render 'missing' %}"
+  filesystem:
+    foo.liquid: "Exists"
+  expected: "Liquid error: Could not find asset missing"
+  complexity: 190
+  render_errors: true
+  hint: |
+    {% render %} produces the same not-found error as {% include %}.
+
+- name: fs_not_found_empty_filesystem
+  template: "{% include 'foo' %}"
+  filesystem: {}
+  expected: "Liquid error: Could not find asset foo"
+  complexity: 190
+  render_errors: true
+  hint: |
+    An empty filesystem {} means "filesystem exists but has no templates".
+    Any lookup will fail with the not-found error.
+
+# =============================================================================
+# include vs render: variable template names
+# =============================================================================
+
+- name: fs_include_variable_name
+  template: "{% assign s = 'foo' %}{% include s %}"
+  filesystem:
+    foo.liquid: "Var include"
+  expected: "Var include"
+  complexity: 190
+  hint: |
+    {% include %} accepts a variable as the template name. The variable's
+    value is used for the filesystem lookup.
+
+- name: fs_render_variable_name_error
+  template: "{% assign s = 'foo' %}{% render s %}"
+  filesystem:
+    foo.liquid: "Var render"
+  errors:
+    parse_error:
+    - SyntaxError
+    - Template name must be a quoted string
+  complexity: 190
+  hint: |
+    {% render %} does NOT accept variables — the template name must be a
+    quoted string literal. Using a variable is a parse error.
+    Error class: SyntaxError. Message contains "Template name must be a quoted string".
+
+# =============================================================================
+# Nesting
+# =============================================================================
+
+- name: fs_nested_3_levels
+  template: "{% include 'a' %}"
+  filesystem:
+    a.liquid: "{% include 'b' %}"
+    b.liquid: "{% include 'c' %}"
+    c.liquid: "Deep!"
+  expected: "Deep!"
+  complexity: 190
+  hint: |
+    Nested includes work to any reasonable depth. Each level does its own
+    filesystem lookup.
+
+- name: fs_self_recursive_nesting_too_deep
+  template: "{% include 'loop' %}"
+  filesystem:
+    loop.liquid: "{% include 'loop' %}"
+  expected: "Liquid error: Nesting too deep"
+  complexity: 190
+  render_errors: true
+  hint: |
+    Self-referencing partials are caught at render time. Liquid tracks
+    nesting depth and aborts with "Nesting too deep" before infinite
+    recursion occurs.
