@@ -931,7 +931,10 @@ specs:
   complexity: 100
   hint: |
     case/when is a switch statement. case takes a value, when defines matches.
-    When x equals 1, the "one" block executes. Only one when block runs.
+    When x equals 1, the "one" block executes. Note that case has NO break:
+    when the subject matches several when clauses (or a repeated value inside
+    one clause), EVERY matching body renders in order — see the
+    case_when_matching specs. Here only one clause matches, so one body runs.
 - name: case_no_match
   template: "{% case x %}{% when 1 %}one{% when 2 %}two{% endcase %}"
   environment:

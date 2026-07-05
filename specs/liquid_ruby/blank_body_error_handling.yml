@@ -1,0 +1,192 @@
+---
+# Blank-body render-error handling — the full contract, so that no
+# implementation can leave this undefined.
+#
+# THE RULE: a block tag (if/unless/case/for/tablerow) whose ENTIRE body — every
+# branch — is blank (whitespace-only text, comments, assigns, captures, nested
+# blank blocks) suppresses the TEXT of any render error raised while evaluating
+# it. The condition/collection IS evaluated: the error is recorded on the
+# template (template.errors) and strict rendering (render!) still raises.
+# Only the inline "Liquid error (...)" output text is suppressed. Output
+# variables ({{ ... }}, {% echo %}) are never blank, so their errors always
+# print.
+#
+# MODE MATRIX (decided 2026-07-05): suppression is a LAX-MODE compatibility
+# behavior. In strict and strict2 the error text must SURFACE even for blank
+# bodies — silent failure of an erroring condition is not acceptable in the
+# strict modes. NOTE: reference liquid currently suppresses in every parse
+# mode (BlockBody.rescue_render_node's `unless blank_tag` guard, kept for
+# backwards compatibility); the strict/strict2 specs below therefore define
+# required behavior beyond current reference conformance.
+#
+# All lax expectations in this file were validated verbatim against reference
+# liquid (line_numbers: true).
+
+specs:
+
+# ── The lax rule ────────────────────────────────────────────────────────────
+
+- name: blank_if_body_suppresses_error_text_lax
+  template: "{% if 5 > \"x\" %}{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: ""
+  complexity: 700
+  hint: |
+    In lax mode an if whose body is empty is a blank tag: the condition is
+    still evaluated and `5 > "x"` still raises a comparison error (strict
+    rendering raises; the error is recorded on the template), but the
+    "Liquid error (...)" text is NOT written to the output. Backwards-
+    compatibility behavior: an erroring condition on an invisible tag stays
+    invisible.
+
+- name: blank_unless_body_suppresses_error_text_lax
+  template: "{% unless 5 > \"x\" %} {% endunless %}"
+  error_mode: :lax
+  render_errors: true
+  expected: ""
+  complexity: 700
+  hint: |
+    Whitespace-only bodies are blank. The unless condition errors, the error
+    is recorded, and nothing — neither body nor error text — reaches the
+    output in lax mode.
+
+- name: blank_for_body_suppresses_error_text_lax
+  template: "{% for i in (1..3) offset: xs %}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: :lax
+  render_errors: true
+  expected: ""
+  complexity: 700
+  hint: |
+    The rule covers every block tag, not just conditionals: a for loop whose
+    body is blank suppresses its render-error text too. Here the non-numeric
+    offset raises "invalid integer", which is recorded but not printed. With
+    any visible body content the same template prints
+    "Liquid error (line 1): invalid integer".
+
+- name: nonblank_for_body_shows_error_text_lax
+  template: "{% for i in (1..3) offset: xs %}{{ i }}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: :lax
+  render_errors: true
+  expected: "Liquid error (line 1): invalid integer"
+  complexity: 700
+  hint: |
+    The counterpart: one output variable in the body makes the for loop
+    non-blank, and the identical offset error now renders its text.
+
+# ── What counts as blank ────────────────────────────────────────────────────
+
+- name: assign_body_is_blank_lax
+  template: "{% if 5 > \"x\" %}{% assign a = 1 %}{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: ""
+  complexity: 700
+  hint: |
+    {% assign %} produces no output and counts as blank, so a body containing
+    only assigns is a blank body: the error text is suppressed. Blankness is
+    about visible output, not about emptiness.
+
+- name: comment_body_is_blank_lax
+  template: "{% if 5 > \"x\" %}{% comment %}c{% endcomment %}{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: ""
+  complexity: 700
+  hint: |
+    Comments are blank. A body of comments (or captures, or whitespace, or
+    nested blocks that are themselves blank) keeps the tag blank.
+
+- name: capture_body_is_blank_lax
+  template: "{% if 5 > \"x\" %}{% capture c %}text{% endcapture %}{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: ""
+  complexity: 700
+  hint: |
+    {% capture %} writes to a variable, not to the output, so it is blank —
+    even though its inner body contains visible text.
+
+- name: echo_body_is_not_blank_lax
+  template: "{% if 5 > \"x\" %}{% echo 1 %}{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 700
+  hint: |
+    {% echo %} produces output, so the body is not blank and the error text
+    renders. Output variables are never blank.
+
+- name: empty_output_body_is_not_blank_lax
+  template: "{% if 5 > \"x\" %}{{ \"\" }}{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 700
+  hint: |
+    Blankness is decided at parse time by node KIND, not by what the node
+    would render: {{ "" }} renders nothing, but an output variable is never
+    blank, so the tag is non-blank and the error text appears.
+
+- name: nonblank_else_branch_makes_tag_nonblank_lax
+  template: "{% if 5 > \"x\" %}{% else %}E{% endif %}"
+  error_mode: :lax
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 700
+  hint: |
+    EVERY branch counts: a visible else body makes the whole if non-blank,
+    so the condition's error text renders (and neither branch body does).
+
+# ── Evaluation still happens ────────────────────────────────────────────────
+
+- name: blank_body_condition_still_evaluated_lax
+  template: "{% if 1 < 2 %}{% assign a = 7 %}{% endif %}{{ a }}"
+  error_mode: :lax
+  expected: "7"
+  complexity: 700
+  hint: |
+    Blank tags are not skipped — they render invisibly. A true condition
+    still executes the (blank) body, so the assign takes effect. Only the
+    ERROR TEXT of a blank tag is suppressed; evaluation and side effects are
+    unchanged.
+
+# ── Strict modes: suppression does NOT apply ────────────────────────────────
+
+- name: blank_if_body_shows_error_text_strict
+  template: "{% if 5 > \"x\" %}{% endif %}"
+  error_mode: :strict
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    In strict mode the blank-body suppression does NOT apply: an erroring
+    condition surfaces its error text even when the body is blank. Silent
+    failure is a lax-only compatibility behavior. (Reference liquid currently
+    suppresses here too — this spec defines the required strict behavior.)
+
+- name: blank_for_body_shows_error_text_strict
+  template: "{% for i in (1..3) offset: xs %}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: :strict
+  render_errors: true
+  expected: "Liquid error (line 1): invalid integer"
+  complexity: 750
+  hint: |
+    Same rule for loops: strict mode surfaces the invalid-offset error even
+    with a blank body.
+
+- name: blank_if_body_shows_error_text_strict2
+  template: "{% if 5 > \"x\" %}{% endif %}"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    strict2 follows strict: no blank-body suppression. Every erroring
+    condition is visible.

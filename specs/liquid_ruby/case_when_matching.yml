@@ -1,0 +1,46 @@
+---
+# case/when matching semantics: case has NO break. Each when-VALUE is an
+# independent match condition, evaluated in order; every match renders the
+# body. else runs only when nothing before it matched. (Reference builds one
+# condition block per when value and iterates all of them —
+# Liquid::Case#render_to_output_buffer.)
+#
+# Discovered via differential fuzzing (all four independent triage passes
+# converged on this rule); validated verbatim against reference liquid.
+
+specs:
+
+- name: case_evaluates_all_when_clauses_without_break
+  template: "{% case \"a\" %}{% when \"a\" %}1{% when \"a\" %}2{% else %}E{% endcase %}"
+  expected: "12"
+  complexity: 520
+  hint: |
+    case does NOT stop at the first matching when clause. Every when clause
+    whose value matches the case subject renders its body, in order — there is
+    no break. Here both `when "a"` clauses match, so the output is "12". The
+    else clause runs only when NO when clause matched at all (so it is skipped
+    here). This surprises implementers who model case as a switch that stops
+    on the first hit.
+
+- name: case_repeats_body_for_each_matching_when_value
+  template: "{% case \"a\" %}{% when \"a\", \"a\" %}M{% endcase %}"
+  expected: "MM"
+  complexity: 520
+  hint: |
+    Inside one when clause, each comma-separated value is matched
+    independently, and the body is rendered once PER matching value. A when
+    clause listing the same (or otherwise duplicate-matching) value twice
+    renders its body twice: `{% when "a", "a" %}` against subject "a" outputs
+    "MM". A comma-separated when list is a set of independent conditions, not
+    a membership test.
+
+- name: case_body_state_advances_per_matching_render
+  template: "{% case nil %}{% when nil, nil %}{% cycle 0.0 %}{% endcase %}"
+  expected: "0.00.0"
+  complexity: 540
+  hint: |
+    The per-match renders are real renders, not repeats of one buffer:
+    stateful tags advance each time. A cycle inside a body that matches twice
+    emits two values from its sequence (here the single-entry cycle "0.0"
+    twice). Implementations that render the body once and duplicate the
+    output would still pass the simpler specs above but fail this one.
