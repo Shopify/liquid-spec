@@ -113,6 +113,7 @@ class RunnerDiagnosticsTest < Minitest::Test
       assert_includes stdout, "1) object_string_literal"
       refute_includes stdout, "1) high_added_failure"
       assert_includes stdout, "(... 1 more failures not shown due to --max-failures 1 ...)"
+      assert_includes stdout, "Failures are ordered by complexity. Solve above failures first."
     end
   end
 end

@@ -1480,6 +1480,7 @@ module Liquid
             # Show truncation message if we limited output
             if max_failures && sorted_failures.size > max_failures
               puts "\e[2m(... #{sorted_failures.size - max_failures} more failures not shown due to --max-failures #{max_failures} ...)\e[0m"
+              puts "\e[2mFailures are ordered by complexity. Solve above failures first.\e[0m"
               puts ""
             end
           end
