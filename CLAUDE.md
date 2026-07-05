@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Project Is
 
-liquid-spec is a test suite and CLI for testing Liquid template implementations. It captures test cases from the reference Shopify/liquid implementation and can verify that any Liquid implementation produces correct output.
+liquid-spec is a test suite and CLI for testing Liquid template implementations. Its purpose is to act as a harness for the gradual construction of a full, production-ready Liquid implementation: start with trivial passthrough specs, then progressively add variables, filters, control flow, partials, compatibility quirks, and finally production/theme recordings. It captures test cases from the reference Shopify/liquid implementation and can verify that any Liquid implementation produces correct output.
 
 ## CLI Usage
 
@@ -37,6 +37,25 @@ liquid-spec my_adapter.rb -l
 # List available suites
 liquid-spec my_adapter.rb --list-suites
 ```
+
+
+### Dumb Adapter Ramp Audits
+
+When changing early complexity scores or adding beginner specs, play dumb and verify the harness still behaves like an implementation curriculum:
+
+```bash
+# Source echo adapter: should pass only raw text, then fail on first object output
+liquid-spec /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
+
+# Always-empty adapter: may pass many empty-output specs accidentally; check max complexity
+liquid-spec /tmp/empty_adapter.rb -s basics --json --list-passed > /tmp/empty-results.json
+
+# Always-raise adapters: should fail at complexity 0 with clear Error + Hint output
+liquid-spec /tmp/raise_compile_adapter.rb -s basics --max-failures 3
+liquid-spec /tmp/raise_render_adapter.rb -s basics --max-failures 3
+```
+
+Use `--list-passed` to inspect accidental passes and `--json` for tooling. Prefer `Max complexity reached` / `max_complexity_reached` over raw pass count when judging partial or deliberately naive adapters.
 
 ### Result Logging
 
@@ -73,10 +92,11 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.suite = :liquid_ruby  # :all, :liquid_ruby, :shopify_theme_dawn
-  config.features = [
-    :core,                  # Basic Liquid parsing/rendering
-  ]
+  config.suite = :liquid_ruby  # :all, :basics, :liquid_ruby, :shopify_theme_dawn
+
+  # Declare what your adapter cannot support yet. Specs requiring these
+  # features are skipped so you can build incrementally.
+  config.missing_features = [:shopify_tags, :shopify_filters]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
@@ -230,6 +250,17 @@ Spec-level settings override source-level settings. For example, a spec with its
 
 ## Good Specs
 
+Good specs preserve the project goal: help someone build a production-ready Liquid implementation gradually. A spec should teach one behavior at the right time, fail with an actionable message, and point to implementation guidance when the behavior is not obvious.
+
+### Ramp discipline
+
+- First-contact specs for a feature must be tiny, gentle, and hinted. If needed, score the first spec one point lower than follow-up specs so it appears first.
+- Keep the 0-50 band boring: passthrough, literals, missing variables, simple variable lookup, a few simple filters, and assign.
+- Keep whitespace control (`{{-`, `-}}`, `{%-`, `-%}`), drop/to_liquid boundaries, generated filter matrices, parser recovery, date/time quirks, and filesystem/security quirks out of the beginner band.
+- Generated specs should not flood the early ramp. Prefer curated beginner specs early; generated compatibility breadth generally starts at 120+ or much later.
+- If a dumb adapter that returns the input, returns `""`, or raises for everything passes a spec unexpectedly, either the spec is too weak or the complexity/hint needs review.
+- When judging naive adapters, prefer `Max complexity reached` over total pass count. An always-empty adapter can pass later specs whose correct output is empty, but it should not advance through the contiguous ramp.
+
 ### Error specs: prefer raised errors over inline errors
 
 Most specs that exercise an error path should let the error **raise** and
@@ -376,20 +407,20 @@ defaults:
 
 ### Complexity Scoring
 
-Each spec should have a `complexity` field indicating implementation difficulty. Lower scores = simpler features to implement first. Specs without explicit complexity default to 1000 or the suite's `minimum_complexity`.
+Each spec should have a `complexity` field indicating implementation difficulty. Lower scores = simpler features to implement first. Specs without explicit complexity default to 1000 or the suite's `minimum_complexity`. Complexity is capped at 1000; do not score specs above 1000.
 
 | Range | Feature |
 |-------|---------|
-| 10-20 | Literals, raw text output |
-| 30-50 | Variables, filters, assign |
-| 55-60 | Whitespace control, if/else/unless |
-| 70-80 | For loops, operators, filter chains |
-| 85-100 | Math filters, forloop object, capture, case/when |
-| 105-130 | String filters, increment, comment, raw, echo, liquid tag |
-| 140-180 | Array filters, property access, truthy/falsy, cycle, tablerow |
-| 190-220 | Advanced: offset:continue, parentloop, partials |
-| 300-500 | Edge cases, deprecated features |
-| 1000+ | Production recordings, unscored specs (default) |
+| 0-1 | Foundation: empty template, literal passthrough, whitespace/newline preservation |
+| 5-20 | First object output and literal breadth: strings, numbers, booleans, nil-as-empty |
+| 30-50 | Variables, missing variables, very simple filters, assign |
+| 55-65 | Basic if/else/unless and simple boolean composition |
+| 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
+| 105-150 | Common filters/tags: string filters, comment/raw, increment, interrupts, loop modifiers, whitespace control |
+| 160-220 | Generated filter breadth, truthy/falsy edge cases, cycle/tablerow, first partials/filesystem, Ruby/reference quirks |
+| 230-400 | Long-tail standard behavior: advanced lookup, parser edge cases, scope/filesystem interactions |
+| 500-900 | Mature compatibility: parser mutation matrices, recursion/resource limits, security-sensitive quirks, date/time/Ruby quirks |
+| 1000 | Production recordings and unscored specs (default) |
 
 See [`liquid-spec docs complexity`](`liquid-spec docs complexity`) for the full guide with examples.
 See [SPECS.md](SPECS.md) for guidelines on writing effective specs.
@@ -402,41 +433,33 @@ See [SPECS.md](SPECS.md) for guidelines on writing effective specs.
 
 ### Features
 
-Adapters declare which features they support. Suites and individual specs can require specific features:
+Adapters declare which features they do **not** support yet. Suites and individual specs can require capabilities; any required capability listed in `missing_features` is skipped so implementations can grow incrementally:
 
 ```ruby
 LiquidSpec.configure do |config|
-  config.features = [:core, :shopify_tags]
+  # Empty means "try every spec". Add unsupported capabilities here.
+  config.missing_features = [:shopify_tags]
 end
 ```
 
 ### Available Features
 
-The `:core` feature is the recommended target for most implementations. It's an alias that automatically expands to include other essential features:
+Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing.
 
-```ruby
-# From lib/liquid/spec/cli/adapter_dsl.rb
-FEATURE_EXPANSIONS = {
-  core: [:runtime_drops, :inline_errors],
-}
-```
-
-**Core features (most implementations should declare `:core`):**
-- `:core` - Full Liquid implementation. Expands to include `:runtime_drops` and `:inline_errors`
-- `:runtime_drops` - Supports bidirectional communication for drop callbacks (test harness invokes adapter to access drop properties)
-- `:inline_errors` - Errors are rendered inline in output rather than raised as exceptions
-- `:strict_parsing` - Supports error_mode: :strict (default for most implementations)
-
-**Optional features:**
-- `:lax_parsing` - Supports error_mode: :lax for lenient parsing
-- `:ruby_types` - Supports Ruby-specific types in environment (Integer, Float, Range, etc.)
+**Common features to list in `missing_features`:**
+- `:runtime_drops` - Adapter cannot support bidirectional drop callbacks yet
+- `:inline_errors` - Adapter cannot render errors inline yet
+- `:lax_parsing` - Adapter does not support `error_mode: :lax`
+- `:ruby_types` / `:ruby_drops` / `:binary_data` - Adapter cannot consume Ruby-specific values from specs
+- `:template_factory` - Adapter cannot support template factory/artifact callbacks
 
 **Shopify-specific features:**
 - `:shopify_tags` - Shopify-specific tags (schema, style, section)
 - `:shopify_objects` - Shopify-specific objects (section, block)
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
+- `:shopify_includes`, `:shopify_blank`, `:shopify_error_handling`, `:shopify_error_format`, `:shopify_string_access` - Shopify platform/theme behavior beyond portable Liquid
 
-**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should declare `features = []` to opt out of `:core` and `:runtime_drops`. They will still run all specs except those requiring `:runtime_drops`.
+**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should set `config.missing_features = [:runtime_drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
 
 ## The Eval Tool
 
@@ -490,7 +513,7 @@ For complex tests, use YAML input via stdin or file:
 cat <<EOF | liquid-spec eval adapter.rb --compare
 name: test_for_loop_with_break
 hint: "break should exit the loop immediately"
-complexity: 75
+complexity: 120
 template: |
   {% for i in (1..5) %}
     {% if i == 3 %}{% break %}{% endif %}

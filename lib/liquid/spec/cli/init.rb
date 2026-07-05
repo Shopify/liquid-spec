@@ -355,8 +355,8 @@ module Liquid
             ## How It Works
 
             1. **Your adapter** defines `compile` and `render` blocks that bridge liquid-spec to your implementation
-            2. **liquid-spec** runs test cases in **complexity order** (simplest features first)
-            3. **You implement features** incrementally, fixing failing specs from lowest to highest complexity
+            2. **liquid-spec** runs test cases in **complexity order**: trivial passthrough first, then variables, filters, control flow, partials, compatibility quirks, and production recordings
+            3. **You implement features** incrementally, fixing failing specs from lowest to highest complexity until you have a production-ready Liquid implementation
 
             ## Documentation Resources
 
@@ -419,27 +419,29 @@ module Liquid
 
             | Phase | Complexity | Features |
             |-------|------------|----------|
-            | 1 | 10-60 | Raw text, literals, variables, assign, if/else |
-            | 2 | 70-100 | For loops, operators, math filters, capture |
-            | 3 | 105-150 | String filters, increment, comment, raw, arrays |
-            | 4 | 170-220 | Edge cases, truthy/falsy, cycle, tablerow, partials |
-            | 5 | 300+ | Advanced edge cases, production behaviors |
+            | 0 | 0-20 | Pipeline, static text, object tags, literal output, nil-as-empty |
+            | 1 | 30-50 | Variables, missing variables, simple filters, assign |
+            | 2 | 55-100 | Basic conditionals, loops, comparisons, capture/case/forloop basics |
+            | 3 | 105-180 | Standard filters/tags, comments/raw, whitespace control, interrupts, collection helpers |
+            | 4 | 190-400 | Partials/filesystem, scope interactions, generated compatibility breadth |
+            | 5 | 500-900 | Parser error matrices, resource limits, security/date/time/Ruby quirks |
+            | 6 | 1000 | Production recordings and unscored mature-compatibility checks |
 
             ### Complexity Reference
 
             | Score | What to Implement |
             |-------|-------------------|
-            | 10 | Raw text passthrough (no parsing) |
-            | 20 | Literal values: `{{ 'hello' }}`, `{{ 42 }}`, `{{ true }}` |
-            | 30 | Variable lookup: `{{ name }}` |
-            | 40 | Basic filters: `{{ x \\| upcase }}` |
+            | 0-1 | Empty template, literal passthrough, whitespace/newline preservation |
+            | 5-20 | First object output and literal strings/numbers/booleans/nil |
+            | 30 | Variable lookup and missing variables rendering empty |
+            | 40 | Very simple filters: `{{ x \\| upcase }}` |
             | 50 | Assign tag: `{% assign x = 'foo' %}` |
-            | 55 | Whitespace control: `{{- x -}}` |
-            | 60 | If/else/unless: `{% if x %}...{% endif %}` |
-            | 70 | For loops: `{% for i in items %}` |
-            | 75 | Loop modifiers: limit, offset, reversed, break, continue |
-            | 80 | Filter chains, and/or, contains, comparison operators |
-            | 85-100 | Math filters, forloop object, capture, case/when |
+            | 55-65 | Basic if/else/unless and simple boolean composition |
+            | 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
+            | 105-150 | String filters, comment/raw, interrupts, loop modifiers, whitespace control |
+            | 160-220 | Generated filter breadth, truthy/falsy edges, cycle/tablerow, first partials |
+            | 230-900 | Long-tail compatibility, parser errors, recursion, date/time/Ruby quirks |
+            | 1000 | Production recordings and unscored specs |
             #{json_rpc ? json_rpc_section(filename) : ruby_adapter_section}
 
             ## Debugging Failures
@@ -492,7 +494,7 @@ module Liquid
             3. Implement the minimal feature to pass that spec
             4. Re-run and repeat
 
-            The complexity ordering ensures you build a solid foundation. Don't skip ahead—later features often depend on earlier ones working correctly.
+            The complexity ordering ensures you build a solid foundation. Don't skip ahead—later features often depend on earlier ones working correctly. If the first failure is surprising or not actionable, inspect its hint and consider whether your local spec should be smaller. Use `Max complexity reached` rather than raw pass count to judge progress; partial implementations can accidentally pass later specs whose expected output is empty.
 
             ## Useful Commands
 
@@ -508,6 +510,10 @@ module Liquid
 
             # Compare your output to reference implementation
             liquid-spec run #{filename} --compare
+
+            # Audit accidental passes / emit machine-readable results
+            liquid-spec run #{filename} --list-passed
+            liquid-spec run #{filename} --json > results.json
             ```
 
             ## Reference

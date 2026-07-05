@@ -6,17 +6,19 @@ order: 5
 
 # Complexity Scoring Guide
 
-This document defines the complexity scoring system used in liquid-spec to order and prioritize test specs. Complexity scores help implementers build Liquid parsers incrementally by tackling simpler features first.
+liquid-spec is a harness for the gradual construction of a full, production-ready Liquid implementation. Complexity scores are the backbone of that workflow: they make the runner present small, confidence-building specs first, then progressively introduce real Liquid syntax, standard-library behavior, compatibility quirks, and finally production recordings.
+
+A good score answers: **"When should a new implementation reasonably be expected to pass this spec?"** Lower scores are not a statement that the behavior is more important; they are an implementation ramp.
 
 ## Overview
 
-Every spec should have a `complexity` field indicating how difficult the feature is to implement. Lower scores represent simpler features that should be implemented first; higher scores represent advanced features and edge cases.
+Every spec should have a `complexity` field indicating how difficult the behavior is to implement. Lower scores represent simpler features that should be implemented first; higher scores represent advanced features, edge cases, and compatibility behaviors.
 
-**Default complexity:** If no complexity is specified, the spec defaults to **1000** (undefined/unscored).
+**Default complexity:** If no complexity is specified, the spec defaults to **1000** (undefined/unscored). The complexity ceiling is **1000**; do not assign scores above 1000.
 
 ## Suite-Level Minimum Complexity
 
-Suites can define a `minimum_complexity` in their `suite.yml` file. This value is applied to all specs in that suite that don't have an explicit complexity:
+Suites can define a `minimum_complexity` in their `suite.yml` file. This value is applied to specs in that suite that do not have an explicit complexity:
 
 ```yaml
 # suite.yml
@@ -24,172 +26,178 @@ name: "My Suite"
 minimum_complexity: 1000
 ```
 
-This avoids restating the same complexity on every spec in suites where most specs are edge cases or production recordings.
+This is useful for suites where most specs are edge cases, generated compatibility cases, or production recordings.
 
 ## Complexity Ranges
 
 ### 0-1: The Foundation
-Can your implementation compile and render at all? These are the first specs any implementation should pass.
 
-| Range | Feature | Examples |
+Can the adapter compile and render at all? These are deliberately trivial and should pass even for a toy implementation.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
 | 0 | Empty template | `""` → `""` |
-| 1 | Literal passthrough | `"hello"` → `"hello"`, whitespace preserved, newlines preserved |
+| 1 | Literal passthrough | `"hello"` → `"hello"`, spaces preserved, newlines preserved |
 
-A correct implementation at complexity 1 can accept a template string and output it unchanged.
+A correct implementation at complexity 1 can accept a template string and output static text unchanged.
 
-### 5: Basic Object Output
-The first Liquid syntax: `{{ expression }}` for outputting values.
+### 5: First Object Output
 
-| Range | Feature | Examples |
+The first Liquid syntax: `{{ expression }}` with literal values only.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 5 | String/number literals | `{{ 'world' }}`, `{{ 42 }}`, `{{ nil }}` outputs nothing |
-| 5 | Mixed text and objects | `"hello {{ 'world' }}"` → `"hello world"` |
+| 5 | String/number/nil literals | `{{ 'world' }}`, `{{ 42 }}`, `{{ nil }}` outputs nothing |
+| 5 | Mixed text and object output | `hello {{ 'world' }}` → `hello world` |
 
-### 10-20: Literals and Raw Output (thorough tests)
-More comprehensive tests of the basics. Edge cases for raw text and literals.
+### 10-20: Basic Literals and Raw Output Breadth
 
-| Range | Feature | Examples |
+More coverage for the same beginner concepts, still without variables or control flow.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 10 | Raw text edge cases | Special characters, unicode, multi-line |
-| 20 | All literal types | `{{ 'hello' }}`, `{{ 42 }}`, `{{ true }}`, `{{ false }}`, `{{ nil }}` |
+| 10 | Raw text breadth | Special characters, unicode, multi-line static text |
+| 20 | Literal breadth | Strings, integers, booleans, nil, simple output tags |
 
-A correct implementation at complexity 20 can output literal strings, numbers, booleans, and nil.
+A correct implementation at complexity 20 can tokenize object tags and render literal values.
 
-### 30-50: Variables and Assignment
-Looking up values and storing them.
+### 30-50: Variables, Simple Filters, Assignment
 
-| Range | Feature | Examples |
+The first dynamic templates.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 30 | Variable lookup | `{{ name }}`, undefined variables return nil |
-| 40 | Basic filters | `{{ 'x' \| upcase }}`, `{{ x \| size }}`, single filter with argument |
-| 50 | Assign tag | `{% assign x = 'foo' %}`, assign with filter |
+| 30 | Variable lookup | `{{ name }}`, `hello {{ missing }}` → `hello ` |
+| 35 | More literal/expression forms | Floats, quoted strings, boolean literals |
+| 40 | Very simple filters | `{{ 'x' | upcase }}`, `{{ x | size }}`, one filter argument |
+| 50 | Basic assign and comments-as-no-output | `{% assign x = 'foo' %}{{ x }}` |
 
-### 55-60: Basic Control Flow
-Making decisions.
+Do **not** put drop protocol behavior, `to_liquid`, dynamic bracket lookup, parser recovery, or generated filter matrices here. A local LLM-created implementation should be able to get through this range with a small lexer/parser, a variable environment, and a handful of straightforward filters.
 
-| Range | Feature | Examples |
+### 55-65: Basic Control Flow
+
+Simple conditional execution. Whitespace-control syntax is **not** beginner control flow and belongs later.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 55 | Whitespace control | `{{- x -}}`, `{%- tag -%}` |
-| 60 | If/else/unless | `{% if true %}`, `{% unless x %}`, equality operators |
+| 55 | Basic truthiness checks | `if true`, `if false`, simple variable truthiness |
+| 60 | If/else/unless | `{% if x %}...{% else %}...{% endif %}`, `{% unless x %}` |
+| 65 | Basic boolean composition | Simple `and`/`or` without precedence edge cases |
 
-### 70-80: Loops and Operators
-Iteration and more comparison logic.
+Only `nil` and `false` are falsy in Liquid. Empty strings, zero, and empty arrays/hashes are truthy; edge cases for that behavior can be later than the first happy-path conditionals.
 
-| Range | Feature | Examples |
+### 70-100: Simple Loops, Comparisons, Early Feature Composition
+
+Iteration and modest composition. Keep the early loop ramp gentle.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 70 | Basic for loops | `{% for i in items %}`, ranges `(1..3)`, else block |
-| 75 | Loop modifiers | `limit:`, `offset:`, `reversed`, `{% break %}`, `{% continue %}` |
-| 80 | Filter chains, operators | `{{ x \| a \| b }}`, `and`/`or`, `contains`, `>`, `<`, `>=`, `<=` |
+| 70 | Basic for loops | `{% for i in items %}{{ i }}{% endfor %}`, simple `else` block |
+| 80 | Straightforward comparisons/operators | `==`, `!=`, `<`, `>`, `contains`, simple filter chains |
+| 90 | Forloop object, capture, simple case | `forloop.index`, `{% capture x %}`, basic `{% case %}` |
+| 100 | Slightly richer variants | `elsif`, range loops, simple loop helpers |
 
-### 85-100: Math, Forloop Object, Capture
-Numeric operations and loop metadata.
+Move these later than 100 unless they are intentionally gentle first-contact specs: `break`, `continue`, `limit`, `offset`, `offset:continue`, `parentloop` chains, whitespace trimming inside loops, unusual loop variable spacing, nil ordering comparisons, and complex boolean precedence.
 
-| Range | Feature | Examples |
+### 105-150: Common Standard Library and Syntax Breadth
+
+Practical Liquid features once the core language works.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 85 | Math filters | `plus`, `minus`, `times`, `divided_by`, `modulo`, `round`, `ceil`, `floor` |
-| 90 | Forloop object | `forloop.index`, `forloop.first`, `forloop.last`, `forloop.length` |
-| 90 | Capture tag | `{% capture x %}...{% endcapture %}` |
-| 100 | Complex conditionals | `elsif`, `case/when`, multiple `when` values |
+| 105 | Beginner string filters | `append`, `prepend`, `replace`, `strip` |
+| 110 | Comment/raw basics and first special tags | `{% comment %}`, `{% raw %}`, inline `{% # %}` |
+| 115 | Increment/decrement basics | Counter semantics independent of `assign` |
+| 120 | Loop interrupts and simple math generated cases | `{% break %}`, `{% continue %}`, basic arithmetic filters |
+| 130 | Multiline/liquid/echo syntax, loop modifiers | `{% liquid %}`, `limit:`, `offset:`, `reversed` |
+| 140 | Whitespace control and simple collection filters | `{{- x -}}`, `join`, `first`, `last`, simple array cases |
+| 150 | Basic property/bracket access breadth | `user.name`, `user['name']`, array index access |
 
-### 105-130: String Manipulation and Special Tags
-String processing and specialized constructs.
+Generated compatibility specs should usually start no earlier than this band unless they are clearly simple duplicates of curated beginner specs.
 
-| Range | Feature | Examples |
+### 160-220: Advanced Core Compatibility
+
+Harder standard behaviors and interactions between features.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 105 | String filters | `append`, `prepend`, `replace`, `split`, `slice`, `truncate` |
-| 110 | HTML/URL filters | `escape`, `strip_html`, `url_encode`, `newline_to_br` |
-| 115 | Increment/decrement | Counter semantics, independence from assign |
-| 120 | Comment/raw tags | `{% comment %}`, `{% raw %}`, inline `{% # %}` |
-| 130 | Echo/liquid tags | `{% echo x %}`, `{% liquid ... %}` multiline syntax |
-
-### 140-180: Arrays, Properties, and Iteration Helpers
-Complex data access and advanced loops.
-
-| Range | Feature | Examples |
-|-------|---------|----------|
-| 140 | Array filters | `first`, `last`, `join`, `sort`, `uniq`, `compact`, `map`, `where` |
-| 150 | Property access | Dot notation `user.name`, bracket notation `user['key']`, negative indices |
-| 170 | Truthy/falsy edge cases | Empty string is truthy, zero is truthy, `empty` comparisons |
-| 180 | Cycle and tablerow | `{% cycle %}`, `{% tablerow %}`, named cycles |
-
-### 190-220: Advanced Features
-Complex interactions and edge cases of standard features.
-
-| Range | Feature | Examples |
-|-------|---------|----------|
-| 190 | Offset:continue | `offset:continue` for pagination, `forloop.parentloop` basics |
-| 200 | Partials basics | `{% render 'x' %}`, `{% include 'x' %}`, parameter passing |
-| 210 | Partial edge cases | Scope isolation, parentloop chains, forloop.length with limit |
+| 160 | Generated filter breadth | Coercion-heavy math/string cases, parser punctuation quirks |
+| 170 | Truthy/falsy and `blank`/`empty` edge cases | Empty string is truthy; `empty` comparisons |
+| 180 | Cycle, tablerow, drop boundary basics | `{% cycle %}`, `{% tablerow %}`, simple drop/to_liquid behavior |
+| 190 | Filesystem/partials first contact | Gentle `{% render 'x' %}` / `{% include 'x' %}` with `.liquid` fixtures |
+| 200 | Ruby/reference quirks and math edge cases | Integer-size quirks, divide-by-zero behavior |
+| 210 | Partial scope and parameter interactions | include vs render scope, parameter passing |
 | 220 | Complex interactions | Multiple features interacting in non-obvious ways |
 
-### 300-400: Implementation Edge Cases
-Subtle behaviors that may trip up implementations.
+### 230-400: Long-Tail Standard Behavior
 
-| Range | Feature | Examples |
+Subtle, but still part of a serious standard Liquid implementation.
+
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 300 | Scope edge cases | Nested includes sharing state, parameter evaluation context |
-| 350 | Parser edge cases | Unusual whitespace, malformed input handling |
-| 400 | Obscure filter behaviors | Unusual argument combinations, type coercion edge cases |
+| 230-260 | Advanced lookup and filesystem behavior | Subpaths, dynamic include names, parentloop interactions |
+| 270-320 | Parser and syntax edge cases | Trailing punctuation, odd whitespace, strict-mode unknown tags |
+| 330-400 | Obscure filter/type coercion behavior | Hash/array/drop coercions, generated matrix edge cases |
 
-### 500: Deprecated or Legacy Features
-Features that are deprecated or exist only for backwards compatibility.
+### 500-900: Compatibility, Legacy, and Deep Edge Cases
 
-### 1000 (Default): Unscored Specs
-Specs without an explicit complexity score default to 1000. This is intentional:
-- It keeps unscored specs separate from the progression
-- It encourages spec authors to explicitly think about complexity
-- Use `minimum_complexity` in suite.yml for suites where most specs are edge cases
+These specs validate mature compatibility. They should not block the first implementation ramp.
 
-### 1000-1500: Production Edge Cases and Random Behaviors
-Edge cases recorded from production that don't fit into the standard progression.
-
-| Range | Feature | Examples |
+| Score | Feature | Examples |
 |-------|---------|----------|
-| 1000-1100 | Shopify production recordings | Real-world template behaviors |
-| 1100-1200 | Integration test recordings | Behaviors captured from the reference implementation |
-| 1200-1500 | Obscure edge cases | Unusual combinations, random behaviors |
+| 500 | Parser error mutation/fuzz matrices | Generated malformed syntax cases, precise parse errors |
+| 600 | Recursion/resource limits and deep partial behavior | Nesting too deep, resource accounting |
+| 700 | Security-sensitive/reference quirks | Literal `..` filesystem lookup behavior, surprising compatibility choices |
+| 800 | Date/time and platform-specific quirks | Timezones, invalid date behavior, Ruby-specific `strftime` flags |
+| 900 | Rare Ruby/drop/protocol quirks | Behaviors needed for high-fidelity liquid-ruby compatibility |
 
-Use this range for specs that:
-- Were recorded from production and don't have a clear "standard" status
-- Test behaviors that may be implementation-specific
-- Cover random combinations that were discovered in the wild
+### 1000: Production Recordings and Unscored Specs
+
+Specs without an explicit complexity score default to 1000. Use 1000 for:
+
+- Shopify production recordings
+- Full theme/page recordings
+- Specs whose implementation order has not been evaluated yet
+- Behaviors that are real and worth preserving but not useful as an implementation milestone
+
+Do not assign scores above 1000.
 
 ## Edge Cases Within a Feature
 
-When a feature has both a "happy path" and edge cases, the edge case should be scored slightly higher but stay within the same general range.
+When a feature has both a happy path and edge cases, the first spec for that feature should be gentle and one point lower than nearby follow-up specs when useful. The first spec should include a hint that names the feature and points to the relevant implementer doc.
 
-**Example: For loops at complexity 70-75**
+**Example: filesystem partials**
 
 | Complexity | Test |
 |------------|------|
-| 70 | Basic `for` over array |
-| 70 | Range `(1..3)` |
-| 70 | Else block for empty arrays |
-| 75 | `limit:` modifier |
-| 75 | `offset:` modifier |
-| 75 | `reversed` keyword |
-| 75 | `{% break %}` |
-| 75 | `{% continue %}` |
-
-Edge cases of for loops (like `offset:continue` or `parentloop`) are more advanced and belong in the 190-210 range.
+| 189 | First gentle filesystem render/include spec with hint and doc pointer |
+| 190 | Basic `.liquid` extension lookup |
+| 240 | Subpath lookup |
+| 300 | Not-found errors |
+| 600 | Recursion/nesting-too-deep |
+| 700 | Literal `..` lookup compatibility quirk |
 
 ## Guidelines for Spec Authors
 
-1. **Start simple**: Basic usage of a feature should be the lowest complexity in its range
-2. **Edge cases add +5 to +10**: Unusual inputs or corner cases within the same feature
-3. **Combinations are higher**: When two features interact, use the higher feature's complexity + 10-20
-4. **Production recordings default to 1000+**: Unless they clearly test a specific standard feature
-5. **Document unusual scores**: Use the `hint` field to explain why a spec has its complexity
+1. **Preserve the ramp:** A dumb adapter should pass only the truly trivial first specs, then fail with an actionable message.
+2. **Start every feature gently:** The first spec for a major feature should be minimal and well-hinted.
+3. **Curate before generated matrices:** Put handcrafted basics early; generated reference matrices generally belong at 120+ or much later.
+4. **Edge cases add +10 to +50:** The stranger the behavior, the farther it moves from the first-contact score.
+5. **Combinations are higher:** When two features interact, use the higher feature's score plus 10-50.
+6. **Quirks go late:** Ruby-specific, drop-protocol, date/time, parser recovery, and production/platform behavior usually belongs at 500-1000.
+7. **Document unusual scores:** Use `hint` to explain why a spec is early or late.
+8. **Stay within the ceiling:** Complexity must be between 0 and 1000.
 
 ## Implementation Order Recommendation
 
 When building a new Liquid implementation, work through specs in complexity order:
 
-1. **Phase 1 (10-60)**: Get basic output and assignment working
-2. **Phase 2 (70-100)**: Add loops and control flow
-3. **Phase 3 (105-150)**: String and array manipulation
-4. **Phase 4 (170-220)**: Advanced features and partials
-5. **Phase 5 (300+)**: Edge cases and production compatibility
+1. **Phase 0 (0-20):** Pipeline, static text, object tags, literal output, nil-as-empty.
+2. **Phase 1 (30-50):** Variables, missing variables, simple filters, assign.
+3. **Phase 2 (55-100):** Basic conditionals, loops, comparisons, capture/case/forloop basics.
+4. **Phase 3 (105-180):** Standard filters, comments/raw, whitespace control, interrupts, collection helpers, cycle/tablerow.
+5. **Phase 4 (190-400):** Partials/filesystem, scope interactions, generated compatibility breadth.
+6. **Phase 5 (500-900):** Parser error matrices, resource limits, security/reference quirks, date/time and Ruby compatibility.
+7. **Phase 6 (1000):** Production recordings and unscored mature-compatibility checks.
 
-This ordering ensures you build a solid foundation before tackling complex interactions.
+Fix failures in the order they appear. If the first failure is surprising, the spec probably needs a better hint or a higher complexity score.

@@ -585,3 +585,25 @@
   hint: |
     Bare-bracket access is still allowed in lax mode for backwards
     compatibility. Only strict2 mode rejects it.
+
+- name: self_sees_loop_variables_across_three_nested_loops
+  template: '{% assign av = "a" %}{% assign bv = "b" %}{% assign cv = "c" %}{% for a in aa %}A{{ forloop.index }}({% for b in bb %}B({% for c in cc %}{{ self[av] }}.{{ self[bv] }}.{{ self[cv] }};{% endfor %}){% endfor %}){% endfor %}'
+  environment:
+    aa: ["p", "q"]
+    bb: ["x", "y"]
+    cc: [7, 8]
+  expected: "A1(B(p.x.7;p.x.8;)B(p.y.7;p.y.8;))A2(B(q.x.7;q.x.8;)B(q.y.7;q.y.8;))"
+  complexity: 500
+  hint: |
+    self[...] performs its variable lookup against the live scope at
+    render time, so every enclosing loop variable must be visible to it
+    — all three of them, from the innermost position of a three-level
+    nest. This is a trap for compilers that bind loop variables to
+    locals/registers as a fast path: a dynamic lookup cannot be resolved
+    statically, so each enclosing loop must actually publish its item
+    into the scope. Note the template reads forloop.index only in the
+    OUTERMOST loop on purpose — implementations that decide "does this
+    loop need scope publication?" by scanning nested output for
+    forloop/lookup usage get no hint here from the inner loops, and must
+    instead recognize that self[...] (or any computed-name read) inside
+    the body forces publication at every level.

@@ -2,12 +2,13 @@
 
 [![CI](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml/badge.svg)](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml)
 
-A conformance test suite for [Liquid](https://github.com/Shopify/liquid) template implementations. Run **4,600+ test cases** extracted from Shopify's reference implementation to verify your Liquid parser/renderer produces correct output.
+A conformance test suite for [Liquid](https://github.com/Shopify/liquid) template implementations. Run **7,000+ test cases** extracted from Shopify's reference implementation, curated basics, parser-error matrices, Dawn theme fixtures, and production recordings to verify your Liquid parser/renderer produces correct output.
 
 ## Why liquid-spec?
 
 Building a Liquid implementation (compiler, interpreter, or transpiler)? liquid-spec helps you:
 
+- **Build gradually** from an empty-template renderer into a production-ready Liquid implementation
 - **Verify correctness** against the reference Shopify/liquid behavior
 - **Catch regressions** when optimizing or refactoring
 - **Discover edge cases** you might not have considered
@@ -152,30 +153,36 @@ regular runs.
 
 | Suite | Tests | Description |
 |-------|-------|-------------|
-| **basics** | 183 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
-| **liquid_ruby** | ~1,700 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
-| **shopify_production_recordings** | ~3,000 | Recorded behavior from Shopify's production Liquid compiler |
+| **basics** | 850 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
+| **liquid_ruby** | 2,101 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
+| **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
+| **parser_errors** | 1,901 | Strict parser error compatibility and mutation matrices |
+| **partials** | 12 | Include/render focused compatibility specs |
+| **shopify_production_recordings** | 2,260 | Recorded behavior from Shopify's production Liquid compiler |
 | **shopify_theme_dawn** | 26 | Real-world templates from [Shopify Dawn](https://github.com/Shopify/dawn) theme |
 
 ### The Basics Suite
 
 If you're building a new Liquid implementation, **start with the basics suite**. It runs first and covers all fundamental features from the [official Liquid documentation](https://shopify.github.io/liquid/).
 
-Specs are ordered by complexity so you can implement features progressively:
+Specs are ordered by complexity so you can implement features progressively. The goal is a smooth ramp: a toy renderer should pass only the trivial first specs, then fail on a small, actionable next behavior.
 
 | Complexity | Features |
 |------------|----------|
-| 10-20 | Raw text output, string/number/boolean literals |
-| 30-40 | Variables, basic filters (upcase, size, default) |
-| 50-60 | Assign tag, simple if/else conditionals |
-| 70-80 | For loops, filter chains, comparison operators |
-| 85-90 | Math filters, forloop object, capture tag |
-| 100-110 | Case/when, elsif, string manipulation filters |
-| 115-130 | Increment/decrement, comments, echo, liquid tag |
-| 140-150 | Array filters, property access (dot/bracket notation) |
-| 170-180 | Truthy/falsy edge cases, cycle, tablerow |
+| 0-1 | Empty template and literal passthrough |
+| 5-20 | First object output, literal strings/numbers/booleans/nil |
+| 30-50 | Variables, missing variables, very simple filters, assign |
+| 55-65 | Basic if/else/unless and simple boolean composition |
+| 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
+| 105-150 | Common filters/tags, comments/raw, interrupts, loop modifiers, whitespace control |
+| 160-220 | Generated filter breadth, truthy/falsy edges, cycle/tablerow, first partials/filesystem |
+| 230-400 | Long-tail standard behavior and parser/scope/filesystem edge cases |
+| 500-900 | Mature compatibility: parser mutations, recursion/resource limits, date/time/Ruby quirks |
+| 1000 | Production recordings and unscored specs |
 
-Each spec includes a detailed `hint` explaining how the feature should be implemented.
+Each non-trivial spec includes a detailed `hint` explaining how the feature should be implemented. If the first failure is surprising or unactionable, the spec probably needs a better hint or a higher complexity score.
+
+**Read `Max complexity reached`, not just total passes.** A naive adapter that always returns `""` can accidentally pass many later specs whose expected output is empty, but its max reached complexity should remain at 0. The max-complexity line tells you how far the implementation progressed through the ordered curriculum.
 
 ### Feature-Based Suite Selection
 
@@ -215,6 +222,9 @@ Run Options:
   --list-suites            List available test suites
   --max-failures N         Stop after N failures (default: 10)
   --no-max-failures        Run all specs without stopping
+  --list-passed           List specs that passed after the run (ramp/debug audits)
+  --json                  Output a single JSON summary (for tools)
+  --jsonl                 Output one JSON event per line (for benchmark streaming/tools)
   -h, --help               Show help
 
 Examples:
@@ -227,6 +237,24 @@ Examples:
   liquid-spec test                                 # Test all bundled adapters
   liquid-spec inspect my_adapter.rb -n "case"      # Debug specific specs
 ```
+
+
+### Auditing the Ramp with Dumb Adapters
+
+When changing complexity scores or adding early specs, test the harness with intentionally bad adapters:
+
+- an adapter that returns the template source unchanged
+- an adapter that always returns `""`
+- an adapter that raises during compile or render
+
+Use `--list-passed` to see accidental passes and `--json` for machine-readable analysis:
+
+```bash
+liquid-spec /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
+liquid-spec /tmp/empty_adapter.rb -s basics --json --list-passed > empty-results.json
+```
+
+A source-echo adapter should only pass raw-text specs before failing on first object output. An always-empty adapter may pass many empty-output specs, so judge progress by `max_complexity_reached`, not by total passes.
 
 ### Matrix Command
 
@@ -442,15 +470,17 @@ Specs are automatically saved to `/tmp/liquid-spec-{date}.yml` for easy contribu
 ```
 $ liquid-spec examples/liquid_ruby.rb
 
-Features: core, lax_parsing
+Missing features: shopify_tags, shopify_objects, shopify_filters
 
-Basics ................................. 183/183 passed
-Liquid Ruby ............................ 1683/1683 passed
-Liquid Ruby (Lax Mode) ................. 6/6 passed
-Shopify Production Recordings .......... 2338/2338 passed
-Shopify Theme Dawn ..................... skipped (needs shopify_tags, shopify_objects, shopify_filters)
+Basics ................................. 850/850 passed
+Liquid Ruby ............................ 2101/2101 passed
+Liquid Ruby (Lax Mode) ................. 121/121 passed
+Parser Errors .......................... 1901/1901 passed
+Partials ............................... 12/12 passed
+Shopify Production Recordings .......... 2260/2260 passed
+Shopify Theme Dawn ..................... skipped (adapter opts out of: shopify_filters)
 
-Total: 4210 passed, 0 failed, 0 errors
+Total: 7245 passed, 0 failed, 0 errors
 ```
 
 ## Example Adapters
@@ -484,7 +514,7 @@ Each spec defines:
 - **template** - Liquid source to compile and render
 - **environment** - Variables available during rendering
 - **expected** - Expected output string
-- **complexity** - Optional: ordering hint (lower = simpler, runs first)
+- **complexity** - Optional: ordering hint (lower = simpler, runs first; defaults to 1000 and must not exceed 1000)
 - **hint** - Optional: implementation guidance for this feature
 - **error_mode** - Optional: `:lax` or `:strict`
 - **filesystem** - Optional: mock files for include/render tags

@@ -1,6 +1,6 @@
 # Writing Great Specs
 
-This guide explains how to write specs that help implementers build correct Liquid implementations. A great spec doesn't just verify correctness—it teaches implementers what to build and helps them understand *why* Liquid behaves the way it does.
+This guide explains how to write specs that help implementers build correct Liquid implementations. The goal of liquid-spec is to be a harness for the gradual construction of a full, production-ready Liquid implementation. A great spec does not just verify correctness—it teaches implementers what to build next, where it fits in the ramp, and *why* Liquid behaves the way it does.
 
 ## Why Specs Matter More Than Ad-hoc Testing
 
@@ -113,19 +113,20 @@ Complexity determines learning order. A spec at complexity 70 (for loops) should
 
 | Range | What It Should Test |
 |-------|---------------------|
-| 0-20 | Literals, raw text output—no logic needed |
-| 25-50 | Variables, basic output, simple filters |
-| 55-70 | Whitespace control, if/else/unless, basic operators |
-| 75-90 | For loops, forloop object, filter arguments |
-| 95-130 | Math filters, capture, case/when, string filters |
-| 140-180 | Array filters, property access, truthy/falsy, tablerow |
-| 190-220 | offset:continue, parentloop, partials (render/include) |
-| 225-290 | String filter edge cases, advanced filter usage |
-| 300-400 | Filter chains, complex transformations, edge cases |
-| 500+ | Advanced drops, recursion, deprecated features |
-| 1000 | Unscored specs, production recordings |
+| 0-1 | Foundation: empty template, literal passthrough, whitespace/newline preservation |
+| 5-20 | First object output and literal breadth: strings, numbers, booleans, nil-as-empty |
+| 30-50 | Variables, missing variables, very simple filters, assign |
+| 55-65 | Basic if/else/unless and simple boolean composition |
+| 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
+| 105-150 | Common filters/tags: string filters, comment/raw, increment, interrupts, loop modifiers, whitespace control |
+| 160-220 | Generated filter breadth, truthy/falsy edge cases, cycle/tablerow, first partials/filesystem, Ruby/reference quirks |
+| 230-400 | Long-tail standard behavior: advanced lookup, parser edge cases, scope/filesystem interactions |
+| 500-900 | Mature compatibility: parser mutation matrices, recursion/resource limits, security-sensitive quirks, date/time/Ruby quirks |
+| 1000 | Production recordings and unscored specs |
 
-**Rule:** If your spec fails for an implementer who passed all lower-complexity specs, your complexity is too low. If it passes without implementing anything new, it's too high.
+**Rule:** If your spec fails for an implementer who passed all lower-complexity specs, your complexity is too low. If it passes without implementing anything new, it's too high. Complexity is capped at 1000; do not assign scores above 1000.
+
+**Dumb-adapter test:** For early specs, sanity-check the ramp with intentionally bad adapters. Run with `--list-passed` to inspect accidental passes and `--json --list-passed` when you want machine-readable output: one that echoes the source, one that always returns `""`, and one that raises for every compile/render. These should pass only the obvious first specs and then fail with a clear expected/got message plus an actionable hint. Use `Max complexity reached` to judge progress, because an always-empty adapter may accidentally pass later empty-output specs. If a dumb adapter advances through the contiguous ramp, the spec is too weak; if the first failure is confusing, improve the hint or move the spec later.
 
 ### 3. Actionable Hints
 
@@ -291,7 +292,7 @@ specs:
 | `hint` | No | Explanation shown on failure |
 | `doc` | No | Link to documentation |
 | `error_mode` | No | `:strict` or `:lax` parsing mode |
-| `render_errors` | No | If true, errors render inline instead of throwing |
+| `render_errors` | No | Legacy inline-error mode. Avoid in new specs unless specifically testing inline error display. |
 | `required_features` | No | Features needed to run this spec |
 
 ---
@@ -345,7 +346,29 @@ hint: |
   the comparison, check if the array's length is zero.
 ```
 
-### 4. Guessing Expected Values
+### 4. New error specs using inline errors
+
+Most new error specs should use raised-error matching:
+
+```yaml
+errors:
+  parse_error:
+    - Liquid::SyntaxError
+    - Unknown tag
+```
+
+or:
+
+```yaml
+errors:
+  render_error:
+    - Liquid::ArgumentError
+    - divided by 0
+```
+
+Use multiple stable patterns: class name plus one meaningful message substring. Do not set `render_errors: true` unless the spec is specifically about inline error display, and then require the `inline_errors` feature.
+
+### 5. Guessing Expected Values
 
 **Problem:** Expected value wasn't verified against liquid-ruby
 ```yaml
