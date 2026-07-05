@@ -92,6 +92,28 @@ module Liquid
 
           # Handle protocol-level errors (invalid params, unknown template_id, etc.)
           if Protocol.error?(response)
+            # When strict_errors is false (inline error mode), render errors
+            # should be returned as inline output, not raised. The subprocess
+            # may send render errors as protocol errors instead of rendering
+            # them inline — we handle that here by formatting the error message
+            # the same way liquid-ruby would render it inline.
+            strict_errors = options[:strict_errors] || options["strict_errors"]
+            error = Protocol.extract_error(response)
+            error_type = error[:data].is_a?(Hash) ? error[:data]["type"] : nil
+            code = error[:code]
+
+            is_render_error = error_type == "render_error" || code == Protocol::ErrorCode::RENDER_ERROR
+
+            if is_render_error && strict_errors == false
+              # Inline error mode (strict_errors explicitly false): return the
+              # error as rendered output, not raised. The subprocess may send
+              # render errors as protocol errors instead of rendering them inline
+              # — we handle that here by formatting the error message the same
+              # way liquid-ruby would render it inline.
+              message = error[:data].is_a?(Hash) && error[:data]["message"] ? error[:data]["message"] : error[:message]
+              return "Liquid error: #{message}"
+            end
+
             raise_protocol_error(response)
           end
 

@@ -1292,7 +1292,7 @@ module Liquid
           end
 
           def print_labeled_value(label, value)
-            padding = " " * (11 - label.length)
+            padding = " " * [11 - label.length, 1].max
             value_str = value.to_s
             if value_str.include?("\n")
               # Multi-line: show on next line with indentation
@@ -1341,8 +1341,13 @@ module Liquid
                 puts "   Filesystem: #{files_summary}"
               end
 
-              print_labeled_value("Expected", result[:expected])
-              print_labeled_value("Got", result[:actual])
+              # Use error-specific labels when the spec expects errors
+              is_error_spec = spec.expects_parse_error? || spec.expects_render_error? || spec.expects_output_patterns?
+              expected_label = is_error_spec ? "Expected Error" : "Expected"
+              got_label = is_error_spec ? "Got Error" : "Got"
+
+              print_labeled_value(expected_label, result[:expected])
+              print_labeled_value(got_label, result[:actual])
               if result[:error]
                 puts "   Error:    #{result[:error].class}: #{result[:error].message}"
               end
@@ -1552,7 +1557,7 @@ module Liquid
             if spec.expects_parse_error?
               return {
                 status: :fail,
-                expected: "parse_error matching #{spec.error_patterns(:parse_error).map(&:inspect).join(", ")}",
+                expected: spec.error_patterns(:parse_error).map { |p| "- #{p.inspect}" }.join("\n           "),
                 actual: "no error (template parsed successfully)",
               }
             end
@@ -1576,6 +1581,15 @@ module Liquid
                 return check_error_patterns(e, spec.error_patterns(:render_error), "render_error")
               end
 
+              # When the spec expects output error patterns (errors.output),
+              # a raised render error should be treated as inline error output.
+              # This happens when the adapter raises instead of rendering inline
+              # (e.g. JSON-RPC subprocess sends render error as protocol error).
+              if spec.expects_output_patterns?
+                error_output = "Liquid error: #{e.message}"
+                return check_output_patterns(error_output, spec.error_patterns(:output))
+              end
+
               raise
             end
 
@@ -1585,7 +1599,7 @@ module Liquid
 
               return {
                 status: :fail,
-                expected: "render_error matching #{spec.error_patterns(:render_error).map(&:inspect).join(", ")}",
+                expected: spec.error_patterns(:render_error).map { |p| "- #{p.inspect}" }.join("\n           "),
                 actual: "no error (rendered: #{actual.inspect})",
               }
             end
@@ -1635,7 +1649,7 @@ module Liquid
             else
               {
                 status: :fail,
-                expected: "#{error_type} matching #{failed_patterns.map(&:inspect).join(", ")}",
+                expected: patterns.map { |p| "- #{p.inspect}" }.join("\n           "),
                 actual: "#{error.class}: #{message}",
               }
             end
@@ -1657,7 +1671,7 @@ module Liquid
             else
               {
                 status: :fail,
-                expected: "output matching #{patterns.map(&:inspect).join(", ")}",
+                expected: patterns.map { |p| "- #{p.inspect}" }.join("\n           "),
                 actual: output,
               }
             end
