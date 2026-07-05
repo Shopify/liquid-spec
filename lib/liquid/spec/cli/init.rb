@@ -346,86 +346,172 @@ module Liquid
           <<~MARKDOWN
             # Implementing a Liquid Template Engine
 
-            This document guides AI agents through implementing a Liquid template engine using liquid-spec for verification.
+            You are building a production-grade [Liquid](https://shopify.github.io/liquid/)
+            template engine. This directory is wired to **liquid-spec**, which defines what
+            "correct" means: ~5,400 executable specs, ordered by complexity from trivial
+            passthrough (score 0) to full production compatibility (score 1000). Your job is
+            to climb that ramp. The suite is the definition of done — when it is green, you
+            have a real Liquid implementation.
 
             #{json_rpc ? non_ruby_notice : ""}
-            ## Quick Start
+            ## Which adapter file?
+
+            - **Implementing in Ruby?** Use `liquid_adapter.rb`. It calls your code directly
+              (see "The Adapter Pattern" below).
+            - **Implementing in ANY other language** (Rust, Go, Python, Node, Zig, ...)? Use
+              `liquid_adapter_jsonrpc.rb`. It talks to your engine over a simple JSON-RPC
+              protocol on stdin/stdout — run `liquid-spec docs json-rpc-protocol` for the
+              full protocol.
+
+            ## The loop (follow this exactly)
 
             ```bash
-            # Run your adapter against the spec suite
-            liquid-spec #{filename}
-
-            # Run with verbose output to see each test
-            liquid-spec #{filename} -v
-
-            # Filter tests by name pattern
-            liquid-spec #{filename} -n assign
+            liquid-spec run #{filename}
             ```
 
-            ## How It Works
+            1. Run the suite. Specs execute in complexity order, so the FIRST failure is
+               always the right thing to work on. Do not skip ahead: later features depend
+               on earlier ones, and the ramp is designed so each fix is small.
+            2. Read the failing spec completely — template, environment, expected, got, and
+               especially the `hint:`. Hints are written by implementers for implementers;
+               they usually state the exact rule you are missing.
+            3. If the behavior is unclear, read the relevant guide first
+               (see "Documentation" below) — minutes of reading routinely save hours of
+               guessing. Reproduce interactively before coding:
+               ```bash
+               liquid-spec eval #{filename} -l "{% assign x = 1 %}{{ x }}" --compare
+               liquid-spec eval #{filename} -l "{{ x | size }}" -a '{"x": [1,2,3]}' --compare
+               ```
+               `--compare` shows the reference implementation's output next to yours.
+            4. Implement the smallest change that makes the spec pass for the RIGHT reason.
+            5. Re-run. Every previously-passing spec must still pass — a fix that breaks
+               earlier specs is wrong, not a tradeoff.
+            6. Judge progress by **`Max complexity reached`**, not the raw pass count. A
+               partial implementation accidentally passes many later specs whose expected
+               output happens to be empty; complexity-reached is the honest meter.
 
-            1. **Your adapter** defines `compile` and `render` blocks that bridge liquid-spec to your implementation
-            2. **liquid-spec** runs test cases in **complexity order**: trivial passthrough first, then variables, filters, control flow, partials, compatibility quirks, and production recordings
-            3. **You implement features** incrementally, fixing failing specs from lowest to highest complexity until you have a production-ready Liquid implementation
+            ## Hard rules
 
-            ## Documentation Resources
+            1. **Never special-case a spec.** No matching on spec names, template strings,
+               or expected outputs. Every fix must implement the general rule the spec is
+               an instance of. (Passing a spec without implementing its rule will break on
+               the next spec of the same family anyway.)
+            2. **The expected output is recorded reference behavior — conform, don't
+               argue.** When an expectation looks insane, it is usually a real, documented
+               quirk: read the spec's hint, then `QUIRKS.md` in the liquid-spec repository.
+               Liquid has many deliberate oddities (they are what "compatible" means).
+            3. **Use `missing_features` honestly.** It exists for platform surface you are
+               deliberately not building (e.g. Shopify-specific filters), not for dodging
+               hard specs. Every entry is debt that keeps specs from running.
+            4. **Never delete or edit specs to make them pass.**
+            5. **Keep your engine's behavior in ONE place per rule.** If you find yourself
+               patching the same symptom at several call sites, you modeled the rule at the
+               wrong layer.
 
-            liquid-spec includes comprehensive implementation guides in the `docs/implementers/` directory:
+            ## The error model (read this before complexity 100)
 
-            | Document | Purpose |
-            |----------|---------|
-            | `complexity.md` | Full complexity scoring guide with all features ranked |
-            | `core-abstractions.md` | Truthy/falsy, nil handling, type coercion |
-            | `for-loops.md` | For loop implementation details, forloop object |
-            | `tablerow.md` | Tablerow tag (HTML table generation) |
-            | `filters.md` | Filter implementation guide |
-            | `partials.md` | Include/render tag implementation |
-            | `interrupts.md` | Break/continue implementation |
-            | `scopes.md` | Variable scoping rules |
-            #{json_rpc ? "| `../json-rpc-protocol.md` | Full JSON-RPC protocol specification |" : ""}
+            More failed climbs die on error handling than on any feature. Liquid has two
+            independent dials, and specs exercise both:
 
-            **Read these docs!** They explain the "why" behind Liquid's behavior and save hours of debugging.
+            **1. Parse-time: `error_mode`** (an option your `compile` receives)
+            - `:lax` — recover from almost anything; garbage markup often renders as text.
+            - `:strict` — malformed syntax raises a parse error.
+            - `:strict2` — stricter still (e.g. bare bracket access `{{ [x] }}` is
+              rejected; the spec suite documents each strict2-only rule).
+            - Parse errors render as `Liquid syntax error (line N): <message>` or are
+              raised, depending on harness settings — specs that expect them say so.
 
-            ## Local Specs for Development
+            **2. Render-time errors**
+            - Undefined variables are NOT errors: they render as empty string and lookups
+              on them return nil. (`{{ missing }}` → ``, `{{ missing.a.b }}` → ``.)
+            - Real runtime errors (bad comparison, invalid filter argument, ...) render
+              inline as `Liquid error (line N): <message>` when the spec sets
+              `render_errors: true`; otherwise rendering raises. Match the message TEXT —
+              specs pin it.
+            - `{% assign x = <erroring filter> %}` swallows the error text (there is no
+              output slot); the error is recorded but nothing prints.
+            - **Blank-body suppression:** a block tag whose entire body is blank
+              (whitespace/comments/assigns/captures) suppresses its render-error TEXT in
+              `:lax` mode — the condition still evaluates and strict rendering still
+              raises. In `:strict`/`:strict2` the text surfaces. The full matrix is in the
+              `blank_body_error_handling` specs; implement it once, early.
+            - Unknown filters are no-ops: `{{ 5 | no_such_filter }}` → `5`.
 
-            Create a `specs/` directory in your project to add custom test cases:
+            ## Semantics that surprise every implementer
 
-            ```bash
-            mkdir -p specs/local
-            ```
+            Learned the hard way (differential fuzzing against reference); each has specs:
 
-            Any `.yml` files in `specs/` are automatically included when running liquid-spec. This is useful for:
+            - **Truthiness:** only `false` and `nil` are falsy. `0`, `""`, and `[]` are all
+              truthy. `empty`/`blank` are special comparison literals, not values.
+            - **`case` has NO break.** Every matching `when` clause renders, in order; a
+              duplicated value in one clause renders the body once per match; `else` runs
+              only if nothing matched. The per-match renders are real (stateful tags like
+              `cycle` advance each time).
+            - **Comparisons are asymmetric:** two strings compare lexicographically;
+              number-vs-string RAISES ("comparison of Integer with String failed");
+              ordering against bool/nil/array/hash is silently FALSE. Implement all three
+              branches — over-generalizing any one of them fails specs.
+            - **Number output:** integers print bare (`1`), floats keep their point
+              (`1.0`); `/` does not exist — math is filters (`plus`, `divided_by`, ...) and
+              integer division truncates while float division doesn't.
+            - **Filters coerce before they compute** — but nil-input guards run FIRST:
+              `nil | truncate: nil` is `""`, never an "invalid integer" error. Non-numeric
+              strings coerce to 0 for numeric filters. Array filters (`uniq`, `reverse`,
+              `sort`, ...) wrap scalars into one-element arrays.
+            - **Property access on scalars is nil** (`{{ 5.title }}` → ``), with a handful
+              of special keys (`size`, `first`, `last`) that DO work on some types — see
+              `liquid-spec docs core-abstractions` and QUIRKS for the size oddities.
+            - **Iteration:** `{% for c in "hi" %}` yields the WHOLE string once (strings
+              are single-element collections); hashes yield `[key, value]` pairs; range
+              endpoints coerce (`(nil..2)` is `(0..2)`).
+            - **Whitespace control is source-adjacency:** `{%-`/`{{-` strip whitespace
+              only from the literal text node touching them in the SOURCE. They never
+              reach across another tag or into a `{% raw %}` block's output.
+            - **`forloop`** carries index/index0/rindex/first/last/length and, when loops
+              nest, `parentloop`. Get `offset:`/`limit:`/`reversed` and
+              `offset: continue` right from the guide, not by trial and error.
 
-            1. **Debugging specific behaviors** - Write a focused spec for what you're implementing
-            2. **Regression tests** - Add specs for bugs you've fixed
-            3. **Edge cases** - Test your implementation's unique behaviors
+            ## Documentation
 
-            Example `specs/local/my_tests.yml`:
-            ```yaml
-            ---
-            specs:
-            - name: my_assign_test
-              template: "{% assign x = 'hello' %}{{ x }}"
-              expected: "hello"
-              complexity: 50
-              hint: "Test basic assign functionality"
+            Run `liquid-spec docs <name>` (works from this directory; no paths needed):
 
-            - name: my_filter_test
-              template: "{{ 'hello' | upcase }}"
-              expected: "HELLO"
-              complexity: 40
-            ```
+            | `liquid-spec docs ...` | What it explains |
+            |---|---|
+            | `complexity` | the full ramp: what to build at every score |
+            | `grammar` | the syntax: tags, output, expressions, literals |
+            | `parsing` | tokenizer/parser structure, error modes, whitespace control |
+            | `core-abstractions` | truthiness, nil, coercion, drops, special keys |
+            | `filters` | filter dispatch, arguments, coercion rules |
+            | `scopes` | variable scoping: assign, capture, loops, includes |
+            | `for-loops` | for/forloop/offset/limit/else, iteration protocol |
+            | `interrupts` | break/continue, incl. across include boundaries |
+            | `partials` | include vs render semantics |
+            | `filesystem` | partial lookup, extensions, path rules |
+            | `cycle`, `tablerow` | the stateful tags |
+            | `ruby-quirks` | behaviors inherited from Ruby's semantics |
+            | `json-rpc-protocol` | the non-Ruby adapter protocol |
 
-            **Tip**: Use `liquid-spec eval` to quickly test templates before adding them as specs:
-            ```bash
-            liquid-spec eval #{filename} -n test --liquid="{{ 'hello' | upcase }}" --compare
-            ```
+            Also read `QUIRKS.md` in the liquid-spec repository when an expectation looks
+            wrong — if the quirk is documented there, it is intentional.
 
-            ## Complexity-Ordered Implementation
+            ## Architecture advice for a fresh implementation
 
-            Specs are sorted by complexity score before running. This means you'll see failures for basic features first, then progressively harder ones. **Fix specs in the order they fail.**
+            Start boring: tokenizer → parser → node tree → tree-walking renderer with a
+            scope stack. Do not build a compiler or VM first — correctness across ~5,400
+            specs is the hard part, and a simple renderer is much easier to make correct.
+            Two things ARE worth designing in from day one, because they weave through
+            everything and are painful to retrofit:
 
-            ### Implementation Phases
+            1. **Error plumbing** — every node needs a line number and a uniform way to
+               either emit `Liquid error (line N): ...` text or raise, per the error model
+               above.
+            2. **The value model** — one module that answers "is this truthy?",
+               "how does this print?", "how does this coerce to a number?",
+               "how does this iterate?" for every type. Most spec failures at
+               complexity 150+ are inconsistencies between call sites that answered those
+               questions independently.
+
+            ### Implementation phases
 
             | Phase | Complexity | Features |
             |-------|------------|----------|
@@ -434,103 +520,50 @@ module Liquid
             | 2 | 55-100 | Basic conditionals, loops, comparisons, capture/case/forloop basics |
             | 3 | 105-180 | Standard filters/tags, comments/raw, whitespace control, interrupts, collection helpers |
             | 4 | 190-400 | Partials/filesystem, scope interactions, generated compatibility breadth |
-            | 5 | 500-900 | Parser error matrices, resource-limit accounting, recursion/deep nesting, security/date/time/Ruby quirks |
+            | 5 | 500-900 | Parser error matrices, error-model matrix, recursion/deep nesting, security/date/time/Ruby quirks |
             | 6 | 1000 | Production recordings and unscored mature-compatibility checks |
-
-            ### Complexity Reference
-
-            | Score | What to Implement |
-            |-------|-------------------|
-            | 0-1 | Empty template, literal passthrough, whitespace/newline preservation |
-            | 5-20 | First object output and literal strings/numbers/booleans/nil |
-            | 30 | Variable lookup and missing variables rendering empty |
-            | 40 | Very simple filters: `{{ x \\| upcase }}` |
-            | 50 | Assign tag: `{% assign x = 'foo' %}` |
-            | 55-65 | Basic if/else/unless and simple boolean composition |
-            | 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
-            | 105-150 | String filters, comment/raw, interrupts, loop modifiers, whitespace control |
-            | 160-220 | Generated filter breadth, truthy/falsy edges, cycle/tablerow, first partials |
-            | 230-900 | Long-tail compatibility, parser errors, recursion, date/time/Ruby quirks |
-            | 1000 | Production recordings and unscored specs |
             #{json_rpc ? json_rpc_section(filename) : ruby_adapter_section}
 
-            ## Debugging Failures
+            ## Local specs for development
 
-            When a spec fails, you'll see:
+            Any `.yml` under a local `specs/` directory is picked up automatically — use it
+            to isolate a behavior before fixing it, and as regression tests afterwards:
 
+            ```yaml
+            ---
+            specs:
+            - name: my_assign_test
+              template: "{% assign x = 'hello' %}{{ x }}"
+              expected: "hello"
+              complexity: 50
+              hint: "What rule this checks, for your future self"
             ```
-            1) test_assign_basic
-               Template: "{% assign x = 'hello' %}{{ x }}"
-               Expected: "hello"
-               Got:      ""
-            ```
 
-            Use `liquid-spec eval` to test individual templates:
+            Specs support `environment:` (variables), `filesystem:` (partials),
+            `error_mode:`, `render_errors: true` (required whenever `expected` contains
+            error text), and `errors:` for parse-error expectations — copy shapes from the
+            built-in suites.
+
+            ## Command reference
 
             ```bash
-            # Quick test with comparison to reference
-            liquid-spec eval #{filename} -n test_assign --liquid="{% assign x = 1 %}{{ x }}"
-
-            # Test with environment variables
-            liquid-spec eval #{filename} -n test_var -l "{{ x | size }}" -a '{"x": [1,2,3]}'
-            ```
-
-            ## Common Implementation Mistakes
-
-            1. **Truthy/falsy**: In Liquid, only `false` and `nil` are falsy. Empty strings and `0` are truthy.
-            2. **Variable scope**: Assign creates variables in the current scope. For loops have their own scope.
-            3. **Filter arguments**: Filters can have arguments: `{{ x | slice: 0, 3 }}`
-            4. **Whitespace**: `{{-` and `-}}` strip adjacent whitespace.
-            5. **Error handling**: Undefined variables return empty string, not an error.
-
-            ## Feature Flags
-
-            Some specs require specific features. Your adapter declares what it does NOT support
-            yet by listing them in `missing_features` (those specs are skipped):
-
-            ```ruby
-            LiquidSpec.configure do |config|
-              config.missing_features = [
-                :runtime_drops,  # No drop callbacks yet (skip drop-related specs)
-                :lax_parsing,    # No error_mode: :lax yet
-              ]
-            end
-            ```
-
-            ## Iterative Development Loop
-
-            1. Run `liquid-spec run #{filename}`
-            2. Note the first failure and its complexity score
-            3. Implement the minimal feature to pass that spec
-            4. Re-run and repeat
-
-            The complexity ordering ensures you build a solid foundation. Don't skip ahead—later features often depend on earlier ones working correctly. If the first failure is surprising or not actionable, inspect its hint and consider whether your local spec should be smaller. Use `Max complexity reached` rather than raw pass count to judge progress; partial implementations can accidentally pass later specs whose expected output is empty.
-
-            ## Useful Commands
-
-            ```bash
-            # List all available specs
-            liquid-spec run #{filename} -l
-
-            # List available suites
-            liquid-spec run #{filename} --list-suites
-
-            # Run specific suite
-            liquid-spec run #{filename} -s basics
-
-            # Compare your output to reference implementation
-            liquid-spec run #{filename} --compare
-
-            # Audit accidental passes / emit machine-readable results
-            liquid-spec run #{filename} --list-passed
-            liquid-spec run #{filename} --json > results.json
+            liquid-spec run #{filename}                 # the loop
+            liquid-spec run #{filename} -n case         # only specs matching a pattern
+            liquid-spec run #{filename} -n /^case_b/    # regex form
+            liquid-spec run #{filename} -s basics       # one suite
+            liquid-spec run #{filename} --list-suites   # what suites exist
+            liquid-spec run #{filename} -l              # list specs without running
+            liquid-spec run #{filename} --list-passed   # audit accidental passes
+            liquid-spec run #{filename} --json          # machine-readable results
+            liquid-spec eval #{filename} -l "{{ 1 | plus: 1 }}" --compare   # one-off template
+            liquid-spec docs complexity                 # any guide from the table above
             ```
 
             ## Reference
 
-            - [Liquid Documentation](https://shopify.github.io/liquid/)
+            - [Liquid documentation](https://shopify.github.io/liquid/) (user-facing; the
+              specs and `liquid-spec docs` guides are the implementer-facing truth)
             - [liquid-spec repository](https://github.com/Shopify/liquid-spec)
-            - Run `liquid-spec docs complexity` for the full complexity scoring guide
           MARKDOWN
         end
 
@@ -810,6 +843,12 @@ module Liquid
           # --json, --jsonrpc, and --json-rpc (plus -j) all select the JSON-RPC adapter
           json_rpc_flag = args.intersect?(%w[--json-rpc --jsonrpc --json -j])
           liquid_ruby_flag = args.intersect?(%w[--liquid-ruby -l])
+
+          # A type flag without a filename selects single-file mode with the
+          # canonical filename for that type (previously the flag was
+          # silently ignored and both adapters were generated).
+          filename ||= "liquid_adapter_jsonrpc.rb" if json_rpc_flag
+          filename ||= "liquid_adapter.rb" if liquid_ruby_flag
 
           if filename
             # Single-file mode: generate one adapter, type determined by flags

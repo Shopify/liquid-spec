@@ -86,13 +86,15 @@ module Liquid
           end
 
           def find_doc_file(name)
-            # Try exact match
-            exact = File.join(DOCS_PATH, name)
-            return exact if File.exist?(exact)
+            # implementers/ first, then the docs/ root (json-rpc-protocol.md
+            # lives there) — exact name, then with .md appended.
+            [DOCS_PATH, File.expand_path("..", DOCS_PATH)].each do |dir|
+              exact = File.join(dir, name)
+              return exact if File.file?(exact)
 
-            # Try with .md extension
-            with_ext = File.join(DOCS_PATH, "#{name}.md")
-            return with_ext if File.exist?(with_ext)
+              with_ext = File.join(dir, "#{name}.md")
+              return with_ext if File.file?(with_ext)
+            end
 
             nil
           end
