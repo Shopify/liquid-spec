@@ -11,16 +11,18 @@
 # variables ({{ ... }}, {% echo %}) are never blank, so their errors always
 # print.
 #
-# MODE MATRIX (decided 2026-07-05): suppression is a LAX-MODE compatibility
-# behavior. In strict and strict2 the error text must SURFACE even for blank
-# bodies — silent failure of an erroring condition is not acceptable in the
-# strict modes. NOTE: reference liquid currently suppresses in every parse
-# mode (BlockBody.rescue_render_node's `unless blank_tag` guard, kept for
-# backwards compatibility); the strict/strict2 specs below therefore define
-# required behavior beyond current reference conformance.
+# MODE MATRIX:
+# - lax inline-error mode preserves the historical blank-body suppression.
+# - strict inline-error mode also preserves that historical suppression for
+#   backwards compatibility.
+# - strict2 is the new behavior: blank bodies must NOT suppress inline error
+#   text. If an error is evaluated, strict2 should make it visible.
+# - raised-error mode is separate from inline-error output. With raised errors
+#   enabled, all modes raise; blank-body suppression only controls rendered
+#   inline error TEXT.
 #
-# All lax expectations in this file were validated verbatim against reference
-# liquid (line_numbers: true).
+# Lax/strict expectations were validated against current reference liquid.
+# Strict2 expectations intentionally define the new desired behavior.
 
 specs:
 
@@ -155,31 +157,44 @@ specs:
     ERROR TEXT of a blank tag is suppressed; evaluation and side effects are
     unchanged.
 
-# ── Strict modes: suppression does NOT apply ────────────────────────────────
+# ── Strict mode: historical inline-error suppression remains ────────────────
 
-- name: blank_if_body_shows_error_text_strict
+- name: blank_if_body_suppresses_error_text_strict
   template: "{% if 5 > \"x\" %}{% endif %}"
   error_mode: :strict
   render_errors: true
-  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  expected: ""
   complexity: 750
   hint: |
-    In strict mode the blank-body suppression does NOT apply: an erroring
-    condition surfaces its error text even when the body is blank. Silent
-    failure is a lax-only compatibility behavior. (Reference liquid currently
-    suppresses here too — this spec defines the required strict behavior.)
+    QUIRK: strict mode still preserves the historical inline-error text
+    suppression for blank block bodies. The condition is evaluated and the
+    error is recorded/raised in raised-error mode, but render_errors/inline
+    output stays empty for compatibility.
 
-- name: blank_for_body_shows_error_text_strict
+- name: blank_unless_body_suppresses_error_text_strict
+  template: "{% unless 5 > \"x\" %} {% endunless %}"
+  error_mode: :strict
+  render_errors: true
+  expected: ""
+  complexity: 750
+  hint: |
+    Whitespace-only unless bodies are blank in strict mode too. This documents
+    the compatibility behavior that strict2 intentionally changes.
+
+- name: blank_for_body_suppresses_error_text_strict
   template: "{% for i in (1..3) offset: xs %}{% endfor %}"
   environment:
     xs: "bad"
   error_mode: :strict
   render_errors: true
-  expected: "Liquid error (line 1): invalid integer"
+  expected: ""
   complexity: 750
   hint: |
-    Same rule for loops: strict mode surfaces the invalid-offset error even
-    with a blank body.
+    QUIRK: strict-mode inline-error suppression applies to blank for bodies.
+    The invalid offset is evaluated, but because the body is blank the inline
+    "Liquid error (...)" text is not written to output.
+
+# ── strict2: blank bodies must not suppress inline errors ───────────────────
 
 - name: blank_if_body_shows_error_text_strict2
   template: "{% if 5 > \"x\" %}{% endif %}"
@@ -188,5 +203,151 @@ specs:
   expected: "Liquid error (line 1): comparison of Integer with String failed"
   complexity: 750
   hint: |
-    strict2 follows strict: no blank-body suppression. Every erroring
-    condition is visible.
+    NEW STRICT2 CONTRACT: strict2 stops the historical blank-body suppression.
+    The body is blank, but the condition still errors, so inline-error output
+    must include the "Liquid error (...)" text.
+
+- name: whitespace_if_body_shows_error_text_strict2
+  template: "{% if 5 > \"x\" %}   {% endif %}"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    NEW STRICT2 CONTRACT: whitespace-only text is blank for lax/strict
+    compatibility, but strict2 must not hide the condition error text.
+
+- name: assign_if_body_shows_error_text_strict2
+  template: "{% if 5 > \"x\" %}{% assign a = 1 %}{% endif %}"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    NEW STRICT2 CONTRACT: assign nodes produce no output and used to make the
+    body blank enough to suppress inline errors. strict2 should surface the
+    error text anyway.
+
+- name: comment_if_body_shows_error_text_strict2
+  template: "{% if 5 > \"x\" %}{% comment %}c{% endcomment %}{% endif %}"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    NEW STRICT2 CONTRACT: comments are blank output, but strict2 should not use
+    blankness as a reason to hide an erroring condition.
+
+- name: capture_if_body_shows_error_text_strict2
+  template: "{% if 5 > \"x\" %}{% capture c %}text{% endcapture %}{% endif %}"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    NEW STRICT2 CONTRACT: capture writes to a variable, not output. That made
+    it blank for historical suppression, but strict2 should still render the
+    condition error text.
+
+- name: blank_unless_body_shows_error_text_strict2
+  template: "{% unless 5 > \"x\" %} {% endunless %}"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): comparison of Integer with String failed"
+  complexity: 750
+  hint: |
+    NEW STRICT2 CONTRACT: unless follows if. A blank unless body does not hide
+    the error text from evaluating its condition.
+
+- name: blank_for_body_shows_error_text_strict2
+  template: "{% for i in (1..3) offset: xs %}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: strict2
+  render_errors: true
+  expected: "Liquid error (line 1): invalid integer"
+  complexity: 750
+  hint: |
+    NEW STRICT2 CONTRACT: for follows the same rule. A blank body should not
+    hide an invalid offset error in strict2.
+
+# ── Raised-error mode: blankness never swallows the exception ───────────────
+
+- name: blank_if_body_raises_error_lax
+  template: "{% if 5 > \"x\" %}{% endif %}"
+  error_mode: :lax
+  errors:
+    render_error:
+      - Liquid::ArgumentError
+      - comparison of Integer with String failed
+  complexity: 750
+  hint: |
+    Blank-body suppression only affects inline rendered error TEXT. With raised
+    errors enabled, the evaluated condition raises even in lax mode.
+
+- name: blank_if_body_raises_error_strict
+  template: "{% if 5 > \"x\" %}{% endif %}"
+  error_mode: :strict
+  errors:
+    render_error:
+      - Liquid::ArgumentError
+      - comparison of Integer with String failed
+  complexity: 750
+  hint: |
+    Strict raised-error mode raises the condition error. There is no output
+    suppression path because rendering aborts with the exception.
+
+- name: blank_if_body_raises_error_strict2
+  template: "{% if 5 > \"x\" %}{% endif %}"
+  error_mode: strict2
+  errors:
+    render_error:
+      - Liquid::ArgumentError
+      - comparison of Integer with String failed
+  complexity: 750
+  hint: |
+    strict2 also raises when strict_errors are enabled. The strict2 inline
+    behavior differs from lax/strict, but raised-error behavior is the same:
+    evaluated errors raise.
+
+- name: blank_for_body_raises_error_lax
+  template: "{% for i in (1..3) offset: xs %}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: :lax
+  errors:
+    render_error:
+      - Liquid::ArgumentError
+      - invalid integer
+  complexity: 750
+  hint: |
+    The invalid offset is evaluated before the loop body. Inline lax mode may
+    hide the rendered text for blank bodies, but raised-error mode still raises.
+
+- name: blank_for_body_raises_error_strict
+  template: "{% for i in (1..3) offset: xs %}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: :strict
+  errors:
+    render_error:
+      - Liquid::ArgumentError
+      - invalid integer
+  complexity: 750
+  hint: |
+    Strict raised-error mode raises the invalid offset even though the body is
+    blank.
+
+- name: blank_for_body_raises_error_strict2
+  template: "{% for i in (1..3) offset: xs %}{% endfor %}"
+  environment:
+    xs: "bad"
+  error_mode: strict2
+  errors:
+    render_error:
+      - Liquid::ArgumentError
+      - invalid integer
+  complexity: 750
+  hint: |
+    strict2 raised-error mode raises the invalid offset. The strict2 contract
+    also surfaces this error in inline-error mode.
