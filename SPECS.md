@@ -83,6 +83,21 @@ Run the complexity ramp analysis to verify your spec fits:
 
 ---
 
+### Automated quality gates
+
+The test suite includes spec-quality checks that encode the current ramp policy:
+
+```bash
+ruby -Ilib -I$LIQUID -Itest -e 'require File.expand_path("test/spec_quality_test.rb")'
+```
+
+These checks currently enforce:
+
+- no complexity score may exceed 1000
+- every spec with effective complexity <= 220 must have an effective hint
+
+If this test fails, either add a useful spec/source-level hint or move the spec to a later complexity where it belongs.
+
 ## The Three Pillars of a Great Spec
 
 ### 1. Test Something Novel

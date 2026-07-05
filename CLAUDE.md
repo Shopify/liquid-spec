@@ -39,6 +39,21 @@ liquid-spec my_adapter.rb --list-suites
 ```
 
 
+
+### Spec Quality Gates
+
+Run the spec-quality gate when changing complexity scores, hints, or early-ramp specs:
+
+```bash
+ruby -Ilib -I$LIQUID -Itest -e 'require File.expand_path("test/spec_quality_test.rb")'
+```
+
+It currently enforces:
+- complexity scores must be <= 1000
+- every spec with effective complexity <= 220 must have an effective hint
+
+If it fails, add a useful spec/source-level hint or move the spec later in the ramp.
+
 ### Dumb Adapter Ramp Audits
 
 When changing early complexity scores or adding beginner specs, play dumb and verify the harness still behaves like an implementation curriculum:
@@ -460,6 +475,27 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 - `:shopify_includes`, `:shopify_blank`, `:shopify_error_handling`, `:shopify_error_format`, `:shopify_string_access` - Shopify platform/theme behavior beyond portable Liquid
 
 **JSON-RPC adapters** that can't support bidirectional communication for runtime drops should set `config.missing_features = [:runtime_drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
+
+
+### JSON-RPC Adapter Setup Notes
+
+JSON-RPC is the main path for non-Ruby Liquid implementations. Keep it especially well documented and tested.
+
+- Generate with `liquid-spec init --jsonrpc my_adapter.rb`.
+- The server implements `initialize`, `compile`, `render`, and `quit` over newline-delimited JSON-RPC on stdin/stdout.
+- Server logs must go to stderr, never stdout.
+- The Ruby adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
+- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
+- Remove `:runtime_drops` only after implementing bidirectional callbacks: `drop_get`, `drop_call`, and `drop_iterate`.
+- Prefer `result.error` for Liquid parse/render errors; legacy JSON-RPC errors `-32000`/`-32001` are accepted for compatibility.
+- Render receives `options.strict_errors`; when it is false, render errors should become inline Liquid error output.
+
+Run JSON-RPC checks with:
+
+```bash
+ruby -Ilib -I$LIQUID -Itest -e 'require "test_helper"; require File.expand_path("test/json_rpc_test.rb")'
+ruby -Ilib -I$LIQUID bin/liquid-spec examples/json_rpc_ruby_liquid.rb -n '^empty_template$|^literal_passthrough$' --json
+```
 
 ## The Eval Tool
 

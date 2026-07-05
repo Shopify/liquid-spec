@@ -115,6 +115,26 @@ The `options` hash in render includes:
 - `:strict_errors` - If true, raise errors; if false, render them inline
 - `:exception_renderer` - Custom exception handler (optional)
 
+
+### JSON-RPC adapters for non-Ruby implementations
+
+Use `liquid-spec init --jsonrpc my_adapter.rb` when your Liquid engine is written in Rust, Go, Python, Node.js, or another language. The generated Ruby adapter launches your server as a subprocess and talks JSON-RPC over stdin/stdout.
+
+Key setup points:
+
+- Your server implements `initialize`, `compile`, `render`, and `quit`.
+- Server debug logs go to stderr; stdout must contain only newline-delimited JSON-RPC messages.
+- The adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
+- Minimal JSON-RPC adapters should usually opt out of Ruby/transport-specific features such as `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
+- If you implement bidirectional drop callbacks (`drop_get`, `drop_call`, `drop_iterate`), remove `:runtime_drops` from `missing_features`.
+- Read `docs/json-rpc-protocol.md` for the exact message format and error-handling rules.
+
+```bash
+liquid-spec init --jsonrpc my_adapter.rb
+liquid-spec my_adapter.rb --command="./my-liquid-server"
+liquid-spec my_adapter.rb --json --list-passed > results.json
+```
+
 ### Optional: compiled-artifact protocol
 
 If your implementation can persist a compiled template as a string (e.g. an

@@ -1,0 +1,91 @@
+# frozen_string_literal: true
+
+require_relative "test_helper"
+require "json"
+require "open3"
+require "rbconfig"
+
+class RunnerDiagnosticsTest < Minitest::Test
+  ROOT = File.expand_path("..", __dir__)
+  BIN = File.join(ROOT, "bin", "liquid-spec")
+  FIXTURES = File.expand_path("fixtures/adapters", __dir__)
+
+  def run_liquid_spec(adapter, *args)
+    cmd = [
+      RbConfig.ruby,
+      "-I#{File.join(ROOT, "lib")}",
+      BIN,
+      File.join(FIXTURES, adapter),
+      *args,
+    ]
+    stdout, stderr, status = Open3.capture3(*cmd, chdir: ROOT)
+    [stdout, stderr, status.exitstatus]
+  end
+
+  def test_json_summary_includes_failures_and_passed_specs_when_requested
+    stdout, stderr, status = run_liquid_spec(
+      "source_echo_adapter.rb",
+      "-n", "^empty_template$|^literal_passthrough$|^object_string_literal$",
+      "--json",
+      "--list-passed",
+      "--max-failures", "2"
+    )
+
+    assert_equal 1, status
+    assert_equal "", stderr
+
+    payload = JSON.parse(stdout)
+    assert_equal "fail", payload.fetch("status")
+    assert_equal 2, payload.fetch("totals").fetch("passed")
+    assert_equal 1, payload.fetch("totals").fetch("failed")
+    assert_equal 0, payload.fetch("totals").fetch("errors")
+    assert_equal 1, payload.fetch("max_complexity_reached")
+
+    assert_equal ["object_string_literal"], payload.fetch("failures").map { |f| f.fetch("name") }
+    assert_equal ["empty_template", "literal_passthrough"], payload.fetch("passed").map { |f| f.fetch("name") }
+  end
+
+  def test_list_passed_plain_output_lists_complexity_and_source
+    stdout, _stderr, status = run_liquid_spec(
+      "source_echo_adapter.rb",
+      "-n", "^empty_template$|^literal_passthrough$|^object_string_literal$",
+      "--list-passed",
+      "--max-failures", "1"
+    )
+
+    assert_equal 1, status
+    assert_includes stdout, "Passed specs:"
+    assert_includes stdout, "[0] Basics :: empty_template (specs/basics/specs.yml)"
+    assert_includes stdout, "[1] Basics :: literal_passthrough (specs/basics/specs.yml)"
+    refute_includes stdout, "[5] Basics :: object_string_literal"
+  end
+
+  def test_always_empty_adapter_passes_empty_outputs_but_does_not_advance_ramp
+    stdout, _stderr, status = run_liquid_spec(
+      "empty_adapter.rb",
+      "--json",
+      "--list-passed",
+      "--max-failures", "1"
+    )
+
+    assert_equal 1, status
+    payload = JSON.parse(stdout)
+    assert_operator payload.fetch("totals").fetch("passed"), :>, 1
+    assert_equal 0, payload.fetch("max_complexity_reached")
+    assert_includes payload.fetch("passed").map { |f| f.fetch("name") }, "empty_template"
+    assert_includes payload.fetch("failures").map { |f| f.fetch("name") }, "literal_passthrough"
+  end
+
+  def test_always_raise_adapter_shows_error_and_hint_at_start_of_ramp
+    stdout, _stderr, status = run_liquid_spec(
+      "raise_compile_adapter.rb",
+      "-n", "^empty_template$",
+      "--max-failures", "1"
+    )
+
+    assert_equal 1, status
+    assert_includes stdout, "Error:    SyntaxError: dumb compile boom"
+    assert_includes stdout, "Hint: START HERE"
+    assert_includes stdout, "Max complexity reached: 0/0"
+  end
+end

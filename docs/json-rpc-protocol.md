@@ -4,10 +4,11 @@ This document specifies the JSON-RPC 2.0 protocol for implementing Liquid templa
 
 ## Design Principles
 
-1. **Liquid errors are NOT protocol errors** - Parse/render errors are part of the result, not JSON-RPC exceptions
-2. **Explicit over implicit** - All options are documented and validated
-3. **Helpful error messages** - Invalid requests explain what went wrong
-4. **Deterministic testing** - Time can be frozen for reproducible tests
+1. **Protocol errors are for protocol failures** - Invalid JSON, malformed requests, missing methods, and invalid parameters use JSON-RPC `error` responses.
+2. **Liquid errors are test behavior** - Parse/render errors should be reported in a stable shape so liquid-spec can match them. The preferred shape is `result.error` / `result.errors`; liquid-spec also accepts legacy `-32000` / `-32001` JSON-RPC errors from older servers.
+3. **Explicit over implicit** - All options are documented and validated.
+4. **Helpful error messages** - Invalid requests explain what went wrong.
+5. **Deterministic testing** - Time can be frozen for reproducible tests.
 
 ## Methods
 
@@ -36,15 +37,20 @@ Called once when the connection starts.
     "version": "1.0",
     "implementation": "my-liquid",
     "liquid_version": "6.0.0",
-    "features": ["core", "runtime_drops"]
+    "features": ["runtime_drops"]
   }
 }
 ```
 
 **Features:**
-- `core` - Full Liquid implementation
+
+`features` is informational metadata reported by the subprocess. The Ruby adapter file still controls which specs run via `config.missing_features` because spec selection happens in liquid-spec, not inside the subprocess.
+
+Common feature names:
 - `runtime_drops` - Supports bidirectional drop callbacks (see Drop Callbacks section)
 - `lax_parsing` - Supports `error_mode: lax`
+
+For a minimal JSON-RPC server, start with `features: []` and set the adapter's `config.missing_features` to skip unsupported capabilities such as `:runtime_drops`, `:lax_parsing`, `:ruby_types`, `:ruby_drops`, `:binary_data`, and Shopify-specific features.
 
 ### `compile`
 
@@ -73,7 +79,7 @@ Parse a Liquid template and store it for later rendering.
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `template` | string | yes | The Liquid template source |
-| `options.error_mode` | string | no | `"strict"` (default) or `"lax"` |
+| `options.error_mode` | string | no | `"strict2"` (recommended default), `"strict"`, `"lax"`, `"raise"`, or omitted/null |
 | `options.line_numbers` | boolean | no | Track line numbers for errors |
 | `filesystem` | object | no | Map of filename → content for includes/renders |
 
@@ -104,7 +110,7 @@ Parse a Liquid template and store it for later rendering.
 }
 ```
 
-Note: Parse errors are returned in `result.error`, not as JSON-RPC errors. This makes it easier for the client to handle them uniformly.
+Preferred: return parse errors in `result.error` rather than as JSON-RPC errors. This keeps Liquid syntax failures separate from transport/protocol failures. For compatibility with older JSON-RPC servers, liquid-spec also accepts JSON-RPC error code `-32000` with `data.type: "parse_error"`.
 
 ### `render`
 
@@ -123,8 +129,7 @@ Render a compiled template with environment variables.
       "items": [1, 2, 3]
     },
     "options": {
-      "strict_variables": false,
-      "strict_filters": false
+      "strict_errors": true
     },
     "frozen_time": "2024-01-01T00:01:58Z"
   }
@@ -136,8 +141,7 @@ Render a compiled template with environment variables.
 |------|------|----------|-------------|
 | `template_id` | string | yes | ID from compile response |
 | `environment` | object | no | Variables available to the template |
-| `options.strict_variables` | boolean | no | Error on undefined variables |
-| `options.strict_filters` | boolean | no | Error on undefined filters |
+| `options.strict_errors` | boolean | no | If true, render errors should be reported as errors; if false, render them inline in `output` when possible |
 | `frozen_time` | string | no | ISO 8601 timestamp for `now` keyword |
 
 **Response (always success for valid template_id):**
@@ -152,7 +156,7 @@ Render a compiled template with environment variables.
 }
 ```
 
-**Response with render errors:**
+**Response with an inline render error (`strict_errors: false`):**
 ```json
 {
   "jsonrpc": "2.0",
@@ -161,7 +165,7 @@ Render a compiled template with environment variables.
     "output": "Liquid error (line 1): cannot sort values of incompatible types",
     "errors": [
       {
-        "type": "argument_error",
+        "type": "render_error",
         "message": "cannot sort values of incompatible types",
         "line": 1
       }
@@ -170,7 +174,23 @@ Render a compiled template with environment variables.
 }
 ```
 
-**Key point:** Render errors are Liquid behavior, not protocol failures. The `errors` array captures what went wrong for test assertions, while `output` contains whatever Liquid actually rendered (which may include inline error messages).
+**Response with a raised render error (`strict_errors: true`):**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "output": null,
+    "error": {
+      "type": "render_error",
+      "message": "cannot sort values of incompatible types",
+      "line": 1
+    }
+  }
+}
+```
+
+Preferred: return raised render errors in `result.error`. For compatibility with older servers, liquid-spec also accepts JSON-RPC error code `-32001` with `data.type: "render_error"`. If `strict_errors` is false and an older server sends a render error as a JSON-RPC error, liquid-spec converts it to inline `Liquid error: ...` output.
 
 ### `quit` (notification)
 
@@ -300,7 +320,7 @@ Call a method on a drop with arguments.
 
 ## Protocol Errors
 
-Use JSON-RPC errors only for actual protocol failures:
+Use JSON-RPC errors for actual protocol failures. liquid-spec also tolerates the legacy Liquid error codes listed below, but new servers should prefer `result.error` for Liquid parse/render errors.
 
 | Code | Meaning | When to use |
 |------|---------|-------------|
@@ -308,6 +328,8 @@ Use JSON-RPC errors only for actual protocol failures:
 | -32600 | Invalid request | Missing required fields |
 | -32601 | Method not found | Unknown method name |
 | -32602 | Invalid params | Parameter validation failed |
+| -32000 | Legacy Liquid parse error | Compatibility only; prefer `result.error` |
+| -32001 | Legacy Liquid render error | Compatibility only; prefer `result.error` |
 
 **Example validation error:**
 ```json
@@ -331,14 +353,13 @@ Use JSON-RPC errors only for actual protocol failures:
 
 Liquid has complex error handling that implementers need to understand:
 
-1. **Parse errors** - Syntax problems that prevent compilation. Return in `result.error`.
+1. **Parse errors** - Syntax problems that prevent compilation. Prefer `result.error` with `type: "parse_error"`.
 
-2. **Render errors** - Problems during rendering (undefined variable, filter error, etc.). These are:
-   - Rendered inline as "Liquid error (line N): message"
-   - Captured in `result.errors` array
-   - NOT raised as JSON-RPC errors
+2. **Render errors with `strict_errors: true`** - Problems during rendering should be reported as `result.error` with `type: "render_error"`.
 
-3. **The output always reflects what Liquid would actually produce** - including error messages rendered inline.
+3. **Render errors with `strict_errors: false`** - Render the inline Liquid error text into `output` and optionally include details in `result.errors`.
+
+4. **Protocol errors** - Only malformed JSON-RPC usage should use JSON-RPC `error`, except for tolerated legacy `-32000` / `-32001` Liquid errors.
 
 ### Time Handling
 

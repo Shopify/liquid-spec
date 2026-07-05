@@ -158,7 +158,9 @@ module Liquid
           #
           # 1. initialize (parent -> subprocess)
           #    Request:  {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"version":"1.0"}}
-          #    Response: {"jsonrpc":"2.0","id":1,"result":{"version":"1.0","features":["core"]}}
+          #    Response: {"jsonrpc":"2.0","id":1,"result":{"version":"1.0","features":[]}}
+          #    Note: features are informational. The Ruby adapter controls spec
+          #    selection with config.missing_features below.
           #
           # 2. quit (parent -> subprocess) - notification, no response expected
           #    Notification: {"jsonrpc":"2.0","method":"quit","params":{}}
@@ -188,16 +190,11 @@ module Liquid
           # Response (success):
           #   {"jsonrpc":"2.0","id":2,"result":{"template_id":"abc123"}}
           #
-          # Response (parse error):
-          #   {
-          #     "jsonrpc": "2.0",
-          #     "id": 2,
-          #     "error": {
-          #       "code": -32000,
-          #       "message": "Parse error",
-          #       "data": {"type": "parse_error", "line": 1, "message": "Unknown tag 'foo'"}
-          #     }
-          #   }
+          # Response (parse error, preferred):
+          #   {"jsonrpc":"2.0","id":2,"result":{"template_id":null,"error":{"type":"parse_error","line":1,"message":"Unknown tag 'foo'"}}}
+          #
+          # Legacy response also accepted:
+          #   {"jsonrpc":"2.0","id":2,"error":{"code":-32000,"message":"Parse error","data":{"type":"parse_error","line":1,"message":"Unknown tag 'foo'"}}}
           #
           # --- RENDER ---
           #
@@ -216,7 +213,7 @@ module Liquid
           #         "user": {"_rpc_drop": "drop_1", "type": "UserDrop"}
           #       },
           #       "options": {
-          #         "render_errors": false  // true = render errors as text, false = raise (default)
+          #         "strict_errors": true  // true = report render errors, false = render inline text
           #       }
           #     }
           #   }
@@ -224,16 +221,13 @@ module Liquid
           # Response (success):
           #   {"jsonrpc":"2.0","id":3,"result":{"output":"HELLO"}}
           #
-          # Response (render error):
-          #   {
-          #     "jsonrpc": "2.0",
-          #     "id": 3,
-          #     "error": {
-          #       "code": -32001,
-          #       "message": "Render error",
-          #       "data": {"type": "render_error", "line": 1, "message": "undefined method"}
-          #     }
-          #   }
+          # Response (render error with strict_errors=true, preferred):
+          #   {"jsonrpc":"2.0","id":3,"result":{"output":null,"error":{"type":"render_error","line":1,"message":"undefined method"}}}
+          #
+          # Response (inline render error with strict_errors=false):
+          #   {"jsonrpc":"2.0","id":3,"result":{"output":"Liquid error: undefined method","errors":[{"type":"render_error","message":"undefined method"}]}}
+          #
+          # Legacy render-error JSON-RPC error code -32001 is also accepted.
           #
           # --- RPC DROPS (subprocess -> parent) ---
           #
@@ -256,8 +250,8 @@ module Liquid
           #
           # --- ERROR CODES ---
           #
-          # -32000  Parse error (template syntax error)
-          # -32001  Render error (runtime error)
+          # -32000  Legacy parse error (accepted; prefer result.error)
+          # -32001  Legacy render error (accepted; prefer result.error)
           # -32002  Drop access error (property/method not found)
           # -32700  JSON parse error (invalid JSON received)
           # -32600  Invalid request (malformed JSON-RPC)
@@ -289,7 +283,8 @@ module Liquid
             ctx[:adapter] = Liquid::Spec::JsonRpc::Adapter.new(command, timeout: timeout)
             ctx[:adapter].start
 
-            # Store features reported by subprocess for use in configure block
+            # Features reported by the subprocess are informational. Spec
+            # selection is controlled by config.missing_features below.
             ctx[:features] = ctx[:adapter].features
 
             at_exit { ctx[:adapter]&.shutdown }
@@ -307,7 +302,22 @@ module Liquid
             #   :runtime_drops  - drop_get/drop_call/drop_iterate callbacks
             #   :lax_parsing    - error_mode: :lax (lenient parsing)
             #   :ruby_types     - Ruby-specific types (symbols, ranges, etc.)
-            config.missing_features = [:runtime_drops]
+            #   :ruby_drops     - Ruby-specific object/drop fixtures
+            #   :binary_data    - Raw bytes that JSON cannot transport safely
+            #   :shopify_*      - Shopify platform/theme extensions
+            config.missing_features = [
+              :runtime_drops,
+              :ruby_types,
+              :ruby_drops,
+              :binary_data,
+              :template_factory,
+              :shopify_filters,
+              :shopify_includes,
+              :shopify_blank,
+              :shopify_error_handling,
+              :shopify_error_format,
+              :shopify_string_access,
+            ]
           end
 
           # ERROR MODES
@@ -615,7 +625,7 @@ module Liquid
 
             All messages are newline-delimited JSON. The lifecycle is:
 
-            1. **initialize** - liquid-spec sends version info, your server responds with supported features
+            1. **initialize** - liquid-spec sends version info, your server responds with informational metadata/features
             2. **compile** - Parse a template, return a template_id
             3. **render** - Render a compiled template with variables
             4. **quit** - Notification to exit cleanly (no response expected)
@@ -650,7 +660,9 @@ module Liquid
               const { id, method, params = {} } = JSON.parse(line);
 
               if (method === 'initialize') {
-                respond(id, { version: '1.0', features: ['core'] });
+                // features is informational. Spec selection is configured in
+                // the Ruby adapter's config.missing_features list.
+                respond(id, { version: '1.0', features: [] });
               } else if (method === 'compile') {
                 const templateId = `t${nextId++}`;
                 templates.set(templateId, { source: params.template, filesystem: params.filesystem || {} });
@@ -687,7 +699,10 @@ module Liquid
             // Success response
             {"jsonrpc":"2.0","id":1,"result":{"template_id":"abc123"}}
 
-            // Parse error response
+            // Parse error response (preferred)
+            {"jsonrpc":"2.0","id":1,"result":{"template_id":null,"error":{"type":"parse_error","message":"Unknown tag"}}}
+
+            // Legacy parse error response also accepted
             {"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"Parse error","data":{"type":"parse_error","message":"Unknown tag"}}}
             ```
 
@@ -698,13 +713,19 @@ module Liquid
             {"jsonrpc":"2.0","id":2,"method":"render","params":{
               "template_id": "abc123",
               "environment": {"x": "hello", "items": [1,2,3]},
-              "options": {"render_errors": false}
+              "options": {"strict_errors": true}
             }}
 
             // Success response
             {"jsonrpc":"2.0","id":2,"result":{"output":"HELLO"}}
 
-            // Render error response
+            // Render error response with strict_errors=true (preferred)
+            {"jsonrpc":"2.0","id":2,"result":{"output":null,"error":{"type":"render_error","message":"undefined variable"}}}
+
+            // Inline render error response with strict_errors=false
+            {"jsonrpc":"2.0","id":2,"result":{"output":"Liquid error: undefined variable","errors":[{"type":"render_error","message":"undefined variable"}]}}
+
+            // Legacy render error response also accepted
             {"jsonrpc":"2.0","id":2,"error":{"code":-32001,"message":"Render error","data":{"type":"render_error","message":"undefined variable"}}}
             ```
 
@@ -712,8 +733,8 @@ module Liquid
 
             | Code | Meaning |
             |------|---------|
-            | -32000 | Parse error (template syntax error) |
-            | -32001 | Render error (runtime error) |
+            | -32000 | Legacy parse error (accepted; prefer result.error) |
+            | -32001 | Legacy render error (accepted; prefer result.error) |
             | -32700 | JSON parse error |
             | -32600 | Invalid request |
             | -32601 | Method not found |
