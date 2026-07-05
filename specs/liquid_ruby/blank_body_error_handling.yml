@@ -278,7 +278,6 @@ specs:
   error_mode: :lax
   errors:
     render_error:
-      - Liquid::ArgumentError
       - comparison of Integer with String failed
   complexity: 750
   hint: |
@@ -290,7 +289,6 @@ specs:
   error_mode: :strict
   errors:
     render_error:
-      - Liquid::ArgumentError
       - comparison of Integer with String failed
   complexity: 750
   hint: |
@@ -302,7 +300,6 @@ specs:
   error_mode: strict2
   errors:
     render_error:
-      - Liquid::ArgumentError
       - comparison of Integer with String failed
   complexity: 750
   hint: |
@@ -317,7 +314,6 @@ specs:
   error_mode: :lax
   errors:
     render_error:
-      - Liquid::ArgumentError
       - invalid integer
   complexity: 750
   hint: |
@@ -331,7 +327,6 @@ specs:
   error_mode: :strict
   errors:
     render_error:
-      - Liquid::ArgumentError
       - invalid integer
   complexity: 750
   hint: |
@@ -345,7 +340,6 @@ specs:
   error_mode: strict2
   errors:
     render_error:
-      - Liquid::ArgumentError
       - invalid integer
   complexity: 750
   hint: |
