@@ -5,6 +5,7 @@ require_relative "test_helper"
 
 class SpecQualityTest < Minitest::Test
   EARLY_HINT_CEILING = 220
+  RESOURCE_LIMIT_FLOOR = 250
   COMPLEXITY_CEILING = 1000
 
   def all_specs
@@ -34,5 +35,18 @@ class SpecQualityTest < Minitest::Test
     end
 
     assert_empty offenders, "Specs with complexity <= #{EARLY_HINT_CEILING} need hints:\n#{offenders.join("\n")}"
+  end
+
+  def test_resource_limit_specs_do_not_appear_in_beginner_ramp
+    offenders = all_specs.filter_map do |suite, spec|
+      next if spec.raw_resource_limits.nil? || spec.raw_resource_limits.empty?
+
+      complexity = spec.complexity || suite.minimum_complexity || COMPLEXITY_CEILING
+      next if complexity >= RESOURCE_LIMIT_FLOOR
+
+      "#{spec.source_file}:#{spec.line_number}: [#{complexity}] #{spec.name}"
+    end
+
+    assert_empty offenders, "Resource-limit specs should be complexity >= #{RESOURCE_LIMIT_FLOOR}:\n#{offenders.join("\n")}"
   end
 end

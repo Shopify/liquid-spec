@@ -196,8 +196,8 @@ Specs are ordered by complexity so you can implement features progressively. The
 | 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
 | 105-150 | Common filters/tags, comments/raw, interrupts, loop modifiers, whitespace control |
 | 160-220 | Generated filter breadth, truthy/falsy edges, cycle/tablerow, first partials/filesystem |
-| 230-400 | Long-tail standard behavior and parser/scope/filesystem edge cases |
-| 500-900 | Mature compatibility: parser mutations, recursion/resource limits, date/time/Ruby quirks |
+| 230-400 | Long-tail standard behavior, parser/scope/filesystem edge cases, resource-limit accounting |
+| 500-900 | Mature compatibility: parser mutations, recursion/deep nesting, date/time/Ruby quirks |
 | 1000 | Production recordings and unscored specs |
 
 Each non-trivial spec includes a detailed `hint` explaining how the feature should be implemented. If the first failure is surprising or unactionable, the spec probably needs a better hint or a higher complexity score.

@@ -135,8 +135,8 @@ Complexity determines learning order. A spec at complexity 70 (for loops) should
 | 70-100 | Gentle loops, comparisons, forloop basics, capture, simple case/when |
 | 105-150 | Common filters/tags: string filters, comment/raw, increment, interrupts, loop modifiers, whitespace control |
 | 160-220 | Generated filter breadth, truthy/falsy edge cases, cycle/tablerow, first partials/filesystem, Ruby/reference quirks |
-| 230-400 | Long-tail standard behavior: advanced lookup, parser edge cases, scope/filesystem interactions |
-| 500-900 | Mature compatibility: parser mutation matrices, recursion/resource limits, security-sensitive quirks, date/time/Ruby quirks |
+| 230-400 | Long-tail standard behavior: advanced lookup, parser edge cases, scope/filesystem interactions, resource-limit accounting |
+| 500-900 | Mature compatibility: parser mutation matrices, recursion/deep nesting, security-sensitive quirks, date/time/Ruby quirks |
 | 1000 | Production recordings and unscored specs |
 
 **Rule:** If your spec fails for an implementer who passed all lower-complexity specs, your complexity is too low. If it passes without implementing anything new, it's too high. Complexity is capped at 1000; do not assign scores above 1000.
