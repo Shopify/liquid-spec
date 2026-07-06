@@ -40,7 +40,7 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_equal 2, payload.fetch("totals").fetch("passed")
     assert_equal 1, payload.fetch("totals").fetch("failed")
     assert_equal 0, payload.fetch("totals").fetch("errors")
-    assert_equal 1, payload.fetch("max_complexity_reached")
+    assert_equal 4, payload.fetch("max_complexity_reached")
 
     assert_equal ["object_string_literal"], payload.fetch("failures").map { |f| f.fetch("name") }
     assert_equal ["empty_template", "literal_passthrough"], payload.fetch("passed").map { |f| f.fetch("name") }
@@ -99,7 +99,7 @@ class RunnerDiagnosticsTest < Minitest::Test
 
     assert_equal 1, status
     assert stdout.start_with?("Next best specs to work on:"), "stdout should start with the failure list, got:\n#{stdout[0,120]}"
-    assert_match(/Complexity bar cleared: \d+, \d+ passes, \d+ failures\./, stdout)
+    assert_match(/Complexity bar cleared: \d+ of \d+, \d+ passes, \d+ failures\./, stdout)
     refute_includes stdout, "Missing features:"
     refute_includes stdout, "Known failures:"
     # no per-suite progress lines leak into default stdout

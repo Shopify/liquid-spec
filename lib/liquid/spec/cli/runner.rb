@@ -17,6 +17,10 @@ module Liquid
         TEST_TZ = "UTC"
         MAX_FAILURES_DEFAULT = 5
         RESULTS_LOG_DIR = "/tmp"
+        # Root of the liquid-spec gem (specs/, docs/, lib/ live here). Used to
+        # shorten gem-owned paths in failure output: <gem>/specs.yml:42 instead of
+        # /home/.../bundler/gems/liquid-spec-xxxx/specs/liquid_ruby/specs.yml:42.
+        GEM_ROOT = File.expand_path("../../../..", __dir__).freeze
 
         # Manages known failure patterns (exact match only)
         class KnownFailures
@@ -296,13 +300,20 @@ module Liquid
             # Count available specs from all sources
             has_prioritized = options[:add_specs] && !options[:add_specs].empty?
             prioritized_specs = has_prioritized ? load_additional_specs(options[:add_specs]) : []
+            total_skipped = 0
             prioritized_specs = filter_specs(prioritized_specs, config.filter) if config.filter && prioritized_specs.any?
-            prioritized_specs = filter_by_missing(prioritized_specs, missing_features) if prioritized_specs.any?
+            if prioritized_specs.any?
+              total_skipped += prioritized_specs.size
+              prioritized_specs = filter_by_missing(prioritized_specs, missing_features)
+              total_skipped -= prioritized_specs.size
+            end
 
             # Auto-discover local specs from ./specs/*.yml
             local_specs = discover_local_specs
             local_specs = filter_specs(local_specs, config.filter) if config.filter && local_specs.any?
-            local_specs = filter_by_missing(local_specs, missing_features) if local_specs.any?
+            total_skipped += local_specs.size
+            local_specs = filter_by_missing(local_specs, missing_features)
+            total_skipped -= local_specs.size
             if local_specs.any? && config.verbose && !json_mode
               puts "Auto-including: #{local_specs.size} specs from ./specs/*.yml"
             end
@@ -380,7 +391,9 @@ module Liquid
               end
 
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
+              total_skipped += suite_specs.size
               suite_specs = filter_by_missing(suite_specs, missing_features)
+              total_skipped -= suite_specs.size
               suite_specs = sort_by_complexity(suite_specs)
 
               next if suite_specs.empty?
@@ -464,18 +477,14 @@ module Liquid
             skipped_suites = skipped_suites_for(config, missing_features)
             show_skipped_suites(config, missing_features) if config.verbose && !json_mode
 
-            # Calculate max complexity reached (highest level where all specs pass)
+            # Complexity bar: one below the first (lowest) complexity level with any
+            # failure, i.e. the highest contiguous level fully cleared. When there are
+            # no failures, the bar is the max complexity present.
             sorted_complexities = results_by_complexity.keys.sort
-            max_complexity_reached = 0
-            sorted_complexities.each do |c|
-              r = results_by_complexity[c]
-              if r[:fail] == 0 && r[:error] == 0
-                max_complexity_reached = c
-              else
-                break
-              end
-            end
+            first_failure_complexity = results_by_complexity.select { |_, r| r[:fail] > 0 || r[:error] > 0 }.keys.min
             max_possible = sorted_complexities.max || 0
+            complexity_bar = first_failure_complexity ? [first_failure_complexity - 1, 0].max : max_possible
+            max_complexity_reached = complexity_bar
 
             if json_mode
               output_run_json(
@@ -503,6 +512,8 @@ module Liquid
                 total_failed: total_failed,
                 total_errors: total_errors,
                 max_complexity_reached: max_complexity_reached,
+                max_possible: max_possible,
+                total_skipped: total_skipped,
                 failures: all_failures,
                 known_fixed: all_known_fixed,
                 passed_specs: all_passed,
@@ -1404,11 +1415,7 @@ module Liquid
             end
           end
 
-          # Default plain-mode output: the lowest-complexity failures (the "next best
-          # specs to work on") followed by a single stats line at the end. All
-          # preamble/progress/skipped output is verbose-only so stdout starts with the
-          # failure list (or the stats line when there are no failures).
-          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:)
+          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, max_possible:, total_skipped:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:)
             failures_count = total_failed + total_errors
             if failures.any?
               puts "Next best specs to work on:"
@@ -1417,7 +1424,21 @@ module Liquid
             end
             print_known_fixed(known_fixed) if known_fixed.any?
             print_passed_specs(passed_specs) if list_passed
-            puts "Complexity bar cleared: #{max_complexity_reached}, #{total_passed} passes, #{failures_count} failures."
+            parts = ["Complexity bar cleared: #{max_complexity_reached} of #{max_possible}", "#{total_passed} passes", "#{failures_count} failures"]
+            parts << "#{total_skipped} skipped" if total_skipped > 0
+            puts parts.join(", ") + "."
+          end
+
+          # Shorten gem-owned absolute paths to <gem>/.../<basename> to keep failure
+          # output token-light. Paths outside the gem (local ./specs/*.yml) are
+          # returned unchanged.
+          def shorten_path(path)
+            p = path.to_s
+            if p.start_with?(GEM_ROOT + "/")
+              "<gem>/.../#{File.basename(p)}"
+            else
+              p
+            end
           end
 
           def print_failures(failures, max_failures = nil)
@@ -1433,8 +1454,8 @@ module Liquid
               spec = f[:spec]
               result = f[:result]
 
-              # Show location first
-              location = spec.source_file
+              # Show location first (shortened to <gem>/.../file.yml:line)
+              location = shorten_path(spec.source_file)
               location = "#{location}:#{spec.line_number}" if spec.line_number
               puts "\e[2m#{location}\e[0m"
               complexity = spec.complexity || 1000
@@ -1470,7 +1491,7 @@ module Liquid
               if effective_hint && !shown_hints.include?(effective_hint)
                 shown_hints << effective_hint
                 puts ""
-                puts "   Hint: #{effective_hint.strip.gsub("\n", "\n         ")}"
+                puts "   Hint: #{effective_hint.strip.gsub("\n", "\n         ").gsub(GEM_ROOT, "<gem>")}"
               end
 
               puts ""

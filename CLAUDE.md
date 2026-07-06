@@ -51,8 +51,12 @@ Next best specs to work on:
 1) [c=70] ForTagTest#test_iterate_with_each...
    ...
 
-Complexity bar cleared: 70, 1234 passes, 56 failures.
+Complexity bar cleared: 69 of 1000, 1234 passes, 56 failures, 12 skipped.
 ```
+
+The bar is one below the first (lowest) failing complexity level, i.e. the highest
+contiguous level fully cleared. `skipped` is omitted when zero. Gem-owned file paths
+in failure locations are shortened to `<gem>/.../<basename>:<line>`.
 
 
 ### Spec Quality Gates
