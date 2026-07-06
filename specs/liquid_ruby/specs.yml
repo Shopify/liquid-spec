@@ -4225,6 +4225,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L209
 - name: IncludeTagTest#test_strict2_parsing_errors_6548b667
   template: '{% include "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
+  error_mode: lax
   render_errors: false
   complexity: 190
   expected: hello value1 value2
@@ -5090,6 +5091,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L110
 - name: RenderTagTest#test_strict2_parsing_errors_76670775
   template: '{% render "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
+  error_mode: lax
   render_errors: false
   complexity: 190
   expected: hello value1 value2

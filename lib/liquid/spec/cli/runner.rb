@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "adapter_dsl"
+require_relative "features"
 require_relative "benchmark"
 require_relative "config"
 require_relative "../time_freezer"
@@ -477,14 +478,19 @@ module Liquid
             skipped_suites = skipped_suites_for(config, missing_features)
             show_skipped_suites(config, missing_features) if config.verbose && !json_mode
 
-            # Complexity bar: one below the first (lowest) complexity level with any
-            # failure, i.e. the highest contiguous level fully cleared. When there are
-            # no failures, the bar is the max complexity present.
+            # Complexity level cleared: the highest complexity level PRESENT in the
+            # run at which everything at or below passes — i.e. the largest level
+            # strictly below the first failing level (0 when the first level fails).
+            # No failures: the max level present. Always a real level from the ramp,
+            # never an interpolated number.
             sorted_complexities = results_by_complexity.keys.sort
             first_failure_complexity = results_by_complexity.select { |_, r| r[:fail] > 0 || r[:error] > 0 }.keys.min
             max_possible = sorted_complexities.max || 0
-            complexity_bar = first_failure_complexity ? [first_failure_complexity - 1, 0].max : max_possible
-            max_complexity_reached = complexity_bar
+            max_complexity_reached = if first_failure_complexity
+              sorted_complexities.select { |c| c < first_failure_complexity }.max || 0
+            else
+              max_possible
+            end
 
             if json_mode
               output_run_json(
@@ -518,7 +524,8 @@ module Liquid
                 known_fixed: all_known_fixed,
                 passed_specs: all_passed,
                 list_passed: options[:list_passed],
-                max_failures: max_failures
+                max_failures: max_failures,
+                missing_features: missing_features
               )
             end
 
@@ -1415,7 +1422,7 @@ module Liquid
             end
           end
 
-          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, max_possible:, total_skipped:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:)
+          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, max_possible:, total_skipped:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:, missing_features:)
             failures_count = total_failed + total_errors
             if failures.any?
               puts "Next best specs to work on:"
@@ -1424,9 +1431,57 @@ module Liquid
             end
             print_known_fixed(known_fixed) if known_fixed.any?
             print_passed_specs(passed_specs) if list_passed
-            parts = ["Complexity bar cleared: #{max_complexity_reached} of #{max_possible}", "#{total_passed} passes", "#{failures_count} failures"]
+            parts = ["Complexity level cleared: #{max_complexity_reached}", "#{total_passed} passes", "#{failures_count} failures"]
             parts << "#{total_skipped} skipped" if total_skipped > 0
             puts parts.join(", ") + "."
+
+            # Congrats addendum: 100% of the run passes (no failures, bar at max).
+            print_congrats(total_skipped, missing_features) if failures_count == 0 && max_complexity_reached == max_possible
+          end
+
+          # Printed when an adapter clears the full complexity bar (0 failures, bar = max).
+          # Suggests 3 paths forward: implement more features, benchmark, or give back.
+          def print_congrats(total_skipped, missing_features)
+            puts ""
+            puts "Congrats! You cleared the complexity bar — every spec you ran passes."
+            puts ""
+            puts "3 paths forward:"
+            puts ""
+            docs = Features::FEATURE_DOCS
+            optional = missing_features.select { |f| docs.dig(f.to_sym, :recommendation) == :optional }
+            skipped_other = missing_features.size - optional.size
+            if optional.any?
+              puts "  1. Implement an optional feature you currently opt out of. Each unblocks skipped specs:"
+              optional.each do |f|
+                d = docs[f.to_sym]
+                puts "       - #{f}: #{d[:description]}"
+              end
+              puts "     Pros: more coverage, closer to production/theme-ready."
+              puts "     Cons: each needs design + testing; Shopify features need platform context."
+              if skipped_other > 0
+                puts "     (#{skipped_other} other opted-out feature#{skipped_other == 1 ? "" : "s"} are Ruby-interop or core and not worth implementing for a non-Ruby adapter.)"
+              end
+            elsif missing_features.any?
+              puts "  1. Your opted-out features (#{missing_features.join(", ")}) are all Ruby-interop or core —"
+              puts "     not worth implementing for a non-Ruby adapter. Try the shopify_theme_dawn suite"
+              puts "     (-s shopify_theme_dawn) for real-world theme specs instead. Pros: production-shaped"
+              puts "       coverage. Cons: requires Shopify-specific tags/objects/filters."
+            else
+              puts "  1. Push beyond the suite: try the shopify_theme_dawn suite (-s shopify_theme_dawn)"
+              puts "     for real-world theme specs. Pros: production-shaped coverage."
+              puts "     Cons: requires Shopify-specific tags/objects/filters."
+            end
+            puts ""
+            puts "  2. Run `liquid-spec <adapter> --bench` to measure render speed and contrast"
+            puts "     against other implementations. Pros: performance is production-critical."
+            puts "     Cons: optimizing early can distract from correctness."
+            puts ""
+            puts "  3. Check deep correctness or give back:"
+            puts "     - Run a matrix test against all known Liquid implementations to find"
+            puts "       behavioral divergences."
+            puts "     - Write up what you learned and open a PR against Shopify/liquid-spec"
+            puts "       with improvements to spec coverage, the ramp, hints, or docs."
+            puts ""
           end
 
           # Shorten gem-owned absolute paths to <gem>/.../<basename> to keep failure
