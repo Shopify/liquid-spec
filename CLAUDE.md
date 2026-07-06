@@ -54,6 +54,28 @@ It currently enforces:
 
 If it fails, add a useful spec/source-level hint or move the spec later in the ramp.
 
+### `verify_*` scripts
+
+`scripts/` contains standalone lint/audit scripts named `verify_*.rb` that check
+cross-cutting spec invariants the quality-gate test doesn't cover:
+
+```bash
+ruby -Ilib scripts/verify_lax_placement.rb        # lax-only specs live in liquid_ruby_lax
+ruby -Ilib scripts/verify_ruby_type_tags.rb       # Ruby-content specs carry a ruby feature tag + complexity > 100
+```
+
+**Run every `verify_*` script before pushing.** They exit non-zero on violation:
+
+```bash
+for s in scripts/verify_*.rb; do ruby -Ilib "$s" || exit 1; done
+```
+
+When you introduce a new cross-cutting rule (e.g. "every spec with marker X must
+have tag Y"), add a `verify_*.rb` script for it rather than a one-off check, so
+the rule stays enforced. Keep each script self-contained (parse spec files
+directly), print `OK: ...` on success, and exit non-zero with a per-spec
+offender list on failure.
+
 ### Dumb Adapter Ramp Audits
 
 When changing early complexity scores or adding beginner specs, play dumb and verify the harness still behaves like an implementation curriculum:

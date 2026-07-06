@@ -148,6 +148,8 @@ specs:
     a0: true
   expected: !binary |-
     true
+  features:
+  - binary_data
 - name: StandardFilterTest#test_base64_decode_2ab3ccca
   template: "{{ a0 | base64_decode }}"
   environment:
@@ -160,6 +162,8 @@ specs:
     a0: "/w=="
   expected: !binary |-
     /w==
+  features:
+  - binary_data
 - name: StandardFilterTest#test_base64_decode_5084ad48
   template: "{{ a0 | base64_decode }}"
   environment:
@@ -347,18 +351,24 @@ specs:
     a0: true
   expected: !binary |-
     true
+  features:
+  - binary_data
 - name: StandardFilterTest#test_base64_url_safe_decode_5de5c9e0
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: _w==
   expected: !binary |-
     /w==
+  features:
+  - binary_data
 - name: StandardFilterTest#test_base64_url_safe_decode_844ec741
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: foo
   expected: !binary |-
     foo=
+  features:
+  - binary_data
 - name: StandardFilterTest#test_base64_url_safe_encode_1fa6d8d7
   template: "{{ a0 | base64_url_safe_encode }}"
   environment:
@@ -588,6 +598,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_capitalize_73aa609e
   template: "{{ a0 | capitalize }}"
   environment:
@@ -631,6 +643,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_capitalize_cd2af2ea
   template: "{{ a0 | capitalize }}"
   environment:
@@ -894,6 +908,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_compact_a6ee35bd
   template: "{{ a0 | compact }}"
   environment:
@@ -913,6 +929,8 @@ specs:
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_compact_ccaffe07
   template: "{{ a0 | compact }}"
   environment:
@@ -1193,6 +1211,8 @@ specs:
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_default_46899810
   template: "{{ a0 | default }}"
   environment:
@@ -1332,6 +1352,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_downcase_0d719d03
   template: "{{ a0 | downcase }}"
   environment:
@@ -1441,6 +1463,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_downcase_a1495257
   template: "{{ a0 | downcase }}"
   environment:
@@ -1460,6 +1484,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_downcase_e9ff2ac8
   template: "{{ a0 | downcase }}"
   environment:
@@ -1863,6 +1889,8 @@ specs:
       - bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_first_86c1404c
   template: "{{ a0 | first }}"
   environment:
@@ -2286,6 +2314,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_join_024b672a
   template: "{{ a0 | join }}"
   environment:
@@ -2359,6 +2389,8 @@ specs:
       - bar
   expected: '{"foo"=>"bar"} {"foo"=>123} {"foo"=>nil} {"foo"=>true} {"foo"=>["foo",
     "bar"]}'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_join_62739163
   template: "{{ a0 | join }}"
   environment:
@@ -2494,6 +2526,8 @@ specs:
       - bar
   expected: '{"foo"=>["foo", "bar"]}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_last_1aad0557
   template: "{{ a0 | last }}"
   environment:
@@ -2672,6 +2706,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_lstrip_41fc0f85
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2738,6 +2774,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_lstrip_f2105bdc
   template: "{{ a0 | lstrip }}"
   environment:
@@ -2873,6 +2911,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_newline_to_br_8eedc515
   template: "{{ a0 | newline_to_br }}"
   environment:
@@ -2915,6 +2955,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_newline_to_br_f45921f4
   template: "{{ a0 | newline_to_br }}"
   environment:
@@ -3067,6 +3109,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_reverse_3b3b8b0b
   template: "{{ a0 | reverse }}"
   environment:
@@ -3080,6 +3124,8 @@ specs:
       - bar
   expected: '{"foo"=>["foo", "bar"]}{"foo"=>true}{"foo"=>nil}{"foo"=>123}{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_reverse_3dd9b45b
   template: "{{ a0 | reverse }}"
   environment:
@@ -3379,6 +3425,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_rstrip_34347b82
   template: "{{ a0 | rstrip }}"
   environment:
@@ -3457,6 +3505,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_rstrip_bcf58881
   template: "{{ a0 | rstrip }}"
   environment:
@@ -3978,6 +4028,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_12dbc714
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -4012,6 +4064,8 @@ specs:
     a1: price
   expected: '{"price"=>1, "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>4,
     "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_1fd8ba32
   template: "{{ a0 | sort }}"
   environment:
@@ -4101,6 +4155,8 @@ specs:
     a1: a
   expected: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}{}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_9fc23fe7
   template: "{{ a0 | sort }}"
   environment:
@@ -4124,6 +4180,8 @@ specs:
     a1: a
   expected: '{"a"=>2}{"a"=>10}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_d648c3af
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -4133,6 +4191,8 @@ specs:
     a1: a
   expected: '{"a"=>"10"}{"a"=>"2"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_dd081f85
   template: "{{ a0 | sort: a1 }}"
   environment:
@@ -4144,6 +4204,8 @@ specs:
     a1: a
   expected: '{"a"=>1}{"a"=>2}{"a"=>3}{"a"=>4}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_ed0af559
   template: "{{ a0 | sort }}"
   environment:
@@ -4210,6 +4272,8 @@ specs:
     a1: key
   expected: '{"key"=>"a"}{"key"=>"b"}{"key"=>"c"}{"key"=>"X"}{"key"=>"Y"}{"key"=>"Z"}{"fake"=>"t"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_natural_13a166c8
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -4270,6 +4334,8 @@ specs:
     a1: a
   expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_natural_7fd0dce9
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -4335,6 +4401,8 @@ specs:
     a1: price
   expected: '{"price"=>"1", "handle"=>"gamma"}{"price"=>2, "handle"=>"epsilon"}{"price"=>"4",
     "handle"=>"alpha"}{"handle"=>"beta"}{"handle"=>"delta"}'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_natural_9d67d628
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -4342,6 +4410,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_natural_a5f5522b
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -4371,6 +4441,8 @@ specs:
     a1: a
   expected: '{"a"=>"a"}{"a"=>"B"}{"a"=>"c"}{"a"=>"D"}{}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_natural_cbf957fa
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -4406,6 +4478,8 @@ specs:
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>["foo", "bar"]}{"foo"=>nil}{"foo"=>true}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_sort_natural_f040361f
   template: "{{ a0 | sort_natural }}"
   environment:
@@ -4516,6 +4590,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_squish_4f6fc162
   template: "{{ a0 | squish }}"
   environment:
@@ -4586,6 +4662,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_squish_fa2e5491
   template: "{{ a0 | squish }}"
   environment:
@@ -4628,6 +4706,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_strip_7d627b30
   template: "{{ a0 | strip }}"
   environment:
@@ -4696,6 +4776,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_strip_cc6a0931
   template: "{{ a0 | strip }}"
   environment:
@@ -4750,6 +4832,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_strip_html_1b3f3c5a
   template: "{{ a0 | strip_html }}"
   environment:
@@ -4926,6 +5010,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_strip_newlines_1087b1d7
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -5021,6 +5107,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_strip_newlines_ac17b986
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -5059,6 +5147,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_strip_newlines_f677fc39
   template: "{{ a0 | strip_newlines }}"
   environment:
@@ -5493,6 +5583,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"...'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_truncate_216dab95
   template: "{{ a0 | truncate }}"
   environment:
@@ -5651,6 +5743,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_truncate_f5dbf574
   template: "{{ a0 | truncate: a1 }}"
   environment:
@@ -5729,6 +5823,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_truncatewords_4dfc7b85
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
@@ -5847,6 +5943,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_truncatewords_c7c9d33d
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
@@ -5950,6 +6048,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_uniq_438f239c
   template: "{{ a0 | uniq: a1 }}"
   environment:
@@ -6076,6 +6176,8 @@ specs:
       - bar
   expected: '{"foo"=>"bar"}{"foo"=>123}{"foo"=>nil}{"foo"=>true}{"foo"=>["foo", "bar"]}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_uniq_dcc88f46
   template: "{{ a0 | uniq: a1 }}"
   environment:
@@ -6100,6 +6202,8 @@ specs:
     a1: a
   expected: '{"a"=>1}{"a"=>3}{"a"=>2}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_uniq_eb044ee8
   template: "{{ a0 | uniq }}"
   environment:
@@ -6165,6 +6269,8 @@ specs:
       - bar
   expected: '[{"FOO"=>"BAR"}, {"FOO"=>123}, {"FOO"=>NIL}, {"FOO"=>TRUE}, {"FOO"=>["FOO",
     "BAR"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_upcase_2e46f4ea
   template: "{{ a0 | upcase }}"
   environment:
@@ -6219,6 +6325,8 @@ specs:
       foo: bar
   expected: '{"FOO"=>"BAR"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_upcase_7feb0e13
   template: "{{ a0 | upcase }}"
   environment:
@@ -6304,6 +6412,8 @@ specs:
       foo: bar
   expected: '{"foo"=>"bar"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_url_decode_67aab6d0
   template: "{{ a0 | url_decode }}"
   environment:
@@ -6335,6 +6445,8 @@ specs:
       - bar
   expected: '[{"foo"=>"bar"}, {"foo"=>123}, {"foo"=>nil}, {"foo"=>true}, {"foo"=>["foo",
     "bar"]}]'
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_url_decode_70f03eef
   template: "{{ a0 | url_decode }}"
   environment:
@@ -6636,6 +6748,8 @@ specs:
     a2: true
   expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_where_31d381ea
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -6650,6 +6764,8 @@ specs:
     a2: French
   expected: '{"message"=>"Bonjour!", "language"=>"French"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_where_37ab6f05
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -6673,6 +6789,8 @@ specs:
     a2: German
   expected: '{"message"=>"Hallo!", "language"=>"German"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_where_4be85944
   template: "{{ a0 | where: a1 }}"
   environment:
@@ -6686,6 +6804,8 @@ specs:
     a1: ok
   expected: '{"handle"=>"alpha", "ok"=>true}{"handle"=>"delta", "ok"=>true}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_where_6d690131
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -6700,6 +6820,8 @@ specs:
     a2: English
   expected: '{"message"=>"Hello!", "language"=>"English"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_where_a8b3bd23
   template: "{{ a0 | where: a1, a2 }}"
   environment:
@@ -6709,6 +6831,8 @@ specs:
     a2: ok
   expected: '{"a"=>"ok"}'
   complexity: 160
+  features:
+  - ruby_types
 - name: StandardFilterTest#test_where_bc42658b
   template: "{{ a0 | where: a1 }}"
   environment:
@@ -6737,3 +6861,5 @@ specs:
     a1: foo
   expected: '{"foo"=>true}{"foo"=>"for sure"}'
   complexity: 160
+  features:
+  - ruby_types

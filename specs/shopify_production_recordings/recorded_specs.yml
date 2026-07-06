@@ -13082,6 +13082,8 @@
     h:
       a<script>b: "y"
   filesystem: {}
+  features:
+  - ruby_types
 - name: RecordedTest#test_i64_9068ed536
   expected: 'Liquid error (line 1): invalid integer'
   template: "{{a | truncate: b}}"
@@ -22210,6 +22212,8 @@
       - f
       - 2
   filesystem: {}
+  features:
+  - ruby_types
 - name: RecordedTest#test_iter_8e82d916e
   expected: 1a
   template: "{%for i in a%}{{i}}{%endfor%}"
@@ -22500,6 +22504,8 @@
       - f
       - 2
   filesystem: {}
+  features:
+  - ruby_types
 - name: RecordedTest#test_output_0fb82ff86
   expected: ''
   template: "{{a}}"
@@ -22875,6 +22881,8 @@
   template: '{{ "123" | replace: replace: "Hello", "1" }}'
   environment: {}
   filesystem: {}
+  features:
+  - ruby_types
 - name: RecordedTest#test_replace_with_value_and_from_being_nil_a44d90281
   expected: Warranty
   template: '{{ part | replace: remove, "Warranty" }}'
@@ -23359,6 +23367,8 @@
       - 1
       - c: 2
   filesystem: {}
+  features:
+  - ruby_types
 - name: RecordedTest#test_truncate_does_not_double_escape_suffix_fa67cd2ab
   features:
     - activesupport

@@ -46,6 +46,13 @@ module Liquid
 
             # Optional: filter specs by name pattern
             # config.filter = /assign/
+            # Specs that need Ruby-specific behavior (Hash#inspect output format
+            # `{"k"=>"v"}`, symbol keys, binary bytes) are tagged `ruby_types`.
+            # A Ruby implementation should leave these ENABLED (do not list them
+            # here). A non-Ruby implementation that is not yet emulating Ruby's
+            # inspect/to_s format can opt out temporarily:
+            #   config.missing_features = [:ruby_types, :binary_data]
+            # See docs/ruby_hash_inspect_format.md for what opting in requires.
           end
 
           # Called to compile a template string into your implementation's template object.

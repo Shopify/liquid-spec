@@ -254,6 +254,8 @@ specs:
       - 2
     - a: 1
   expected: '{"a"=>1}'
+  features:
+  - ruby_types
 - name: filter_array_containing_types_size
   complexity: 300
   template: "{{ arr | size }}"

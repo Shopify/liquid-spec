@@ -233,6 +233,8 @@ specs:
       - 2
     - a: 1
   expected: '{"a"=>1}'
+  features:
+  - ruby_types
 - name: lax_filter_array_containing_types_size
   complexity: 510
   template: "{{ arr | size }}"

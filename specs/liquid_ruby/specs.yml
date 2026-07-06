@@ -3001,6 +3001,8 @@ specs:
   complexity: 140
   expected: '{"Key"=>"Value", "AnotherKey"=>"AnotherValue"} appended text'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L65
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_downcase_filter_4c62653a
   template: "{{ my_hash | downcase }}"
   environment:
@@ -3011,6 +3013,8 @@ specs:
   complexity: 140
   expected: '{"key"=>"value", "anotherkey"=>"anothervalue"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L33
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_escape_filter_68cfca7c
   template: "{{ my_hash | escape }}"
   environment:
@@ -3031,6 +3035,8 @@ specs:
   complexity: 140
   expected: prepended text {"Key"=>"Value", "AnotherKey"=>"AnotherValue"}
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L69
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_replace___key____replaced_key__filter_1bda2376
   template: "{{ my_hash | replace: 'key', 'replaced_key' }}"
   environment:
@@ -3041,6 +3047,8 @@ specs:
   complexity: 140
   expected: '{"Key"=>"Value", "AnotherKey"=>"AnotherValue"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L61
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_strip_filter_0b08852e
   template: "{{ my_hash | strip }}"
   environment:
@@ -3051,6 +3059,8 @@ specs:
   complexity: 140
   expected: '{"Key"=>"Value", "AnotherKey"=>"AnotherValue"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L41
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_strip_html_filter_fcf57602
   template: "{{ my_hash | strip_html }}"
   environment:
@@ -3061,6 +3071,8 @@ specs:
   complexity: 140
   expected: '{"Key"=>"Value", "AnotherKey"=>"AnotherValue"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L53
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_truncate__20_filter_dddcece5
   template: "{{ my_hash | truncate: 20 }}"
   environment:
@@ -3071,6 +3083,8 @@ specs:
   complexity: 140
   expected: '{"Key"=>"Value", ...'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L57
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_upcase_filter_87e56c82
   template: "{{ my_hash | upcase }}"
   environment:
@@ -3081,6 +3095,8 @@ specs:
   complexity: 140
   expected: '{"KEY"=>"VALUE", "ANOTHERKEY"=>"ANOTHERVALUE"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L37
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_hash_with_url_encode_filter_268475df
   template: "{{ my_hash | url_encode }}"
   environment:
@@ -3103,6 +3119,8 @@ specs:
   complexity: 140
   expected: '{"key1"=>"value1"}{"lol"=>"wut"}{"key2"=>"value2"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L83
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_render_empty_hash_c0a261ec
   template: "{{ my_hash }}"
   environment:
@@ -3123,6 +3141,8 @@ specs:
   complexity: 140
   expected: '{"numbers"=>[1, 2, 3]}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L23
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_render_hash_with_array_values_empty_3493bd46
   template: "{{ my_hash }}"
   environment:
@@ -3132,6 +3152,8 @@ specs:
   complexity: 140
   expected: '{"numbers"=>[]}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L73
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_render_hash_with_array_values_hash_4362e37f
   template: "{{ my_hash }}"
   environment:
@@ -3166,6 +3188,8 @@ specs:
   complexity: 140
   expected: '{"key1"=>"value1", "key2"=>"value2"}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L11
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_render_hash_with_symbol_keys_and_integer_values_904aa51d
   template: "{{ my_hash }}"
   environment:
@@ -3188,6 +3212,8 @@ specs:
   complexity: 140
   expected: '{"outer"=>{"inner"=>"value"}}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L19
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_render_recursive_hash_9ab3d795
   template: "{{ my_hash }}"
   environment:
@@ -3198,6 +3224,8 @@ specs:
   complexity: 140
   expected: '{"self"=>{"self"=>{...}}}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L29
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_rendering_hash_with_custom_to_s_method_uses_custom_to_s_c2ef71b8
   template: "{{ my_hash }}"
   environment:
@@ -5690,6 +5718,8 @@ specs:
   complexity: 180
   expected: "{:test=>1234}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L504
+  features:
+  - ruby_types
 - name: StandardFiltersTest#test_map_calls_to_liquid_04fbf4cc
   template: '{{ foo | map: "whatever" }}'
   environment:

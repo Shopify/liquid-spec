@@ -312,6 +312,8 @@ specs:
     This is used constantly in themes to filter collections by settings.
 
 # ── case/when with dotted paths ─────────────────────────────────────────
+  features:
+  - ruby_types
 
 - name: case_dotted_variable
   template: "{% case item.status %}{% when 'active' %}ON{% when 'inactive' %}OFF{% endcase %}"
