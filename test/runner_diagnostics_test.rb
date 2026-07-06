@@ -106,6 +106,19 @@ class RunnerDiagnosticsTest < Minitest::Test
     refute_match(/\.{40}/, stdout)
   end
 
+  def test_plain_summary_includes_skipped_count_when_specs_are_filtered
+    stdout, _stderr, status = run_liquid_spec(
+      "empty_adapter.rb",
+      "-s", "basics",
+      "--max-failures", "1"
+    )
+
+    assert_equal 1, status
+    # empty_adapter opts out of ruby_types/ruby_drops/etc.; basics has specs
+    # requiring those, so the summary must report a positive skipped count.
+    assert_match(/, [1-9]\d* skipped\./, stdout)
+  end
+
   def test_printed_failures_are_lowest_complexity_across_prioritized_and_suite_specs
     Tempfile.create(["liquid-spec-high-complexity", ".yml"]) do |file|
       file.write(<<~YML)
