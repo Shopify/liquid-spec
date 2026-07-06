@@ -3154,6 +3154,8 @@ specs:
   complexity: 140
   expected: '{{"foo"=>"bar"}=>42}'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/hash_rendering_test.rb#L87
+  features:
+  - ruby_types
 - name: HashRenderingTest#test_render_hash_with_string_keys_and_values_23c2f9fd
   template: "{{ my_hash }}"
   environment:
