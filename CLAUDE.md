@@ -51,7 +51,7 @@ Next best specs to work on:
 1) [c=70] ForTagTest#test_iterate_with_each...
    ...
 
-Complexity level cleared: 5, 1234 passes, 56 failures, 12 skipped.
+Complexity level cleared: 5 of 1000, 1234 passes, 56 failures, 12 skipped.
 ```
 
 The level is the highest complexity level present in the run that is below the first
@@ -60,10 +60,10 @@ level from the ramp, not an interpolated number. `skipped` is omitted when zero.
 file paths in failure locations are shortened to `<gem>/.../<basename>:<line>`.
 
 When every run spec passes (0 failures, level = max), a **Congrats** addendum prints 3
-suggested paths forward: implement an optional feature you currently opt out of (listed
-dynamically from `Features::FEATURE_DOCS`, filtered to `:optional`, excluding Ruby-interop
-`:unnecessary` ones), run `--bench` for performance, or run a matrix test / contribute back
-to liquid-spec.
+suggested paths forward: implement an optional feature that actually had specs skipped
+this run (listed dynamically from the skipped-features set, filtered through
+`Features::FEATURE_DOCS` to `:optional`, excluding Ruby-interop `:unnecessary` ones),
+run `--bench` for performance, or run a matrix test / contribute back to liquid-spec.
 
 
 ### Spec Quality Gates
