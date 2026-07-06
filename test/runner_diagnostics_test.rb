@@ -107,16 +107,35 @@ class RunnerDiagnosticsTest < Minitest::Test
   end
 
   def test_plain_summary_includes_skipped_count_when_specs_are_filtered
-    stdout, _stderr, status = run_liquid_spec(
-      "empty_adapter.rb",
-      "-s", "basics",
-      "--max-failures", "1"
-    )
+    Tempfile.create(["liquid-spec-skipped", ".yml"]) do |file|
+      file.write(<<~YML)
+        ---
+        - name: normal_failure
+          template: "{{ nope }}"
+          expected: "not source echo"
+          complexity: 10
+          hint: "Normal failing spec."
+        - name: ruby_types_skipped
+          template: "{{ x }}"
+          expected: "y"
+          complexity: 10
+          features: [ruby_types]
+          hint: "Skipped because adapter opts out of ruby_types."
+      YML
+      file.close
 
-    assert_equal 1, status
-    # empty_adapter opts out of ruby_types/ruby_drops/etc.; basics has specs
-    # requiring those, so the summary must report a positive skipped count.
-    assert_match(/, [1-9]\d* skipped\./, stdout)
+      stdout, _stderr, status = run_liquid_spec(
+        "source_echo_adapter.rb",
+        "--add-specs", file.path,
+        "-n", "/^(normal_failure|ruby_types_skipped)$/",
+        "--max-failures", "1"
+      )
+
+      assert_equal 1, status
+      assert_includes stdout, "1) [c=10] normal_failure"
+      refute_includes stdout, "ruby_types_skipped"
+      assert_match(/, 1 skipped\./, stdout)
+    end
   end
 
   def test_printed_failures_are_lowest_complexity_across_prioritized_and_suite_specs
