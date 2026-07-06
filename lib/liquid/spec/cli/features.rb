@@ -97,6 +97,11 @@ module Liquid
             recommendation: :unnecessary,
             note: "Binary data can't be transmitted in JSON without base64 encoding.",
           },
+          strict2_blank_body_errors: {
+            description: "strict2 surfaces inline errors even when the block body is blank",
+            recommendation: :unnecessary,
+            note: "Aspirational 'NEW STRICT2 CONTRACT' not yet implemented by liquid-ruby 5.13 (it still suppresses blank-body errors). Opt out until your implementation deliberately adopts this contract.",
+          },
         }.freeze
 
         RECOMMENDATION_LABELS = {

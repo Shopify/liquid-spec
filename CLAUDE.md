@@ -536,6 +536,7 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 - `:lax_parsing` - Adapter does not support `error_mode: :lax`
 - `:ruby_types` / `:ruby_drops` / `:binary_data` - Adapter cannot consume Ruby-specific values from specs
 - `:template_factory` - Adapter cannot support template factory/artifact callbacks
+- `:strict2_blank_body_errors` - Aspirational "NEW STRICT2 CONTRACT" (strict2 surfaces inline errors even for blank block bodies); liquid-ruby 5.13 does not implement this, so opt out until your adapter deliberately adopts it
 
 **Shopify-specific features:**
 - `:shopify_tags` - Shopify-specific tags (schema, style, section)

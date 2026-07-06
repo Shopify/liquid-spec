@@ -324,6 +324,7 @@ module Liquid
               :shopify_error_handling,
               :shopify_error_format,
               :shopify_string_access,
+              :strict2_blank_body_errors,
             ]
           end
 
@@ -393,7 +394,7 @@ module Liquid
             4. Implement the smallest change that makes the spec pass for the RIGHT reason.
             5. Re-run. Every previously-passing spec must still pass — a fix that breaks
                earlier specs is wrong, not a tradeoff.
-            6. Judge progress by **`Max complexity reached`**, not the raw pass count. A
+            6. Judge progress by **`Complexity level cleared`**, not the raw pass count. A
                partial implementation accidentally passes many later specs whose expected
                output happens to be empty; complexity-reached is the honest meter.
 
