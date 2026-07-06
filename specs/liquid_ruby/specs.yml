@@ -2686,11 +2686,13 @@ specs:
         - 4
         - 5
   render_errors: false
-  complexity: 70
+  complexity: 200
   expected: '12345'
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/for_tag_test.rb#L424
   features:
   - ruby_drops
+  hint: |
+    {% for %} iterating a drop: call the drop's iteration interface to yield items. LoaderDrop exposes its `data` array ([1,2,3,4,5]) via iteration. Requires runtime drop support (drop_iterate callback over JSON-RPC); not a plain array lookup.
 - name: ForTagTest#test_iterate_with_load_slice_returns_same_results_as_without_00bb236f
   template: "{% for item in items offset:2 limit:2 %}{{item}}{% endfor %}"
   environment:
@@ -4437,6 +4439,8 @@ specs:
   complexity: 130
   expected: good
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/liquid_tag_test.rb#L85
+  hint: |
+    The {% liquid %} tag can be nested inside other block tags (here, {% if %}). When the enclosing block renders, parse and execute the liquid tag's statement body — `echo "good"` outputs its expression. Whitespace control ({%- -%}) trims surrounding newlines.
 - name: LiquidTagTest#test_nested_liquid_tags_ab532d7c
   template: |
     {%- liquid
@@ -7265,6 +7269,8 @@ specs:
   complexity: 140
   expected: "  false  "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/statements_test.rb#L40
+  hint: |
+    In {% if %}, comparing nil (`null`) with a relational operator (<=) is always false — nil is not ordered relative to numbers. Render the {% else %} branch. Do NOT coerce nil to 0.
 - name: StatementsTest#test_zero_lq_or_equal_one_involving_nil_c75ce7fe
   template: " {% if 0 <= null %} true {% else %} false {% endif %} "
   render_errors: false
@@ -8346,6 +8352,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L48
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %}/{% case %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, <, case when) fail to match the underlying value.
 - name: VariableTest#test_combining_trailing_comma_and_empty_args_27becf87
   template: '{{ "test" | append: "x", | upcase: }}'
   error_mode: strict2
@@ -8495,6 +8503,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L32
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_2159fa48
   template: "{% if foo == 1 %}one{% endif %}"
   environment:
@@ -8507,6 +8517,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L27
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_2914c337
   template: "{% if foo and true %}SHOULD NOT HAPPEN{% endif %}"
   environment:
@@ -8519,6 +8531,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L37
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_5996f88f
   template: "{% if foo == eqv %}one{% endif %}"
   environment:
@@ -8534,6 +8548,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L28
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_9f617983
   template: "{% if foo > 0 %}one{% endif %}"
   environment:
@@ -8546,6 +8562,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L30
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %}/{% case %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, <, case when) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_a9e57fd0
   template: "{% if a contains x %}one{% endif %}"
   environment:
@@ -8560,6 +8578,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L39
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_beb794c0
   template: "{% if b > a %}one{% endif %}"
   environment:
@@ -8575,6 +8595,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L31
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_d3fc1f6e
   template: "{% if 0 < foo %}one{% endif %}"
   environment:
@@ -8587,6 +8609,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L29
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %}/{% case %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, <, case when) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_e162081a
   template: "{% if foo == true %}True{% endif %}"
   environment:
@@ -8599,6 +8623,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L36
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %}/{% case %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, <, case when) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_ebf53802
   template: "{% if foo %}true{% endif %}"
   environment:
@@ -8611,6 +8637,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L33
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %}/{% case %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, <, case when) fail to match the underlying value.
 - name: VariableTest#test_if_tag_calls_to_liquid_value_ffebcff7
   template: "{% if foo %}true{% endif %}"
   environment:
@@ -8623,6 +8651,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L35
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_ignore_unknown_614171b5
   template: "{{ test }}"
   render_errors: false
@@ -8729,6 +8759,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L44
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, contains) fail to match the underlying value.
 - name: VariableTest#test_unless_tag_calls_to_liquid_value_33d2b786
   template: "{% unless foo %}true{% endunless %}"
   environment:
@@ -8741,6 +8773,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L43
   features:
   - ruby_drops
+  hint: |
+    In {% if %}/{% unless %}/{% case %} conditions, call to_liquid on drop values before evaluating truthiness or comparing. BooleanDrop#to_liquid returns its boolean; IntegerDrop#to_liquid returns its integer. Without to_liquid, the raw drop object is truthy and comparisons (==, >, <, case when) fail to match the underlying value.
 - name: VariableTest#test_using_blank_as_variable_name_f3a2e22f
   template: "{% assign foo = blank %}{{ foo }}"
   render_errors: false
@@ -8768,6 +8802,8 @@ specs:
   features:
   - ruby_drops
   - ruby_types
+  hint: |
+    When a drop is used in variable output ({{ foo }}) or as a lookup key ({{ list[foo] }}), Liquid calls to_liquid on the drop and uses the result for rendering or indexing. IntegerDrop#to_liquid returns its integer (indexes list[1]); BooleanDrop#to_liquid returns its rendered value. Without to_liquid, the raw drop renders or indexes incorrectly.
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_06333239
   template: "{{ list[foo] }}"
   environment:
@@ -8784,6 +8820,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L20
   features:
   - ruby_drops
+  hint: |
+    When a drop is used in variable output ({{ foo }}) or as a lookup key ({{ list[foo] }}), Liquid calls to_liquid on the drop and uses the result for rendering or indexing. IntegerDrop#to_liquid returns its integer (indexes list[1]); BooleanDrop#to_liquid returns its rendered value. Without to_liquid, the raw drop renders or indexes incorrectly.
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_64e7e768
   template: "{{ foo }}"
   environment:
@@ -8796,6 +8834,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L22
   features:
   - ruby_drops
+  hint: |
+    When a drop is used in variable output ({{ foo }}) or as a lookup key ({{ list[foo] }}), Liquid calls to_liquid on the drop and uses the result for rendering or indexing. IntegerDrop#to_liquid returns its integer (indexes list[1]); BooleanDrop#to_liquid returns its rendered value. Without to_liquid, the raw drop renders or indexes incorrectly.
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_d8c9669a
   template: "{{ foo | upcase }}"
   environment:
@@ -8808,6 +8848,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L23
   features:
   - ruby_drops
+  hint: |
+    When a drop is used in variable output ({{ foo }}) or as a lookup key ({{ list[foo] }}), Liquid calls to_liquid on the drop and uses the result for rendering or indexing. IntegerDrop#to_liquid returns its integer (indexes list[1]); BooleanDrop#to_liquid returns its rendered value. Without to_liquid, the raw drop renders or indexes incorrectly.
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_e91aed83
   template: "{{ foo }}"
   environment:
@@ -8820,6 +8862,8 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L19
   features:
   - ruby_drops
+  hint: |
+    When a drop is used in variable output ({{ foo }}) or as a lookup key ({{ list[foo] }}), Liquid calls to_liquid on the drop and uses the result for rendering or indexing. IntegerDrop#to_liquid returns its integer (indexes list[1]); BooleanDrop#to_liquid returns its rendered value. Without to_liquid, the raw drop renders or indexes incorrectly.
 - name: VariableTest#test_variable_lookup_should_not_hang_with_invalid_syntax_0aefa9bd
   template: "{{['foo'}}"
   environment:

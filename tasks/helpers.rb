@@ -61,7 +61,7 @@ module Helpers
     File.write(path, "---\n", mode: "a+")
   end
 
-  def format_and_write_specs(capture_path, outfile)
+  def format_and_write_specs(capture_path, outfile, metadata: nil)
     yaml = File.read(capture_path)
     data = YAML.safe_load(yaml, permitted_classes: [Symbol, Date, Time], aliases: true)
 
@@ -71,7 +71,8 @@ module Helpers
 
     outfile = File.expand_path(outfile)
     puts "Writing #{data.size} tests to #{outfile}..."
-    File.write(outfile, YAML.dump(data))
+    output = metadata ? { "_metadata" => metadata, "specs" => data } : data
+    File.write(outfile, YAML.dump(output))
   end
 
   private

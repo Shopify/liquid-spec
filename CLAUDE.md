@@ -38,6 +38,22 @@ liquid-spec my_adapter.rb -l
 liquid-spec my_adapter.rb --list-suites
 ```
 
+### Default runner output
+
+The standard (`liquid-spec adapter.rb`) run prints a single summary line followed by the
+lowest-complexity failures — the "next best specs to work on" (capped at `--max-failures`,
+default 5). Preamble, per-suite progress, and skipped-suite lines are verbose-only (`-v`):
+
+```
+Complexity bar cleared: 70, 1234 passes, 56 failures. Next best specs to work on:
+
+1) [c=70] ForTagTest#test_iterate_with_each...
+   ...
+```
+
+`--json` output is unchanged (machine-readable). `--list-passed` appends passing specs
+after the failures.
+
 
 
 ### Spec Quality Gates
@@ -51,8 +67,15 @@ ruby -Ilib -I$LIQUID -Itest -e 'require File.expand_path("test/spec_quality_test
 It currently enforces:
 - complexity scores must be <= 1000
 - every spec with effective complexity <= 220 must have an effective hint
+- every spec with complexity <= 220 must have a spec-LEVEL hint (`spec.hint`), not just
+  suite/file boilerplate. Existing generated/bulk specs without one are grandfathered in
+  `test/spec_hint_baseline.txt`; any NEW spec at c<=220 lacking a spec-level hint fails
+  the gate, and stale baseline entries (specs that gained a hint or were removed) also
+  fail. After intentionally adding hints, shrink the baseline:
 
-If it fails, add a useful spec/source-level hint or move the spec later in the ramp.
+  ```bash
+  ruby -Ilib scripts/generate_spec_hint_baseline.rb
+  ```
 
 ### `verify_*` scripts
 

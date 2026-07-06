@@ -87,7 +87,23 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_equal 1, status
     assert_includes stdout, "Error:    SyntaxError: dumb compile boom"
     assert_includes stdout, "Hint: START HERE"
-    assert_includes stdout, "Max complexity reached: 0/0"
+    assert_includes stdout, "Complexity bar cleared: 0"
+  end
+
+  def test_plain_output_starts_with_complexity_bar_summary_and_omits_suite_preamble
+    stdout, _stderr, status = run_liquid_spec(
+      "source_echo_adapter.rb",
+      "-n", "^empty_template$|^literal_passthrough$|^object_string_literal$",
+      "--max-failures", "1"
+    )
+
+    assert_equal 1, status
+    assert stdout.start_with?("Complexity bar cleared:"), "stdout should start with the complexity-bar summary, got:\n#{stdout[0,120]}"
+    assert_match(/\AComplexity bar cleared: \d+, \d+ passes, \d+ failures\./, stdout)
+    refute_includes stdout, "Missing features:"
+    refute_includes stdout, "Known failures:"
+    # no per-suite progress lines leak into default stdout
+    refute_match(/\.{40}/, stdout)
   end
 
   def test_printed_failures_are_lowest_complexity_across_prioritized_and_suite_specs
@@ -110,8 +126,10 @@ class RunnerDiagnosticsTest < Minitest::Test
       )
 
       assert_equal 1, status
-      assert_includes stdout, "1) object_string_literal"
-      refute_includes stdout, "1) high_added_failure"
+      assert stdout.start_with?("Complexity bar cleared:"), "stdout should start with the complexity-bar summary, got:\n#{stdout[0,120]}"
+      refute_includes stdout, "Prioritized Specs"
+      assert_includes stdout, "1) [c=5] object_string_literal"
+      refute_includes stdout, "[c=1000] high_added_failure"
       assert_includes stdout, "(... 1 more failures not shown due to --max-failures 1 ...)"
       assert_includes stdout, "Failures are ordered by complexity. Solve above failures first."
     end

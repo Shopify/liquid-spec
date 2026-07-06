@@ -291,7 +291,7 @@ module Liquid
 
             missing_features = config.missing_features
             json_mode = options[:json]
-            puts "Missing features: #{missing_features.join(", ")}" unless json_mode
+            puts "Missing features: #{missing_features.join(", ")}" if config.verbose && !json_mode
 
             # Count available specs from all sources
             has_prioritized = options[:add_specs] && !options[:add_specs].empty?
@@ -303,7 +303,7 @@ module Liquid
             local_specs = discover_local_specs
             local_specs = filter_specs(local_specs, config.filter) if config.filter && local_specs.any?
             local_specs = filter_by_missing(local_specs, missing_features) if local_specs.any?
-            if local_specs.any? && !json_mode
+            if local_specs.any? && config.verbose && !json_mode
               puts "Auto-including: #{local_specs.size} specs from ./specs/*.yml"
             end
 
@@ -328,10 +328,9 @@ module Liquid
             known_failures.load_file(options[:known_failures_file])
             known_failures.load_patterns(config.known_failures)
 
-            unless known_failures.empty? || json_mode
+            if !known_failures.empty? && config.verbose && !json_mode
               puts "Known failures: #{known_failures.size} patterns loaded"
             end
-            puts "" unless json_mode
 
             # Check if --bench flag is provided and any suite has timings enabled
             if options[:bench]
@@ -361,7 +360,7 @@ module Liquid
             # Run explicitly added specs FIRST (--add-specs), before suites
             if prioritized_specs.any?
               add_passed, add_failed, add_errors, add_known_failed, add_known_fixed =
-                run_prioritized_specs(prioritized_specs, known_failures, all_failures, all_known_failures, all_known_fixed, all_passed, results_by_complexity, log_file, run_id, config, quiet: json_mode)
+                run_prioritized_specs(prioritized_specs, known_failures, all_failures, all_known_failures, all_known_fixed, all_passed, results_by_complexity, log_file, run_id, config, quiet: json_mode || !config.verbose)
               total_passed += add_passed
               total_failed += add_failed
               total_errors += add_errors
@@ -387,11 +386,10 @@ module Liquid
               next if suite_specs.empty?
 
               suite_name_padded = "#{suite.name} ".ljust(40, ".")
-              unless json_mode
+              if config.verbose && !json_mode
                 print("#{suite_name_padded} ")
                 $stdout.flush
               end
-
               passed = 0
               failed = 0
               errors = 0
@@ -446,14 +444,13 @@ module Liquid
                 end
               end
 
-              unless json_mode
+              if config.verbose && !json_mode
                 parts = ["#{passed}/#{suite_specs.size} passed"]
                 parts << "#{failed} failed" if failed > 0
                 parts << "#{errors} errors" if errors > 0
                 parts << "#{known_failed} known" if known_failed > 0
                 puts parts.join(", ")
               end
-
               total_passed += passed
               total_failed += failed
               total_errors += errors
@@ -465,21 +462,7 @@ module Liquid
 
             # Show skipped suites
             skipped_suites = skipped_suites_for(config, missing_features)
-            show_skipped_suites(config, missing_features) unless json_mode
-
-            unless json_mode
-              # Print unexpected failures
-              print_failures(all_failures, max_failures)
-
-              # Print known failures (expected)
-              print_known_failures(all_known_failures) if all_known_failures.any?
-
-              # Print passing specs when requested (diagnostic for ramp audits)
-              print_passed_specs(all_passed) if options[:list_passed]
-
-              # Print warnings about known failures that now pass
-              print_known_fixed(all_known_fixed) if all_known_fixed.any?
-            end
+            show_skipped_suites(config, missing_features) if config.verbose && !json_mode
 
             # Calculate max complexity reached (highest level where all specs pass)
             sorted_complexities = results_by_complexity.keys.sort
@@ -515,13 +498,17 @@ module Liquid
                 skipped_suites: skipped_suites,
               )
             else
-              puts ""
-              parts = ["#{total_passed} passed"]
-              parts << "#{total_failed} failed" if total_failed > 0
-              parts << "#{total_errors} errors" if total_errors > 0
-              parts << "#{total_known_failed} known failures" if total_known_failed > 0
-              parts << "#{total_known_fixed} known now passing" if total_known_fixed > 0
-              puts "Total: #{parts.join(", ")}. Max complexity reached: #{max_complexity_reached}/#{max_possible}"
+              print_run_summary(
+                total_passed: total_passed,
+                total_failed: total_failed,
+                total_errors: total_errors,
+                max_complexity_reached: max_complexity_reached,
+                failures: all_failures,
+                known_fixed: all_known_fixed,
+                passed_specs: all_passed,
+                list_passed: options[:list_passed],
+                max_failures: max_failures
+              )
             end
 
             # Determine exit code
@@ -1417,12 +1404,21 @@ module Liquid
             end
           end
 
+          # Default plain-mode output: a single summary line followed by the
+          # lowest-complexity failures (the "next best specs to work on").
+          # All preamble/progress/skipped output is verbose-only so stdout
+          # starts with the "Complexity bar cleared" line.
+          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:)
+            failures_count = total_failed + total_errors
+            puts "Complexity bar cleared: #{max_complexity_reached}, #{total_passed} passes, #{failures_count} failures. Next best specs to work on:"
+            puts ""
+            print_failures(failures, max_failures)
+            print_known_fixed(known_fixed) if known_fixed.any?
+            print_passed_specs(passed_specs) if list_passed
+          end
+
           def print_failures(failures, max_failures = nil)
             return if failures.empty?
-
-            puts ""
-            puts "Failures:"
-            puts ""
 
             shown_hints = Set.new
             sorted_failures = sort_result_entries(failures)
@@ -1438,8 +1434,8 @@ module Liquid
               location = spec.source_file
               location = "#{location}:#{spec.line_number}" if spec.line_number
               puts "\e[2m#{location}\e[0m"
-
-              puts "#{i + 1}) #{spec.name}"
+              complexity = spec.complexity || 1000
+              puts "#{i + 1}) [c=#{complexity}] #{spec.name}"
               print_labeled_value("Template", spec.template)
 
               # Show environment if present

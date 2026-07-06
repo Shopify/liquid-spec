@@ -13,7 +13,7 @@ namespace :generate do
     Helpers.insert_patch("./tmp/liquid/Gemfile", "gem \"activesupport\", \"~> 7.1\"\n")
     Helpers.reset_captures(FILTER_CAPTURE_PATH)
     run_standard_filters_tests
-    Helpers.format_and_write_specs(FILTER_CAPTURE_PATH, FILTER_SPEC_FILE)
+    Helpers.format_and_write_specs(FILTER_CAPTURE_PATH, FILTER_SPEC_FILE, metadata: { "hint" => FILTER_METADATA_HINT })
   end
 end
 
@@ -88,3 +88,19 @@ FILTER_SPEC_FILE = File.join(
   "liquid_ruby",
   "standard_filters.yml",
 )
+
+FILTER_METADATA_HINT = <<~HINT
+  These generated filter specs cover Shopify/liquid filter behavior across many input
+  types (strings, integers, floats, booleans, nil, arrays, hashes, drops, Dates). They
+  are scored at complexity 160 — past the curated basics/ filter ramp — because failures
+  are usually about cross-cutting behaviors, not the filter itself. When a single filter
+  spec fails, first check the category it falls into:
+
+  1. Date/Time rendering (render Date as YYYY-MM-DD before the filter applies)
+  2. Float formatting (0.0 not 0; shortest round-trip, keep .0 on integer-valued floats)
+  3. Type coercion (boolean->0/1, string->chars for first/last, strict contains equality)
+  4. nil/empty handling (nil -> "" not "nil"; nil | size -> 0)
+  5. Drops/Ruby objects (call to_liquid/to_s first; auto-tagged ruby_drops/ruby_types)
+
+  See docs/filter_matrix_quirks.md for full details and worked examples.
+HINT
