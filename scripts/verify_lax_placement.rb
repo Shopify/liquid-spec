@@ -12,6 +12,7 @@
 require "liquid"
 require "liquid/spec"
 require "liquid/spec/suite"
+require "liquid/spec/spec_loader"
 require "liquid/spec/deps/liquid_ruby"
 require "liquid/spec/yaml_initializer"
 require "timecop"
@@ -39,8 +40,8 @@ module LaxPlacementVerifier
       end
 
       # Get specs from each suite
-      strict_suite_specs = liquid_ruby_suite.specs
-      lax_suite_specs = liquid_ruby_lax_suite.specs
+      strict_suite_specs = Liquid::Spec::SpecLoader.load_suite(liquid_ruby_suite)
+      lax_suite_specs = Liquid::Spec::SpecLoader.load_suite(liquid_ruby_lax_suite)
 
       # Track spec names in lax suite for quick lookup
       lax_suite_names = lax_suite_specs.map(&:name).to_set
@@ -176,7 +177,7 @@ module LaxPlacementVerifier
       end
 
       # Build assigns
-      assigns = deep_copy(spec.environment || {})
+      assigns = deep_copy(spec.instantiate_environment)
 
       # Build context with static_environments (same as liquid_ruby adapter)
       # This is important for increment/decrement tests which use separate namespaces
@@ -201,18 +202,19 @@ module LaxPlacementVerifier
     def build_registers(spec)
       registers = {}
       registers[:file_system] = build_file_system(spec)
-      registers[:template_factory] = spec.template_factory if spec.template_factory
+      registers[:template_factory] = spec.instantiate_template_factory if spec.raw_template_factory
       registers
     end
 
     def build_file_system(spec)
-      case spec.filesystem
+      fs = spec.instantiate_filesystem
+      case fs
       when Hash
-        StubFileSystem.new(spec.filesystem)
+        StubFileSystem.new(fs)
       when nil
         Liquid::BlankFileSystem.new
       else
-        spec.filesystem
+        fs
       end
     end
 

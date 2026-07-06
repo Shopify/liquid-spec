@@ -2182,6 +2182,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_conditional_tag_returns_false_when_the_operator_is_unknown_5c21eaec8
+  error_mode: lax
   features:
     - lax_parsing
   expected: ''
@@ -2205,6 +2206,7 @@
   template: "{% if true true %}{% else %}1{% endif %}"
   environment: {}
 - name: RecordedTest#test_does_not_output_error_when_short_circuit_evaluation_avoids_using_the_unknown_operator_68463361a
+  error_mode: lax
   features:
     - lax_parsing
   expected: b
@@ -2212,6 +2214,7 @@
   environment:
     dynamic: false
 - name: RecordedTest#test_does_not_output_error_when_unknown_operators_are_used_in_elsif_but_if_is_true_9f923dacb
+  error_mode: lax
   features:
     - lax_parsing
   expected: a
@@ -2254,6 +2257,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_ignore_unknown_operators_when_the_tags_body_is_empty_c0bf47389
+  error_mode: lax
   features:
     - lax_parsing
   expected: ''
@@ -3690,6 +3694,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_break_in_capture_in_loop_12d168c32
+  error_mode: lax
   expected: 'before,after,captured:inside
 
     '
@@ -3709,6 +3714,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_break_in_capture_not_in_loop_0e9a05bee
+  error_mode: lax
   expected: before,
   template: |
     {% liquid
@@ -4488,6 +4494,7 @@
     b: meow
   filesystem: {}
 - name: RecordedTest#test_continue_in_capture_in_loop_1a17a2daf
+  error_mode: lax
   expected: 'before,after,captured:inside
 
     '
@@ -4512,6 +4519,7 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_data_escaping_9e876fe0d
+  error_mode: lax
   features:
     - lax_parsing
   expected: "\n\r\t'\"\\\U0001F44B\U0001F3FB"

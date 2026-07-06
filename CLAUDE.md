@@ -57,23 +57,37 @@ If it fails, add a useful spec/source-level hint or move the spec later in the r
 ### `verify_*` scripts
 
 `scripts/` contains standalone lint/audit scripts named `verify_*.rb` that check
-cross-cutting spec invariants the quality-gate test doesn't cover:
+cross-cutting spec invariants the quality-gate test doesn't cover.
+
+**Push gate** (mechanical, must be green before pushing):
 
 ```bash
-ruby -Ilib scripts/verify_lax_placement.rb        # lax-only specs live in liquid_ruby_lax
 ruby -Ilib scripts/verify_ruby_type_tags.rb       # Ruby-content specs carry a ruby feature tag + complexity > 100
+ruby -Ilib scripts/verify_lax_mode_declared.rb    # lax-dependent specs declare error_mode: lax (auto-tags lax_parsing)
 ```
-
-**Run every `verify_*` script before pushing.** They exit non-zero on violation:
 
 ```bash
-for s in scripts/verify_*.rb; do ruby -Ilib "$s" || exit 1; done
+for s in scripts/verify_ruby_type_tags.rb scripts/verify_lax_mode_declared.rb; do ruby -Ilib "$s" || exit 1; done
 ```
 
-When you introduce a new cross-cutting rule (e.g. "every spec with marker X must
-have tag Y"), add a `verify_*.rb` script for it rather than a one-off check, so
-the rule stays enforced. Keep each script self-contained (parse spec files
-directly), print `OK: ...` on success, and exit non-zero with a per-spec
+**Semantic audit** (slower; runs specs against reference liquid in both modes;
+report known debt, don't block push):
+
+```bash
+ruby -Ilib scripts/verify_lax_placement.rb        # lax-only specs should live in the liquid_ruby_lax suite
+```
+Error-mode policy these enforce:
+- A spec that needs lax mode must declare `error_mode: lax` (the gem auto-tags
+  it `lax_parsing`, so lax-opt-out adapters skip it). `verify_lax_mode_declared`
+  catches any that forgot.
+- Lax-only specs belong in `specs/liquid_ruby_lax/`, not `specs/liquid_ruby/`.
+  `verify_lax_placement` reports misplaced ones; move them with `scripts/move_spec.rb`.
+- Specs exercising a lax-vs-strict2 difference that matters declare
+  `error_mode: strict2` (auto-tagged `strict2_parsing`).
+
+When you introduce a new cross-cutting rule, add a `verify_*.rb` script for it
+rather than a one-off check, so the rule stays enforced. Keep each script
+self-contained, print `OK: ...` on success, and exit non-zero with a per-spec
 offender list on failure.
 
 ### Dumb Adapter Ramp Audits
