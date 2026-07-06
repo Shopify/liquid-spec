@@ -40,20 +40,19 @@ liquid-spec my_adapter.rb --list-suites
 
 ### Default runner output
 
-The standard (`liquid-spec adapter.rb`) run prints a single summary line followed by the
-lowest-complexity failures — the "next best specs to work on" (capped at `--max-failures`,
-default 5). Preamble, per-suite progress, and skipped-suite lines are verbose-only (`-v`):
+The standard (`liquid-spec adapter.rb`) run prints the lowest-complexity failures — the
+"next best specs to work on" (capped at `--max-failures`, default 5) — followed by a
+single stats line. Preamble, per-suite progress, and skipped-suite lines are verbose-only
+(`-v`):
 
 ```
-Complexity bar cleared: 70, 1234 passes, 56 failures. Next best specs to work on:
+Next best specs to work on:
 
 1) [c=70] ForTagTest#test_iterate_with_each...
    ...
+
+Complexity bar cleared: 70, 1234 passes, 56 failures.
 ```
-
-`--json` output is unchanged (machine-readable). `--list-passed` appends passing specs
-after the failures.
-
 
 
 ### Spec Quality Gates

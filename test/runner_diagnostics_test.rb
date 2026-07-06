@@ -98,8 +98,8 @@ class RunnerDiagnosticsTest < Minitest::Test
     )
 
     assert_equal 1, status
-    assert stdout.start_with?("Complexity bar cleared:"), "stdout should start with the complexity-bar summary, got:\n#{stdout[0,120]}"
-    assert_match(/\AComplexity bar cleared: \d+, \d+ passes, \d+ failures\./, stdout)
+    assert stdout.start_with?("Next best specs to work on:"), "stdout should start with the failure list, got:\n#{stdout[0,120]}"
+    assert_match(/Complexity bar cleared: \d+, \d+ passes, \d+ failures\./, stdout)
     refute_includes stdout, "Missing features:"
     refute_includes stdout, "Known failures:"
     # no per-suite progress lines leak into default stdout
@@ -126,7 +126,7 @@ class RunnerDiagnosticsTest < Minitest::Test
       )
 
       assert_equal 1, status
-      assert stdout.start_with?("Complexity bar cleared:"), "stdout should start with the complexity-bar summary, got:\n#{stdout[0,120]}"
+      assert stdout.start_with?("Next best specs to work on:"), "stdout should start with the failure list, got:\n#{stdout[0,120]}"
       refute_includes stdout, "Prioritized Specs"
       assert_includes stdout, "1) [c=5] object_string_literal"
       refute_includes stdout, "[c=1000] high_added_failure"

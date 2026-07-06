@@ -1404,17 +1404,20 @@ module Liquid
             end
           end
 
-          # Default plain-mode output: a single summary line followed by the
-          # lowest-complexity failures (the "next best specs to work on").
-          # All preamble/progress/skipped output is verbose-only so stdout
-          # starts with the "Complexity bar cleared" line.
+          # Default plain-mode output: the lowest-complexity failures (the "next best
+          # specs to work on") followed by a single stats line at the end. All
+          # preamble/progress/skipped output is verbose-only so stdout starts with the
+          # failure list (or the stats line when there are no failures).
           def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:)
             failures_count = total_failed + total_errors
-            puts "Complexity bar cleared: #{max_complexity_reached}, #{total_passed} passes, #{failures_count} failures. Next best specs to work on:"
-            puts ""
-            print_failures(failures, max_failures)
+            if failures.any?
+              puts "Next best specs to work on:"
+              puts ""
+              print_failures(failures, max_failures)
+            end
             print_known_fixed(known_fixed) if known_fixed.any?
             print_passed_specs(passed_specs) if list_passed
+            puts "Complexity bar cleared: #{max_complexity_reached}, #{total_passed} passes, #{failures_count} failures."
           end
 
           def print_failures(failures, max_failures = nil)
