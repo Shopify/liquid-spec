@@ -97,6 +97,7 @@ but don't fail the overall check.
 
 ```bash
 rake check          # run all verifiers
+rake prepush        # run unit tests then all verifiers (standard pre-push gate)
 ```
 
 You can also run individual verifiers directly:
@@ -104,8 +105,14 @@ You can also run individual verifiers directly:
 ```bash
 ruby -Ilib scripts/verifiers/ruby_type_tags.rb      # Ruby-content + instantiate: drops carry a ruby feature tag + complexity > 100
 ruby -Ilib scripts/verifiers/lax_mode_declared.rb   # lax-dependent specs declare error_mode: lax (auto-tags lax_parsing)
-ruby -Ilib scripts/verifiers/spec_schema.rb         # spec YAML structure: valid, required fields, known features, complexity range
+ruby -Ilib scripts/verifiers/spec_schema.rb         # spec YAML structure: valid fields, required fields, known features, complexity range
 ruby -Ilib scripts/verifiers/lax_placement.rb       # advisory: lax-only specs should live in the liquid_ruby_lax suite
+ruby -Ilib scripts/verifiers/jsonrpc_portability.rb # specs don't send non-primitive Ruby types over JSON-RPC
+ruby -Ilib scripts/verifiers/cross_mode_compatibility.rb # multi-mode error_mode specs produce consistent results
+ruby -Ilib scripts/verifiers/parse_mode_annotation.rb # specs without error_mode behave identically across parse modes
+ruby -Ilib scripts/verifiers/spec_name_collisions.rb # no two specs share the same name
+ruby -Ilib scripts/verifiers/filesystem_extensions.rb # filesystem keys have valid extensions (.liquid, .svg, etc.)
+ruby -Ilib scripts/verifiers/minimum_complexity.rb  # specs with advanced features sit above the beginner ramp
 ```
 
 **Blocking verifiers** (must be green before pushing):
@@ -116,12 +123,30 @@ ruby -Ilib scripts/verifiers/lax_placement.rb       # advisory: lax-only specs s
   (the gem auto-tags `lax_parsing`, so lax-opt-out adapters skip it).
 - `spec_schema` — every spec YAML file must be well-formed: valid YAML, correct
   top-level structure, required fields (name, template, expected or errors),
-  complexity in 1..1000, features from the known set, valid error_mode.
+  complexity in 1..1000, features from the known set, valid error_mode (single
+  or array of strict/strict2/lax), valid errors sub-keys (parse_error,
+  render_error, output), valid generate field definitions, no unknown fields.
 - `minimum_complexity` — specs with advanced features must sit above the
   beginner ramp: Ruby content (`ruby_types`/`ruby_drops`/`binary_data`) and
 `instantiate:` drops ≥ 100; `drops` ≥ 200; `template_factory` and
 Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict2`
 ≥ 100.
+- `jsonrpc_portability` — specs must not send non-primitive Ruby types
+  (non-string keys, symbols, unregistered objects) over JSON-RPC, which would
+  trigger `_rpc_drop` markers. Time/Date/DateTime are whitelisted (sent as
+  ISO 8601 strings).
+- `cross_mode_compatibility` — specs with array `error_mode` (e.g.
+  `[lax, strict]`) must produce consistent results in all declared modes.
+- `parse_mode_annotation` — specs without `error_mode` must behave identically
+  across all parse modes (lax, strict, strict2). Specs that behave differently
+  must declare `error_mode` to indicate which modes they're compatible with.
+  Specs with `errors:` must always declare `error_mode` (syntax errors are
+  mode-dependent).
+- `spec_name_collisions` — no two specs may share the same name. Duplicate
+  names cause one spec to shadow the other.
+- `filesystem_extensions` — every filesystem key in specs must have a
+  recognized extension (`.liquid`, `.svg`, `.json`, `.css`, `.js`, `.scss`,
+  `.html`, `.txt`).
 
 **Advisory verifiers** (report known debt, don't block push):
 - `lax_placement` — lax-only specs belong in `specs/liquid_ruby_lax/`, not
@@ -136,7 +161,11 @@ Error-mode policy these enforce:
   `lax_placement` reports misplaced ones; move them with `scripts/move_spec.rb`.
 - Specs exercising a lax-vs-strict2 difference that matters declare
   `error_mode: strict2` (auto-tagged `strict2_parsing`).
-
+- Specs compatible with multiple modes can declare `error_mode: [lax, strict]`
+  (array form). The first mode is primary (used for testing); only the primary
+  mode generates feature tags.
+- Any spec with `errors:` must declare `error_mode` — syntax errors are
+  mode-dependent. `parse_mode_annotation` catches any that forgot.
 When you introduce a new cross-cutting rule, add a verifier script in
 `scripts/verifiers/` rather than a one-off check, so the rule stays enforced.
 Each verifier defines a module with a `run` class method returning 0 or
@@ -842,7 +871,7 @@ yq '.specs | length' file.yml
 **MANDATORY WORKFLOW:**
 
 1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
+2. **Run quality gates** (if code changed) - `rake prepush` runs unit tests then all verifiers
 3. **Update issue status** - Close finished work, update in-progress items
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
