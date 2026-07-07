@@ -5,7 +5,7 @@ description: >
   for pagination, parentloop for nested loops, and the else block. Essential reading for any
   implementation that needs iteration.
 optional: false
-order: 2
+order: 6
 ---
 
 # The `for` Loop

@@ -5,7 +5,7 @@ description: >
   render (recommended, isolated scope, contained interrupts). Understanding these differences is
   essential for correct partial template handling.
 optional: false
-order: 5
+order: 8
 ---
 
 # Partials: `include` vs `render`

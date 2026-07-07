@@ -51,7 +51,7 @@ liquid-spec bench my_adapter.rb
 liquid-spec matrix --all
 liquid-spec report
 liquid-spec features
-liquid-spec docs complexity
+liquid-spec docs curriculum
 ```
 
 ### Default runner output
@@ -84,13 +84,15 @@ run `--bench` for performance, or run a matrix test / contribute back to liquid-
 
 ### Spec Quality Gates
 
-Run the spec-quality gate when changing complexity scores, hints, or early-ramp specs:
+Run the contributor check gate when changing complexity scores, hints, early-ramp specs,
+feature tags, or docs that describe those rules:
 
 ```bash
-ruby -Ilib -I$LIQUID -Itest -e 'require File.expand_path("test/spec_quality_test.rb")'
+rake check
 ```
 
-It currently enforces:
+`rake check` includes the spec-quality gate and the mechanical feature/error-mode audits.
+The spec-quality portion currently enforces:
 - complexity scores must be <= 1000
 - every spec with effective complexity <= 220 must have an effective hint
 - every spec with complexity <= 220 must have a spec-LEVEL hint (`spec.hint`), not just
@@ -111,12 +113,14 @@ cross-cutting spec invariants the quality-gate test doesn't cover.
 **Push gate** (mechanical, must be green before pushing):
 
 ```bash
-ruby -Ilib scripts/verify_ruby_type_tags.rb       # Ruby-content specs carry a ruby feature tag + complexity > 100
-ruby -Ilib scripts/verify_lax_mode_declared.rb    # lax-dependent specs declare error_mode: lax (auto-tags lax_parsing)
+rake check
 ```
 
+For targeted debugging, the scripts are:
+
 ```bash
-for s in scripts/verify_ruby_type_tags.rb scripts/verify_lax_mode_declared.rb; do ruby -Ilib "$s" || exit 1; done
+ruby -Ilib scripts/verify_ruby_type_tags.rb       # Ruby-content specs carry a ruby feature tag + complexity > 100
+ruby -Ilib scripts/verify_lax_mode_declared.rb    # lax-dependent specs declare error_mode: lax (auto-tags lax_parsing)
 ```
 
 **Semantic audit** (slower; runs specs against reference liquid in both modes;
@@ -155,7 +159,7 @@ liquid-spec run /tmp/raise_compile_adapter.rb -s basics --max-failures 3
 liquid-spec run /tmp/raise_render_adapter.rb -s basics --max-failures 3
 ```
 
-Use `--list-passed` to inspect accidental passes and `--json` for tooling. Prefer `Max complexity reached` / `max_complexity_reached` over raw pass count when judging partial or deliberately naive adapters.
+Use `--list-passed` to inspect accidental passes and `--json` for tooling. Prefer `Complexity level cleared` (or JSON `max_complexity_reached`) over raw pass count when judging partial or deliberately naive adapters.
 
 ### Result Logging
 
@@ -372,7 +376,7 @@ Good specs preserve the project goal: help someone build a production-ready Liqu
 - Keep whitespace control (`{{-`, `-}}`, `{%-`, `-%}`), drop/to_liquid boundaries, generated filter matrices, parser recovery, date/time quirks, and filesystem/security quirks out of the beginner band.
 - Generated specs should not flood the early ramp. Prefer curated beginner specs early; generated compatibility breadth generally starts at 120+ or much later.
 - If a dumb adapter that returns the input, returns `""`, or raises for everything passes a spec unexpectedly, either the spec is too weak or the complexity/hint needs review.
-- When judging naive adapters, prefer `Max complexity reached` over total pass count. An always-empty adapter can pass later specs whose correct output is empty, but it should not advance through the contiguous ramp.
+- When judging naive adapters, prefer `Complexity level cleared` over total pass count. An always-empty adapter can pass later specs whose correct output is empty, but it should not advance through the contiguous ramp.
 
 ### Error specs: prefer raised errors over inline errors
 

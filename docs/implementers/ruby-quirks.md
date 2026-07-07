@@ -5,7 +5,7 @@ description: >
   with exact input/output tables so implementers can match Ruby's behavior precisely.
   Essential reading for anyone implementing Liquid outside of Ruby.
 optional: false
-order: 7
+order: 12
 ---
 
 # Ruby Quirks

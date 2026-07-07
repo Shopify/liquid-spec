@@ -5,7 +5,7 @@ description: >
   static environments. Covers the scope stack, assign behavior, register stores, and depth limiting.
   Essential for understanding variable visibility and isolation.
 optional: false
-order: 3
+order: 4
 ---
 
 # Scopes and Variable Resolution

@@ -5,7 +5,7 @@ description: >
   share counters while unnamed cycles with variables get independent counters, plus named cycle
   behavior and state isolation.
 optional: false
-order: 6
+order: 10
 ---
 
 # The `cycle` Tag

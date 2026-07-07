@@ -5,7 +5,7 @@ description: >
   through nested blocks, consumption by loops, and the critical differences between include (propagates)
   and render (isolates). A common source of subtle bugs.
 optional: false
-order: 4
+order: 7
 ---
 
 # Interrupts: `break` and `continue`

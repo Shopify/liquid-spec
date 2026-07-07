@@ -72,9 +72,12 @@ gem specific_install https://github.com/Shopify/liquid-spec
 # 1. Generate an adapter template
 liquid-spec init my_adapter.rb
 
-# 2. Edit my_adapter.rb to wire up your implementation (see below)
+# 2. Read the implementation curriculum
+liquid-spec docs curriculum
 
-# 3. Run the specs
+# 3. Edit my_adapter.rb to wire up your implementation (see below)
+
+# 4. Run the specs; the first failure is your next lesson
 liquid-spec run my_adapter.rb
 ```
 
@@ -202,7 +205,7 @@ Specs are ordered by complexity so you can implement features progressively. The
 
 Each non-trivial spec includes a detailed `hint` explaining how the feature should be implemented. If the first failure is surprising or unactionable, the spec probably needs a better hint or a higher complexity score.
 
-**Read `Max complexity reached`, not just total passes.** A naive adapter that always returns `""` can accidentally pass many later specs whose expected output is empty, but its max reached complexity should remain at 0. The max-complexity line tells you how far the implementation progressed through the ordered curriculum.
+**Read `Complexity level cleared`, not just total passes.** A naive adapter that always returns `""` can accidentally pass many later specs whose expected output is empty, but its cleared complexity level should remain at 0. The complexity-level line tells you how far the implementation progressed through the ordered curriculum.
 
 ### Feature-Based Suite Selection
 
@@ -274,7 +277,7 @@ liquid-spec run /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
 liquid-spec run /tmp/empty_adapter.rb -s basics --json --list-passed > empty-results.json
 ```
 
-A source-echo adapter should only pass raw-text specs before failing on first object output. An always-empty adapter may pass many empty-output specs, so judge progress by `max_complexity_reached`, not by total passes.
+A source-echo adapter should only pass raw-text specs before failing on first object output. An always-empty adapter may pass many empty-output specs, so judge progress by `Complexity level cleared` (or JSON `max_complexity_reached`), not by total passes.
 
 ### Matrix Command
 
@@ -564,9 +567,17 @@ Each spec defines:
 git clone https://github.com/Shopify/liquid-spec.git
 cd liquid-spec
 
-# Run specs against Shopify/liquid gem
+# Install dependencies
 bundle install
-rake
+
+# Fast contributor checks for spec metadata / feature tags / quality gates
+rake check
+
+# Unit tests for liquid-spec itself
+rake test
+
+# Run specs against the Shopify/liquid reference adapter
+bundle exec rake run
 
 # Regenerate specs from Shopify/liquid source
 # (requires ../liquid directory with Shopify/liquid checked out)

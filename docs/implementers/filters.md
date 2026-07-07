@@ -5,7 +5,7 @@ description: >
   issues. Covers type coercion, edge cases, and the difference between standard and URL-safe
   variants.
 optional: false
-order: 8
+order: 5
 ---
 
 # Filter Reference

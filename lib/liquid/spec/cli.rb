@@ -27,7 +27,7 @@ module Liquid
           matrix              Run specs across multiple adapters and compare results
           report              Analyze and compare benchmark results
           inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
-          eval ADAPTER        Quick test a template against your adapter
+          eval ADAPTER        Quick test a YAML spec against your adapter
           init [FILE]         Generate adapter templates.
                              No FILE: generates both liquid_adapter.rb and
                              liquid_adapter_jsonrpc.rb (executable, self-launching).
@@ -44,7 +44,8 @@ module Liquid
           liquid-spec bench my_adapter.rb               # Benchmark my_adapter vs liquid_ruby
           liquid-spec bench my_adapter.rb -n storefront # Benchmark specific specs
           liquid-spec inspect adapter.rb -n "case.*empty"  # Inspect failing spec
-          liquid-spec eval adapter.rb -l "{{ 'hi' | upcase }}"  # Quick test
+          liquid-spec docs curriculum          # Implementation learning path
+          cat spec.yml | liquid-spec eval adapter.rb --compare  # Quick YAML spec test
 
         Eval Command (quick testing):
           The eval command tests specs from YAML files or stdin:
@@ -80,22 +81,13 @@ module Liquid
               expected: "HELLO"
             YAML
 
-        Complexity Scoring (see `liquid-spec docs complexity` for full guide):
-          Specs have a complexity score indicating implementation difficulty.
-          Lower = simpler features to implement first.
+        Implementation Curriculum:
+          Start with `liquid-spec docs curriculum`. Specs are ordered by complexity so
+          a failing run doubles as a learning path. Complexity is a guide, not an
+          architecture mandate: different implementations can choose different internals
+          while using the same observable-behavior ramp.
 
-          Range     Feature
-          -----     -------
-          10-20     Literals, raw text output
-          30-50     Variables, filters, assign
-          55-60     Whitespace control, if/else/unless
-          70-80     For loops, operators, filter chains
-          85-100    Math filters, forloop object, capture, case/when
-          105-130   String filters, increment, comment, raw, echo, liquid tag
-          140-180   Array filters, property access, truthy/falsy, cycle, tablerow
-          190-220   Advanced: offset:continue, parentloop, partials
-          300-500   Edge cases, deprecated features
-          1000+     Production recordings, unscored specs (default)
+          See also: `liquid-spec docs core-abstractions` and `liquid-spec docs complexity`.
 
         Run 'liquid-spec <command> --help' for command-specific help.
 

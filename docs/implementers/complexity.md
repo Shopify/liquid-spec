@@ -1,7 +1,7 @@
 ---
 title: Complexity Scoring
 description: How spec complexity scores work and how to assign them. Specs run in complexity order - lower scores first.
-order: 5
+order: 3
 ---
 
 # Complexity Scoring Guide

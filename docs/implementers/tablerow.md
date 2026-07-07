@@ -1,3 +1,12 @@
+---
+title: Tablerow Tag
+description: >
+  How to implement Liquid's tablerow tag: HTML table generation, tablerowloop state,
+  column wrapping, exact whitespace, and break/continue behavior.
+optional: false
+order: 11
+---
+
 # Tablerow Tag Implementation
 
 The `{% tablerow %}` tag generates HTML table rows from a collection. It looks like a for loop but **it is not** - it's an HTML generator with specific output format requirements.
@@ -174,7 +183,7 @@ Example with `cols:3`:
 
 Run tablerow-specific specs:
 ```bash
-liquid-spec your_adapter.rb -n tablerow
+liquid-spec run your_adapter.rb -n tablerow
 ```
 
 Start with basic tablerow (complexity 180), then move to tablerowloop properties (250+).

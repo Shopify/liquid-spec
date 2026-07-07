@@ -5,7 +5,7 @@ description: >
   execution. Covers opcodes, control flow, and stack-based evaluation. Optional reading - a tree-walking
   interpreter works fine. Only needed if building a high-performance or compiled implementation.
 optional: true
-order: 11
+order: 30
 ---
 
 # Liquid IL and AST Flattening (Strict Mode)

@@ -5,7 +5,7 @@ description: >
   Covers template tokenization, strict expression lexing, and error handling. Optional reading - a
   simple recursive descent parser works fine. Only needed if optimizing parse performance.
 optional: true
-order: 10
+order: 20
 ---
 
 # Parsing in Strict Mode

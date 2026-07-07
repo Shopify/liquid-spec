@@ -5,7 +5,7 @@ description: >
   theme benchmark suite. Provides working Ruby code that can serve as pseudocode
   for any language.
 optional: true
-order: 20
+order: 40
 ---
 
 # Shopify Theme Filters

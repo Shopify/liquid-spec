@@ -1,3 +1,12 @@
+---
+title: Liquid Grammar Reference
+description: >
+  A pseudo-grammar for Liquid templates, tags, expressions, filters, and documented
+  irregularities. Read early so the parser and renderer share the same language model.
+optional: false
+order: 2
+---
+
 # Liquid Grammar Reference
 
 A pseudo-grammar for implementing Liquid. Liquid is **mostly regular** with specific documented irregularities.

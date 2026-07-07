@@ -32,12 +32,15 @@ module Liquid
             required = docs.reject { |d| d[:optional] }
             optional = docs.select { |d| d[:optional] }
 
-            puts "Implementer Documentation"
+            puts "Liquid Implementation Curriculum"
             puts "=" * 60
+            puts ""
+            puts "These guides are ordered as a suggested learning path. Start with `curriculum`,"
+            puts "then use failing specs, hints, and your product goals to choose the next guide."
             puts ""
 
             unless required.empty?
-              puts "\e[1mCore Documentation (Start Here)\e[0m"
+              puts "\e[1mCurriculum and Core Guides\e[0m"
               puts ""
               required.each { |doc| print_doc_summary(doc) }
             end
@@ -50,7 +53,7 @@ module Liquid
 
             puts ""
             puts "View a document: \e[1mliquid-spec docs <name>\e[0m"
-            puts "Example: liquid-spec docs core-abstractions"
+            puts "Start here: liquid-spec docs curriculum"
           end
 
           def print_doc_summary(doc)

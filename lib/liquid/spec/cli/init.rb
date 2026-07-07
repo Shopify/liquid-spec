@@ -362,9 +362,10 @@ module Liquid
             You are building a production-grade [Liquid](https://shopify.github.io/liquid/)
             template engine. This directory is wired to **liquid-spec**, which defines what
             "correct" means: 7,000+ executable specs, ordered by complexity from trivial
-            passthrough (score 0) to full production compatibility (score 1000). Your job is
-            to climb that ramp. The suite is the definition of done — when it is green, you
-            have a real Liquid implementation.
+            passthrough (score 0) to full production compatibility (score 1000). The suite
+            is a curriculum for observable behavior, not a mandated internal architecture:
+            tree-walking, bytecode, compiled templates, strict-first, and compatibility-first
+            implementations can all use the same ramp.
 
             #{json_rpc ? non_ruby_notice : ""}
             ## Which adapter file?
@@ -383,8 +384,9 @@ module Liquid
             ```
 
             1. Run the suite. Specs execute in complexity order, so the FIRST failure is
-               always the right thing to work on. Do not skip ahead: later features depend
-               on earlier ones, and the ramp is designed so each fix is small.
+               usually the best next lesson. You can batch related work or follow product
+               needs, but keep returning to the ramp because later specs often assume earlier
+               semantics are already solid.
             2. Read the failing spec completely — template, environment, expected, got, and
                especially the `hint:`. Hints are written by implementers for implementers;
                they usually state the exact rule you are missing.
@@ -416,7 +418,7 @@ module Liquid
                earlier specs is wrong, not a tradeoff.
             6. Judge progress by **`Complexity level cleared`**, not the raw pass count. A
                partial implementation accidentally passes many later specs whose expected
-               output happens to be empty; complexity-reached is the honest meter.
+               output happens to be empty; the cleared complexity level is the honest meter.
 
             ## Hard rules
 
@@ -477,12 +479,12 @@ module Liquid
 
             | `liquid-spec docs ...` | What it explains |
             |---|---|
-            | `complexity` | the full ramp: what to build at every score |
-            | `grammar` | the syntax: tags, output, expressions, literals |
-            | `parsing` | tokenizer/parser structure, error modes, whitespace control |
-            | `core-abstractions` | truthiness, nil, coercion, drops, special keys |
-            | `filters` | filter dispatch, arguments, coercion rules |
+            | `curriculum` | the learning path: what to build, in what order, and what to ignore |
+            | `core-abstractions` | truthiness, nil, output conversion, iteration, emptiness, scope shape |
+            | `grammar` | the syntax: tags, output, expressions, literals, irregularities |
+            | `complexity` | the full ramp: why each lesson appears when it does |
             | `scopes` | variable scoping: assign, capture, loops, includes |
+            | `filters` | filter dispatch, arguments, coercion rules |
             | `for-loops` | for/forloop/offset/limit/else, iteration protocol |
             | `interrupts` | break/continue, incl. across include boundaries |
             | `partials` | include vs render semantics |
@@ -496,11 +498,11 @@ module Liquid
 
             ## Architecture advice for a fresh implementation
 
-            Start boring: tokenizer → parser → node tree → tree-walking renderer with a
-            scope stack. Do not build a compiler or VM first — correctness across 7,000+
-            specs is the hard part, and a simple renderer is much easier to make correct.
-            Two things ARE worth designing in from day one, because they weave through
-            everything and are painful to retrofit:
+            A common low-risk route is tokenizer → parser → node tree → tree-walking
+            renderer with a scope stack. A compiler/VM is also fine if that fits your project,
+            but correctness across 7,000+ specs is the hard part, so keep the observable
+            semantics easy to test. Two things ARE worth designing in from day one, because
+            they weave through everything and are painful to retrofit:
 
             1. **Error plumbing** — every node needs a line number and a uniform way to
                either emit `Liquid error (line N): ...` text or raise, per the error model
@@ -556,6 +558,7 @@ module Liquid
             liquid-spec run #{filename} --list-passed   # audit accidental passes
             liquid-spec run #{filename} --json          # machine-readable results
             cat spec.yml | liquid-spec eval #{filename} --compare           # one-off YAML spec
+            liquid-spec docs curriculum                 # the implementation learning path
             liquid-spec docs complexity                 # any guide from the table above
             ```
 

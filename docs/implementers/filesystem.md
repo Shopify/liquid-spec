@@ -5,7 +5,7 @@ description: >
   {% render %}. Covers extension handling, case sensitivity, path traversal,
   and error behavior. Essential for implementing partial template loading.
 optional: false
-order: 6
+order: 9
 ---
 
 # Filesystem: `include` and `render` template lookup

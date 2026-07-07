@@ -1,36 +1,37 @@
 ---
 title: Core Abstractions
 description: >
-  The five foundational functions every Liquid implementation needs: to_output, to_iterable,
-  is_empty, is_blank, and scope management. Implement these correctly and you're 90% done.
-  This is the most important document for new implementers - read it first.
+  The core value-model questions every Liquid implementation must answer: output conversion,
+  iteration conversion, empty/blank/default truthiness, hash pseudo-methods, scopes, and
+  loop state. The named helpers are conceptual seams, not required public APIs.
 optional: false
 order: 1
 ---
 
 # Core Abstractions
 
-If you implement these five abstractions correctly, you're 90% of the way to a working Liquid implementation. Everything else—individual tags, filters, operators—builds on top of these foundations.
+This guide names a few core semantic questions as helper functions. Those names are not a required public API: they can be methods, traits, protocols, VM opcodes, compiler rewrites, or plain helper routines. The important part is that your implementation answers these questions consistently.
 
 ## The Key Insight
 
-Liquid has many "weird" type coercion rules. The trick is to **centralize all the weirdness** into a few core functions. Once these handle all the edge cases, everything else becomes simple.
+Liquid has many surprising type coercion rules. The trick is to **centralize those decisions** somehow. Once output, iteration, truthiness, emptiness, and lookup semantics agree across the engine, individual tags, filters, and operators become much easier to reason about.
 
 Consider a range like `(1..5)`:
 - `to_output((1..5))` → `"1..5"` (string representation)
 - `to_iterable((1..5))` → `[1, 2, 3, 4, 5]` (expanded for iteration)
 
-Same value, completely different behavior depending on context. By handling this in ONE place, your `{{ }}` output tag and `{% for %}` tag don't need to know anything about ranges—they just call the appropriate abstraction.
+Same value, completely different behavior depending on context. Keeping these decisions centralized—whatever that means in your architecture—prevents output tags, loops, filters, and partials from drifting into subtly different semantics.
 
-## The Five Foundations
+## The Core Semantic Questions
 
 1. **`to_output(value)`** - Convert any value to output string
 2. **`to_iterable(value)`** - Convert any value to something enumerable
 3. **`is_empty(value)`** - Check if a value equals `empty`
 4. **`is_blank(value)`** - Check if a value equals `blank`
-5. **Scope stack** - Variable lookup with proper scoping
-
-Plus the **for loop state machine** that ties it all together.
+5. **Hash pseudo-methods** - Support `hash.size`, `hash.first`, `hash.last`, etc.
+6. **Truthiness** - Keep `if` truthiness distinct from `default` truthiness
+7. **Scope stack** - Variable lookup with proper scoping
+8. **For loop state machine** - Iteration, loop metadata, and interrupts
 
 ---
 
@@ -421,7 +422,7 @@ Context:
 
 ---
 
-## 6. For Loop State Machine
+## 8. For Loop State Machine
 
 The for loop brings everything together.
 
