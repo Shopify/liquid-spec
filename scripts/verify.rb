@@ -19,12 +19,12 @@ VERIFIERS_DIR = File.expand_path("verifiers", __dir__)
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
 # Map verifier filenames to their module constants.
-# Each verifier file must define a module matching its camel-cased name.
 VERIFIER_MODULES = {
-  "lax_mode_declared" => "LaxModeDeclaredVerifier",
-  "lax_placement"     => "LaxPlacementVerifier",
-  "ruby_type_tags"    => "RubyTypeTagVerifier",
-  "spec_schema"       => "SpecSchemaVerifier",
+  "lax_mode_declared"   => "LaxModeDeclaredVerifier",
+  "lax_placement"       => "LaxPlacementVerifier",
+  "minimum_complexity"  => "MinimumComplexityVerifier",
+  "ruby_type_tags"      => "RubyTypeTagVerifier",
+  "spec_schema"         => "SpecSchemaVerifier",
 }
 
 results = []

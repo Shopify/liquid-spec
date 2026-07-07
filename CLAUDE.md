@@ -117,6 +117,11 @@ ruby -Ilib scripts/verifiers/lax_placement.rb       # advisory: lax-only specs s
 - `spec_schema` — every spec YAML file must be well-formed: valid YAML, correct
   top-level structure, required fields (name, template, expected or errors),
   complexity in 1..1000, features from the known set, valid error_mode.
+- `minimum_complexity` — specs with advanced features must sit above the
+  beginner ramp: Ruby content (`ruby_types`/`ruby_drops`/`binary_data`) and
+  `instantiate:` drops ≥ 100; `runtime_drops` ≥ 150; `template_factory` and
+  Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict2`
+  ≥ 100.
 
 **Advisory verifiers** (report known debt, don't block push):
 - `lax_placement` — lax-only specs belong in `specs/liquid_ruby_lax/`, not
