@@ -38,6 +38,20 @@ module Liquid
       module DropProxy
         RPC_DROP_KEY = "_rpc_drop"
         RUBY_TYPE_KEY = "_ruby_type"
+        INSTANTIATE_KEY = "_instantiate"
+
+        # Map standard drop Ruby classes to portable names and param extractors
+        STANDARD_DROP_CLASSES = {
+          "BooleanDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+          "NumberDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+          "StringDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+          "MethodDrop" => proc { |_o| {} },
+          "IndexDrop" => proc { |_o| {} },
+          "SequenceDrop" => proc { |_o| {} },
+          "NilDrop" => proc { |_o| {} },
+          "OpaqueDrop" => proc { |_o| {} },
+          "ErrorDrop" => proc { |_o| {} },
+        }.freeze
 
         class << self
           # Wrap an object for JSON transport
@@ -106,8 +120,14 @@ module Liquid
               # to reproduce class-specific behavior (e.g. "cannot be printed").
               { RUBY_TYPE_KEY => "Class", "name" => obj.name, "inspect" => obj.inspect }
             else
-              # Check if it's a drop or liquid-compatible object
-              if drop_like?(obj)
+              # Check if it's a standard drop — send as _instantiate marker
+              # so the server can create its own boxed object (no RPC needed)
+              portable_name = standard_drop_name(obj)
+              if portable_name
+                params = STANDARD_DROP_CLASSES[portable_name].call(obj)
+                { INSTANTIATE_KEY => portable_name, "params" => params }
+              elsif drop_like?(obj)
+                # Non-standard drop — needs RPC callbacks
                 drop_id = registry.register(obj)
                 { RPC_DROP_KEY => drop_id, "type" => obj.class.name }
               else
@@ -116,6 +136,19 @@ module Liquid
                   "Add handling for this type or add it to missing_features."
               end
             end
+          end
+
+          # Check if obj is a standard drop and return its portable name
+          def standard_drop_name(obj)
+            STANDARD_DROP_CLASSES.each_key do |name|
+              cls = begin
+                Object.const_get("Standard#{name}", false)
+              rescue NameError
+                nil
+              end
+              return name if cls&.=== obj
+            end
+            nil
           end
 
           # Check if an object needs RPC callbacks (is a drop)

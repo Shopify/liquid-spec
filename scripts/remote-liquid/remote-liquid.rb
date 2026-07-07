@@ -18,6 +18,8 @@ require "json"
 require "liquid"
 require "active_support/all"
 require "time"
+require_relative "../../lib/liquid/spec/spec_loader"
+require_relative "../../lib/liquid/spec/deps/standard_drops"
 
 module RemoteLiquid
   VERSION = "1.0"
@@ -407,7 +409,9 @@ module RemoteLiquid
     def unwrap_environment(env)
       case env
       when Hash
-        if env["_rpc_drop"]
+        if env["_instantiate"]
+          instantiate_standard_drop(env["_instantiate"], env["params"] || {})
+        elsif env["_rpc_drop"]
           RpcDropProxy.new(env["_rpc_drop"], env["type"], self)
         elsif env["_ruby_type"]
           unwrap_ruby_type(env)
@@ -449,7 +453,9 @@ module RemoteLiquid
     def unwrap_value(value)
       case value
       when Hash
-        if value["_rpc_drop"]
+        if value["_instantiate"]
+          instantiate_standard_drop(value["_instantiate"], value["params"] || {})
+        elsif value["_rpc_drop"]
           RpcDropProxy.new(value["_rpc_drop"], value["type"], self)
         elsif value["_ruby_type"]
           unwrap_ruby_type(value)
@@ -460,6 +466,33 @@ module RemoteLiquid
         value.map { |v| unwrap_value(v) }
       else
         value
+      end
+    end
+
+    # Create a standard drop instance from an _instantiate marker.
+    # The server implements these drops natively — no RPC callbacks needed.
+    def instantiate_standard_drop(name, params)
+      case name
+      when "BooleanDrop"
+        StandardBooleanDrop.new(params)
+      when "NumberDrop"
+        StandardNumberDrop.new(params)
+      when "StringDrop"
+        StandardStringDrop.new(params)
+      when "MethodDrop"
+        StandardMethodDrop.new(params)
+      when "IndexDrop"
+        StandardIndexDrop.new(params)
+      when "SequenceDrop"
+        StandardSequenceDrop.new(params)
+      when "NilDrop"
+        StandardNilDrop.new(params)
+      when "OpaqueDrop"
+        StandardOpaqueDrop.new(params)
+      when "ErrorDrop"
+        StandardErrorDrop.new(params)
+      else
+        raise "Unknown standard drop: #{name}"
       end
     end
 
