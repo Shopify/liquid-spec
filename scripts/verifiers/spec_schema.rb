@@ -22,7 +22,7 @@ VALID_FEATURES = %w[
   shopify_tags shopify_objects shopify_filters shopify_error_handling
   shopify_blank shopify_string_access shopify_error_format shopify_includes
   ruby_drops drop_class_output template_factory binary_data
-  strict2_blank_body_errors
+  strict2_blank_body_errors drops randomness
 ].freeze
 
 VALID_ERROR_MODES = %w[strict strict2 lax].freeze

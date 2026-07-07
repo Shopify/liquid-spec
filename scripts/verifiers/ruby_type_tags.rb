@@ -25,6 +25,15 @@ require "yaml"
 RUBY_FEATURES = %w[ruby_types ruby_drops binary_data runtime_drops template_factory].freeze
 COMPLEXITY_FLOOR = 100
 
+# Standard test drops — portable, not Ruby-specific.
+# These are documented in docs/test_drops.md and can be implemented
+# natively by any Liquid implementation without Ruby runtime.
+STANDARD_DROPS = %w[
+  BooleanDrop NumberDrop StringDrop
+  MethodDrop IndexDrop SequenceDrop
+  NilDrop OpaqueDrop ErrorDrop
+].freeze
+
 module RubyTypeTagVerifier
   class << self
     def run
@@ -161,7 +170,8 @@ module RubyTypeTagVerifier
         obj.each do |k, v|
           if k.is_a?(String) && k.start_with?("instantiate:")
             class_name = k.sub("instantiate:", "").chomp(":")
-            out << "instantiate: drop (#{class_name})"
+            # Skip standard test drops — they're portable, not Ruby-specific
+            out << "instantiate: drop (#{class_name})" unless STANDARD_DROPS.include?(class_name)
           end
           out.concat(instantiate_markers(v, depth + 1))
         end
@@ -171,7 +181,7 @@ module RubyTypeTagVerifier
       when String
         if obj.start_with?("instantiate:")
           class_name = obj.sub("instantiate:", "").split(/\.|\z/).first
-          [ "instantiate: drop (#{class_name})" ]
+          STANDARD_DROPS.include?(class_name) ? [] : [ "instantiate: drop (#{class_name})" ]
         else
           []
         end

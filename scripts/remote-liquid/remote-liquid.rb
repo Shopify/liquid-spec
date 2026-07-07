@@ -438,6 +438,8 @@ module RemoteLiquid
         end
       when "Range"
         Range.new(marker["begin"], marker["end"], marker["exclude_end"] || false)
+      when "Class"
+        marker["name"].split("::").reduce(Object) { |mod, name| mod.const_get(name) }
       else
         # Unknown ruby type — fall back to inspect string or data
         marker["inspect"] || marker["data"] || marker.to_s

@@ -102,6 +102,16 @@ module Liquid
             recommendation: :unnecessary,
             note: "Aspirational 'NEW STRICT2 CONTRACT' not yet implemented by liquid-ruby 5.13 (it still suppresses blank-body errors). Opt out until your implementation deliberately adopts this contract.",
           },
+          drops: {
+            description: "Standard test drop library (BooleanDrop, MethodDrop, SequenceDrop, etc.)",
+            recommendation: :optional,
+            note: "Drops make Liquid dynamic — without them, templates can only render static data. See docs/test_drops.md.",
+          },
+          randomness: {
+            description: "Specs using generated random values for increased coverage",
+            recommendation: :optional,
+            note: "Values are generated before sending to the adapter. On by default; opt out for deterministic runs.",
+          },
         }.freeze
 
         RECOMMENDATION_LABELS = {

@@ -40,7 +40,9 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_equal 2, payload.fetch("totals").fetch("passed")
     assert_equal 1, payload.fetch("totals").fetch("failed")
     assert_equal 0, payload.fetch("totals").fetch("errors")
-    assert_equal 4, payload.fetch("max_complexity_reached")
+    # Highest complexity level PRESENT in the run below the first failure
+    # (levels here: 0, 1, then the failing 5) — not first_failure - 1.
+    assert_equal 1, payload.fetch("max_complexity_reached")
 
     assert_equal ["object_string_literal"], payload.fetch("failures").map { |f| f.fetch("name") }
     assert_equal ["empty_template", "literal_passthrough"], payload.fetch("passed").map { |f| f.fetch("name") }
@@ -87,7 +89,7 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_equal 1, status
     assert_includes stdout, "Error:    SyntaxError: dumb compile boom"
     assert_includes stdout, "Hint: START HERE"
-    assert_includes stdout, "Complexity bar cleared: 0"
+    assert_includes stdout, "Complexity level cleared: 0"
   end
 
   def test_plain_output_starts_with_complexity_bar_summary_and_omits_suite_preamble
@@ -99,7 +101,7 @@ class RunnerDiagnosticsTest < Minitest::Test
 
     assert_equal 1, status
     assert stdout.start_with?("Next best specs to work on:"), "stdout should start with the failure list, got:\n#{stdout[0,120]}"
-    assert_match(/Complexity bar cleared: \d+ of \d+, \d+ passes, \d+ failures\./, stdout)
+    assert_match(/Complexity level cleared: \d+ of \d+, \d+ passes, \d+ failures\./, stdout)
     refute_includes stdout, "Missing features:"
     refute_includes stdout, "Known failures:"
     # no per-suite progress lines leak into default stdout

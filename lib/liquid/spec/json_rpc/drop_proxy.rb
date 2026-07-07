@@ -100,6 +100,11 @@ module Liquid
                 "end" => obj.end,
                 "exclude_end" => obj.exclude_end?,
                 "inspect" => obj.inspect }
+            when Class
+              # Class objects (e.g. Liquid::Drop class itself) — send as
+              # _ruby_type marker. The server can look up the class by name
+              # to reproduce class-specific behavior (e.g. "cannot be printed").
+              { RUBY_TYPE_KEY => "Class", "name" => obj.name, "inspect" => obj.inspect }
             else
               # Check if it's a drop or liquid-compatible object
               if drop_like?(obj)

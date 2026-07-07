@@ -66,6 +66,8 @@ module LiquidSpec
     shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
     shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
+    drops: "Standard test drop library (BooleanDrop, MethodDrop, SequenceDrop, etc.)",
+    randomness: "Specs using generated random values for increased coverage",
   }.freeze
 
   class Configuration

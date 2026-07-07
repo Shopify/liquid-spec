@@ -245,6 +245,22 @@ module Liquid
             # Determine expected: spec > suite default
             spec_expected = spec_data.key?("expected") ? spec_data["expected"] : default_expected
 
+            # Process generate: random value substitution
+            generate_spec = spec_data["generate"]
+            if generate_spec.is_a?(Hash)
+              generated = {}
+              generate_spec.each do |var_name, range|
+                if range.is_a?(Array) && range.size == 2
+                  generated[var_name] = rand(range[0]..range[1])
+                elsif range.is_a?(Integer)
+                  generated[var_name] = range
+                end
+              end
+              spec_data["template"] = substitute_generated(spec_data["template"], generated) if spec_data["template"]
+              spec_expected = substitute_generated(spec_expected, generated) if spec_expected
+              # Add randomness feature
+              source_features += [:randomness] unless source_features.include?(:randomness)
+            end
             spec = LazySpec.new(
               name: spec_data["name"],
               template: spec_data["template"],
@@ -408,6 +424,21 @@ module Liquid
           result
         end
 
+        # Substitute #{expr} in a string with generated random values
+        # expr is evaluated as Ruby code with generated values as local variables
+        def substitute_generated(str, generated)
+          return str unless str.is_a?(String)
+          return str if generated.empty?
+          # Create a binding with the generated values
+          ctx = binding
+          generated.each do |name, value|
+            ctx.local_variable_set(name.to_sym, value)
+          end
+          str.gsub(/#\{([^}]*)\}/) do
+            expr = $1
+            ctx.eval(expr).to_s
+          end
+        end
         # Placeholder - no instantiate processing needed yet
         def process_instantiate_strings(data)
           data

@@ -313,18 +313,23 @@ module Liquid
           obj.each { |v| copy << deep_instantiate(v, seen) }
           copy
         when String
-          # Handle string format: "instantiate:ClassName.new(arg)"
+          # Handle string formats:
+          #   "instantiate:ClassName"           → no args
+          #   "instantiate:ClassName.new(arg)"  → single arg
           if obj.start_with?("instantiate:")
             if obj =~ /\Ainstantiate:(\w+)\.new\((.+)\)\z/
               class_name = ::Regexp.last_match(1)
               arg_str = ::Regexp.last_match(2)
-              # Parse the argument (handles integers, strings, etc.)
               arg = begin
                 Integer(arg_str)
               rescue ArgumentError
-                arg_str # Keep as string if not an integer
+                arg_str
               end
               instance = ClassRegistry.instantiate(class_name, arg)
+              return instance if instance
+            elsif obj =~ /\Ainstantiate:(\w+)\z/
+              class_name = ::Regexp.last_match(1)
+              instance = ClassRegistry.instantiate(class_name, {})
               return instance if instance
             end
           end
