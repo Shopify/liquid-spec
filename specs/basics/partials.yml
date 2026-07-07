@@ -317,6 +317,33 @@ specs:
   hint: 'Parameters work similarly to render.
 
     '
+- name: include_params_see_earlier_params
+  template: "{% include 't' a: 1, b: a %}"
+  filesystem:
+    t: "{{ a }}-{{ b }}"
+  expected: 1-1
+  complexity: 200
+  hint: |
+    Param evaluation order for include: params are evaluated against a temp
+    scope that ACCUMULATES earlier params. So `b: a` sees `a: 1` — b resolves
+    to 1. This is because include shares scope and builds the param scope
+    incrementally. Contrast with render, where params are evaluated
+    independently against the outer scope (see render_params_independent).
+- name: render_params_independent
+  template: "{% render 't' a: 1, b: a %}"
+  filesystem:
+    t: "{{ a }}-{{ b }}"
+  expected: 1-
+  complexity: 220
+  hint: |
+    Param evaluation order for render: params are evaluated INDEPENDENTLY
+    against the outer scope, NOT against each other. So `b: a` looks up `a`
+    in the outer scope (where it's undefined → empty), even though `a: 1`
+    is also being passed. Result: a=1, b="" → "1-". This is the opposite of
+    include, where params accumulate in a temp scope and later params see
+    earlier ones (see include_params_see_earlier_params). The difference
+    stems from render's isolation: each render call gets a fresh scope, and
+    params don't cross-reference each other.
 - name: include_sees_outer_variables
   template: "{% assign outer = 'visible' %}{% include 'snippet' %}"
   filesystem:
