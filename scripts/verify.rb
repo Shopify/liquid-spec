@@ -27,6 +27,9 @@ VERIFIER_MODULES = {
   "spec_schema"         => "SpecSchemaVerifier",
   "jsonrpc_portability"  => "JsonRpcPortabilityVerifier",
   "cross_mode_compatibility" => "CrossModeCompatibilityVerifier",
+  "parse_mode_annotation"    => "ParseModeAnnotationVerifier",
+  "spec_name_collisions"     => "SpecNameCollisionVerifier",
+  "filesystem_extensions"    => "FilesystemExtensionVerifier",
 }
 
 results = []

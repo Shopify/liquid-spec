@@ -18,6 +18,7 @@ specs:
   environment: {depth: 1}
   render_errors: true
   features: [inline_errors]
+  error_mode: strict
   errors:
     output:
       - start
@@ -42,6 +43,7 @@ specs:
   environment: {depth: 1}
   render_errors: true
   features: [inline_errors]
+  error_mode: strict
   errors:
     output:
       - start
@@ -65,6 +67,7 @@ specs:
   environment: {depth: 1}
   render_errors: true
   features: [inline_errors]
+  error_mode: strict
   errors:
     output:
       - start

@@ -525,6 +525,7 @@ specs:
     render_error:
     - include usage is not allowed in this context
   complexity: 220
+  error_mode: strict
   hint: |
     Using include inside a rendered partial is an ERROR. This prevents
     the scope isolation of render from being bypassed. Should raise an
@@ -540,6 +541,7 @@ specs:
   render_errors: true
   features: [inline_errors]
   complexity: 220
+  error_mode: strict
   hint: |
     Same as render_prohibits_include but with inline error rendering.
     The error message appears in the output instead of raising.
@@ -553,6 +555,7 @@ specs:
     render_error:
     - include usage is not allowed in this context
   complexity: 220
+  error_mode: strict
   hint: |
     The include prohibition applies transitively. Even deeply nested
     render calls cannot use include. Should raise an exception.
@@ -568,6 +571,7 @@ specs:
   render_errors: true
   features: [inline_errors]
   complexity: 220
+  error_mode: strict
   hint: |
     Same as render_prohibits_include_nested but with inline error rendering.
 - name: render_allows_nested_render
@@ -658,6 +662,7 @@ specs:
     - syntax error
     - string
   complexity: 300
+  error_mode: strict
   hint: |
     render requires a STRING LITERAL for the partial name. Using a variable
     is a syntax error. This enables static analysis of templates.
@@ -694,6 +699,7 @@ specs:
     render_error:
     - nesting too deep
   complexity: 300
+  error_mode: strict
   hint: |
     A template that renders itself infinitely must be caught and raise
     a "nesting too deep" exception. Implementations should track render
@@ -708,6 +714,7 @@ specs:
     output:
     - nesting too deep
   complexity: 300
+  error_mode: strict
   hint: |
     Same as render_infinite_recursion but with inline error rendering.
 - name: include_infinite_recursion
@@ -718,6 +725,7 @@ specs:
     render_error:
     - nesting too deep
   complexity: 300
+  error_mode: strict
   hint: |
     A template that includes itself infinitely must be caught and raise
     a "nesting too deep" exception. Same depth limiting as render.
@@ -731,6 +739,7 @@ specs:
     output:
     - nesting too deep
   complexity: 300
+  error_mode: strict
   hint: |
     Same as include_infinite_recursion but with inline error rendering.
 - name: render_mutual_recursion
@@ -742,6 +751,7 @@ specs:
     render_error:
     - nesting too deep
   complexity: 300
+  error_mode: strict
   hint: |
     Mutual recursion (a renders b, b renders a) must also be caught.
     The depth limit applies to total nesting, not just self-recursion.
@@ -756,5 +766,6 @@ specs:
     output:
     - nesting too deep
   complexity: 300
+  error_mode: strict
   hint: |
     Same as render_mutual_recursion but with inline error rendering.

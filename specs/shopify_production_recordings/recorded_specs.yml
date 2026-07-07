@@ -2191,6 +2191,7 @@
 - name: RecordedTest#test_correct_error_when_unknown_operators_are_used_in_elsif_and_if_is_false_0589cd983
   features:
     - lax_parsing
+  error_mode: lax
   expected: 'Liquid error (line 1): Unknown operator true'
   template: |-
     {% if false %}
@@ -2202,6 +2203,7 @@
 - name: RecordedTest#test_does_not_ignore_unknown_operators_when_the_tags_body_is_empty_but_there_is_an_else_c330ba20b
   features:
     - lax_parsing
+  error_mode: lax
   expected: 'Liquid error (line 1): Unknown operator true'
   template: "{% if true true %}{% else %}1{% endif %}"
   environment: {}
@@ -2516,6 +2518,7 @@
 - name: RecordedTest#test_unsupported_operators_render_an_error_618870a92
   features:
     - lax_parsing
+  error_mode: lax
   expected: 'Liquid error (line 1): Unknown operator ='
   template: "{% if 0 = 0 %}NOPE{% endif %}"
   environment: {}
@@ -23676,6 +23679,7 @@
 - name: RecordedTest#test_missing_operator_in_conditional_fedb552c
   features:
     - lax_parsing
+  error_mode: lax
   template: "{% if blank foo %}true{% endif %}"
   expected: 'Liquid error (line 1): Unknown operator foo'
 

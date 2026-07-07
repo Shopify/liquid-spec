@@ -26,6 +26,7 @@ specs:
     parse_error:
       - syntax
   complexity: 200
+  error_mode: strict
   hint: |
     Semicolons in variable expressions should be rejected as syntax
     errors. Liquid is not a general-purpose language — no statement
@@ -41,6 +42,7 @@ specs:
     parse_error:
       - syntax
   complexity: 200
+  error_mode: strict
   hint: |
     Liquid does not support method calls with arguments like
     .send('exit'). This should be a parse error.

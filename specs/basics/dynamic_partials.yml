@@ -36,6 +36,7 @@ specs:
 
 - name: dynamic_include_missing_partial_error
   template: "{% include tpl %}"
+  error_mode: strict
   filesystem: {}
   environment:
     tpl: "missing"
@@ -45,6 +46,7 @@ specs:
 
 - name: dynamic_include_missing_partial_inline_error
   template: "{% include tpl %}"
+  error_mode: strict
   filesystem: {}
   environment:
     tpl: "missing"
@@ -56,6 +58,7 @@ specs:
 
 - name: dynamic_include_illegal_name_error
   template: "{% include tpl %}"
+  error_mode: strict
   filesystem:
     x: "X"
   environment:
@@ -66,6 +69,7 @@ specs:
 
 - name: dynamic_include_illegal_name_inline_error
   template: "{% include tpl %}"
+  error_mode: strict
   filesystem:
     x: "X"
   environment:

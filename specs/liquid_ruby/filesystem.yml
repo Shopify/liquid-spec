@@ -258,6 +258,7 @@ specs:
     - SyntaxError
     - Template name must be a quoted string
   complexity: 360
+  error_mode: strict
   hint: |
     {% render %} does NOT accept variables — the template name must be a
     quoted string literal. Using a variable is a parse error.

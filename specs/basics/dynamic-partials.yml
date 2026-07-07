@@ -492,6 +492,7 @@ specs:
     render_error:
       - Illegal template name
   complexity: 550
+  error_mode: strict
   hint: |
     When the variable resolving the partial name is nil/undefined,
     an "Illegal template name" error should be raised as an exception.
@@ -506,6 +507,7 @@ specs:
   render_errors: true
   features: [inline_errors]
   complexity: 550
+  error_mode: strict
   hint: |
     Same as dynamic_include_nil_name but with inline error rendering.
     When render_errors is true, the error message is rendered into the
@@ -517,6 +519,7 @@ specs:
     render_error:
       - Could not find
   complexity: 550
+  error_mode: strict
   hint: |
     An empty string resolves to a file lookup for "" which doesn't exist.
     This produces a "Could not find asset" exception.
@@ -529,11 +532,13 @@ specs:
   render_errors: true
   features: [inline_errors]
   complexity: 550
+  error_mode: strict
   hint: |
     Same as dynamic_include_empty_string_name but with inline error rendering.
 
 - name: dynamic_include_missing_partial
   template: "{% assign tpl = 'nonexistent' %}{% include tpl %}"
+  error_mode: strict
   errors:
     render_error:
       - Could not find
@@ -550,6 +555,7 @@ specs:
   render_errors: true
   features: [inline_errors]
   complexity: 550
+  error_mode: strict
   hint: |
     Same as dynamic_include_missing_partial but with inline error rendering.
 

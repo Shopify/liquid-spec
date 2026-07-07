@@ -7,6 +7,7 @@
     - shopify_error_handling
     - inline_errors
   render_errors: true
+  error_mode: strict
   errors:
     output: |2+
 

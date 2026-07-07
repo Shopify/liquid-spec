@@ -10,6 +10,7 @@ _metadata:
 specs:
 - name: cumulative_render_score_across_partials
   template: "{% render 'a' %}{% render 'b' %}{% render 'c' %}"
+  error_mode: strict
   filesystem:
     a: "{% for i in (1..10) %}x{% endfor %}"
     b: "{% for i in (1..10) %}x{% endfor %}"
@@ -38,6 +39,7 @@ specs:
 
 - name: per_template_limit_still_works_with_cumulative
   template: "{% for i in (1..100) %}x{% endfor %}"
+  error_mode: strict
   resource_limits:
     render_score_limit: 10
     cumulative_render_score_limit: 1000

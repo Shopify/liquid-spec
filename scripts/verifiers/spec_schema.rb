@@ -9,23 +9,95 @@
 # - Every spec has required fields (name, template)
 # - complexity (if present) is an integer in 1..1000
 # - features (if present) are from the known set
-# - error_mode (if present) is one of :strict, :strict2, :lax
+# - error_mode (if present) is one of strict/strict2/lax (single or array)
 # - environment/filesystem (if present) are hashes
+# - Must have either expected or errors (but not both)
+# - render_errors (if present) is a boolean
+# - errors sub-keys are from {parse_error, render_error, output}
+# - generate (if present) has valid field definitions
+# - Unknown fields are flagged
+# - _metadata (if present) has valid keys
 #
 # Usage: ruby -Ilib scripts/verifiers/spec_schema.rb
 # Exit code is non-zero if any violation is found.
 
 require "yaml"
 
+# ── Valid values ──────────────────────────────────────────────────────────────
+
+# Union of FEATURES (adapter_dsl.rb), FEATURE_DOCS (features.rb), and
+# auto-generated parsing tags from lazy_spec.rb.
 VALID_FEATURES = %w[
-  core inline_errors ruby_types lax_parsing strict_parsing
-  shopify_tags shopify_objects shopify_filters shopify_error_handling
-  shopify_blank shopify_string_access shopify_error_format shopify_includes
-  ruby_drops drop_class_output template_factory binary_data
-  strict2_blank_body_errors drops randomness shopify_resource_limits
+  core
+  inline_errors
+  ruby_types
+  lax_parsing
+  strict_parsing
+  strict2_parsing
+  self_environment_shadowing
+  shopify_tags
+  shopify_objects
+  shopify_filters
+  shopify_error_handling
+  shopify_blank
+  shopify_string_access
+  shopify_error_format
+  shopify_includes
+  ruby_drops
+  drop_class_output
+  template_factory
+  binary_data
+  strict2_blank_body_errors
+  drops
+  randomness
+  shopify_resource_limits
 ].freeze
 
 VALID_ERROR_MODES = %w[strict strict2 lax].freeze
+
+VALID_ERROR_KEYS = %w[parse_error render_error output].freeze
+
+VALID_GENERATE_TYPES = %w[numeric string boolean].freeze
+
+# Spec-level fields and their expected types.
+# nil type = any type acceptable (just presence check).
+SPEC_FIELDS = {
+  "name"              => String,
+  "template"          => String,
+  "expected"          => String,
+  "expected_pattern"  => String,
+  "errors"            => Hash,
+  "complexity"        => Integer,
+  "features"          => Array,
+  "error_mode"        => nil,  # String or Array
+  "environment"       => Hash,
+  "filesystem"        => Hash,
+  "hint"              => String,
+  "render_errors"     => nil,  # Boolean
+  "url"               => String,
+  "generate"          => Hash,
+  "resource_limits"   => Hash,
+  "caller_location"   => String,
+  "message"           => String,
+  "template_name"     => String,
+  "issue"             => String,
+  "exception_renderer"=> Hash,
+  "template_factory"  => Hash,
+  "context_klass"     => String,
+}.freeze
+
+REQUIRED_SPEC_FIELDS = %w[name template].freeze
+
+# Metadata-level fields and their expected types.
+METADATA_FIELDS = {
+  "hint"              => String,
+  "doc"               => String,
+  "features"          => Array,
+  "minimum_complexity"=> Integer,
+  "required_options"  => Hash,
+  "complexity"        => Integer,
+  "data_files"        => Array,
+}.freeze
 
 SPEC_ROOT = File.expand_path("../../../specs", __dir__)
 
@@ -40,6 +112,14 @@ module SpecSchemaVerifier
         if data.nil?
           offenders << { file: rel, line: 0, name: "(file)", issues: ["YAML parse failed or file is empty"] }
           next
+        end
+
+        # Check _metadata if present
+        if data.is_a?(Hash) && data["_metadata"]
+          meta_issues = check_metadata(data["_metadata"])
+          unless meta_issues.empty?
+            offenders << { file: rel, line: 0, name: "(_metadata)", issues: meta_issues }
+          end
         end
 
         specs = extract_specs(data)
@@ -97,69 +177,199 @@ module SpecSchemaVerifier
       end
     end
 
-    def check_spec(spec)
+    def check_metadata(meta)
       issues = []
-
-      # Required: name
-      unless spec["name"].is_a?(String) && !spec["name"].empty?
-        issues << "missing or empty 'name'"
+      unless meta.is_a?(Hash)
+        issues << "_metadata must be a hash"
+        return issues
       end
 
-      # Required: template
-      unless spec["template"].is_a?(String)
-        issues << "missing 'template' (must be a string)"
+      # Check for unknown metadata keys
+      meta.each_key do |key|
+        unless METADATA_FIELDS.key?(key)
+          issues << "unknown _metadata field '#{key}' (valid: #{METADATA_FIELDS.keys.join(", ")})"
+        end
       end
 
-      # complexity: integer 1..1000 if present
-      c = spec["complexity"]
-      if c && (!c.is_a?(Integer) || c < 1 || c > 1000)
-        issues << "complexity #{c.inspect} is not an integer in 1..1000"
+      # Type-check known metadata fields
+      METADATA_FIELDS.each do |field, type|
+        next unless meta.key?(field)
+        val = meta[field]
+        next if type.nil?
+        if type == Integer && val.is_a?(Integer)
+          # OK
+        elsif type == Array && val.is_a?(Array)
+          # OK
+        elsif type == Hash && val.is_a?(Hash)
+          # OK
+        elsif !type.is_a?(Class) || !val.is_a?(type)
+          issues << "_metadata '#{field}' must be a #{type}, got #{val.class}"
+        end
       end
 
-      # features: array of known feature names if present
-      f = spec["features"]
-      if f
-        unless f.is_a?(Array)
-          issues << "features must be an array, got #{f.class}"
-        else
-          f.each do |feat|
-            feat_str = feat.to_s
-            unless VALID_FEATURES.include?(feat_str)
-              issues << "unknown feature tag '#{feat_str}' (valid: #{VALID_FEATURES.join(", ")})"
-            end
+      # Validate metadata features
+      if meta["features"].is_a?(Array)
+        meta["features"].each do |feat|
+          unless VALID_FEATURES.include?(feat.to_s)
+            issues << "_metadata has unknown feature tag '#{feat}' (valid: #{VALID_FEATURES.join(", ")})"
           end
         end
       end
 
-      # error_mode: one of strict/strict2/lax if present.
-      # Can be a single value or an array of compatible modes.
+      # Validate metadata minimum_complexity range
+      mc = meta["minimum_complexity"]
+      if mc.is_a?(Integer) && (mc < 1 || mc > 1000)
+        issues << "_metadata minimum_complexity #{mc} is not in 1..1000"
+      end
+
+      # Validate metadata complexity range
+      mc = meta["complexity"]
+      if mc.is_a?(Integer) && (mc < 1 || mc > 1000)
+        issues << "_metadata complexity #{mc} is not in 1..1000"
+      end
+
+      issues
+    end
+
+    def check_spec(spec)
+      issues = []
+
+      # Required fields
+      REQUIRED_SPEC_FIELDS.each do |field|
+        val = spec[field]
+        case field
+        when "name"
+          unless val.is_a?(String) && !val.empty?
+            issues << "missing or empty 'name'"
+          end
+        when "template"
+          unless val.is_a?(String)
+            issues << "missing 'template' (must be a string)"
+          end
+        end
+      end
+
+      # Unknown fields
+      spec.each_key do |key|
+        unless SPEC_FIELDS.key?(key)
+          issues << "unknown field '#{key}' (valid: #{SPEC_FIELDS.keys.join(", ")})"
+        end
+      end
+
+      # Type-check known fields
+      SPEC_FIELDS.each do |field, type|
+        next unless spec.key?(field)
+        next if type.nil?
+        val = spec[field]
+        if type == Integer
+          unless val.is_a?(Integer)
+            issues << "'#{field}' must be an integer, got #{val.class}"
+          end
+        elsif type == Array
+          unless val.is_a?(Array)
+            issues << "'#{field}' must be an array, got #{val.class}"
+          end
+        elsif type == Hash
+          unless val.is_a?(Hash)
+            issues << "'#{field}' must be a hash, got #{val.class}"
+          end
+        elsif type.is_a?(Class) && !val.is_a?(type)
+          issues << "'#{field}' must be a #{type}, got #{val.class}"
+        end
+      end
+
+      # complexity: integer 1..1000
+      c = spec["complexity"]
+      if c.is_a?(Integer) && (c < 1 || c > 1000)
+        issues << "complexity #{c} is not in 1..1000"
+      end
+
+      # features: array of known feature names, no duplicates
+      f = spec["features"]
+      if f.is_a?(Array)
+        f.each do |feat|
+          feat_str = feat.to_s
+          unless VALID_FEATURES.include?(feat_str)
+            issues << "unknown feature tag '#{feat_str}' (valid: #{VALID_FEATURES.join(", ")})"
+          end
+        end
+        if f.map(&:to_s).uniq.size != f.size
+          issues << "features has duplicate entries"
+        end
+      end
+
+      # error_mode: one or more of strict/strict2/lax, no duplicates
       em = spec["error_mode"]
       if em
         modes = em.is_a?(Array) ? em : [em]
         modes.each do |m|
-          if !VALID_ERROR_MODES.include?(m.to_s)
+          unless VALID_ERROR_MODES.include?(m.to_s)
             issues << "error_mode '#{m}' is not one of #{VALID_ERROR_MODES.join(", ")}"
+          end
+        end
+        if modes.map(&:to_s).uniq.size != modes.size
+          issues << "error_mode has duplicate entries"
+        end
+      end
+
+      # errors: hash with valid sub-keys
+      errors = spec["errors"]
+      if errors.is_a?(Hash)
+        errors.each_key do |key|
+          unless VALID_ERROR_KEYS.include?(key.to_s)
+            issues << "errors has unknown key '#{key}' (valid: #{VALID_ERROR_KEYS.join(", ")})"
+          end
+        end
+        # Each error value should be an array of patterns
+        errors.each do |key, val|
+          next unless VALID_ERROR_KEYS.include?(key.to_s)
+          unless val.is_a?(Array)
+            issues << "errors.#{key} must be an array of patterns, got #{val.class}"
           end
         end
       end
 
-      # environment: hash if present
-      env = spec["environment"]
-      if env && !env.is_a?(Hash)
-        issues << "environment must be a hash, got #{env.class}"
-      end
-
-      # filesystem: hash if present
-      fs = spec["filesystem"]
-      if fs && !fs.is_a?(Hash)
-        issues << "filesystem must be a hash, got #{fs.class}"
-      end
-
       # Must have either expected or errors (but not both)
-      has_expected = spec.key?("expected")
+      has_expected = spec.key?("expected") || spec.key?("expected_pattern")
       has_errors = spec.key?("errors")
       unless has_expected || has_errors
-        issues << "missing both 'expected' and 'errors' — one is required"
+        issues << "missing both 'expected'/'expected_pattern' and 'errors' — one is required"
+      end
+      if has_expected && has_errors
+        issues << "spec has both 'expected' and 'errors' — only one is allowed"
+      end
+
+      # render_errors: must be boolean
+      re = spec["render_errors"]
+      if re != nil && ![true, false].include?(re)
+        issues << "render_errors must be a boolean, got #{re.class}"
+      end
+
+      # generate: hash with valid field definitions
+      gen = spec["generate"]
+      if gen.is_a?(Hash)
+        gen.each do |field_name, field_def|
+          unless field_def.is_a?(Hash)
+            issues << "generate.#{field_name} must be a hash with type/min/max, got #{field_def.class}"
+            next
+          end
+          unless field_def["type"]
+            issues << "generate.#{field_name} missing 'type' (valid: #{VALID_GENERATE_TYPES.join(", ")})"
+          else
+            unless VALID_GENERATE_TYPES.include?(field_def["type"].to_s)
+              issues << "generate.#{field_name} has unknown type '#{field_def["type"]}' (valid: #{VALID_GENERATE_TYPES.join(", ")})"
+            end
+          end
+          if field_def["min"] && !field_def["min"].is_a?(Integer)
+            issues << "generate.#{field_name} min must be an integer, got #{field_def["min"].class}"
+          end
+          if field_def["max"] && !field_def["max"].is_a?(Integer)
+            issues << "generate.#{field_name} max must be an integer, got #{field_def["max"].class}"
+          end
+          if field_def["min"].is_a?(Integer) && field_def["max"].is_a?(Integer) && field_def["min"] > field_def["max"]
+            issues << "generate.#{field_name} min (#{field_def["min"]}) > max (#{field_def["max"]})"
+          end
+        end
       end
 
       issues

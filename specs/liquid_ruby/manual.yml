@@ -20,6 +20,7 @@
   filesystem: {}
   render_errors: true
   features: [inline_errors, shopify_error_format]
+  error_mode: strict
   errors:
     output:
       - "Could not find asset locale_variables"
@@ -30,6 +31,7 @@
   filesystem: {}
   render_errors: true
   features: [inline_errors, shopify_error_format]
+  error_mode: strict
   errors:
     output:
       - "Could not find asset foo.liquid"
@@ -41,6 +43,7 @@
     foo: "{% include 'bar' %}"
   render_errors: true
   complexity: 300
+  error_mode: strict
   features: [inline_errors, shopify_error_format]
   errors:
     output:
@@ -81,6 +84,7 @@
       - after,end
   render_errors: true
   complexity: 300
+  error_mode: strict
   features: [inline_errors]
   hint: |
     Tests inline error rendering in a partial. The error occurs on line 2
@@ -160,6 +164,7 @@
     end: "6b"
   expected: "2..6"
   complexity: 300
+  error_mode: strict
 
 - name: Range bound dynamic type check rejects float
   template: "{{ (1..end) }}"
@@ -168,6 +173,7 @@
   render_errors: true
   complexity: 300
   features: [inline_errors]
+  error_mode: strict
   errors:
     output:
       - "invalid integer"
@@ -193,6 +199,7 @@
   template: "{% tablerow a in '' limit: true %}{{ a }}{% endtablerow %}"
   render_errors: true
   complexity: 300
+  error_mode: strict
   features: [inline_errors]
   errors:
     output:

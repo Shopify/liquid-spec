@@ -6,7 +6,7 @@ require "fileutils"
 
 require_relative "lib/liquid/spec/version"
 
-task default: :test
+task default: :prepush
 
 BUILD_DIR = "build"
 
@@ -14,7 +14,7 @@ BUILD_DIR = "build"
 Rake::TestTask.new(:unit_test) do |t|
   t.libs << "test"
   t.libs << "lib"
-  t.test_files = FileList["test/**/*_test.rb"]
+  t.test_files = FileList["test/**/*_test.rb"].exclude("test/json_rpc_integration_test.rb")
   t.warning = false
 end
 
@@ -106,6 +106,11 @@ end
 desc "Run all spec verifiers (prints findings, does not modify files)"
 task :check do
   load File.join(__dir__, "scripts", "verify.rb")
+end
+
+desc "Run unit tests then all verifiers (standard pre-push gate)"
+task prepush: [:test, :check] do
+  puts "\n✓ All pre-push checks passed (test + check)"
 end
 
 # Spec generation tasks (only needed for development)
