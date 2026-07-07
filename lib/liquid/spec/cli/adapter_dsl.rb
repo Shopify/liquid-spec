@@ -55,8 +55,7 @@ module LiquidSpec
   end
   # Standard features that can be declared by adapters
   FEATURES = {
-    core: "Full Liquid implementation with runtime drop support",
-    runtime_drops: "Supports bidirectional communication for drop callbacks",
+    core: "Full Liquid implementation with drop support",
     inline_errors: "Supports render_errors mode (errors rendered inline instead of raised)",
     ruby_types: "Supports Ruby-specific types (symbols in hash keys/output)",
     lax_parsing: "Supports error_mode: :lax for lenient parsing",

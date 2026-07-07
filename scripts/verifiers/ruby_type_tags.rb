@@ -14,7 +14,7 @@
 #
 # A spec matching any of these must:
 #   1. list at least one Ruby feature tag
-#      (ruby_types / ruby_drops / binary_data / runtime_drops / template_factory)
+#      (ruby_types / ruby_drops / binary_data / template_factory)
 #   2. have complexity > 100
 #
 # Usage: ruby -Ilib scripts/verify_ruby_type_tags.rb
@@ -22,7 +22,7 @@
 
 require "yaml"
 
-RUBY_FEATURES = %w[ruby_types ruby_drops binary_data runtime_drops template_factory].freeze
+RUBY_FEATURES = %w[ruby_types ruby_drops binary_data template_factory].freeze
 COMPLEXITY_FLOOR = 100
 
 # Standard test drops — portable, not Ruby-specific.

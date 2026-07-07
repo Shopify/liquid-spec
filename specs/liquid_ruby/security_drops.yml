@@ -26,7 +26,7 @@ _metadata:
     to_liquid when any property is accessed.
   minimum_complexity: 180
   features:
-  - ruby_drops
+  - ruby_types
 
 specs:
 
@@ -35,7 +35,7 @@ specs:
 # =============================================================================
 
 - name: sec_drop_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.class }}"
   environment:
     d:
@@ -47,7 +47,7 @@ specs:
     `class` is an Object method, not a drop method, so d.class returns nil.
 
 - name: sec_drop_blocks_object_id
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.object_id }}"
   environment:
     d:
@@ -56,7 +56,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_inspect
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.inspect }}"
   environment:
     d:
@@ -65,7 +65,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_to_s
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.to_s }}"
   environment:
     d:
@@ -75,7 +75,7 @@ specs:
   hint: "QUIRK: Liquid::Drop defines to_s to return the class name, but to_s is NOT an invokable method, so d.to_s returns nil (empty). Note d.to_s differs from {{ d }} which calls to_s implicitly."
 
 - name: sec_drop_blocks_hash
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.hash }}"
   environment:
     d:
@@ -84,7 +84,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.methods }}"
   environment:
     d:
@@ -93,7 +93,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_public_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.public_methods }}"
   environment:
     d:
@@ -102,7 +102,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_private_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.private_methods }}"
   environment:
     d:
@@ -111,7 +111,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_singleton_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.singleton_methods }}"
   environment:
     d:
@@ -120,7 +120,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_singleton_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.singleton_class }}"
   environment:
     d:
@@ -129,7 +129,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_respond_to
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.respond_to? }}"
   environment:
     d:
@@ -138,7 +138,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_is_a
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.is_a? }}"
   environment:
     d:
@@ -147,7 +147,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_instance_of
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_of? }}"
   environment:
     d:
@@ -156,7 +156,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_nil
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.nil? }}"
   environment:
     d:
@@ -165,7 +165,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_frozen
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.frozen? }}"
   environment:
     d:
@@ -174,7 +174,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_equal
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.equal? }}"
   environment:
     d:
@@ -183,7 +183,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_eql
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.eql? }}"
   environment:
     d:
@@ -192,7 +192,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.send }}"
   environment:
     d:
@@ -202,7 +202,7 @@ specs:
   hint: "send/__send__/public_send are blocked - these would allow arbitrary method invocation."
 
 - name: sec_drop_blocks___send__
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.__send__ }}"
   environment:
     d:
@@ -211,7 +211,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_public_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.public_send }}"
   environment:
     d:
@@ -220,7 +220,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_instance_eval
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_eval }}"
   environment:
     d:
@@ -230,7 +230,7 @@ specs:
   hint: "instance_eval/instance_exec would allow arbitrary code execution - blocked."
 
 - name: sec_drop_blocks_instance_exec
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_exec }}"
   environment:
     d:
@@ -239,7 +239,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.method }}"
   environment:
     d:
@@ -248,7 +248,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_public_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.public_method }}"
   environment:
     d:
@@ -257,7 +257,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_singleton_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.singleton_method }}"
   environment:
     d:
@@ -266,7 +266,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_instance_variable_get
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_variable_get }}"
   environment:
     d:
@@ -276,7 +276,7 @@ specs:
   hint: "instance_variable_get/set would allow direct ivar access - blocked."
 
 - name: sec_drop_blocks_instance_variable_set
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_variable_set }}"
   environment:
     d:
@@ -285,7 +285,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_instance_variable_defined
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_variable_defined? }}"
   environment:
     d:
@@ -294,7 +294,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_instance_variables
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_variables }}"
   environment:
     d:
@@ -303,7 +303,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_freeze
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.freeze }}"
   environment:
     d:
@@ -312,7 +312,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_clone
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.clone }}"
   environment:
     d:
@@ -321,7 +321,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_dup
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.dup }}"
   environment:
     d:
@@ -330,7 +330,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_extend
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.extend }}"
   environment:
     d:
@@ -339,7 +339,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_define_singleton_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.define_singleton_method }}"
   environment:
     d:
@@ -348,7 +348,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_tap
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.tap }}"
   environment:
     d:
@@ -357,7 +357,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_then
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.then }}"
   environment:
     d:
@@ -366,7 +366,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_yield_self
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.yield_self }}"
   environment:
     d:
@@ -375,7 +375,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_enum_for
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.enum_for }}"
   environment:
     d:
@@ -384,7 +384,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_to_enum
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.to_enum }}"
   environment:
     d:
@@ -393,7 +393,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_blocks_display
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.display }}"
   environment:
     d:
@@ -404,7 +404,7 @@ specs:
 # Allowed methods on the same drop (control group)
 
 - name: sec_drop_allows_name
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.name }}"
   environment:
     d:
@@ -414,7 +414,7 @@ specs:
   hint: "Only methods explicitly defined on the drop subclass are invokable. `name` is defined, so it returns the value."
 
 - name: sec_drop_allows_price
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.price }}"
   environment:
     d:
@@ -423,7 +423,7 @@ specs:
   complexity: 180
 
 - name: sec_drop_secret_ivar_not_exposed
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.secret }}"
   environment:
     d:
@@ -436,7 +436,7 @@ specs:
     exposes them.
 
 - name: sec_drop_internal_state_ivar_not_exposed
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.internal_state }}"
   environment:
     d:
@@ -450,7 +450,7 @@ specs:
 # =============================================================================
 
 - name: sec_bracket_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "class" %}{{ d[k] }}'
   environment:
     d:
@@ -460,7 +460,7 @@ specs:
   hint: "Bracket access (d[k]) goes through the same invoke_drop whitelist as dot access."
 
 - name: sec_bracket_blocks_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "send" %}{{ d[k] }}'
   environment:
     d:
@@ -469,7 +469,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks___send__
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "__send__" %}{{ d[k] }}'
   environment:
     d:
@@ -478,7 +478,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_instance_eval
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "instance_eval" %}{{ d[k] }}'
   environment:
     d:
@@ -487,7 +487,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_instance_variable_get
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "instance_variable_get" %}{{ d[k] }}'
   environment:
     d:
@@ -496,7 +496,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_instance_variables
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "instance_variables" %}{{ d[k] }}'
   environment:
     d:
@@ -505,7 +505,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_object_id
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "object_id" %}{{ d[k] }}'
   environment:
     d:
@@ -514,7 +514,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "methods" %}{{ d[k] }}'
   environment:
     d:
@@ -523,7 +523,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_public_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "public_send" %}{{ d[k] }}'
   environment:
     d:
@@ -532,7 +532,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "method" %}{{ d[k] }}'
   environment:
     d:
@@ -541,7 +541,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_blocks_singleton_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "singleton_class" %}{{ d[k] }}'
   environment:
     d:
@@ -550,7 +550,7 @@ specs:
   complexity: 190
 
 - name: sec_bracket_allows_whitelisted
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% assign k = "name" %}{{ d[k] }}'
   environment:
     d:
@@ -564,7 +564,7 @@ specs:
 # =============================================================================
 
 - name: sec_chain_nested_allows_safe_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.name }}"
   environment:
     d:
@@ -574,7 +574,7 @@ specs:
   hint: "d.child returns a drop, then .name is invoked on that drop through the same whitelist."
 
 - name: sec_chain_nested_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.class }}"
   environment:
     d:
@@ -583,7 +583,7 @@ specs:
   complexity: 200
 
 - name: sec_chain_nested_blocks_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.send }}"
   environment:
     d:
@@ -592,7 +592,7 @@ specs:
   complexity: 200
 
 - name: sec_chain_nested_blocks_instance_eval
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.instance_eval }}"
   environment:
     d:
@@ -601,7 +601,7 @@ specs:
   complexity: 200
 
 - name: sec_chain_nested_blocks_object_id
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.object_id }}"
   environment:
     d:
@@ -610,7 +610,7 @@ specs:
   complexity: 200
 
 - name: sec_chain_array_class_blocked
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.items.class }}"
   environment:
     d:
@@ -620,7 +620,7 @@ specs:
   hint: "d.items returns an Array. Array#class is not exposed, so the class name 'Array' must not appear."
 
 - name: sec_chain_safe_method_then_string_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.name.size }}"
   environment:
     d:
@@ -630,7 +630,7 @@ specs:
   hint: "d.child.name returns the string 'nested_child' (12 chars). String#size is allowed on plain strings."
 
 - name: sec_chain_deep_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.child.name.class }}"
   environment:
     d:
@@ -644,7 +644,7 @@ specs:
 # =============================================================================
 
 - name: sec_if_class_is_falsy
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% if d.class %}LEAKED{% endif %}"
   environment:
     d:
@@ -654,7 +654,7 @@ specs:
   hint: "d.class returns nil which is falsy, so the if-block does not render."
 
 - name: sec_if_send_is_falsy
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% if d.send %}LEAKED{% endif %}"
   environment:
     d:
@@ -663,7 +663,7 @@ specs:
   complexity: 200
 
 - name: sec_if_respond_to_is_falsy
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% if d.respond_to? %}LEAKED{% endif %}"
   environment:
     d:
@@ -672,7 +672,7 @@ specs:
   complexity: 200
 
 - name: sec_if_methods_is_falsy
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% if d.methods %}LEAKED{% endif %}"
   environment:
     d:
@@ -681,7 +681,7 @@ specs:
   complexity: 200
 
 - name: sec_if_instance_variables_is_falsy
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% if d.instance_variables %}LEAKED{% endif %}"
   environment:
     d:
@@ -690,7 +690,7 @@ specs:
   complexity: 200
 
 - name: sec_for_over_methods_yields_nothing
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% for m in d.methods %}{{ m }}{% endfor %}"
   environment:
     d:
@@ -700,7 +700,7 @@ specs:
   hint: "d.methods returns nil, so the for-loop iterates zero times."
 
 - name: sec_for_over_instance_variables_yields_nothing
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% for v in d.instance_variables %}{{ v }}{% endfor %}"
   environment:
     d:
@@ -709,7 +709,7 @@ specs:
   complexity: 210
 
 - name: sec_class_equality_is_false
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% if d.class == "VictimDrop" %}LEAKED{% endif %}'
   environment:
     d:
@@ -718,7 +718,7 @@ specs:
   complexity: 210
 
 - name: sec_methods_contains_is_false
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{% if d.methods contains "name" %}LEAKED{% endif %}'
   environment:
     d:
@@ -727,7 +727,7 @@ specs:
   complexity: 210
 
 - name: sec_methods_size_is_zero
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.methods | size }}"
   environment:
     d:
@@ -737,7 +737,7 @@ specs:
   hint: "d.methods returns nil; size of nil is 0."
 
 - name: sec_instance_variables_size_is_zero
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.instance_variables | size }}"
   environment:
     d:
@@ -750,7 +750,7 @@ specs:
 # =============================================================================
 
 - name: sec_assign_class_is_nil
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% assign c = d.class %}{{ c }}"
   environment:
     d:
@@ -759,7 +759,7 @@ specs:
   complexity: 200
 
 - name: sec_assign_send_is_nil
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% assign s = d.send %}{{ s }}"
   environment:
     d:
@@ -768,7 +768,7 @@ specs:
   complexity: 200
 
 - name: sec_assign_instance_eval_is_nil
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% assign e = d.instance_eval %}{{ e }}"
   environment:
     d:
@@ -777,7 +777,7 @@ specs:
   complexity: 200
 
 - name: sec_assign_object_id_is_nil
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% assign o = d.object_id %}{{ o }}"
   environment:
     d:
@@ -786,7 +786,7 @@ specs:
   complexity: 200
 
 - name: sec_capture_class_is_empty
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% capture c %}{{ d.class }}{% endcapture %}[{{ c }}]"
   environment:
     d:
@@ -795,7 +795,7 @@ specs:
   complexity: 210
 
 - name: sec_capture_methods_is_empty
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{% capture m %}{{ d.methods }}{% endcapture %}[{{ m }}]"
   environment:
     d:
@@ -804,7 +804,7 @@ specs:
   complexity: 210
 
 - name: sec_map_class_from_drop_array
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{{ d.items | map: "class" }}'
   environment:
     d:
@@ -814,7 +814,7 @@ specs:
   hint: "map calls invoke_drop for 'class' on each drop in the array; blocked methods return nil so nothing renders."
 
 - name: sec_map_name_from_drop_array
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{{ d.items | map: "name" | join: "," }}'
   environment:
     d:
@@ -828,7 +828,7 @@ specs:
 # =============================================================================
 
 - name: sec_default_filter_on_blocked_property
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{{ d.class | default: "fallback" }}'
   environment:
     d:
@@ -838,7 +838,7 @@ specs:
   hint: "d.class returns nil; the default filter substitutes the fallback for nil."
 
 - name: sec_default_filter_on_allowed_property
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{{ d.name | default: "fallback" }}'
   environment:
     d:
@@ -847,7 +847,7 @@ specs:
   complexity: 210
 
 - name: sec_upcase_on_allowed_property
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.name | upcase }}"
   environment:
     d:
@@ -856,7 +856,7 @@ specs:
   complexity: 210
 
 - name: sec_upcase_on_blocked_property
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.class | upcase }}"
   environment:
     d:
@@ -866,7 +866,7 @@ specs:
   hint: "d.class is nil; upcase of nil is empty, and the class name must not appear."
 
 - name: sec_append_on_blocked_property
-  features: [ruby_drops]
+  features: [ruby_types]
   template: '{{ d.class | append: "suffix" }}'
   environment:
     d:
@@ -876,7 +876,7 @@ specs:
   hint: "d.class is nil; append coerces nil to '' then appends 'suffix'. The class name must not appear."
 
 - name: sec_size_filter_on_drop
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d | size }}"
   environment:
     d:
@@ -986,7 +986,7 @@ specs:
 # =============================================================================
 
 - name: sec_wide_open_object_name_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.name }}"
   environment:
     o:
@@ -1002,7 +1002,7 @@ specs:
     NoMethodError because the object has no `to_liquid` method.
 
 - name: sec_wide_open_object_secret_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.secret }}"
   environment:
     o:
@@ -1014,7 +1014,7 @@ specs:
   complexity: 220
 
 - name: sec_wide_open_object_system_call_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.system_call }}"
   environment:
     o:
@@ -1026,7 +1026,7 @@ specs:
   complexity: 220
 
 - name: sec_wide_open_object_class_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.class }}"
   environment:
     o:
@@ -1038,7 +1038,7 @@ specs:
   complexity: 220
 
 - name: sec_wide_open_object_send_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.send }}"
   environment:
     o:
@@ -1050,7 +1050,7 @@ specs:
   complexity: 220
 
 - name: sec_unsafe_hash_like_name_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.name }}"
   environment:
     o:
@@ -1063,7 +1063,7 @@ specs:
   hint: "A non-drop object whose [] delegates to send is still not treated as a drop; property access raises a NoMethodError on to_liquid."
 
 - name: sec_unsafe_hash_like_secret_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.secret }}"
   environment:
     o:
@@ -1075,7 +1075,7 @@ specs:
   complexity: 230
 
 - name: sec_unsafe_hash_like_class_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.class }}"
   environment:
     o:
@@ -1087,7 +1087,7 @@ specs:
   complexity: 230
 
 - name: sec_unsafe_hash_like_send_raises_no_to_liquid
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.send }}"
   environment:
     o:
@@ -1103,7 +1103,7 @@ specs:
 # =============================================================================
 
 - name: sec_to_liquid_hash_exposes_keys
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.name }}"
   environment:
     o:
@@ -1113,7 +1113,7 @@ specs:
   hint: "to_liquid returns a Hash; only the hash's keys are then accessible."
 
 - name: sec_to_liquid_hash_exposes_second_key
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.status }}"
   environment:
     o:
@@ -1122,7 +1122,7 @@ specs:
   complexity: 220
 
 - name: sec_to_liquid_hash_blocks_object_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.class }}"
   environment:
     o:
@@ -1132,7 +1132,7 @@ specs:
   hint: "After to_liquid returns a hash, the original object's methods are unreachable. o.class returns nil (hash has no 'class' key)."
 
 - name: sec_to_liquid_hash_blocks_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.send }}"
   environment:
     o:
@@ -1141,7 +1141,7 @@ specs:
   complexity: 230
 
 - name: sec_to_liquid_hash_blocks_instance_eval
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.instance_eval }}"
   environment:
     o:
@@ -1150,7 +1150,7 @@ specs:
   complexity: 230
 
 - name: sec_to_liquid_string_size
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.size }}"
   environment:
     o:
@@ -1160,7 +1160,7 @@ specs:
   hint: "to_liquid returns the string 'i_am_a_string' (13 chars); String#size is then allowed."
 
 - name: sec_to_liquid_array_size
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.size }}"
   environment:
     o:
@@ -1169,7 +1169,7 @@ specs:
   complexity: 220
 
 - name: sec_to_liquid_array_first
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.first }}"
   environment:
     o:
@@ -1178,7 +1178,7 @@ specs:
   complexity: 220
 
 - name: sec_to_liquid_nil_blocks_all
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.name }}"
   environment:
     o:
@@ -1188,7 +1188,7 @@ specs:
   hint: "to_liquid returning nil means nothing is accessible; o.name renders empty."
 
 - name: sec_to_liquid_nil_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.class }}"
   environment:
     o:
@@ -1201,7 +1201,7 @@ specs:
 # =============================================================================
 
 - name: sec_fake_drop_blocks_name
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.name }}"
   environment:
     o:
@@ -1213,7 +1213,7 @@ specs:
     invoke_drop whitelist. No method is callable; o.name renders empty.
 
 - name: sec_fake_drop_blocks_secret
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.secret }}"
   environment:
     o:
@@ -1222,7 +1222,7 @@ specs:
   complexity: 230
 
 - name: sec_fake_drop_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ o.class }}"
   environment:
     o:
@@ -1235,7 +1235,7 @@ specs:
 # =============================================================================
 
 - name: sec_enumerable_drop_allows_defined_method
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.title }}"
   environment:
     d:
@@ -1244,7 +1244,7 @@ specs:
   complexity: 220
 
 - name: sec_enumerable_drop_blocks_class
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.class }}"
   environment:
     d:
@@ -1253,7 +1253,7 @@ specs:
   complexity: 220
 
 - name: sec_enumerable_drop_blocks_send
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.send }}"
   environment:
     d:
@@ -1262,7 +1262,7 @@ specs:
   complexity: 220
 
 - name: sec_enumerable_drop_blocks_methods
-  features: [ruby_drops]
+  features: [ruby_types]
   template: "{{ d.methods }}"
   environment:
     d:

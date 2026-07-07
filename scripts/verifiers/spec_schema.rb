@@ -18,7 +18,7 @@
 require "yaml"
 
 VALID_FEATURES = %w[
-  core runtime_drops inline_errors ruby_types lax_parsing strict_parsing
+  core inline_errors ruby_types lax_parsing strict_parsing
   shopify_tags shopify_objects shopify_filters shopify_error_handling
   shopify_blank shopify_string_access shopify_error_format shopify_includes
   ruby_drops drop_class_output template_factory binary_data

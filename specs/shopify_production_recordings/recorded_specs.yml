@@ -3325,7 +3325,7 @@
       {%- assign product = all_products["other_product"] -%}
       {{ product.flavor }}-{{ all_products["other_product"].flavor -}}
 - name: RecordedTest#test_assign_which_raises_does_not_assign_and_does_not_output_error_7bd3f534f
-  features: [runtime_drops, shopify_filters]
+  features: [ruby_drops, shopify_filters]
   expected: |2+
 
 
@@ -22361,19 +22361,19 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_native_filter_invalid_arity_99a37cdd0
-  features: [runtime_drops]
+  features: [ruby_drops]
   expected: 'Liquid error (line 1): wrong number of arguments (given 1, expected 2..3)'
   template: "{{ 'hello world' | replace | asset_url }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_native_filter_invalid_arity_8ba189846
-  features: [runtime_drops, shopify_filters]
+  features: [ruby_drops, shopify_filters]
   expected: 'Liquid error (line 1): wrong number of arguments (given 2, expected 1)'
   template: "{{ 'foo.png' | asset_url: '200x' }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_native_filter_invalid_arity_1e6cd7909
-  features: [runtime_drops]
+  features: [ruby_drops]
   expected: 'Liquid error (line 1): wrong number of arguments (given 1, expected 2..3)'
   template: "{{ 'hello world' | replace }}"
   environment: {}
@@ -22899,33 +22899,33 @@
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_67c93827d
-  features: [runtime_drops, shopify_filters]
+  features: [ruby_drops, shopify_filters]
   expected: muffin (fake)
   template: "{{ muffin | fakey }}"
   environment:
     muffin: muffin
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_cannot_reach_instance_eval_cb4a6a167
-  features: [runtime_drops]
+  features: [ruby_drops]
   expected: object_id
   template: "{{ 'object_id' | instance_eval }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_miss_f98681654
-  features: [runtime_drops]
+  features: [ruby_drops]
   expected: test
   template: "{{ 'test' | unknown }}"
   environment: {}
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_which_raises_e40958296
-  features: [runtime_drops, shopify_filters]
+  features: [ruby_drops, shopify_filters]
   expected: 'Liquid error (line 1): internal'
   template: "{{ muffin | raisy }}"
   environment:
     muffin: muffin
   filesystem: {}
 - name: RecordedTest#test_runtime_filter_with_hash_parameter_1a5314d7d
-  features: [runtime_drops, shopify_filters]
+  features: [ruby_drops, shopify_filters]
   expected: MUFFIN
   template: '{{ muffin | modify_case: case: "upcase" }}'
   environment:

@@ -8,14 +8,9 @@ module Liquid
       module Features
         FEATURE_DOCS = {
           core: {
-            description: "Full Liquid implementation with runtime drop support",
+            description: "Full Liquid implementation with drop support",
             recommendation: :required,
-            note: "Essential for any Liquid implementation. Includes runtime_drops and inline_errors.",
-          },
-          runtime_drops: {
-            description: "Supports bidirectional communication for drop callbacks",
-            recommendation: :required,
-            note: "Needed for dynamic object property access. Included with :core.",
+            note: "Essential for any Liquid implementation. Includes drops and inline_errors.",
           },
           inline_errors: {
             description: "Supports render_errors mode (errors rendered inline instead of raised)",

@@ -301,19 +301,21 @@ module Liquid
             # Opt out of specs your implementation doesn't support yet.
             # List features here that should be SKIPPED (the adapter is "missing" them).
             #
-            # For a JSON-RPC server that doesn't implement bidirectional drop
-            # callbacks (drop_get/drop_call/drop_iterate), opt out of :runtime_drops.
-            # Once you add drop callbacks, remove it from this list.
+            # For a JSON-RPC server that doesn't implement the standard test
+            # drops yet (BooleanDrop, MethodDrop, SequenceDrop, etc.), opt out
+            # of :drops. See docs/test_drops.md for the standard library.
             #
             # Common opt-out features:
-            #   :runtime_drops  - drop_get/drop_call/drop_iterate callbacks
+            #   :drops          - Standard test drop library (see docs/test_drops.md)
+            #   :randomness     - Specs using generated random values
             #   :lax_parsing    - error_mode: :lax (lenient parsing)
             #   :ruby_types     - Ruby-specific types (symbols, ranges, etc.)
-            #   :ruby_drops     - Ruby-specific object/drop fixtures
+            #   :ruby_drops     - Ruby-specific drop objects (security tests, etc.)
             #   :binary_data    - Raw bytes that JSON cannot transport safely
             #   :shopify_*      - Shopify platform/theme extensions
             config.missing_features = [
-              :runtime_drops,
+              :drops,
+              :randomness,
               :ruby_types,
               :ruby_drops,
               :binary_data,

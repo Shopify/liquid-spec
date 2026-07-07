@@ -9,10 +9,10 @@ hint: |
   Failures indicate missing or incorrect Liquid behavior.
 
 # No required_features at suite level - allows JSON-RPC adapters to run
-# Individual specs that need runtime drops declare features: [runtime_drops]
+# Individual specs that need runtime drops declare features: [ruby_drops]
 
 # Feature documentation:
-# - :core includes :runtime_drops (full implementation)
+# - :core includes :ruby_drops (full implementation)
 # - JSON-RPC adapters that can't support runtime drops should declare features = []
 
 defaults:

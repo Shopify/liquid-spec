@@ -119,9 +119,9 @@ ruby -Ilib scripts/verifiers/lax_placement.rb       # advisory: lax-only specs s
   complexity in 1..1000, features from the known set, valid error_mode.
 - `minimum_complexity` — specs with advanced features must sit above the
   beginner ramp: Ruby content (`ruby_types`/`ruby_drops`/`binary_data`) and
-  `instantiate:` drops ≥ 100; `runtime_drops` ≥ 150; `template_factory` and
-  Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict2`
-  ≥ 100.
+`instantiate:` drops ≥ 100; `drops` ≥ 200; `template_factory` and
+Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict2`
+≥ 100.
 
 **Advisory verifiers** (report known debt, don't block push):
 - `lax_placement` — lax-only specs belong in `specs/liquid_ruby_lax/`, not
@@ -552,7 +552,7 @@ end
 Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing.
 
 **Common features to list in `missing_features`:**
-- `:runtime_drops` - Adapter cannot support bidirectional drop callbacks yet
+- `:drops` - Adapter cannot support the standard test drop library yet (see docs/test_drops.md)
 - `:inline_errors` - Adapter cannot render errors inline yet
 - `:lax_parsing` - Adapter does not support `error_mode: :lax`
 - `:ruby_types` / `:ruby_drops` / `:binary_data` - Adapter cannot consume Ruby-specific values from specs
@@ -565,7 +565,7 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
 - `:shopify_includes`, `:shopify_blank`, `:shopify_error_handling`, `:shopify_error_format`, `:shopify_string_access` - Shopify platform/theme behavior beyond portable Liquid
 
-**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should set `config.missing_features = [:runtime_drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
+**JSON-RPC adapters** that can't support the standard test drops yet should set `config.missing_features = [:drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
 
 
 ### JSON-RPC Adapter Setup Notes
@@ -576,8 +576,8 @@ JSON-RPC is the main path for non-Ruby Liquid implementations. Keep it especiall
 - The server implements `initialize`, `compile`, `render`, and `quit` over newline-delimited JSON-RPC on stdin/stdout.
 - Server logs must go to stderr, never stdout.
 - The Ruby adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
-- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
-- Remove `:runtime_drops` only after implementing bidirectional callbacks: `drop_get`, `drop_call`, and `drop_iterate`.
+- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:drops`, `:ruby_types`, `:ruby_drops`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
+- Implement the standard test drops (see docs/test_drops.md) to enable `:drops`. Standard drops use `_instantiate` markers — no RPC callbacks needed.
 - Prefer `result.error` for Liquid parse/render errors; legacy JSON-RPC errors `-32000`/`-32001` are accepted for compatibility.
 - Render receives `options.strict_errors`; when it is false, render errors should become inline Liquid error output.
 
