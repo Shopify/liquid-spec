@@ -498,7 +498,7 @@ specs:
     drop, last:
     drop, size:0
 - name: lax_filter_booleandrop_first_last_size
-  features: [ruby_drops]
+  features: [drops]
   complexity: 520
   hint: BooleanDrop wraps a boolean value, to_s returns Yay/Nay
   template: |

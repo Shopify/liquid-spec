@@ -382,7 +382,7 @@ specs:
     drop, last:
     drop, size:0
 - name: filter_booleandrop_first_last_size
-  features: [ruby_drops]
+  features: [drops]
   complexity: 300
   hint: |
     Ruby quirk: bool | size returns 0.

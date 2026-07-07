@@ -6021,7 +6021,7 @@ specs:
   expected: foobar
   complexity: 160
   features:
-  - ruby_drops
+  - drops
 - name: StandardFilterTest#test_uniq_0ce0fecb
   template: "{{ a0 | uniq }}"
   environment:
@@ -6142,7 +6142,7 @@ specs:
   expected: foobar
   complexity: 160
   features:
-  - ruby_drops
+  - drops
 - name: StandardFilterTest#test_uniq_9c0e7ae6
   template: "{{ a0 | uniq }}"
   environment:

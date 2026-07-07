@@ -172,7 +172,7 @@ specs:
   complexity: 200
   hint: StringDrop with no params wraps nil via to_liquid_value. So it's falsy (nil), not empty, but blank (nil is blank). The drop's truthiness derives from to_liquid_value.
   features:
-  - ruby_drops
+  - drops
 - name: truthiness_integerdrop_with_value_0
   template: 'IntegerDrop with value 0: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
   expected: 'IntegerDrop with value 0: truthy:yes, empty:no, blank:no'
@@ -193,7 +193,7 @@ specs:
   complexity: 200
   hint: BooleanDrop wraps a boolean via to_liquid_value. When value is false, the drop is falsy (to_liquid_value returns false). Not empty (drops aren't collections), but IS blank (false is blank).
   features:
-  - ruby_drops
+  - drops
 - name: truthiness_booleandrop_with_value_false
   template: 'BooleanDrop with value "false": truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
   expected: 'BooleanDrop with value "false": truthy:no, empty:no, blank:yes'
@@ -204,7 +204,7 @@ specs:
   complexity: 200
   hint: BooleanDrop wraps a boolean via to_liquid_value. When value is false, the drop is falsy (to_liquid_value returns false). Not empty (drops aren't collections), but IS blank (false is blank).
   features:
-  - ruby_drops
+  - drops
 - name: truthiness_valuedrop_with_value
   template: 'ValueDrop with value {}: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
   expected: 'ValueDrop with value {}: truthy:yes, empty:yes, blank:yes'
