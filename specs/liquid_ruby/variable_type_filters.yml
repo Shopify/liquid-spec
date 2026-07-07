@@ -158,6 +158,7 @@ specs:
     Ruby quirk: hash | first returns key+value concatenated, hash | last returns empty.
     See docs/implementers/ruby-quirks.md for details.
 - name: filter_drop_global_first_last_size
+  features: [ruby_drops]
   complexity: 300
   template: |
     drop, first:{{- d | first }}
@@ -361,6 +362,7 @@ specs:
     undefined, last:
     undefined, size:0
 - name: filter_integerdrop_first_last_size
+  features: [ruby_drops]
   complexity: 300
   hint: |
     Ruby quirk: int | size returns 8 (byte representation on 64-bit).
@@ -380,6 +382,7 @@ specs:
     drop, last:
     drop, size:0
 - name: filter_booleandrop_first_last_size
+  features: [ruby_drops]
   complexity: 300
   hint: |
     Ruby quirk: bool | size returns 0.

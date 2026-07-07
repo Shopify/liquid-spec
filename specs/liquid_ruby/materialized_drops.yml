@@ -12,6 +12,7 @@ _metadata:
   - ruby_drops
 specs:
 - name: VariableTest#test_case_tag_calls_to_liquid_value_b1c40961
+  features: [ruby_drops]
   complexity: 220
   template: "{% case foo %}{% when 1 %}One{% endcase %}"
   environment:
@@ -22,6 +23,7 @@ specs:
   expected: One
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L48
 - name: VariableTest#test_condition_calls_to_liquid_value_0cd93b1a
+  features: [ruby_drops]
   complexity: 220
   template: "{% if foo == true %}true{% endif %}"
   environment:
@@ -32,6 +34,7 @@ specs:
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L35
 - name: VariableTest#test_condition_calls_to_liquid_value_46cfd9a7
+  features: [ruby_drops]
   complexity: 220
   template: "{% if foo == 1 %}one{% endif %}"
   environment:
@@ -42,6 +45,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L36
 - name: VariableTest#test_condition_calls_to_liquid_value_5fa55b53
+  features: [ruby_drops]
   complexity: 220
   template: "{% if foo and true %}SHOULD NOT HAPPEN{% endif %}"
   environment:
@@ -52,6 +56,7 @@ specs:
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L37
 - name: VariableTest#test_condition_calls_to_liquid_value_8be4f14d
+  features: [ruby_drops]
   complexity: 220
   template: "{% if foo == eqv %}one{% endif %}"
   environment:
@@ -65,6 +70,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L38
 - name: VariableTest#test_condition_calls_to_liquid_value_91b71f70
+  features: [ruby_drops]
   complexity: 220
   template: "{% if foo > 0 %}one{% endif %}"
   environment:
@@ -75,6 +81,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L39
 - name: VariableTest#test_condition_calls_to_liquid_value_b103509d
+  features: [ruby_drops]
   complexity: 220
   template: "{% if a contains x %}one{% endif %}"
   environment:
@@ -87,6 +94,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L40
 - name: VariableTest#test_condition_calls_to_liquid_value_d62c87dd
+  features: [ruby_drops]
   complexity: 220
   template: "{% if b > a %}one{% endif %}"
   environment:
@@ -100,6 +108,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L41
 - name: VariableTest#test_condition_calls_to_liquid_value_de41fb54
+  features: [ruby_drops]
   complexity: 220
   template: "{% if 0 < foo %}one{% endif %}"
   environment:
@@ -110,6 +119,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L42
 - name: VariableTest#test_condition_calls_to_liquid_value_e7e6cd79
+  features: [ruby_drops]
   complexity: 220
   template: "{% if foo == true %}True{% endif %}"
   environment:
@@ -120,6 +130,7 @@ specs:
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L43
 - name: VariableTest#test_truthy_drop_is_truthy_1f1d71b7
+  features: [ruby_drops]
   complexity: 500
   template: "{% if foo %}true{% endif %}"
   environment:
@@ -130,6 +141,7 @@ specs:
   expected: 'true'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L67
 - name: VariableTest#test_truthy_drop_is_truthy_b1e30f0a
+  features: [ruby_drops]
   complexity: 500
   template: "{% if foo %}true{% endif %}"
   environment:
@@ -140,6 +152,7 @@ specs:
   expected: ''
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L68
 - name: UnlessElseTagTest#test_unless_with_drop_9b1bef61
+  features: [ruby_drops]
   complexity: 500
   template: "{% unless foo %}true{% endunless %}"
   environment:
@@ -149,6 +162,7 @@ specs:
   render_errors: false
   expected: 'true'
 - name: UnlessElseTagTest#test_unless_with_drop_bc49de2a
+  features: [ruby_drops]
   complexity: 500
   template: "{% unless foo %}true{% endunless %}"
   environment:
@@ -171,6 +185,7 @@ specs:
   expected: one
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L73
 - name: VariableTest#test_variable_lookup_calls_to_liquid_value_a45f8c05
+  features: [ruby_drops]
   complexity: 220
   template: "{{ list[foo] }}"
   environment:
@@ -185,6 +200,7 @@ specs:
   expected: '2'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L74
 - name: VariableTest#test_variable_render_calls_to_liquid_value_02b7f6ef
+  features: [ruby_drops]
   complexity: 220
   template: "{{ foo }}"
   environment:
@@ -194,6 +210,7 @@ specs:
   render_errors: false
   expected: Yay
 - name: VariableTest#test_variable_render_calls_to_liquid_value_4f8b3a7e
+  features: [ruby_drops]
   complexity: 220
   template: "{{ foo | upcase }}"
   environment:
@@ -203,6 +220,7 @@ specs:
   render_errors: false
   expected: YAY
 - name: VariableTest#test_variable_render_calls_to_liquid_value_d9a3e842
+  features: [ruby_drops]
   complexity: 220
   template: "{{ foo }}"
   environment:
@@ -212,6 +230,7 @@ specs:
   render_errors: false
   expected: '1'
 - name: StandardFiltersTest#test_at_least_acccepts_number_like_thing_2fa85f92
+  features: [ruby_drops]
   complexity: 500
   template: "{{ width | at_least:5 }}"
   environment:
@@ -222,6 +241,7 @@ specs:
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L327
 - name: StandardFiltersTest#test_at_least_acccepts_number_like_thing_3d65c66c
+  features: [ruby_drops]
   complexity: 500
   template: "{{ 5 | at_least: width }}"
   environment:
@@ -232,6 +252,7 @@ specs:
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L328
 - name: StandardFiltersTest#test_at_least_acccepts_number_like_thing_84fbbc20
+  features: [ruby_drops]
   complexity: 500
   template: "{{ width | at_least:5 }}"
   environment:
@@ -242,6 +263,7 @@ specs:
   expected: '6'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L329
 - name: StandardFiltersTest#test_at_most_acccepts_number_like_thing_0fb6b2dc
+  features: [ruby_drops]
   complexity: 500
   template: "{{ width | at_most:5 }}"
   environment:
@@ -252,6 +274,7 @@ specs:
   expected: '5'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L341
 - name: StandardFiltersTest#test_at_most_acccepts_number_like_thing_1b9cfae2
+  features: [ruby_drops]
   complexity: 500
   template: "{{ 5 | at_most: width }}"
   environment:
@@ -262,6 +285,7 @@ specs:
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L342
 - name: StandardFiltersTest#test_at_most_acccepts_number_like_thing_fc5a72a7
+  features: [ruby_drops]
   complexity: 500
   template: "{{ width | at_most:5 }}"
   environment:
@@ -272,6 +296,7 @@ specs:
   expected: '4'
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/standard_filter_test.rb#L343
 - name: StandardFiltersTest#test_ceil_number_like_thing_abe2fd28
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | ceil }}"
   environment:
@@ -281,6 +306,7 @@ specs:
   render_errors: false
   expected: '5'
 - name: StandardFiltersTest#test_divided_by_number_like_thing_58ded0f9
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | divided_by:2 }}"
   environment:
@@ -290,6 +316,7 @@ specs:
   render_errors: false
   expected: '5'
 - name: StandardFiltersTest#test_floor_number_like_thing_6db37ddf
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | floor }}"
   environment:
@@ -299,6 +326,7 @@ specs:
   render_errors: false
   expected: '5'
 - name: StandardFiltersTest#test_minus_number_like_thing_caa53f2f
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | minus:'2' }}"
   environment:
@@ -308,6 +336,7 @@ specs:
   render_errors: false
   expected: '5'
 - name: StandardFiltersTest#test_modulo_number_like_thing_fad6cc2c
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | modulo:2 }}"
   environment:
@@ -317,6 +346,7 @@ specs:
   render_errors: false
   expected: '1'
 - name: StandardFiltersTest#test_plus_number_like_thing_4c0e7d25
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | plus:'2' }}"
   environment:
@@ -326,6 +356,7 @@ specs:
   render_errors: false
   expected: '5'
 - name: StandardFiltersTest#test_round_number_like_thing_aa7f8a1c
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | round }}"
   environment:
@@ -335,6 +366,7 @@ specs:
   render_errors: false
   expected: '5'
 - name: StandardFiltersTest#test_round_number_like_thing_b3d87c4e
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | round }}"
   environment:
@@ -344,6 +376,7 @@ specs:
   render_errors: false
   expected: '4'
 - name: StandardFiltersTest#test_times_number_like_thing_edf3c4b7
+  features: [ruby_drops]
   complexity: 500
   template: "{{ price | times:2 }}"
   environment:
@@ -353,6 +386,7 @@ specs:
   render_errors: false
   expected: '4'
 - name: StandardFiltersTest#test_default_with_boolean_drop_true_04a6d3c5
+  features: [ruby_drops]
   complexity: 500
   template: "{{ drop | default: 'bar' }}"
   environment:
@@ -362,6 +396,7 @@ specs:
   render_errors: false
   expected: Yay
 - name: StandardFiltersTest#test_default_with_boolean_drop_false_1c9a8b7d
+  features: [ruby_drops]
   complexity: 500
   template: "{{ drop | default: 'bar' }}"
   environment:
@@ -371,6 +406,7 @@ specs:
   render_errors: false
   expected: bar
 - name: StandardFiltersTest#test_default_with_boolean_drop_allow_false_5e8f2c3a
+  features: [ruby_drops]
   complexity: 500
   template: "{{ drop | default: 'bar', allow_false: true }}"
   environment:
@@ -380,6 +416,7 @@ specs:
   render_errors: false
   expected: Nay
 - name: StandardFiltersTest#test_default_with_boolean_drop_allow_false_true_7d4a9b6c
+  features: [ruby_drops]
   complexity: 500
   template: "{{ drop | default: 'bar', allow_false: true }}"
   environment:
@@ -419,6 +456,7 @@ specs:
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/584d703aa7552a31d90d09ee6a05416957b7696d/test/integration/variable_test.rb#L15
 - name: ForTagTest#test_for_with_drop_returning_value_7c9e5d8f
+  features: [ruby_drops]
   complexity: 500
   template: "{%for item in (1..foobar.value) %} {{item}} {%endfor%}"
   environment:

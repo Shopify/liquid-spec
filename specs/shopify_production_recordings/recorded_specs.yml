@@ -4254,6 +4254,7 @@
 - name: RecordedTest#test_contains_188808998
   features:
     - activesupport
+    - ruby_drops
   expected: "n"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
   environment:
@@ -4406,6 +4407,7 @@
 - name: RecordedTest#test_contains_83c205efd
   features:
     - activesupport
+    - ruby_drops
   expected: "y"
   template: "{%if h contains b%}y{%else%}n{%endif%}"
   environment:
@@ -23129,6 +23131,7 @@
 - name: RecordedTest#test_string_key_fe38efada
   features:
     - activesupport
+    - ruby_drops
   expected: "y"
   template: "{{h[b]}}"
   environment:
@@ -23380,6 +23383,7 @@
 - name: RecordedTest#test_truncate_does_not_double_escape_suffix_fa67cd2ab
   features:
     - activesupport
+    - ruby_drops
   expected: 1 &gt;
   template: "{{ input | truncate: 6, suffix }}"
   environment:
@@ -23405,6 +23409,7 @@
   filesystem: {}
   features:
     - activesupport
+    - ruby_drops
 - name: RecordedTest#test_truncate_with_ut8_uses_char_count_not_bytesize_0e6b525e3
   expected: L'homme à la tête de lion
   template: "{{ text | truncate: 26 }}"
@@ -23414,6 +23419,7 @@
 - name: RecordedTest#test_truncatewords_for_html_6782ac38f
   features:
     - activesupport
+    - ruby_drops
   expected: you&#39;re doing<
   template: "{{ description | truncatewords: 2, '<' }}"
   environment:
@@ -24661,6 +24667,7 @@
   template_name: templates/main.liquid
 
 - name: RecordedTest#test_strip_on_html_safe_string_with_surrounding_whitespace_with_default_2e78002d
+  features: [ruby_drops]
   template: "{{ foo | default: already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -24668,6 +24675,7 @@
       instantiate:SafeBuffer:
         value: ' America&#39;s Floor Source '
 - name: RecordedTest#test_strip_on_html_safe_string_with_surrounding_whitespace_without_default_f7510e74
+  features: [ruby_drops]
   template: "{{ already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -24675,6 +24683,7 @@
       instantiate:SafeBuffer:
         value: ' America&#39;s Floor Source '
 - name: RecordedTest#test_strip_on_html_safe_string_without_surrounding_whitespace_with_default_596b0e9c
+  features: [ruby_drops]
   template: "{{ foo | default: already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -24682,6 +24691,7 @@
       instantiate:SafeBuffer:
         value: America&#39;s Floor Source
 - name: RecordedTest#test_strip_on_html_safe_string_without_surrounding_whitespace_without_default_79421b6f
+  features: [ruby_drops]
   template: "{{ already_escaped | strip | escape }}"
   expected: America&amp;#39;s Floor Source
   environment:
@@ -26068,6 +26078,7 @@
     sort_by: best-selling
 
 - name: RecordedTest#ScratchpadTest#test_url_decode_49ae1a4f_001c5c3d
+  features: [ruby_drops]
   template: "{{a0 | url_decode}}"
   expected: 'Liquid error (line 1): invalid byte sequence in UTF-8'
   environment:
@@ -26080,6 +26091,7 @@
   environment:
     a0: "+%+"
 - name: RecordedTest#ScratchpadTest#test_url_decode_8f456ee2_a17d308a
+  features: [ruby_drops]
   template: "{{a0 | url_decode}}"
   expected: "\0%+"
   environment:
@@ -26087,6 +26099,7 @@
       instantiate:SafeBuffer:
         value: "\0%+"
 - name: RecordedTest#ScratchpadTest#test_url_decode_ad8e5186_fd1a77ea
+  features: [ruby_drops]
   template: "{{a0 | url_decode}}"
   expected: "&i\0\v\v851 \0\0\0\0&&%#\0\0\0'0"
   environment:
@@ -26428,6 +26441,7 @@
     a0: false
     a1: false
 - name: RecordedTest#ScratchpadTest#test_split_with_three_semicolon_c2a0447_269a1b59
+  features: [ruby_drops]
   template: "{{a0 | split: a1 | json}}"
   expected: '["&rep3l"]'
   environment:
@@ -26436,6 +26450,7 @@
       instantiate:SafeBuffer:
         value: ;
 - name: RecordedTest#ScratchpadTest#test_split_with_two_semicolon_c2a0447_269a1b59
+  features: [ruby_drops]
   template: "{{a0 | split: a1 | json}}"
   expected: '["&rep3l"]'
   environment:
@@ -28402,6 +28417,7 @@
   expected: ĮI IIİI STRASSE
 
 - name: RecordedTest#ScratchpadTest#test_do_not_double_escape_replaced_last_html_safe_string_when_no_replacement_is_needed_f6b1acb0
+  features: [ruby_drops]
   template: "{{ s | replace_last: 'foo', 'foo' | escape }}"
   expected: foo baz &amp;
   environment:

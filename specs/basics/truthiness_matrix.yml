@@ -1,0 +1,237 @@
+---
+_metadata:
+  hint: 'Exhaustive truthiness/empty/blank correctness specs — one per value type. Each spec tests all three concepts for a single value with descriptive output: ''label: truthy:yes, empty:no, blank:yes''. Covers primitives, strings, arrays, hashes, and drops. Drop specs require ruby_drops feature. See docs/truthiness.md for the full reference.'
+specs:
+- name: truthiness_nil
+  template: 'nil: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'nil: truthy:no, empty:no, blank:yes'
+  environment:
+    v:
+  complexity: 10
+  hint: nil is falsy, not empty (not a collection), but IS blank. Only false and nil are falsy; blank is broader.
+- name: truthiness_true
+  template: 'true: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'true: truthy:yes, empty:no, blank:no'
+  environment:
+    v: true
+  complexity: 10
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_false
+  template: 'false: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'false: truthy:no, empty:no, blank:yes'
+  environment:
+    v: false
+  complexity: 10
+  hint: false is falsy, not empty, but IS blank. Same as nil for truthy/blank, but neither matches empty (empty is for collections only).
+- name: truthiness_0
+  template: '0: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '0: truthy:yes, empty:no, blank:no'
+  environment:
+    v: 0
+  complexity: 20
+  hint: 0 is truthy (NOT falsy like JS/Python), not empty, not blank. Numbers are never empty or blank.
+- name: truthiness_1
+  template: '1: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '1: truthy:yes, empty:no, blank:no'
+  environment:
+    v: 1
+  complexity: 20
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_1
+  template: "-1: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}"
+  expected: "-1: truthy:yes, empty:no, blank:no"
+  environment:
+    v: -1
+  complexity: 20
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_0_0
+  template: '0.0: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '0.0: truthy:yes, empty:no, blank:no'
+  environment:
+    v: 0.0
+  complexity: 20
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_1_5
+  template: '1.5: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '1.5: truthy:yes, empty:no, blank:no'
+  environment:
+    v: 1.5
+  complexity: 20
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_empty_string
+  template: '"" (empty string): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"" (empty string): truthy:yes, empty:yes, blank:yes'
+  environment:
+    v: ''
+  complexity: 30
+  hint: Empty string is truthy (surprise!), matches empty (empty collection), and matches blank. The one value that is truthy AND empty AND blank.
+- name: truthiness_0_string_zero
+  template: '"0" (string zero): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"0" (string zero): truthy:yes, empty:no, blank:no'
+  environment:
+    v: '0'
+  complexity: 30
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_whitespace
+  template: '"   " (whitespace): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"   " (whitespace): truthy:yes, empty:no, blank:yes'
+  environment:
+    v: "   "
+  complexity: 30
+  hint: Whitespace-only string is truthy, does NOT match empty (has characters), but DOES match blank. This is the key difference between empty and blank.
+- name: truthiness_a_non_empty
+  template: '"a" (non-empty): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"a" (non-empty): truthy:yes, empty:no, blank:no'
+  environment:
+    v: a
+  complexity: 30
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_false_string
+  template: '"false" (string): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"false" (string): truthy:yes, empty:no, blank:no'
+  environment:
+    v: 'false'
+  complexity: 30
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_true_string
+  template: '"true" (string): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"true" (string): truthy:yes, empty:no, blank:no'
+  environment:
+    v: 'true'
+  complexity: 30
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_nil_string
+  template: '"nil" (string): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '"nil" (string): truthy:yes, empty:no, blank:no'
+  environment:
+    v: nil
+  complexity: 30
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_empty_array
+  template: "[] (empty array): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}"
+  expected: "[] (empty array): truthy:yes, empty:yes, blank:yes"
+  environment:
+    v: []
+  complexity: 40
+  hint: Empty array is truthy, matches empty, matches blank. Same pattern as empty string.
+- name: truthiness_1_array
+  template: "[1] (array): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}"
+  expected: "[1] (array): truthy:yes, empty:no, blank:no"
+  environment:
+    v:
+    - 1
+  complexity: 40
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_nil_array
+  template: "[nil] (array): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}"
+  expected: "[nil] (array): truthy:yes, empty:no, blank:no"
+  environment:
+    v:
+    -
+  complexity: 40
+  hint: Array containing nil is truthy, not empty (has one element), not blank. [nil] and [""] are non-empty arrays.
+- name: truthiness_array
+  template: '[""] (array): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '[""] (array): truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+    - ''
+  complexity: 40
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_empty_hash
+  template: "{} (empty hash): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}"
+  expected: "{} (empty hash): truthy:yes, empty:yes, blank:yes"
+  environment:
+    v: {}
+  complexity: 50
+  hint: Empty hash is truthy, matches empty, matches blank. Same as empty array.
+- name: truthiness_a_1_hash
+  template: '{"a":1} (hash): truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: '{"a":1} (hash): truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+      a: 1
+  complexity: 50
+  hint: Standard truthiness/empty/blank behavior for this value type. See docs/truthiness.md for the full reference.
+- name: truthiness_testdrop
+  template: 'TestDrop: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'TestDrop: truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+      instantiate:TestDrop: {}
+  complexity: 200
+  hint: Drops without to_liquid_value are always truthy (the drop object itself), never empty (not a collection), never blank. to_liquid_value is what makes a drop participate in truthiness/empty/blank.
+  features:
+  - ruby_drops
+- name: truthiness_stringdrop_with_value_nil
+  template: 'StringDrop with value nil: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'StringDrop with value nil: truthy:no, empty:no, blank:yes'
+  environment:
+    v:
+      instantiate:StringDrop: {}
+  complexity: 200
+  hint: StringDrop with no params wraps nil via to_liquid_value. So it's falsy (nil), not empty, but blank (nil is blank). The drop's truthiness derives from to_liquid_value.
+  features:
+  - ruby_drops
+- name: truthiness_integerdrop_with_value_0
+  template: 'IntegerDrop with value 0: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'IntegerDrop with value 0: truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+      instantiate:IntegerDrop: {}
+  complexity: 200
+  hint: IntegerDrop with no params defaults to 0 via to_liquid_value. 0 is truthy, not empty, not blank. Drop truthiness derives from to_liquid_value.
+  features:
+  - ruby_drops
+- name: truthiness_booleandrop_with_value_true
+  template: 'BooleanDrop with value "true": truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'BooleanDrop with value "true": truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+      instantiate:BooleanDrop:
+        value: true
+  complexity: 200
+  hint: BooleanDrop wraps a boolean via to_liquid_value. When value is false, the drop is falsy (to_liquid_value returns false). Not empty (drops aren't collections), but IS blank (false is blank).
+  features:
+  - ruby_drops
+- name: truthiness_booleandrop_with_value_false
+  template: 'BooleanDrop with value "false": truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'BooleanDrop with value "false": truthy:no, empty:no, blank:yes'
+  environment:
+    v:
+      instantiate:BooleanDrop:
+        value: false
+  complexity: 200
+  hint: BooleanDrop wraps a boolean via to_liquid_value. When value is false, the drop is falsy (to_liquid_value returns false). Not empty (drops aren't collections), but IS blank (false is blank).
+  features:
+  - ruby_drops
+- name: truthiness_valuedrop_with_value
+  template: 'ValueDrop with value {}: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'ValueDrop with value {}: truthy:yes, empty:yes, blank:yes'
+  environment:
+    v:
+      instantiate:ValueDrop: {}
+  complexity: 200
+  hint: ValueDrop with no params wraps {} (empty hash) via to_liquid_value. Empty hash is truthy, matches empty, matches blank. The drop's to_liquid_value determines all three checks.
+  features:
+  - ruby_drops
+- name: truthiness_tosdrop
+  template: 'ToSDrop: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'ToSDrop: truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+      instantiate:ToSDrop: {}
+  complexity: 200
+  hint: Drops without to_liquid_value are always truthy (the drop object itself), never empty (not a collection), never blank. to_liquid_value is what makes a drop participate in truthiness/empty/blank.
+  features:
+  - ruby_drops
+- name: truthiness_thingwithvalue
+  template: 'ThingWithValue: truthy:{% if v %}yes{% else %}no{% endif %}, empty:{% if v == empty %}yes{% else %}no{% endif %}, blank:{% if v == blank %}yes{% else %}no{% endif %}'
+  expected: 'ThingWithValue: truthy:yes, empty:no, blank:no'
+  environment:
+    v:
+      instantiate:ThingWithValue: {}
+  complexity: 200
+  hint: Drops without to_liquid_value are always truthy (the drop object itself), never empty (not a collection), never blank. to_liquid_value is what makes a drop participate in truthiness/empty/blank.
+  features:
+  - ruby_drops

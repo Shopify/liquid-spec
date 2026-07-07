@@ -128,6 +128,7 @@ module RubyTypeTagVerifier
       end
       env = spec[:environment]
       markers.concat(non_string_key_markers(env, 0)) if env
+      markers.concat(instantiate_markers(env, 0)) if env
       markers.uniq
     end
 
@@ -145,6 +146,35 @@ module RubyTypeTagVerifier
         out
       when Array
         obj.flat_map { |e| non_string_key_markers(e, depth + 1) }
+      else
+        []
+      end
+    end
+
+    # Walk a value looking for instantiate: patterns that create Ruby drops.
+    # Two forms: string "instantiate:ClassName" or hash key "instantiate:ClassName".
+    def instantiate_markers(obj, depth)
+      return [] if depth > 40
+      case obj
+      when Hash
+        out = []
+        obj.each do |k, v|
+          if k.is_a?(String) && k.start_with?("instantiate:")
+            class_name = k.sub("instantiate:", "").chomp(":")
+            out << "instantiate: drop (#{class_name})"
+          end
+          out.concat(instantiate_markers(v, depth + 1))
+        end
+        out
+      when Array
+        obj.flat_map { |e| instantiate_markers(e, depth + 1) }
+      when String
+        if obj.start_with?("instantiate:")
+          class_name = obj.sub("instantiate:", "").split(/\.|\z/).first
+          [ "instantiate: drop (#{class_name})" ]
+        else
+          []
+        end
       else
         []
       end
