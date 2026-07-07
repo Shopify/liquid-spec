@@ -14,10 +14,12 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     In strict2 mode, bare-bracket access like ['product'] is rejected.
-    The parser should raise a SyntaxError when it encounters an open
-    square bracket at the start of an expression.
+    The error message points to self['...'] as the replacement.
+    Use self['product'] instead — it resolves the variable through the
+    normal scope chain.
 
 - name: strict2_rejects_bare_bracket_double_quoted
   template: '{{ ["product"] }}'
@@ -25,8 +27,10 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     Double-quoted bare-bracket access is also rejected in strict2 mode.
+    Use self["product"] instead.
 
 - name: strict2_rejects_bare_bracket_dynamic_lookup
   template: "{{ [key] }}"
@@ -34,6 +38,7 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     Dynamic variable lookup via bare brackets is rejected in strict2 mode.
     Use self[key] instead.
@@ -44,8 +49,10 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     Bare brackets in for loop collections are rejected in strict2 mode.
+    Use self['collection'] instead.
 
 - name: strict2_rejects_bare_bracket_in_if
   template: "{% if ['product'] == true %}hello{% endif %}"
@@ -53,8 +60,10 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     Bare brackets in if conditions are rejected in strict2 mode.
+    Use self['product'] instead.
 
 - name: strict2_rejects_bare_bracket_in_case
   template: "{% case ['product'] %}{% when 'a' %}hello{% endcase %}"
@@ -62,8 +71,10 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     Bare brackets in case expressions are rejected in strict2 mode.
+    Use self['product'] instead.
 
 - name: strict2_rejects_bare_bracket_in_assign
   template: "{% assign x = ['product'] %}"
@@ -71,8 +82,10 @@
   errors:
     parse_error:
       - "Bare bracket access is not allowed"
+      - "self"
   hint: |
     Bare brackets in assign values are rejected in strict2 mode.
+    Use self['product'] instead.
 
 - name: strict2_accepts_qualified_bracket_access
   template: "{{ product['title'] }}"
