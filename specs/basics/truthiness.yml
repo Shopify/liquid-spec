@@ -1,0 +1,109 @@
+---
+_metadata:
+  hint: |
+    Liquid truthiness: ONLY `false` and `nil` are falsy. Everything else is
+    truthy — including 0, "", '0', [], and {}. This matches Ruby semantics, not
+    JavaScript/Python. Getting this wrong breaks hundreds of specs. NOTE: the
+    `default` filter is the one exception — it uses "blank" semantics (nil,
+    false, "", [], {} all get the fallback), NOT if-truthiness.
+specs:
+- name: truthiness_only_false_and_nil_are_falsy
+  template: |-
+    false:{% if false %}T{% else %}F{% endif %}
+    nil:{% if nil %}T{% else %}F{% endif %}
+  expected: |-
+    false:F
+    nil:F
+  complexity: 5
+  hint: |
+    The foundation of Liquid truthiness: only `false` and `nil` are falsy.
+    Every other value — numbers, strings, arrays, hashes — is truthy. This
+    matches Ruby (where any object that exists is truthy), not JavaScript
+    (where 0 and "" are falsy) or Python (where 0, "", [] are falsy).
+
+- name: truthiness_zero_and_empty_string_are_truthy
+  template: |-
+    0:{% if 0 %}T{% else %}F{% endif %}
+    empty:{% if '' %}T{% else %}F{% endif %}
+    str0:{% if '0' %}T{% else %}F{% endif %}
+  expected: |-
+    0:T
+    empty:T
+    str0:T
+  complexity: 20
+  hint: |
+    The three biggest surprises for implementers from other languages:
+    - 0 is truthy (not falsy like JS/Python).
+    - "" (empty string) is truthy (not falsy like JS/Python).
+    - '0' (string zero) is truthy — Liquid does NOT coerce strings to numbers
+      for truthiness. Use {% if num != 0 %} or {{ str | size }} > 0 to test
+      for non-zero / non-empty.
+
+- name: truthiness_empty_collections_are_truthy
+  template: |-
+    arr:{% if items %}T{% else %}F{% endif %}
+    hash:{% if h %}T{% else %}F{% endif %}
+  expected: |-
+    arr:T
+    hash:T
+  environment:
+    items: []
+    h: {}
+  complexity: 40
+  hint: |
+    Empty arrays [] and empty hashes {} are truthy in {% if %}. This is
+    unlike most languages. To check for non-empty, use {% if items != empty %}
+    or {{ items | size }} > 0. The `empty` keyword compares against the empty
+    state of any collection.
+
+- name: truthiness_in_contexts
+  template: |-
+    unless_false:{% unless false %}T{% endunless %}
+    unless_nil:{% unless nil %}T{% endunless %}
+    undefined:{% if missing %}T{% else %}F{% endif %}
+    nil_prop:{% if obj.nope %}T{% else %}F{% endif %}
+    or:{% if nil or 0 %}T{% else %}F{% endif %}
+    and:{% if nil and true %}T{% else %}F{% endif %}
+  expected: |-
+    unless_false:T
+    unless_nil:T
+    undefined:F
+    nil_prop:F
+    or:T
+    and:F
+  environment:
+    obj:
+      x: 1
+  complexity: 60
+  hint: |
+    Truthiness applies the same in all conditional contexts:
+    - {% unless X %} renders when X is falsy (inverse of if).
+    - Undefined variables resolve to nil → falsy. This is the idiomatic
+      "variable exists?" check: {% if maybe %}.
+    - Accessing a missing property (obj.nope) returns nil → falsy.
+    - `or` returns the first truthy operand (nil or 0 → 0 is truthy → T).
+    - `and` returns false if either operand is falsy (nil and true → F).
+
+- name: truthiness_default_filter_uses_blank_not_truthy
+  template: |-
+    nil:{{ x | default: 'fb' }}
+    false:{{ f | default: 'fb' }}
+    empty:{{ s | default: 'fb' }}
+    zero:{{ z | default: 'fb' }}
+  expected: |-
+    nil:fb
+    false:fb
+    empty:fb
+    zero:0
+  environment:
+    s: ""
+    z: 0
+  complexity: 80
+  hint: |
+    QUIRK: the `default` filter does NOT use if-truthiness. It uses "blank"
+    semantics — nil, false, "" (empty string), [] (empty array), and {} (empty
+    hash) ALL get the fallback. But 0 is NOT blank, so it passes through.
+    This is the one place truthiness differs from {% if %}: 0 is truthy in
+    if-conditions AND passes through `default`, but "" is truthy in if-conditions
+    yet gets replaced by `default`. Implement `default` by checking blankness
+    (nil || false || empty), not boolean truthiness.

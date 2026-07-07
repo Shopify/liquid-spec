@@ -361,6 +361,14 @@ module Liquid
             to climb that ramp. The suite is the definition of done — when it is green, you
             have a real Liquid implementation.
 
+            **Your Liquid library is standalone.** The adapter file(s) in this directory are
+            test harnesses that run liquid-spec against your library — they are NOT part of your
+            library and have no intrinsic value to it. Your library's public API, architecture,
+            and distribution are entirely your own. The Ruby adapter calls your code directly;
+            the JSON-RPC adapter talks to your engine over stdin/stdout. Both are disposable
+            shims that exist only so liquid-spec can exercise your implementation. Build your
+            library as a library; wire up the adapter afterward.
+
             #{json_rpc ? non_ruby_notice : ""}
             ## Which adapter file?
 
@@ -602,6 +610,15 @@ module Liquid
         def self.non_ruby_notice
           <<~MARKDOWN
             ## Not Using Ruby?
+
+            **You are building a standalone Liquid library in your language.**
+            The JSON-RPC adapter generated here is purely a harness for running the
+            liquid-spec test suite against your library — it is NOT part of your library
+            and has no intrinsic value to it. Your library's public API, architecture,
+            and distribution are entirely your own; the adapter is a thin test shim that
+            translates liquid-spec's Ruby protocol calls into JSON-RPC requests your
+            server can answer. Once your library passes the specs, the adapter is
+            disposable.
 
             **This adapter uses JSON-RPC** to communicate with your Liquid implementation over stdin/stdout.
             You can implement your Liquid engine in **any language** (Rust, Go, Python, Node.js, etc.).
