@@ -3,9 +3,17 @@ _metadata:
   hint: |
     Liquid truthiness: ONLY `false` and `nil` are falsy. Everything else is
     truthy — including 0, "", '0', [], and {}. This matches Ruby semantics, not
-    JavaScript/Python. Getting this wrong breaks hundreds of specs. NOTE: the
-    `default` filter is the one exception — it uses "blank" semantics (nil,
-    false, "", [], {} all get the fallback), NOT if-truthiness.
+    JavaScript/Python. Getting this wrong breaks hundreds of specs.
+
+    But there are THREE separate "emptiness" concepts that differ subtly:
+    - `empty` keyword: matches ONLY empty collections ("". [], {}). Not nil,
+      not false, not 0, not whitespace-only strings.
+    - `blank` keyword (Shopify extension): broader — nil, false, "", [], {},
+      AND whitespace-only strings ("   "). Not 0.
+    - `default` filter: replaces nil, false, "", [], {} — but NOT whitespace-
+      only strings and NOT 0. So default is NOT the same as blank!
+
+    See docs/truthiness.md for the full explanation.
 specs:
 - name: truthiness_only_false_and_nil_are_falsy
   template: |-
@@ -84,26 +92,117 @@ specs:
     - `or` returns the first truthy operand (nil or 0 → 0 is truthy → T).
     - `and` returns false if either operand is falsy (nil and true → F).
 
-- name: truthiness_default_filter_uses_blank_not_truthy
+- name: truthiness_empty_keyword_matches_empty_collections
   template: |-
-    nil:{{ x | default: 'fb' }}
+    str:{% if x == empty %}E{% else %}N{% endif %}
+    arr:{% if a == empty %}E{% else %}N{% endif %}
+    hash:{% if h == empty %}E{% else %}N{% endif %}
+    nil:{% if n == empty %}E{% else %}N{% endif %}
+    false:{% if f == empty %}E{% else %}N{% endif %}
+    zero:{% if z == empty %}E{% else %}N{% endif %}
+  expected: |-
+    str:E
+    arr:E
+    hash:E
+    nil:N
+    false:N
+    zero:N
+  environment:
+    x: ""
+    a: []
+    h: {}
+    z: 0
+  complexity: 80
+  hint: |
+    The `empty` keyword matches ONLY empty collections: "", [], and {}.
+    It does NOT match nil, false, or 0 — those are not "collections" and
+    comparing them to `empty` yields false. This is a value comparison, not
+    a truthiness check. Use it to distinguish "exists but empty" from
+    "doesn't exist": {% if items == empty %}no items{% endif %}.
+
+- name: truthiness_blank_keyword_is_broader_than_empty
+  template: |-
+    nil:{% if n == blank %}B{% else %}N{% endif %}
+    false:{% if f == blank %}B{% else %}N{% endif %}
+    empty_str:{% if s == blank %}B{% else %}N{% endif %}
+    whitespace:{% if w == blank %}B{% else %}N{% endif %}
+    empty_arr:{% if a == blank %}B{% else %}N{% endif %}
+    zero:{% if z == blank %}B{% else %}N{% endif %}
+  expected: |-
+    nil:B
+    false:B
+    empty_str:B
+    whitespace:B
+    empty_arr:B
+    zero:N
+  environment:
+    s: ""
+    w: "   "
+    a: []
+    z: 0
+  complexity: 100
+  hint: |
+    `blank` is a Shopify extension, broader than `empty`. It matches:
+    nil, false, "" (empty string), "   " (whitespace-only string), []
+    (empty array), {} (empty hash). But NOT 0 — 0 is never blank.
+    The key difference from `empty`: blank includes nil, false, AND
+    whitespace-only strings. Use blank to detect "nothing meaningful here"
+    including whitespace-only input. {% if str == blank %} catches
+    "", "   ", nil, and false in one check.
+
+- name: truthiness_default_filter_replaces_nil_false_and_empty
+  template: |-
+    nil:{{ n | default: 'fb' }}
     false:{{ f | default: 'fb' }}
-    empty:{{ s | default: 'fb' }}
+    empty_str:{{ s | default: 'fb' }}
+    empty_arr:{{ a | default: 'fb' }}
+    whitespace:{{ w | default: 'fb' }}
     zero:{{ z | default: 'fb' }}
   expected: |-
     nil:fb
     false:fb
-    empty:fb
+    empty_str:fb
+    empty_arr:fb
+    whitespace:   
     zero:0
   environment:
     s: ""
+    w: "   "
+    a: []
     z: 0
-  complexity: 80
+  complexity: 120
   hint: |
-    QUIRK: the `default` filter does NOT use if-truthiness. It uses "blank"
-    semantics — nil, false, "" (empty string), [] (empty array), and {} (empty
-    hash) ALL get the fallback. But 0 is NOT blank, so it passes through.
-    This is the one place truthiness differs from {% if %}: 0 is truthy in
-    if-conditions AND passes through `default`, but "" is truthy in if-conditions
-    yet gets replaced by `default`. Implement `default` by checking blankness
-    (nil || false || empty), not boolean truthiness.
+    QUIRK: the `default` filter replaces nil, false, "", [], and {} with the
+    fallback — but NOT whitespace-only strings and NOT 0. So `default` is
+    NOT the same as the `blank` keyword: "   " == blank is true, but
+    {{ "   " | default: 'x' }} returns "   " (passes through). `default`
+    checks nil || false || empty (== empty), not blank. If you need
+    whitespace-only strings replaced too, combine with strip:
+    {{ str | strip | default: 'x' }} — but note that changes the output
+    for non-blank strings too.
+
+- name: truthiness_blank_vs_empty_vs_default_contrast
+  template: |-
+    ws==empty:{% if w == empty %}Y{% else %}N{% endif %}
+    ws==blank:{% if w == blank %}Y{% else %}N{% endif %}
+    ws|default:{{ w | default: 'fb' }}
+    nil==empty:{% if n == empty %}Y{% else %}N{% endif %}
+    nil==blank:{% if n == blank %}Y{% else %}N{% endif %}
+  expected: |-
+    ws==empty:N
+    ws==blank:Y
+    ws|default:   
+    nil==empty:N
+    nil==blank:Y
+  environment:
+    w: "   "
+  complexity: 140
+  hint: |
+    The three emptiness checks diverge on edge cases. For a whitespace-only
+    string "   ": `== empty` is N (it has characters), `== blank` is Y
+    (whitespace counts as blank), `default` passes it through (not empty
+    enough to replace). For nil: `== empty` is N (nil is not a collection),
+    `== blank` is Y (blank includes nil), `default` replaces it. Summary:
+    empty = strict collection emptiness; blank = "nothing meaningful"
+    (includes nil/false/whitespace); default = nil/false/empty-collection
+    (excludes whitespace). Pick the right tool for your check.
