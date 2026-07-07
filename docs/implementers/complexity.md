@@ -1,7 +1,8 @@
 ---
-title: Complexity Scoring
-description: How spec complexity scores work and how to assign them. Specs run in complexity order - lower scores first.
-order: 3
+title: "Complexity Scoring"
+position: 3
+description: "Read when writing or moving specs. Explains the implementation ramp and why specs appear at each complexity level."
+optional: false
 ---
 
 # Complexity Scoring Guide

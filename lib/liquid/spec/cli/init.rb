@@ -390,7 +390,11 @@ module Liquid
             2. Read the failing spec completely — template, environment, expected, got, and
                especially the `hint:`. Hints are written by implementers for implementers;
                they usually state the exact rule you are missing.
-            3. If the behavior is unclear, read the relevant guide first
+            3. Keep the implementer docs close. Run `liquid-spec docs` to print the full
+               docs directory and the available guide names; start with
+               `liquid-spec docs curriculum`, then open the guide named by the failing spec
+               or hint. These docs are the intended companion to the spec ramp.
+            4. If the behavior is unclear, read the relevant guide first
                (see "Documentation" below) — minutes of reading routinely save hours of
                guessing. Reproduce interactively before coding:
                ```bash
@@ -413,10 +417,10 @@ module Liquid
                EOF
                ```
                `--compare` shows the reference implementation's output next to yours.
-            4. Implement the smallest change that makes the spec pass for the RIGHT reason.
-            5. Re-run. Every previously-passing spec must still pass — a fix that breaks
+            5. Implement the smallest change that makes the spec pass for the RIGHT reason.
+            6. Re-run. Every previously-passing spec must still pass — a fix that breaks
                earlier specs is wrong, not a tradeoff.
-            6. Judge progress by **`Complexity level cleared`**, not the raw pass count. A
+            7. Judge progress by **`Complexity level cleared`**, not the raw pass count. A
                partial implementation accidentally passes many later specs whose expected
                output happens to be empty; the cleared complexity level is the honest meter.
 
@@ -473,13 +477,14 @@ module Liquid
 
             ## Documentation
 
-            All implementer guides are served by the CLI — `liquid-spec docs` lists
-            them, `liquid-spec docs <name>` prints one (works from this directory; no
-            paths or checkouts needed):
+            All implementer guides are served by the CLI. `liquid-spec docs` prints the
+            full docs directory plus a tree of guide names; `liquid-spec docs <name>`
+            prints one guide. These guides explain Liquid semantics at the level the specs
+            expect, without requiring you to mirror any particular internal architecture:
 
             | `liquid-spec docs ...` | What it explains |
             |---|---|
-            | `curriculum` | the learning path: what to build, in what order, and what to ignore |
+            | `curriculum` | the learning path: what to build, when to read each guide, and what to defer |
             | `core-abstractions` | truthiness, nil, output conversion, iteration, emptiness, scope shape |
             | `grammar` | the syntax: tags, output, expressions, literals, irregularities |
             | `complexity` | the full ramp: why each lesson appears when it does |

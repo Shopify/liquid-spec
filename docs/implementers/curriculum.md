@@ -1,11 +1,8 @@
 ---
-title: Implementation Curriculum
-description: >
-  A learning path for building a Liquid implementation with liquid-spec. Start here:
-  it explains how to use the spec ramp, which guides are useful at each stage, and
-  how to choose your own implementation route without losing the curriculum signal.
+title: "Implementation Curriculum"
+position: 0
+description: "Start here. Explains how to use the complexity ramp as a flexible learning path and how to choose which guide to read next."
 optional: false
-order: 0
 ---
 
 # Liquid Implementation Curriculum

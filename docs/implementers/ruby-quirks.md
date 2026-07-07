@@ -1,11 +1,8 @@
 ---
-title: Ruby Quirks
-description: >
-  Liquid inherits several surprising behaviors from Ruby. This document catalogs these quirks
-  with exact input/output tables so implementers can match Ruby's behavior precisely.
-  Essential reading for anyone implementing Liquid outside of Ruby.
+title: "Ruby Quirks"
+position: 12
+description: "Read when output looks Ruby-specific. Catalogs size, first/last, hash rendering, ranges, and other Ruby compatibility behavior."
 optional: false
-order: 12
 ---
 
 # Ruby Quirks

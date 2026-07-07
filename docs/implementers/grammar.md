@@ -1,10 +1,8 @@
 ---
-title: Liquid Grammar Reference
-description: >
-  A pseudo-grammar for Liquid templates, tags, expressions, filters, and documented
-  irregularities. Read early so the parser and renderer share the same language model.
+title: "Liquid Grammar Reference"
+position: 2
+description: "Read while building the parser. A compact grammar for templates, tags, expressions, filters, and the important irregularities."
 optional: false
-order: 2
 ---
 
 # Liquid Grammar Reference

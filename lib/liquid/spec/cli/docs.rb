@@ -28,39 +28,21 @@ module Liquid
               return
             end
 
-            # Sort: required docs first, then optional
-            required = docs.reject { |d| d[:optional] }
-            optional = docs.select { |d| d[:optional] }
-
-            puts "Liquid Implementation Curriculum"
+            puts "Liquid implementation docs"
             puts "=" * 60
             puts ""
-            puts "These guides are ordered as a suggested learning path. Start with `curriculum`,"
-            puts "then use failing specs, hints, and your product goals to choose the next guide."
+            puts "Docs directory:"
+            puts "  #{DOCS_PATH}"
             puts ""
-
-            unless required.empty?
-              puts "\e[1mCurriculum and Core Guides\e[0m"
-              puts ""
-              required.each { |doc| print_doc_summary(doc) }
-            end
-
-            unless optional.empty?
-              puts "\e[2mOptional (Performance/Advanced)\e[0m"
-              puts ""
-              optional.each { |doc| print_doc_summary(doc) }
+            puts "Docs:"
+            docs.each_with_index do |doc, index|
+              connector = index == docs.length - 1 ? "└──" : "├──"
+              puts "#{connector} #{doc[:name]}"
             end
 
             puts ""
-            puts "View a document: \e[1mliquid-spec docs <name>\e[0m"
-            puts "Start here: liquid-spec docs curriculum"
-          end
-
-          def print_doc_summary(doc)
-            puts "\e[1m#{doc[:title]}\e[0m"
-            puts doc[:description]
-            puts "  → \e[1mliquid-spec docs #{doc[:name]}\e[0m"
-            puts ""
+            puts "Open a doc:  \e[1mliquid-spec docs <name>\e[0m"
+            puts "Start here:  liquid-spec docs curriculum"
           end
 
           def show_doc(name)
@@ -107,7 +89,7 @@ module Liquid
 
             Dir[File.join(DOCS_PATH, "*.md")].map do |file|
               load_doc_metadata(file)
-            end.compact.sort_by { |d| [d[:optional] ? 1 : 0, d[:order] || 100, d[:title]] }
+            end.compact.sort_by { |d| [d[:position] || 100, d[:name]] }
           end
 
           def load_doc_metadata(file)
@@ -125,7 +107,7 @@ module Liquid
                     title: frontmatter["title"] || name.tr("-", " ").capitalize,
                     description: frontmatter["description"] || "",
                     optional: frontmatter["optional"] || false,
-                    order: frontmatter["order"] || 100,
+                    position: frontmatter["position"] || frontmatter["order"] || 100,
                   }
                 rescue Psych::SyntaxError
                   # Fall through to defaults
@@ -141,7 +123,7 @@ module Liquid
               title: title,
               description: "(No description available)",
               optional: false,
-              order: 100,
+              position: 100,
             }
           end
         end

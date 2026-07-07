@@ -1,10 +1,8 @@
 ---
-title: Tablerow Tag
-description: >
-  How to implement Liquid's tablerow tag: HTML table generation, tablerowloop state,
-  column wrapping, exact whitespace, and break/continue behavior.
+title: "Tablerow Tag"
+position: 11
+description: "Read after for-loops. Covers tablerow HTML output, tablerowloop state, column wrapping, whitespace, and interrupts."
 optional: false
-order: 11
 ---
 
 # Tablerow Tag Implementation

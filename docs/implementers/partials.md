@@ -1,11 +1,8 @@
 ---
 title: "Partials: include vs render"
-description: >
-  The critical differences between include (deprecated, shares scope, propagates interrupts) and
-  render (recommended, isolated scope, contained interrupts). Understanding these differences is
-  essential for correct partial template handling.
+position: 8
+description: "Read when implementing include or render. Explains scope sharing/isolation, argument passing, counters, interrupts, and render restrictions."
 optional: false
-order: 8
 ---
 
 # Partials: `include` vs `render`

@@ -1,11 +1,8 @@
 ---
-title: Core Abstractions
-description: >
-  The core value-model questions every Liquid implementation must answer: output conversion,
-  iteration conversion, empty/blank/default truthiness, hash pseudo-methods, scopes, and
-  loop state. The named helpers are conceptual seams, not required public APIs.
+title: "Core Abstractions"
+position: 1
+description: "Read early. Covers the value-model questions every implementation must answer: output, iteration, truthiness, empty/blank, scopes, and loop state."
 optional: false
-order: 1
 ---
 
 # Core Abstractions

@@ -1,11 +1,8 @@
 ---
-title: Parsing in Strict Mode
-description: >
-  Advanced guide to building a high-performance Liquid parser based on liquid-c's two-stage approach.
-  Covers template tokenization, strict expression lexing, and error handling. Optional reading - a
-  simple recursive descent parser works fine. Only needed if optimizing parse performance.
+title: "Parsing in Strict Mode"
+position: 20
+description: "Read when parser errors or strict2 behavior matter. Describes tokenizer/parser structure, strict expression lexing, and error reporting."
 optional: true
-order: 20
 ---
 
 # Parsing in Strict Mode

@@ -1,11 +1,8 @@
 ---
-title: The cycle Tag
-description: >
-  Complete guide to Liquid's cycle tag grouping rules. Explains how unnamed cycles with literals
-  share counters while unnamed cycles with variables get independent counters, plus named cycle
-  behavior and state isolation.
+title: "The cycle Tag"
+position: 10
+description: "Read when cycle specs fail. Explains named and unnamed cycle groups, counter keys, variable groups, and state isolation."
 optional: false
-order: 10
 ---
 
 # The `cycle` Tag

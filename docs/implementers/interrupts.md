@@ -1,11 +1,8 @@
 ---
 title: "Interrupts: break and continue"
-description: >
-  How break and continue work in Liquid using a stack-based interrupt mechanism. Covers propagation
-  through nested blocks, consumption by loops, and the critical differences between include (propagates)
-  and render (isolates). A common source of subtle bugs.
+position: 7
+description: "Read when break/continue specs fail. Explains interrupt propagation through nested blocks, loops, include, and render."
 optional: false
-order: 7
 ---
 
 # Interrupts: `break` and `continue`
