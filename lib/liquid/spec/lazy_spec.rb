@@ -87,6 +87,11 @@ module Liquid
         when :strict2
           @features << :strict2_parsing unless @features.include?(:strict2_parsing)
         end
+        # render_errors: true means errors are rendered inline instead of
+        # raised — the adapter must support inline_errors to run this spec.
+        if @render_errors
+          @features << :inline_errors unless @features.include?(:inline_errors)
+        end
       end
 
       # Location string for error messages

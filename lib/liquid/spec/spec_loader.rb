@@ -60,6 +60,7 @@ module Liquid
       VALID_SPEC_KEYS = %w[
         name template expected expected_pattern environment filesystem complexity hint doc
         error_mode render_errors features errors template_name resource_limits
+        generate url caller_location message issue exception_renderer template_factory context_klass
       ].freeze
 
       class << self
@@ -186,9 +187,9 @@ module Liquid
             if unknown_spec_keys.any?
               line_num = line_numbers ? line_numbers[idx] : nil
               location = line_num ? "#{path}:#{line_num}" : path
+              hint = unknown_spec_keys.include?("expect") ? "\nDid you mean 'expected' instead of 'expect'?" : ""
               raise "Unknown keys in spec '#{spec_name}' at #{location}: #{unknown_spec_keys.join(", ")}\n" \
-                    "Valid keys are: #{VALID_SPEC_KEYS.join(", ")}\n" \
-                    "Did you mean 'expected' instead of 'expect'?" if unknown_spec_keys.include?("expect")
+                    "Valid keys are: #{VALID_SPEC_KEYS.join(", ")}#{hint}"
             end
           end
 
