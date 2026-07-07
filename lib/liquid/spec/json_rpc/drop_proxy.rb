@@ -72,6 +72,12 @@ module Liquid
               else
                 obj
               end
+            when Time
+              # Time is a valid Liquid value but can't be JSON-encoded.
+              # Send as ISO 8601 string — the date filter can parse it.
+              obj.iso8601
+            when Date, DateTime
+              obj.iso8601
             when Symbol
               # Symbols can't be faithfully represented in JSON.
               # Send a _ruby_type marker so the server can optionally
