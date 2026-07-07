@@ -106,8 +106,9 @@ module Liquid
                 drop_id = registry.register(obj)
                 { RPC_DROP_KEY => drop_id, "type" => obj.class.name }
               else
-                # Try to convert to something JSON-safe
-                obj.respond_to?(:to_h) ? wrap(obj.to_h, registry, seen) : obj.to_s
+                raise TypeError, "DropProxy.wrap: cannot transport #{obj.class} " \
+                  "(value: #{obj.inspect[0, 100]}). " \
+                  "Add handling for this type or add it to missing_features."
               end
             end
           end
