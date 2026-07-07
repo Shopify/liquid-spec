@@ -53,7 +53,7 @@ class StandardStringDrop < Liquid::Drop
   include Comparable
 
   def initialize(params = {})
-    @value = params["value"] || params[:value] || ""
+    @value = params["value"] || params[:value]
   end
 
   def to_liquid_value
@@ -178,7 +178,7 @@ class StandardErrorDrop < Liquid::Drop
   end
 
   def invoke_drop(*)
-    raise "ErrorDrop: access triggered an error"
+    raise Liquid::Error, "ErrorDrop: access triggered an error"
   end
   alias_method :[], :invoke_drop
 end

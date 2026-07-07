@@ -397,7 +397,7 @@ specs:
       instantiate:BooleanDrop:
         value: true
   expected: |
-    drop value:Yay
+    drop value:true
     drop, first:
     drop, last:
     drop, size:0

@@ -4193,7 +4193,7 @@ specs:
       'instantiate:ErrorDrop:': {}
   render_errors: true
   complexity: 190
-  expected: 'Liquid error (foo line 1): standard error'
+  expected: 'Liquid error (foo line 1): ErrorDrop: access triggered an error'
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L384
@@ -4206,7 +4206,7 @@ specs:
       'instantiate:ErrorDrop:': {}
   render_errors: true
   complexity: 190
-  expected: 'Liquid error (some/path/foo line 1): standard error'
+  expected: 'Liquid error (some/path/foo line 1): ErrorDrop: access triggered an error'
   template_factory:
     'instantiate:StubTemplateFactory:': {}
   filesystem:
@@ -5004,7 +5004,7 @@ specs:
       'instantiate:ErrorDrop:': {}
   render_errors: true
   complexity: 190
-  expected: 'Liquid error (foo line 1): standard error'
+  expected: 'Liquid error (foo line 1): ErrorDrop: access triggered an error'
   filesystem:
     foo: "{{ foo.standard_error }}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L298
@@ -5017,7 +5017,7 @@ specs:
       'instantiate:ErrorDrop:': {}
   render_errors: true
   complexity: 190
-  expected: 'Liquid error (some/path/foo line 1): standard error'
+  expected: 'Liquid error (some/path/foo line 1): ErrorDrop: access triggered an error'
   template_factory:
     'instantiate:StubTemplateFactory:': {}
   filesystem:
@@ -5348,7 +5348,7 @@ specs:
         value: true
   render_errors: false
   complexity: 180
-  expected: Yay
+  expected: "true"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L874
   features:
   - ruby_drops
@@ -5384,7 +5384,7 @@ specs:
         value: false
   render_errors: false
   complexity: 180
-  expected: Nay
+  expected: "false"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L885
   features:
   - ruby_drops
@@ -5396,7 +5396,7 @@ specs:
         value: true
   render_errors: false
   complexity: 180
-  expected: Yay
+  expected: "true"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L886
   features:
   - ruby_drops
@@ -8832,7 +8832,7 @@ specs:
         value: true
   render_errors: false
   complexity: 220
-  expected: Yay
+  expected: "true"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L22
   features:
   - ruby_drops
@@ -8846,7 +8846,7 @@ specs:
         value: true
   render_errors: false
   complexity: 220
-  expected: YAY
+  expected: "TRUE"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L23
   features:
   - ruby_drops
