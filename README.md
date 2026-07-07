@@ -75,7 +75,7 @@ liquid-spec init my_adapter.rb
 # 2. Edit my_adapter.rb to wire up your implementation (see below)
 
 # 3. Run the specs
-liquid-spec my_adapter.rb
+liquid-spec run my_adapter.rb
 ```
 
 ## Writing an Adapter
@@ -125,14 +125,14 @@ Key setup points:
 - Your server implements `initialize`, `compile`, `render`, and `quit`.
 - Server debug logs go to stderr; stdout must contain only newline-delimited JSON-RPC messages.
 - The adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
-- Minimal JSON-RPC adapters should usually opt out of Ruby/transport-specific features such as `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
+- Minimal JSON-RPC adapters should usually opt out of Ruby/transport-specific features such as `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
 - If you implement bidirectional drop callbacks (`drop_get`, `drop_call`, `drop_iterate`), remove `:runtime_drops` from `missing_features`.
 - Read `docs/json-rpc-protocol.md` for the exact message format and error-handling rules.
 
 ```bash
 liquid-spec init --jsonrpc my_adapter.rb
-liquid-spec my_adapter.rb --command="./my-liquid-server"
-liquid-spec my_adapter.rb --json --list-passed > results.json
+liquid-spec run my_adapter.rb --command="./my-liquid-server"
+liquid-spec run my_adapter.rb --json --list-passed > results.json
 ```
 
 ### Optional: compiled-artifact protocol
@@ -270,8 +270,8 @@ When changing complexity scores or adding early specs, test the harness with int
 Use `--list-passed` to see accidental passes and `--json` for machine-readable analysis:
 
 ```bash
-liquid-spec /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
-liquid-spec /tmp/empty_adapter.rb -s basics --json --list-passed > empty-results.json
+liquid-spec run /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
+liquid-spec run /tmp/empty_adapter.rb -s basics --json --list-passed > empty-results.json
 ```
 
 A source-echo adapter should only pass raw-text specs before failing on first object output. An always-empty adapter may pass many empty-output specs, so judge progress by `max_complexity_reached`, not by total passes.
@@ -487,32 +487,50 @@ Specs are automatically saved to `/tmp/liquid-spec-{date}.yml` for easy contribu
 
 ## Example Output
 
+Default `run` output is intentionally concise: it shows the lowest-complexity failures
+(the next specs to work on) and then one summary line.
+
+Failing run:
+
 ```
-$ liquid-spec examples/liquid_ruby.rb
+$ liquid-spec run my_adapter.rb --max-failures 1
 
-Missing features: shopify_tags, shopify_objects, shopify_filters
+Next best specs to work on:
 
-Basics ................................. 850/850 passed
-Liquid Ruby ............................ 2101/2101 passed
-Liquid Ruby (Lax Mode) ................. 121/121 passed
-Parser Errors .......................... 1901/1901 passed
-Partials ............................... 12/12 passed
-Shopify Production Recordings .......... 2260/2260 passed
-Shopify Theme Dawn ..................... skipped (adapter opts out of: shopify_filters)
+1) [c=5] object_string_literal
+   Template:   "{{ 'world' }}"
+   Expected:   "world"
+   Got:        "{{ 'world' }}"
 
-Total: 7245 passed, 0 failed, 0 errors
+   Hint: The {{ }} syntax outputs the value of an expression...
+
+Complexity level cleared: 1 of 5, 2 passes, 1 failures.
 ```
+
+Successful run (counts depend on selected suites/features):
+
+```
+$ liquid-spec run my_adapter.rb
+Complexity level cleared: 1000 of 1000, 1234 passes, 0 failures, 12 skipped.
+
+Congrats! All run specs passed.
+```
+
+Use `-v` for preamble, per-suite progress, and skipped-suite details.
 
 ## Example Adapters
 
 See the `examples/` directory:
 
 - **`liquid_ruby.rb`** - Standard [Shopify/liquid](https://github.com/Shopify/liquid) gem
-- **`liquid_ruby_strict.rb`** - Shopify/liquid with strict mode
-- **`liquid_c.rb`** - [liquid-c](https://github.com/Shopify/liquid-c) native extension
+- **`liquid_ruby_lax.rb`** - Shopify/liquid configured for lax-mode compatibility specs
+- **`liquid_ruby_shopify.rb`** - Shopify-flavored Liquid behavior
+- **`json_rpc_ruby_liquid.rb`** - JSON-RPC adapter backed by Shopify/liquid
+- **`liquid_c.rb`** / **`liquid_c_strict.rb`** - [liquid-c](https://github.com/Shopify/liquid-c) native extension examples
+- **`liquid_ruby_yjit.rb`** / **`liquid_ruby_zjit.rb`** - Ruby JIT benchmark variants
 
 ```bash
-liquid-spec examples/liquid_ruby.rb
+liquid-spec run examples/liquid_ruby.rb
 ```
 
 ## Spec Format

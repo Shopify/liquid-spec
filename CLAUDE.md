@@ -13,37 +13,53 @@ liquid-spec is a test suite and CLI for testing Liquid template implementations.
 gem install specific_install
 gem specific_install https://github.com/Shopify/liquid-spec
 
-# Run an example adapter
-liquid-spec examples/liquid_ruby.rb
+# See top-level commands
+liquid-spec help
 
-# Generate an adapter template
+# Generate starter adapters. With no FILE, init creates both:
+#   liquid_adapter.rb and liquid_adapter_jsonrpc.rb
+liquid-spec init
 liquid-spec init my_adapter.rb
+liquid-spec init --jsonrpc liquid_adapter_jsonrpc.rb
 
-# Run specs with your adapter
+# Run specs with an adapter
+liquid-spec run examples/liquid_ruby.rb
+liquid-spec run my_adapter.rb
+
+# Back-compat shorthand still works, but prefer the explicit run command
 liquid-spec my_adapter.rb
 
-# Filter by test name
-liquid-spec my_adapter.rb -n assign
+# Filter by test name / run a specific suite / verbose output
+liquid-spec run my_adapter.rb -n assign
+liquid-spec run my_adapter.rb -s liquid_ruby
+liquid-spec run my_adapter.rb -v
 
-# Run specific suite
-liquid-spec my_adapter.rb -s liquid_ruby
+# List available specs and suites
+liquid-spec run my_adapter.rb -l
+liquid-spec run my_adapter.rb --list-suites
 
-# Verbose output
-liquid-spec my_adapter.rb -v
+# Inspect/debug a specific spec in detail
+liquid-spec inspect my_adapter.rb -n "case.*empty"
 
-# List available specs
-liquid-spec my_adapter.rb -l
+# Quick YAML-spec eval against an adapter, usually with reference comparison
+cat my_spec.yml | liquid-spec eval my_adapter.rb --compare
+liquid-spec eval my_adapter.rb --spec=my_spec.yml --compare
 
-# List available suites
-liquid-spec my_adapter.rb --list-suites
+# Benchmarks, cross-adapter matrices, reports, feature docs, implementer docs
+liquid-spec bench
+liquid-spec bench my_adapter.rb
+liquid-spec matrix --all
+liquid-spec report
+liquid-spec features
+liquid-spec docs complexity
 ```
 
 ### Default runner output
 
-The standard (`liquid-spec adapter.rb`) run prints the lowest-complexity failures — the
-"next best specs to work on" (capped at `--max-failures`, default 5) — followed by a
-single stats line. Preamble, per-suite progress, and skipped-suite lines are verbose-only
-(`-v`):
+The standard (`liquid-spec run adapter.rb`; shorthand `liquid-spec adapter.rb` still works)
+run prints the lowest-complexity failures — the "next best specs to work on" (capped at
+`--max-failures`, default 5) — followed by a single stats line. Preamble, per-suite
+progress, and skipped-suite lines are verbose-only (`-v`):
 
 ```
 Next best specs to work on:
@@ -129,14 +145,14 @@ When changing early complexity scores or adding beginner specs, play dumb and ve
 
 ```bash
 # Source echo adapter: should pass only raw text, then fail on first object output
-liquid-spec /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
+liquid-spec run /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
 
 # Always-empty adapter: may pass many empty-output specs accidentally; check max complexity
-liquid-spec /tmp/empty_adapter.rb -s basics --json --list-passed > /tmp/empty-results.json
+liquid-spec run /tmp/empty_adapter.rb -s basics --json --list-passed > /tmp/empty-results.json
 
 # Always-raise adapters: should fail at complexity 0 with clear Error + Hint output
-liquid-spec /tmp/raise_compile_adapter.rb -s basics --max-failures 3
-liquid-spec /tmp/raise_render_adapter.rb -s basics --max-failures 3
+liquid-spec run /tmp/raise_compile_adapter.rb -s basics --max-failures 3
+liquid-spec run /tmp/raise_render_adapter.rb -s basics --max-failures 3
 ```
 
 Use `--list-passed` to inspect accidental passes and `--json` for tooling. Prefer `Max complexity reached` / `max_complexity_reached` over raw pass count when judging partial or deliberately naive adapters.
@@ -149,7 +165,7 @@ Each test run appends results to `/tmp/liquid-spec-results.jsonl` with the forma
 ```
 
 - `run_id`: Unique timestamp for this run (e.g., "20260106_124439")
-- `version`: liquid-spec version (e.g., "0.9.0")
+- `version`: liquid-spec version (e.g., "1.2.0")
 - `source_file`: Path to the spec YAML file
 - `test_name`: Name of the individual spec
 - `complexity`: Complexity score (default 1000 if not set)
@@ -176,7 +192,7 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.suite = :liquid_ruby  # :all, :basics, :liquid_ruby, :shopify_theme_dawn
+  config.suite = :liquid_ruby  # or :all, :basics, :liquid_ruby_lax, :partials, :parser_errors, :benchmarks, :shopify_theme_dawn, ...
 
   # Declare what your adapter cannot support yet. Specs requiring these
   # features are skipped so you can build incrementally.
@@ -196,23 +212,25 @@ end
 
 The `ctx` hash is passed to all blocks and can store adapter state like custom environments, file systems, or translations. This enables adapters that need isolated Liquid environments with custom tags/filters.
 
-Running the adapter file directly shows usage instructions:
+Adapters generated by `liquid-spec init` include a direct-execution guard that re-launches the CLI:
 ```bash
-ruby my_adapter.rb
-# => "This is a liquid-spec adapter. Run it with: liquid-spec my_adapter.rb"
+./my_adapter.rb
+# equivalent to running the adapter through liquid-spec
+liquid-spec run my_adapter.rb
 ```
+Hand-written adapters can either include the same guard from `lib/liquid/spec/cli/init.rb` or be run explicitly with `liquid-spec run`.
 
 ## Development Commands
 
 ```bash
 # Run example adapter locally
-ruby -I../liquid/lib -Ilib bin/liquid-spec examples/liquid_ruby.rb
+ruby -I../liquid/lib -Ilib bin/liquid-spec run examples/liquid_ruby.rb
 
 # Run with verbose output
-ruby -I../liquid/lib -Ilib bin/liquid-spec examples/liquid_ruby.rb -v
+ruby -I../liquid/lib -Ilib bin/liquid-spec run examples/liquid_ruby.rb -v
 
 # Run specific tests
-ruby -I../liquid/lib -Ilib bin/liquid-spec examples/liquid_ruby.rb -n assign
+ruby -I../liquid/lib -Ilib bin/liquid-spec run examples/liquid_ruby.rb -n assign
 
 # Test the CLI
 ruby -Ilib bin/liquid-spec help
@@ -227,24 +245,35 @@ bundle exec rake generate
 ### CLI Components
 
 - **`bin/liquid-spec`** - Entry point
-- **`lib/liquid/spec/cli.rb`** - Command dispatcher  
+- **`lib/liquid/spec/cli.rb`** - Command dispatcher
 - **`lib/liquid/spec/cli/init.rb`** - Generates adapter templates
 - **`lib/liquid/spec/cli/runner.rb`** - Runs specs with an adapter
 - **`lib/liquid/spec/cli/adapter_dsl.rb`** - DSL for LiquidSpec.setup/configure/compile/render
+- **`lib/liquid/spec/cli/eval.rb`** - One-off YAML spec evaluation and reference comparison
+- **`lib/liquid/spec/cli/bench.rb` / `benchmark.rb`** - Benchmark command and timing harness
+- **`lib/liquid/spec/cli/matrix.rb`** - Cross-adapter comparison runner
+- **`lib/liquid/spec/cli/inspect.rb`** - Detailed spec inspection/debugging
+- **`lib/liquid/spec/cli/docs.rb` / `features.rb` / `report.rb`** - Implementer docs, feature inventory, benchmark reports
 
 ### Spec Components
 
-- **`Liquid::Spec::Unit`** - Single test case struct
-- **`Liquid::Spec::Source`** - Loads specs from YAML/text/directories
-- **`Liquid::Spec::Suite`** - Suite configuration loaded from suite.yml
-- **`Liquid::Spec::TestGenerator`** - Generates Minitest methods from specs
+- **`Liquid::Spec::LazySpec`** - Single lazily materialized YAML spec case, including environment/filesystem setup
+- **`Liquid::Spec::SpecLoader`** - Loads specs from suites, YAML files, and additional spec globs
+- **`Liquid::Spec::Suite`** - Suite configuration/discovery loaded from `suite.yml`
+- **`Liquid::Spec::AdapterRunner`** - Compiles/renders specs through adapter DSL blocks or JSON-RPC adapters
+- **`Liquid::Spec::API`** - Programmatic helpers for loading/running specs
 
 ### Directory Structure
 
 - `bin/` - CLI executable
-- `examples/` - Example adapters (liquid_ruby.rb, liquid_ruby_strict.rb, liquid_c.rb)
+- `examples/` - Example adapters (`liquid_ruby.rb`, `liquid_ruby_lax.rb`, `liquid_ruby_shopify.rb`, `json_rpc_ruby_liquid.rb`, `liquid_c.rb`, `liquid_c_strict.rb`, JIT variants)
 - `lib/liquid/spec/cli/` - CLI implementation
+- `specs/basics/` - Curated beginner ramp specs
 - `specs/liquid_ruby/` - Core Liquid specs from Shopify/liquid
+- `specs/liquid_ruby_lax/` - Lax-mode reference behavior
+- `specs/parser_errors/` - Parser/error-mode matrix specs
+- `specs/partials/` - Include/render/filesystem-focused specs
+- `specs/benchmarks/` - Timing benchmark specs
 - `specs/shopify_production_recordings/` - Recorded specs from Shopify production
 - `specs/shopify_theme_dawn/` - Shopify Dawn theme specs
 - `tasks/` - Rake tasks for spec generation
@@ -476,7 +505,8 @@ hint: |
   These specs test core Liquid functionality.
   Failures indicate missing or incorrect Liquid behavior.
 
-# Required features - adapter must declare these to run this suite
+# Required features/capabilities for this suite.
+# Specs are skipped when the adapter lists any of these in config.missing_features.
 required_features:
   - core
 
@@ -511,9 +541,18 @@ See [SPECS.md](SPECS.md) for guidelines on writing effective specs.
 
 ### Available Suites
 
-- **`liquid_ruby`** (default: true) - Core Liquid specs from Shopify/liquid integration tests
-- **`shopify_production_recordings`** (default: false) - Specs recorded from Shopify production
-- **`shopify_theme_dawn`** (default: false) - Real-world theme specs, requires Shopify-specific tags/objects/filters
+Current builtin suites (`liquid-spec run ADAPTER --list-suites`):
+
+- **`basics`** (default: true) - Curated beginner ramp covering fundamental Liquid behavior.
+- **`liquid_ruby`** (default: true) - Core Liquid specs from Shopify/liquid integration tests.
+- **`liquid_ruby_lax`** (default: true) - Lax-mode reference behavior; requires `:lax_parsing`.
+- **`parser_errors`** (default: false) - Parser/error-mode matrix specs; includes strict2-focused behavior.
+- **`partials`** (default: false) - Include/render/filesystem-focused specs; requires `:core`.
+- **`benchmarks`** (default: false) - Timing benchmark specs, normally run with `liquid-spec bench` or `--bench`.
+- **`shopify_production_recordings`** (default: true) - Recorded specs from Shopify production.
+- **`shopify_theme_dawn`** (default: true) - Real-world templates from Shopify Dawn; requires Shopify-specific tags/objects/filters.
+
+Suites can also be discovered from local project `./specs/<name>/suite.yml` directories when invoking liquid-spec from another project.
 
 ### Features
 
@@ -528,13 +567,15 @@ end
 
 ### Available Features
 
-Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing.
+Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing. Use `liquid-spec features` (backed by `lib/liquid/spec/cli/features.rb`) as the source of truth for the current feature inventory and recommendations.
 
 **Common features to list in `missing_features`:**
 - `:runtime_drops` - Adapter cannot support bidirectional drop callbacks yet
 - `:inline_errors` - Adapter cannot render errors inline yet
 - `:lax_parsing` - Adapter does not support `error_mode: :lax`
-- `:ruby_types` / `:ruby_drops` / `:binary_data` - Adapter cannot consume Ruby-specific values from specs
+- `:strict_parsing` / `:strict2_parsing` - Adapter does not support strict / strict2 parsing modes
+- `:self_environment_shadowing` - Adapter does not implement the compatibility behavior where an environment variable named `self` shadows the synthetic SelfDrop
+- `:ruby_types` / `:ruby_drops` / `:drop_class_output` / `:binary_data` - Adapter cannot consume or reproduce Ruby-specific values/output
 - `:template_factory` - Adapter cannot support template factory/artifact callbacks
 - `:strict2_blank_body_errors` - Aspirational "NEW STRICT2 CONTRACT" (strict2 surfaces inline errors even for blank block bodies); liquid-ruby 5.13 does not implement this, so opt out until your adapter deliberately adopts it
 
@@ -551,11 +592,12 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 
 JSON-RPC is the main path for non-Ruby Liquid implementations. Keep it especially well documented and tested.
 
-- Generate with `liquid-spec init --jsonrpc my_adapter.rb`.
+- Generate with `liquid-spec init --jsonrpc my_adapter.rb`. Running `liquid-spec init` with no filename generates both `liquid_adapter.rb` and `liquid_adapter_jsonrpc.rb`.
+- The generated JSON-RPC adapter is executable/self-launching; use `--command=...` when you need to point it at a separate server command.
 - The server implements `initialize`, `compile`, `render`, and `quit` over newline-delimited JSON-RPC on stdin/stdout.
 - Server logs must go to stderr, never stdout.
 - The Ruby adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
-- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
+- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
 - Remove `:runtime_drops` only after implementing bidirectional callbacks: `drop_get`, `drop_call`, and `drop_iterate`.
 - Prefer `result.error` for Liquid parse/render errors; legacy JSON-RPC errors `-32000`/`-32001` are accepted for compatibility.
 - Render receives `options.strict_errors`; when it is false, render errors should become inline Liquid error output.
@@ -564,7 +606,7 @@ Run JSON-RPC checks with:
 
 ```bash
 ruby -Ilib -I$LIQUID -Itest -e 'require "test_helper"; require File.expand_path("test/json_rpc_test.rb")'
-ruby -Ilib -I$LIQUID bin/liquid-spec examples/json_rpc_ruby_liquid.rb -n '^empty_template$|^literal_passthrough$' --json
+ruby -Ilib -I$LIQUID bin/liquid-spec run examples/json_rpc_ruby_liquid.rb -n '^empty_template$|^literal_passthrough$' --json
 ```
 
 ## The Eval Tool
@@ -580,15 +622,32 @@ The `liquid-spec eval` command is the primary tool for testing individual templa
 
 ### Basic Usage
 
+`eval` reads a YAML spec from stdin or `--spec=FILE`; it does not take inline
+`--liquid`/assigns/expected flags. Use a small YAML spec even for one-liners:
+
 ```bash
 # Quick test with automatic comparison to reference
-liquid-spec eval adapter.rb -n test_name --liquid="{{ 'hello' | upcase }}"
+cat <<'EOF' | liquid-spec eval adapter.rb --compare
+name: test_upcase_literal
+complexity: 40
+template: "{{ 'hello' | upcase }}"
+expected: "HELLO"
+hint: "The upcase filter should uppercase a string literal."
+EOF
 
 # Test with environment variables
-liquid-spec eval adapter.rb -n test_var -l "{{ x | size }}" -a '{"x": [1,2,3]}'
+cat <<'EOF' | liquid-spec eval adapter.rb --compare
+name: test_array_size
+complexity: 40
+template: "{{ x | size }}"
+environment:
+  x: [1, 2, 3]
+expected: "3"
+hint: "The size filter returns array length."
+EOF
 
-# Test with expected output (pass/fail check)
-liquid-spec eval adapter.rb -n test_check -l "{{ 5 | plus: 3 }}" -e "8"
+# Or read from a file
+liquid-spec eval adapter.rb --spec=my_test.yml --compare
 ```
 
 ### Using --compare (Recommended)
@@ -596,12 +655,16 @@ liquid-spec eval adapter.rb -n test_check -l "{{ 5 | plus: 3 }}" -e "8"
 The `--compare` flag runs your template against the reference liquid-ruby implementation first, then compares results. This is the best way to find behavioral differences:
 
 ```bash
-# Compare mode (default for inline templates)
-liquid-spec eval adapter.rb -n test_filter --liquid="{{ 'hi' | upcase }}" --compare
+cat <<'EOF' | liquid-spec eval adapter.rb --compare
+name: test_filter
+template: "{{ 'hi' | upcase }}"
+expected: "HI"
+complexity: 40
+hint: "The upcase filter should convert ASCII letters to uppercase."
+EOF
 
-# When implementations differ, you'll see:
-# ✗ FAIL
-# Difference: Reference output "HI" but yours produced "Hi"
+# When implementations differ, you'll see a failure explaining how the reference
+# output differed from your adapter's output.
 ```
 
 **When to use --compare:**

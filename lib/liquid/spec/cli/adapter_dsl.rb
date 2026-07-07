@@ -53,19 +53,30 @@ module LiquidSpec
       value.to_f == value.to_i ? "#{value.to_i}s" : "#{value}s"
     end
   end
-  # Standard features that can be declared by adapters
+  # Standard feature tags that specs/suites can require and adapters can list in
+  # config.missing_features. Keep this inventory in sync with CLI::Features::FEATURE_DOCS.
   FEATURES = {
     core: "Full Liquid implementation with runtime drop support",
     runtime_drops: "Supports bidirectional communication for drop callbacks",
     inline_errors: "Supports render_errors mode (errors rendered inline instead of raised)",
     ruby_types: "Supports Ruby-specific types (symbols in hash keys/output)",
     lax_parsing: "Supports error_mode: :lax for lenient parsing",
+    strict_parsing: "Supports error_mode: :strict",
     strict2_parsing: "Supports error_mode: :strict2 (Liquid 5.12+ relaxed trailing comma/colon syntax)",
     self_environment_shadowing: "Environment variables named self shadow the synthetic SelfDrop",
     shopify_tags: "Shopify-specific tags (schema, style, section, etc.)",
     shopify_objects: "Shopify-specific objects (section, block, content_for_header)",
     shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
+    shopify_blank: "Shopify-specific blank keyword semantics",
+    shopify_string_access: "Shopify-specific string.first/last character access",
+    shopify_error_format: "Shopify-specific error message formatting",
+    shopify_includes: "Shopify-specific include/render behavior",
+    ruby_drops: "Tests requiring Ruby drop objects with specific behavior",
+    drop_class_output: "Tests expecting Ruby Drop class-name output",
+    template_factory: "Tests using custom template factories for partial lookup",
+    binary_data: "Tests with binary/non-UTF8 data",
+    strict2_blank_body_errors: "strict2 surfaces inline errors even when the block body is blank",
   }.freeze
 
   class Configuration
