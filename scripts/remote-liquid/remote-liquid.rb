@@ -41,7 +41,7 @@ module RemoteLiquid
     def read_template_file(path)
       normalized = normalize_path(path)
       content = @templates[normalized]
-      raise Liquid::FileSystemError, "Could not find template '#{path}'" unless content
+      raise Liquid::FileSystemError, "Could not find asset #{path}" unless content
       content
     end
 
