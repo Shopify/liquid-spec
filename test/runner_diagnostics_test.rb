@@ -40,6 +40,8 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_equal 2, payload.fetch("totals").fetch("passed")
     assert_equal 1, payload.fetch("totals").fetch("failed")
     assert_equal 0, payload.fetch("totals").fetch("errors")
+    # Highest complexity level PRESENT in the run below the first failure
+    # (levels here: 0, 1, then the failing 5) — not first_failure - 1.
     assert_equal 1, payload.fetch("max_complexity_reached")
 
     assert_equal ["object_string_literal"], payload.fetch("failures").map { |f| f.fetch("name") }

@@ -289,6 +289,13 @@ module Liquid
           def run_specs_frozen(config, options, run_id)
             # Run adapter setup first (loads the liquid gem)
             LiquidSpec.run_setup!
+            # Track the current spec so we can report it on abnormal exit
+            at_exit do
+              if @current_spec && $! # $! is the current exception
+                $stderr.puts "\nAbnormal exit while running spec: #{@current_spec}"
+                $stderr.puts "  Source: #{defined?(@current_spec_source) ? @current_spec_source : 'unknown'}"
+              end
+            end
 
             # Load spec infrastructure
             require "liquid/spec"
@@ -415,6 +422,8 @@ module Liquid
                 complexity = spec.complexity || 1000
                 is_known = known_failures.known_failure?(spec.name)
 
+                @current_spec = spec.name
+                @current_spec_source = spec.source_file
                 begin
                   result = run_single_spec(spec, config)
                 rescue SystemExit, Interrupt, SignalException
@@ -458,6 +467,7 @@ module Liquid
                   results_by_complexity[complexity][:error] += 1
                 end
               end
+              @current_spec = nil
 
               if config.verbose && !json_mode
                 parts = ["#{passed}/#{suite_specs.size} passed"]
@@ -1284,6 +1294,8 @@ module Liquid
             additional_specs.each do |spec|
               is_known = known_failures.known_failure?(spec.name)
 
+              @current_spec = spec.name
+              @current_spec_source = spec.source_file
               begin
                 result = run_single_spec(spec, config)
               rescue SystemExit, Interrupt, SignalException
@@ -1317,6 +1329,7 @@ module Liquid
                 end
               end
             end
+            @current_spec = nil
 
             parts = ["#{passed}/#{additional_specs.size} passed"]
             parts << "#{failed} failed" if failed > 0

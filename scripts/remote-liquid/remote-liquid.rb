@@ -18,6 +18,8 @@ require "json"
 require "liquid"
 require "active_support/all"
 require "time"
+require_relative "../../lib/liquid/spec/spec_loader"
+require_relative "../../lib/liquid/spec/deps/standard_drops"
 
 module RemoteLiquid
   VERSION = "1.0"
@@ -39,7 +41,7 @@ module RemoteLiquid
     def read_template_file(path)
       normalized = normalize_path(path)
       content = @templates[normalized]
-      raise Liquid::FileSystemError, "Could not find template '#{path}'" unless content
+      raise Liquid::FileSystemError, "Could not find asset #{path}" unless content
       content
     end
 
@@ -290,8 +292,8 @@ module RemoteLiquid
       filesystem = params["filesystem"] || {}
 
       # Validate options
-      if options["error_mode"] && !%w[strict lax warn].include?(options["error_mode"])
-        raise ArgumentError, "Invalid error_mode '#{options["error_mode"]}': expected 'strict', 'lax', or 'warn'"
+      if options["error_mode"] && !%w[strict strict2 lax warn].include?(options["error_mode"])
+        raise ArgumentError, "Invalid error_mode '#{options["error_mode"]}': expected 'strict', 'strict2', 'lax', or 'warn'"
       end
 
       template_id = "tmpl_#{next_id}"
@@ -302,7 +304,7 @@ module RemoteLiquid
       # Build parse options
       parse_options = {}
       parse_options[:line_numbers] = true if options["line_numbers"]
-      parse_options[:error_mode] = options["error_mode"]&.to_sym
+      parse_options[:error_mode] = (options["error_mode"] || "strict").to_sym
 
       # Parse template - capture parse errors in result, not as exception
       begin
@@ -344,11 +346,13 @@ module RemoteLiquid
       registers = {}
       registers[:file_system] = @filesystems[template_id]
 
-      # Build context - never rethrow errors, we capture them
+      # Build context — rethrow errors when strict_errors is true
+      # so the adapter can match them against expected error patterns
+      strict_errors = options["strict_errors"] || false
       context = Liquid::Context.build(
         static_environments: unwrapped_env,
         registers: Liquid::Registers.new(registers),
-        rethrow_errors: false
+        rethrow_errors: strict_errors
       )
 
       # Handle time freezing
@@ -407,8 +411,12 @@ module RemoteLiquid
     def unwrap_environment(env)
       case env
       when Hash
-        if env["_rpc_drop"]
+        if env["_instantiate"]
+          instantiate_standard_drop(env["_instantiate"], env["params"] || {})
+        elsif env["_rpc_drop"]
           RpcDropProxy.new(env["_rpc_drop"], env["type"], self)
+        elsif env["_ruby_type"]
+          unwrap_ruby_type(env)
         else
           env.transform_values { |v| unwrap_environment(v) }
         end
@@ -419,11 +427,40 @@ module RemoteLiquid
       end
     end
 
+    # Reconstruct Ruby-specific types from _ruby_type markers.
+    # A server that doesn't support ruby_types can use the inspect string
+    # or the JSON-safe data field instead.
+    def unwrap_ruby_type(marker)
+      case marker["_ruby_type"]
+      when "Symbol"
+        marker["value"].to_sym
+      when "Hash"
+        # Reconstruct the hash with original key types using inspect
+        # for output, and JSON-safe data for access. Since this is
+        # liquid-ruby, we eval the inspect to get the real hash.
+        # A non-Ruby server would need to parse the inspect string.
+        begin
+          eval(marker["inspect"]) rescue marker["data"] || {}
+        end
+      when "Range"
+        Range.new(marker["begin"], marker["end"], marker["exclude_end"] || false)
+      when "Class"
+        marker["name"].split("::").reduce(Object) { |mod, name| mod.const_get(name) }
+      else
+        # Unknown ruby type — fall back to inspect string or data
+        marker["inspect"] || marker["data"] || marker.to_s
+      end
+    end
+
     def unwrap_value(value)
       case value
       when Hash
-        if value["_rpc_drop"]
+        if value["_instantiate"]
+          instantiate_standard_drop(value["_instantiate"], value["params"] || {})
+        elsif value["_rpc_drop"]
           RpcDropProxy.new(value["_rpc_drop"], value["type"], self)
+        elsif value["_ruby_type"]
+          unwrap_ruby_type(value)
         else
           value.transform_values { |v| unwrap_value(v) }
         end
@@ -431,6 +468,35 @@ module RemoteLiquid
         value.map { |v| unwrap_value(v) }
       else
         value
+      end
+    end
+
+    # Create a standard drop instance from an _instantiate marker.
+    # The server implements these drops natively — no RPC callbacks needed.
+    def instantiate_standard_drop(name, params)
+      case name
+      when "BooleanDrop"
+        StandardBooleanDrop.new(params)
+      when "NumberDrop"
+        StandardNumberDrop.new(params)
+      when "StringDrop"
+        StandardStringDrop.new(params)
+      when "MethodDrop"
+        StandardMethodDrop.new(params)
+      when "IndexDrop"
+        StandardIndexDrop.new(params)
+      when "SequenceDrop"
+        StandardSequenceDrop.new(params)
+      when "NilDrop"
+        StandardNilDrop.new(params)
+      when "OpaqueDrop"
+        StandardOpaqueDrop.new(params)
+      when "ErrorDrop"
+        StandardErrorDrop.new(params)
+      when "NestedDrop"
+        StandardNestedDrop.new(params)
+      else
+        raise "Unknown standard drop: #{name}"
       end
     end
 

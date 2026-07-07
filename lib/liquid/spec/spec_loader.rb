@@ -68,6 +68,7 @@ module Liquid
           require_relative "suite"
 
           specs = []
+          srand # re-seed RNG for each run so generate: values vary
 
           case suite
           when :all
@@ -222,8 +223,16 @@ module Liquid
             end
 
             # Determine error_mode: spec > metadata > suite default
+            # Can be a single mode (:lax, :strict, :strict2) or an array
+            # of compatible modes. The first mode is the "primary" mode
+            # used for testing; all modes generate feature tags.
             spec_error_mode = if spec_data.key?("error_mode")
-              spec_data["error_mode"]&.to_sym
+              mode = spec_data["error_mode"]
+              if mode.is_a?(Array)
+                mode.map(&:to_sym)
+              else
+                mode&.to_sym
+              end
             elsif source_required_options.key?(:error_mode)
               source_required_options[:error_mode]
             else
@@ -245,6 +254,36 @@ module Liquid
             # Determine expected: spec > suite default
             spec_expected = spec_data.key?("expected") ? spec_data["expected"] : default_expected
 
+            # Process generate: random value substitution
+            generate_spec = spec_data["generate"]
+            if generate_spec.is_a?(Hash)
+              generated = {}
+              generate_spec.each do |var_name, config|
+                case config
+                when Hash
+                  # Explicit format: {type: numeric, min: 0, max: 1000}
+                  type = config["type"] || "numeric"
+                  min = config["min"] || 0
+                  max = config["max"] || 1000
+                  case type
+                  when "numeric", "integer"
+                    generated[var_name] = rand(min..max)
+                  else
+                    generated[var_name] = rand(min..max)
+                  end
+                when Array
+                  # Shorthand: [min, max]
+                  generated[var_name] = rand(config[0]..config[1])
+                when Integer
+                  # Fixed value (not random, but available for interpolation)
+                  generated[var_name] = config
+                end
+              end
+              spec_data["template"] = substitute_generated(spec_data["template"], generated) if spec_data["template"]
+              spec_expected = substitute_generated(spec_expected, generated) if spec_expected
+              # Add randomness feature
+              source_features += [:randomness] unless source_features.include?(:randomness)
+            end
             spec = LazySpec.new(
               name: spec_data["name"],
               template: spec_data["template"],
@@ -408,6 +447,21 @@ module Liquid
           result
         end
 
+        # Substitute #{expr} in a string with generated random values
+        # expr is evaluated as Ruby code with generated values as local variables
+        def substitute_generated(str, generated)
+          return str unless str.is_a?(String)
+          return str if generated.empty?
+          # Create a binding with the generated values
+          ctx = binding
+          generated.each do |name, value|
+            ctx.local_variable_set(name.to_sym, value)
+          end
+          str.gsub(/#\{([^}]*)\}/) do
+            expr = $1
+            ctx.eval(expr).to_s
+          end
+        end
         # Placeholder - no instantiate processing needed yet
         def process_instantiate_strings(data)
           data

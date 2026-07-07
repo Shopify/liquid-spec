@@ -139,6 +139,7 @@ specs:
     empty_hash, last:
     empty_hash, size:0
 - name: lax_filter_drop_global_first_last_size
+  features: [ruby_drops]
   complexity: 510
   template: |
     drop, first:{{- d | first }}
@@ -479,6 +480,7 @@ specs:
     size of 999999999:8
     size of -1:8
 - name: lax_filter_integerdrop_first_last_size
+  features: [ruby_drops]
   complexity: 520
   hint: IntegerDrop wraps an integer value via to_liquid_value
   template: |
@@ -496,6 +498,7 @@ specs:
     drop, last:
     drop, size:0
 - name: lax_filter_booleandrop_first_last_size
+  features: [drops]
   complexity: 520
   hint: BooleanDrop wraps a boolean value, to_s returns Yay/Nay
   template: |

@@ -3,19 +3,12 @@
 require "rake"
 require "rake/testtask"
 require "fileutils"
-require "rbconfig"
 
 require_relative "lib/liquid/spec/version"
 
 task default: :test
 
 BUILD_DIR = "build"
-
-
-def run_check(*cmd)
-  puts "\n$ #{cmd.join(' ')}"
-  system(*cmd) || abort
-end
 
 # Unit tests for liquid-spec itself
 Rake::TestTask.new(:unit_test) do |t|
@@ -49,14 +42,6 @@ end
 desc "Run liquid-spec against the reference liquid-ruby adapter"
 task :run do
   system("bundle", "exec", "ruby", "bin/liquid-spec", "run", "examples/liquid_ruby.rb", "--no-max-failures") || abort
-end
-
-desc "Run fast checks for liquid-spec/spec/doc contributions"
-task :check do
-  run_check(RbConfig.ruby, "-Ilib", "-Itest", "-e", "require File.expand_path('test/spec_quality_test.rb')")
-  run_check(RbConfig.ruby, "-Ilib", "scripts/verify_ruby_type_tags.rb")
-  run_check(RbConfig.ruby, "-Ilib", "scripts/verify_lax_mode_declared.rb")
-  Rake::Task[:coverage_check].invoke
 end
 
 desc "Run liquid-spec matrix across all adapters"
@@ -116,6 +101,11 @@ task :coverage_check do
   else
     puts "Coverage check passed: all #{spec_tags.size} feature tags covered across #{adapter_missing.size} reference adapters."
   end
+end
+
+desc "Run all spec verifiers (prints findings, does not modify files)"
+task :check do
+  load File.join(__dir__, "scripts", "verify.rb")
 end
 
 # Spec generation tasks (only needed for development)

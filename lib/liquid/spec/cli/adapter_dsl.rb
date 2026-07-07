@@ -56,8 +56,7 @@ module LiquidSpec
   # Standard feature tags that specs/suites can require and adapters can list in
   # config.missing_features. Keep this inventory in sync with CLI::Features::FEATURE_DOCS.
   FEATURES = {
-    core: "Full Liquid implementation with runtime drop support",
-    runtime_drops: "Supports bidirectional communication for drop callbacks",
+    core: "Full Liquid implementation with drop support",
     inline_errors: "Supports render_errors mode (errors rendered inline instead of raised)",
     ruby_types: "Supports Ruby-specific types (symbols in hash keys/output)",
     lax_parsing: "Supports error_mode: :lax for lenient parsing",
@@ -77,8 +76,10 @@ module LiquidSpec
     template_factory: "Tests using custom template factories for partial lookup",
     binary_data: "Tests with binary/non-UTF8 data",
     strict2_blank_body_errors: "strict2 surfaces inline errors even when the block body is blank",
+    drops: "Standard test drop library (BooleanDrop, MethodDrop, SequenceDrop, etc.)",
+    shopify_resource_limits: "Shopify resource limit enforcement (render score tracking, cumulative limits across partials)",
+    randomness: "Specs using generated random values for increased coverage",
   }.freeze
-
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
     attr_reader :missing_features, :known_failures, :suites

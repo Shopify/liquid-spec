@@ -1,0 +1,139 @@
+---
+_metadata:
+  hint: |
+    These specs test Liquid's security boundary — that templates cannot
+    execute arbitrary code, access dangerous methods, or inject through
+    variable names. No drops needed: these test the parser and evaluator
+    directly.
+specs:
+# ============================================================================
+# Variable name injection — Liquid must not evaluate interpolation in names
+# ============================================================================
+- name: security_var_name_no_interpolation
+  template: "{{ #{1+1} }}"
+  expected: ""
+  complexity: 200
+  hint: |
+    Liquid variable names are parsed literally. #{1+1} is not Ruby
+    interpolation — it's not a valid variable name. In lax mode the
+    lookup returns nil (empty output).
+  features: [lax_parsing]
+  error_mode: lax
+
+- name: security_var_name_no_semicolon_injection
+  template: "{{ foo; exit }}"
+  errors:
+    parse_error:
+      - syntax
+  complexity: 200
+  hint: |
+    Semicolons in variable expressions should be rejected as syntax
+    errors. Liquid is not a general-purpose language — no statement
+    separators.
+  features: []
+
+# ============================================================================
+# No method calls with arguments — Liquid only has property access
+# ============================================================================
+- name: security_no_method_call_with_args
+  template: "{{ foo.send('exit') }}"
+  errors:
+    parse_error:
+      - syntax
+  complexity: 200
+  hint: |
+    Liquid does not support method calls with arguments like
+    .send('exit'). This should be a parse error.
+  features: []
+
+# ============================================================================
+# Unknown filters are ignored, NOT executed — input passes through
+# ============================================================================
+- name: security_unknown_filter_not_executed
+  template: "{{ 'exit(1)' | eval }}"
+  expected: "exit(1)"
+  complexity: 200
+  hint: |
+    Unknown filters are silently ignored in Liquid — the input passes
+    through unchanged. The security property is that 'eval' is NOT
+    executed: the output is the literal string "exit(1)", not the
+    result of evaluating it.
+  features: []
+
+- name: security_unknown_send_filter_not_executed
+  template: "{{ 'exit' | send: 1 }}"
+  expected: "exit"
+  complexity: 200
+  hint: |
+    'send' is not a Liquid filter. The input passes through unchanged.
+    The string "exit" is NOT executed as a command.
+  features: []
+
+# ============================================================================
+# String property access — no dangerous methods exposed
+# ============================================================================
+- name: security_string_no_class_property
+  template: "{{ x.class }}"
+  environment:
+    x: hello
+  expected: ""
+  complexity: 200
+  hint: |
+    Property access on strings: .class returns nil (empty output).
+    Strings in Liquid don't expose internal type system methods.
+  features: []
+
+- name: security_string_no_inspect_property
+  template: "{{ x.inspect }}"
+  environment:
+    x: hello
+  expected: ""
+  complexity: 200
+  hint: |
+    .inspect is not a Liquid property. Returns nil (empty output).
+  features: []
+
+# ============================================================================
+# Integer property access — no dangerous methods
+# ============================================================================
+- name: security_integer_no_class_property
+  template: "{{ x.class }}"
+  environment:
+    x: 42
+  expected: ""
+  complexity: 200
+  hint: |
+    Integers don't expose .class. No type system leakage.
+  features: []
+
+- name: security_integer_no_times_method
+  template: "{{ x.times }}"
+  expected: ""
+  environment:
+    x: 5
+  complexity: 200
+  hint: |
+    Integers don't expose .times. Liquid is not Ruby — you can't
+    iterate with 5.times. Use {% for i in (1..5) %} instead.
+  features: []
+
+# ============================================================================
+# No access to internal context or registers
+# ============================================================================
+- name: security_no_context_access
+  template: "{{ context }}"
+  expected: ""
+  complexity: 200
+  hint: |
+    'context' is not a variable available to templates. The internal
+    rendering context should not be accessible from user templates.
+  features: []
+
+- name: security_no_registers_access
+  template: "{{ registers }}"
+  expected: ""
+  complexity: 200
+  hint: |
+    'registers' is an internal mechanism for passing data between tags.
+    It should not be accessible as a template variable.
+  features: []

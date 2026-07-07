@@ -37,6 +37,22 @@ module Liquid
       # Utilities for wrapping/unwrapping drops for JSON-RPC transport
       module DropProxy
         RPC_DROP_KEY = "_rpc_drop"
+        RUBY_TYPE_KEY = "_ruby_type"
+        INSTANTIATE_KEY = "_instantiate"
+
+        # Map standard drop Ruby classes to portable names and param extractors
+        STANDARD_DROP_CLASSES = {
+          "BooleanDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+          "NumberDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+          "StringDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+          "MethodDrop" => proc { |_o| {} },
+          "IndexDrop" => proc { |_o| {} },
+          "SequenceDrop" => proc { |_o| {} },
+          "NilDrop" => proc { |_o| {} },
+          "OpaqueDrop" => proc { |_o| {} },
+          "ErrorDrop" => proc { |_o| {} },
+          "NestedDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
+        }.freeze
 
         class << self
           # Wrap an object for JSON transport
@@ -57,42 +73,89 @@ module Liquid
               else
                 obj
               end
+            when Time
+              # Time is a valid Liquid value but can't be JSON-encoded.
+              # Send as ISO 8601 string — the date filter can parse it.
+              obj.iso8601
+            when Date, DateTime
+              obj.iso8601
             when Symbol
-              obj.to_s
+              # Symbols can't be faithfully represented in JSON.
+              # Send a _ruby_type marker so the server can optionally
+              # reconstruct the Symbol. The inspect field gives the
+              # Ruby representation for {{ v }} output.
+              { RUBY_TYPE_KEY => "Symbol", "value" => obj.to_s, "inspect" => obj.inspect }
             when String
               # Ensure valid UTF-8 for JSON encoding
               sanitize_string(obj)
             when Hash
-              wrapped = {}
-              seen[obj] = wrapped
-              obj.each do |k, v|
-                # Sanitize keys for JSON (symbols -> strings, binary -> utf8)
-                key = case k
-                      when Symbol then k.to_s
-                      when String then sanitize_string(k)
-                      else k.to_s
-                      end
-                wrapped[key] = wrap(v, registry, seen)
+              if obj.keys.any? { |k| !k.is_a?(String) }
+                # Hash with non-string keys (Symbol, Integer, etc.) —
+                # can't be faithfully represented in JSON. Send a _ruby_type
+                # marker with the inspect string (for {{ v }} output) and a
+                # JSON-safe version (for hash access like {{ v.foo }}).
+                json_safe = {}
+                obj.each do |k, v|
+                  json_safe[k.to_s] = wrap(v, registry, seen)
+                end
+                { RUBY_TYPE_KEY => "Hash", "inspect" => obj.inspect, "data" => json_safe }
+              else
+                # String-keyed hash — normal JSON transport
+                wrapped = {}
+                seen[obj] = wrapped
+                obj.each do |k, v|
+                  wrapped[k] = wrap(v, registry, seen)
+                end
+                wrapped
               end
-              wrapped
             when Array
               wrapped = []
               seen[obj] = wrapped
               obj.each { |v| wrapped << wrap(v, registry, seen) }
-              wrapped
             when Range
-              # Convert ranges to array for JSON
-              obj.to_a
+              # Ranges can't be faithfully represented in JSON.
+              # Send a _ruby_type marker so the server can reconstruct
+              # the Range for comparisons like {% if (1..5) == expect %}.
+              { RUBY_TYPE_KEY => "Range",
+                "begin" => obj.begin,
+                "end" => obj.end,
+                "exclude_end" => obj.exclude_end?,
+                "inspect" => obj.inspect }
+            when Class
+              # Class objects (e.g. Liquid::Drop class itself) — send as
+              # _ruby_type marker. The server can look up the class by name
+              # to reproduce class-specific behavior (e.g. "cannot be printed").
+              { RUBY_TYPE_KEY => "Class", "name" => obj.name, "inspect" => obj.inspect }
             else
-              # Check if it's a drop or liquid-compatible object
-              if drop_like?(obj)
+              # Check if it's a standard drop — send as _instantiate marker
+              # so the server can create its own boxed object (no RPC needed)
+              portable_name = standard_drop_name(obj)
+              if portable_name
+                params = STANDARD_DROP_CLASSES[portable_name].call(obj)
+                { INSTANTIATE_KEY => portable_name, "params" => params }
+              elsif drop_like?(obj)
+                # Non-standard drop — needs RPC callbacks
                 drop_id = registry.register(obj)
                 { RPC_DROP_KEY => drop_id, "type" => obj.class.name }
               else
-                # Try to convert to something JSON-safe
-                obj.respond_to?(:to_h) ? wrap(obj.to_h, registry, seen) : obj.to_s
+                raise TypeError, "DropProxy.wrap: cannot transport #{obj.class} " \
+                  "(value: #{obj.inspect[0, 100]}). " \
+                  "Add handling for this type or add it to missing_features."
               end
             end
+          end
+
+          # Check if obj is a standard drop and return its portable name
+          def standard_drop_name(obj)
+            STANDARD_DROP_CLASSES.each_key do |name|
+              cls = begin
+                Object.const_get("Standard#{name}", false)
+              rescue NameError
+                nil
+              end
+              return name if cls&.=== obj
+            end
+            nil
           end
 
           # Check if an object needs RPC callbacks (is a drop)

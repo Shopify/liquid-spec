@@ -105,43 +105,62 @@ The spec-quality portion currently enforces:
   ruby -Ilib scripts/generate_spec_hint_baseline.rb
   ```
 
-### `verify_*` scripts
+### `rake check` — spec verifiers
 
-`scripts/` contains standalone lint/audit scripts named `verify_*.rb` that check
-cross-cutting spec invariants the quality-gate test doesn't cover.
-
-**Push gate** (mechanical, must be green before pushing):
-
-```bash
-rake check
-```
-
-For targeted debugging, the scripts are:
+`rake check` runs all verifiers in `scripts/verifiers/` in-process. Each
+verifier is a standalone Ruby script that prints findings (never modifies
+files) and returns 0 on success or non-zero on violations. Verifiers marked
+`# advisory: true` in their header are non-blocking — they report known debt
+but don't fail the overall check.
 
 ```bash
-ruby -Ilib scripts/verify_ruby_type_tags.rb       # Ruby-content specs carry a ruby feature tag + complexity > 100
-ruby -Ilib scripts/verify_lax_mode_declared.rb    # lax-dependent specs declare error_mode: lax (auto-tags lax_parsing)
+rake check          # run all verifiers
 ```
 
-**Semantic audit** (slower; runs specs against reference liquid in both modes;
-report known debt, don't block push):
+You can also run individual verifiers directly:
 
 ```bash
-ruby -Ilib scripts/verify_lax_placement.rb        # lax-only specs should live in the liquid_ruby_lax suite
+ruby -Ilib scripts/verifiers/ruby_type_tags.rb      # Ruby-content + instantiate: drops carry a ruby feature tag + complexity > 100
+ruby -Ilib scripts/verifiers/lax_mode_declared.rb   # lax-dependent specs declare error_mode: lax (auto-tags lax_parsing)
+ruby -Ilib scripts/verifiers/spec_schema.rb         # spec YAML structure: valid, required fields, known features, complexity range
+ruby -Ilib scripts/verifiers/lax_placement.rb       # advisory: lax-only specs should live in the liquid_ruby_lax suite
 ```
+
+**Blocking verifiers** (must be green before pushing):
+- `ruby_type_tags` — specs with Ruby-specific content (Hash#inspect, non-string
+  keys, `instantiate:` drops) must declare a ruby feature tag and sit above
+  complexity 100.
+- `lax_mode_declared` — specs that need lax mode must declare `error_mode: lax`
+  (the gem auto-tags `lax_parsing`, so lax-opt-out adapters skip it).
+- `spec_schema` — every spec YAML file must be well-formed: valid YAML, correct
+  top-level structure, required fields (name, template, expected or errors),
+  complexity in 1..1000, features from the known set, valid error_mode.
+- `minimum_complexity` — specs with advanced features must sit above the
+  beginner ramp: Ruby content (`ruby_types`/`ruby_drops`/`binary_data`) and
+`instantiate:` drops ≥ 100; `drops` ≥ 200; `template_factory` and
+Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict2`
+≥ 100.
+
+**Advisory verifiers** (report known debt, don't block push):
+- `lax_placement` — lax-only specs belong in `specs/liquid_ruby_lax/`, not
+  `specs/liquid_ruby/`. Reports misplaced ones; move them with
+  `scripts/move_spec.rb`.
+
 Error-mode policy these enforce:
 - A spec that needs lax mode must declare `error_mode: lax` (the gem auto-tags
-  it `lax_parsing`, so lax-opt-out adapters skip it). `verify_lax_mode_declared`
+  it `lax_parsing`, so lax-opt-out adapters skip it). `lax_mode_declared`
   catches any that forgot.
 - Lax-only specs belong in `specs/liquid_ruby_lax/`, not `specs/liquid_ruby/`.
-  `verify_lax_placement` reports misplaced ones; move them with `scripts/move_spec.rb`.
+  `lax_placement` reports misplaced ones; move them with `scripts/move_spec.rb`.
 - Specs exercising a lax-vs-strict2 difference that matters declare
   `error_mode: strict2` (auto-tagged `strict2_parsing`).
 
-When you introduce a new cross-cutting rule, add a `verify_*.rb` script for it
-rather than a one-off check, so the rule stays enforced. Keep each script
-self-contained, print `OK: ...` on success, and exit non-zero with a per-spec
-offender list on failure.
+When you introduce a new cross-cutting rule, add a verifier script in
+`scripts/verifiers/` rather than a one-off check, so the rule stays enforced.
+Each verifier defines a module with a `run` class method returning 0 or
+non-zero, and ends with `exit ModuleName.run if $PROGRAM_NAME == __FILE__` so
+it can run standalone. Mark non-blocking checks with `# advisory: true` in the
+header.
 
 ### Dumb Adapter Ramp Audits
 
@@ -574,7 +593,7 @@ end
 Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing. Use `liquid-spec features` (backed by `lib/liquid/spec/cli/features.rb`) as the source of truth for the current feature inventory and recommendations.
 
 **Common features to list in `missing_features`:**
-- `:runtime_drops` - Adapter cannot support bidirectional drop callbacks yet
+- `:drops` - Adapter cannot support the standard test drop library yet (see docs/test_drops.md)
 - `:inline_errors` - Adapter cannot render errors inline yet
 - `:lax_parsing` - Adapter does not support `error_mode: :lax`
 - `:strict_parsing` / `:strict2_parsing` - Adapter does not support strict / strict2 parsing modes
@@ -588,8 +607,9 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 - `:shopify_objects` - Shopify-specific objects (section, block)
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
 - `:shopify_includes`, `:shopify_blank`, `:shopify_error_handling`, `:shopify_error_format`, `:shopify_string_access` - Shopify platform/theme behavior beyond portable Liquid
+- `:shopify_resource_limits` - Shopify render score tracking and cumulative limit enforcement across partials. Implementation plumbing, not Liquid semantics; recursion/stack-depth specs are core.
 
-**JSON-RPC adapters** that can't support bidirectional communication for runtime drops should set `config.missing_features = [:runtime_drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
+**JSON-RPC adapters** that can't support the standard test drops yet should set `config.missing_features = [:drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
 
 
 ### JSON-RPC Adapter Setup Notes
@@ -601,8 +621,8 @@ JSON-RPC is the main path for non-Ruby Liquid implementations. Keep it especiall
 - The server implements `initialize`, `compile`, `render`, and `quit` over newline-delimited JSON-RPC on stdin/stdout.
 - Server logs must go to stderr, never stdout.
 - The Ruby adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
-- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
-- Remove `:runtime_drops` only after implementing bidirectional callbacks: `drop_get`, `drop_call`, and `drop_iterate`.
+- Minimal JSON-RPC implementations should usually skip Ruby/transport-specific specs: `:drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, `:template_factory`, plus Shopify-specific features.
+- Implement the standard test drops (see docs/test_drops.md) to enable `:drops`. Standard drops use `_instantiate` markers — no RPC callbacks needed.
 - Prefer `result.error` for Liquid parse/render errors; legacy JSON-RPC errors `-32000`/`-32001` are accepted for compatibility.
 - Render receives `options.strict_errors`; when it is false, render errors should become inline Liquid error output.
 

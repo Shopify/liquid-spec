@@ -610,3 +610,4 @@ end
 require_relative "../test_drops"
 require_relative "../test_filters"
 require_relative "security_objects"
+require_relative "standard_drops"

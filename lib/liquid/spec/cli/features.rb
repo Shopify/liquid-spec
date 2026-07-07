@@ -8,14 +8,9 @@ module Liquid
       module Features
         FEATURE_DOCS = {
           core: {
-            description: "Full Liquid implementation with runtime drop support",
+            description: "Full Liquid implementation with drop support",
             recommendation: :required,
-            note: "Essential for any Liquid implementation. Includes runtime_drops and inline_errors.",
-          },
-          runtime_drops: {
-            description: "Supports bidirectional communication for drop callbacks",
-            recommendation: :required,
-            note: "Needed for dynamic object property access. Included with :core.",
+            note: "Essential for any Liquid implementation. Includes drops and inline_errors.",
           },
           inline_errors: {
             description: "Supports render_errors mode (errors rendered inline instead of raised)",
@@ -111,6 +106,21 @@ module Liquid
             description: "strict2 surfaces inline errors even when the block body is blank",
             recommendation: :unnecessary,
             note: "Aspirational 'NEW STRICT2 CONTRACT' not yet implemented by liquid-ruby 5.13 (it still suppresses blank-body errors). Opt out until your implementation deliberately adopts this contract.",
+          },
+          drops: {
+            description: "Standard test drop library (BooleanDrop, MethodDrop, SequenceDrop, etc.)",
+            recommendation: :optional,
+            note: "Drops make Liquid dynamic — without them, templates can only render static data. See docs/test_drops.md.",
+          },
+          randomness: {
+            description: "Specs using generated random values for increased coverage",
+            recommendation: :optional,
+            note: "Values are generated before sending to the adapter. On by default; opt out for deterministic runs.",
+          },
+          shopify_resource_limits: {
+            description: "Shopify resource limit enforcement (render score tracking, cumulative limits across partials)",
+            recommendation: :optional,
+            note: "Score bookkeeping and limit enforcement is implementation plumbing, not Liquid semantics. Recursion depth / stack overflow specs are core; score-counting specs are opt-out.",
           },
         }.freeze
 

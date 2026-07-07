@@ -302,21 +302,23 @@ module Liquid
             # Opt out of specs your implementation doesn't support yet.
             # List features here that should be SKIPPED (the adapter is "missing" them).
             #
-            # For a JSON-RPC server that doesn't implement bidirectional drop
-            # callbacks (drop_get/drop_call/drop_iterate), opt out of :runtime_drops.
-            # Once you add drop callbacks, remove it from this list.
+            # For a JSON-RPC server that doesn't implement the standard test
+            # drops yet (BooleanDrop, MethodDrop, SequenceDrop, etc.), opt out
+            # of :drops. See docs/test_drops.md for the standard library.
             #
             # Common opt-out features:
-            #   :runtime_drops  - drop_get/drop_call/drop_iterate callbacks
-            #   :lax_parsing    - error_mode: :lax (lenient parsing)
-            #   :ruby_types             - Ruby-specific types (symbols, ranges, etc.)
-            #   :ruby_drops             - Ruby-specific object/drop fixtures
-            #   :drop_class_output      - Ruby-specific Drop class-name string output
-            #   :self_environment_shadowing - optional `self` lookup compatibility behavior
-            #   :binary_data            - Raw bytes that JSON cannot transport safely
-            #   :shopify_*              - Shopify platform/theme extensions
+            #   :drops                       - Standard test drop library (see docs/test_drops.md)
+            #   :randomness                  - Specs using generated random values
+            #   :lax_parsing                 - error_mode: :lax (lenient parsing)
+            #   :ruby_types                  - Ruby-specific types (symbols, ranges, etc.)
+            #   :ruby_drops                  - Ruby-specific drop objects (security tests, etc.)
+            #   :drop_class_output           - Ruby-specific Drop class-name string output
+            #   :self_environment_shadowing  - optional `self` lookup compatibility behavior
+            #   :binary_data                 - Raw bytes that JSON cannot transport safely
+            #   :shopify_*                   - Shopify platform/theme extensions
             config.missing_features = [
-              :runtime_drops,
+              :drops,
+              :randomness,
               :ruby_types,
               :ruby_drops,
               :drop_class_output,
@@ -366,6 +368,14 @@ module Liquid
             is a curriculum for observable behavior, not a mandated internal architecture:
             tree-walking, bytecode, compiled templates, strict-first, and compatibility-first
             implementations can all use the same ramp.
+
+            **Your Liquid library is standalone.** The adapter file(s) in this directory are
+            test harnesses that run liquid-spec against your library — they are NOT part of your
+            library and have no intrinsic value to it. Your library's public API, architecture,
+            and distribution are entirely your own. The Ruby adapter calls your code directly;
+            the JSON-RPC adapter talks to your engine over stdin/stdout. Both are disposable
+            shims that exist only so liquid-spec can exercise your implementation. Build your
+            library as a library; wire up the adapter afterward.
 
             #{json_rpc ? non_ruby_notice : ""}
             ## Which adapter file?
@@ -630,6 +640,15 @@ module Liquid
         def self.non_ruby_notice
           <<~MARKDOWN
             ## Not Using Ruby?
+
+            **You are building a standalone Liquid library in your language.**
+            The JSON-RPC adapter generated here is purely a harness for running the
+            liquid-spec test suite against your library — it is NOT part of your library
+            and has no intrinsic value to it. Your library's public API, architecture,
+            and distribution are entirely your own; the adapter is a thin test shim that
+            translates liquid-spec's Ruby protocol calls into JSON-RPC requests your
+            server can answer. Once your library passes the specs, the adapter is
+            disposable.
 
             **This adapter uses JSON-RPC** to communicate with your Liquid implementation over stdin/stdout.
             You can implement your Liquid engine in **any language** (Rust, Go, Python, Node.js, etc.).

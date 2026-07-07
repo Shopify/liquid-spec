@@ -196,13 +196,14 @@
     by a blank token, then another filter. The lexer interprets '||' as '|'
     followed by '|upcase'. This quirky behavior is specific to lax mode.
 - name: very_long_string_filter
+  features: [ruby_drops]
   template: "{{ long_string | size }}"
   environment:
     long_string:
       instantiate:LongString:
         length: 100000
   expected: '100000'
-  complexity: 100
+  complexity: 101
   error_mode: lax
   hint: |
     Filters should handle very long strings without crashing. The size filter

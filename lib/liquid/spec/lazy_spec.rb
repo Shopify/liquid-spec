@@ -28,7 +28,7 @@ module Liquid
       VALID_ERROR_KEYS = ["parse_error", "render_error", "output"].freeze
 
       attr_reader :name, :template, :template_name, :expected, :expected_pattern, :errors, :hint, :doc, :complexity
-      attr_reader :error_mode, :render_errors, :features
+      attr_reader :error_mode, :error_modes, :render_errors, :features
       attr_reader :source_file, :line_number
       attr_reader :raw_environment, :raw_filesystem, :raw_template_factory, :raw_resource_limits
 
@@ -63,7 +63,8 @@ module Liquid
         @hint = hint
         @doc = doc
         @complexity = complexity
-        @error_mode = error_mode || source_required_options[:error_mode]
+        @error_modes = Array(error_mode || source_required_options[:error_mode])
+        @error_mode = @error_modes.first
         @render_errors = render_errors
         @features = Array(features).map(&:to_sym)
         @source_file = source_file
@@ -74,14 +75,17 @@ module Liquid
         @raw_resource_limits = raw_resource_limits || {}
         @source_hint = source_hint
         @source_required_options = source_required_options || {}
-
-        # Add parsing mode requirement based on error_mode
-        if @error_mode == :lax && !@features.include?(:lax_parsing)
-          @features << :lax_parsing
-        elsif @error_mode == :strict && !@features.include?(:strict_parsing)
-          @features << :strict_parsing
-        elsif @error_mode == :strict2 && !@features.include?(:strict2_parsing)
-          @features << :strict2_parsing
+        # Add parsing mode requirement for the primary error_mode (first
+        # in the list). Multi-mode specs declare all compatible modes,
+        # but only the primary mode is used for testing — adapters only
+        # need to support the primary mode to run the spec.
+        case @error_mode
+        when :lax
+          @features << :lax_parsing unless @features.include?(:lax_parsing)
+        when :strict
+          @features << :strict_parsing unless @features.include?(:strict_parsing)
+        when :strict2
+          @features << :strict2_parsing unless @features.include?(:strict2_parsing)
         end
       end
 
@@ -313,18 +317,23 @@ module Liquid
           obj.each { |v| copy << deep_instantiate(v, seen) }
           copy
         when String
-          # Handle string format: "instantiate:ClassName.new(arg)"
+          # Handle string formats:
+          #   "instantiate:ClassName"           → no args
+          #   "instantiate:ClassName.new(arg)"  → single arg
           if obj.start_with?("instantiate:")
             if obj =~ /\Ainstantiate:(\w+)\.new\((.+)\)\z/
               class_name = ::Regexp.last_match(1)
               arg_str = ::Regexp.last_match(2)
-              # Parse the argument (handles integers, strings, etc.)
               arg = begin
                 Integer(arg_str)
               rescue ArgumentError
-                arg_str # Keep as string if not an integer
+                arg_str
               end
               instance = ClassRegistry.instantiate(class_name, arg)
+              return instance if instance
+            elsif obj =~ /\Ainstantiate:(\w+)\z/
+              class_name = ::Regexp.last_match(1)
+              instance = ClassRegistry.instantiate(class_name, {})
               return instance if instance
             end
           end

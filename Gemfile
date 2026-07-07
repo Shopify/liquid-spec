@@ -9,15 +9,13 @@ local_liquid_path = File.expand_path("../liquid", __dir__)
 if File.exist?(local_liquid_path)
   gem "liquid", path: local_liquid_path
 else
-  gem "liquid", github: "Shopify/liquid", branch: "main"
+  gem "liquid", github: "Shopify/liquid", tag: "v5.13.0"
 end
 
-# Use local liquid-c gem if available, otherwise use main from GitHub
+# liquid-c is an optional C extension for performance. Only use if locally available.
 local_liquid_c_path = File.expand_path("../liquid-c", __dir__)
 if File.exist?(local_liquid_c_path)
   gem "liquid-c", path: local_liquid_c_path, require: false
-else
-  gem "liquid-c", github: "Shopify/liquid-c", branch: "main", require: false
 end
 
 # Core test dependencies

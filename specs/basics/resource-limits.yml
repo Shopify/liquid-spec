@@ -5,7 +5,7 @@ _metadata:
     preventing unbounded work via many small partials.
   complexity: 500
   features:
-    - core
+    - shopify_resource_limits
 
 specs:
 - name: cumulative_render_score_across_partials

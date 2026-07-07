@@ -1,0 +1,460 @@
+---
+_metadata:
+  hint: |
+    These specs test Liquid drops — dynamic objects that run code on access.
+    Without drops, Liquid is static (only literal text, env variables, filters).
+    Drops make it dynamic: computed properties, lazy loading, enumeration,
+    security boundaries. See docs/test_drops.md for the full standard library.
+
+    To pass these specs, implement the standard test drops natively:
+    BooleanDrop, NumberDrop, StringDrop, MethodDrop, IndexDrop,
+    SequenceDrop, NilDrop, OpaqueDrop, ErrorDrop.
+
+    Each drop has deterministic, documented behavior — no RPC callbacks needed.
+  required_options: {}
+specs:
+# ============================================================================
+# Value drops — test to_liquid_value materialization
+# ============================================================================
+- name: drop_boolean_true_renders
+  template: "{{ flag }}"
+  environment:
+    flag:
+      instantiate:BooleanDrop:
+        value: true
+  expected: "true"
+  complexity: 200
+  hint: |
+    BooleanDrop wraps a boolean. to_liquid_value returns it.
+    {{ flag }} materializes via to_liquid_value, then to_s → "true".
+  features: [drops]
+
+- name: drop_boolean_false_renders
+  template: "{{ flag }}"
+  environment:
+    flag:
+      instantiate:BooleanDrop:
+        value: false
+  expected: "false"
+  complexity: 200
+  hint: |
+    BooleanDrop with value: false. to_liquid_value returns false.
+    to_s → "false".
+  features: [drops]
+
+- name: drop_boolean_true_is_truthy
+  template: "{% if flag %}yes{% else %}no{% endif %}"
+  environment:
+    flag:
+      instantiate:BooleanDrop:
+        value: true
+  expected: "yes"
+  complexity: 200
+  hint: |
+    BooleanDrop with value: true. to_liquid_value returns true.
+    {% if flag %} sees truthy.
+  features: [drops]
+
+- name: drop_boolean_false_is_falsy
+  template: "{% if flag %}yes{% else %}no{% endif %}"
+  environment:
+    flag:
+      instantiate:BooleanDrop:
+        value: false
+  expected: "no"
+  complexity: 200
+  hint: |
+    BooleanDrop with value: false. to_liquid_value returns false.
+    {% if flag %} sees falsy — the whole point of to_liquid_value is
+    that drops can control their truthiness.
+  features: [drops]
+
+- name: drop_number_renders
+  template: "{{ count }}"
+  environment:
+    count:
+      instantiate:NumberDrop:
+        value: 42
+  expected: "42"
+  complexity: 200
+  hint: |
+    NumberDrop wraps an integer. to_liquid_value returns it.
+    {{ count }} → 42 → "42".
+  features: [drops]
+
+- name: drop_number_works_with_filters
+  template: "{{ count | plus: 1 }}"
+  environment:
+    count:
+      instantiate:NumberDrop:
+        value: 41
+  expected: "42"
+  complexity: 210
+  hint: |
+    NumberDrop needs to work with numeric filters. Liquid's Utils.to_number
+    checks if the object responds to to_number and calls it. So NumberDrop
+    must implement to_number (returning the integer) in addition to
+    to_liquid_value (for truthiness). Filters like plus call to_number,
+    not to_liquid_value directly.
+  features: [drops]
+
+- name: drop_number_zero_is_truthy
+  template: "{% if count %}yes{% else %}no{% endif %}"
+  environment:
+    count:
+      instantiate:NumberDrop:
+        value: 0
+  expected: "yes"
+  complexity: 210
+  hint: |
+    QUIRK: In Liquid, 0 is truthy (unlike many languages).
+    NumberDrop with value: 0 materializes to 0, which is truthy.
+  features: [drops]
+
+- name: drop_string_renders
+  template: "{{ name }}"
+  environment:
+    name:
+      instantiate:StringDrop:
+        value: hello
+  expected: "hello"
+  complexity: 200
+  hint: |
+    StringDrop wraps a string. to_liquid_value returns it.
+    {{ name }} → "hello".
+  features: [drops]
+
+- name: drop_string_works_with_filters
+  template: "{{ name | upcase }}"
+  environment:
+    name:
+      instantiate:StringDrop:
+        value: hello
+  expected: "HELLO"
+  complexity: 210
+  hint: |
+    StringDrop materializes to a string via to_liquid_value.
+    Filters like upcase see the raw string.
+  features: [drops]
+
+# ============================================================================
+# MethodDrop — property access with deterministic transforms
+# ============================================================================
+- name: drop_method_echo
+  template: "{{ drop.echo_42 }}"
+  environment:
+    drop: "instantiate:MethodDrop"
+  expected: "42"
+  complexity: 200
+  hint: |
+    MethodDrop parses property names as op_N.
+    echo_N returns N unchanged. echo_42 → "42".
+  features: [drops]
+
+- name: drop_method_square
+  template: "{{ drop.square_5 }}"
+  environment:
+    drop: "instantiate:MethodDrop"
+  expected: "25"
+  complexity: 200
+  hint: |
+    MethodDrop: square_N returns N*N. square_5 → 25.
+  features: [drops]
+
+- name: drop_method_double
+  template: "{{ drop.double_7 }}"
+  environment:
+    drop: "instantiate:MethodDrop"
+  expected: "14"
+  complexity: 200
+  hint: |
+    MethodDrop: double_N returns N*2. double_7 → 14.
+  features: [drops]
+
+- name: drop_method_square_random
+  template: "{{ drop.square_#{n} }}"
+  expected: "#{n * n}"
+  generate:
+    n:
+      type: numeric
+      min: 1
+      max: 100
+  environment:
+    drop: "instantiate:MethodDrop"
+  complexity: 220
+  hint: |
+    MethodDrop: square_N returns N*N. The value of N is randomly
+    generated (feature: randomness). The spec system substitutes
+    the concrete value before sending to the adapter.
+  features: [drops, randomness]
+
+- name: drop_method_echo_random
+  template: "{{ drop.echo_#{n} }}"
+  expected: "#{n}"
+  generate:
+    n:
+      type: numeric
+      min: 1
+      max: 1000
+  environment:
+    drop: "instantiate:MethodDrop"
+  complexity: 220
+  hint: |
+    MethodDrop: echo_N returns N. Random N for coverage.
+  features: [drops, randomness]
+
+# ============================================================================
+# IndexDrop — bracket access
+# ============================================================================
+- name: drop_index_integer
+  template: "{{ drop[0] }}"
+  environment:
+    drop: "instantiate:IndexDrop"
+  expected: "zero"
+  complexity: 200
+  hint: |
+    IndexDrop: drop[0] → "zero" (int index → number word).
+  features: [drops]
+
+- name: drop_index_integer_one
+  template: "{{ drop[1] }}"
+  environment:
+    drop: "instantiate:IndexDrop"
+  expected: "one"
+  complexity: 200
+  hint: |
+    IndexDrop: drop[1] → "one".
+  features: [drops]
+
+- name: drop_index_string
+  template: "{{ drop['foo'] }}"
+  environment:
+    drop: "instantiate:IndexDrop"
+  expected: "foo"
+  complexity: 200
+  hint: |
+    IndexDrop: drop["foo"] → "foo" (string index → identity).
+  features: [drops]
+
+# ============================================================================
+# SequenceDrop — enumerable for for loops
+# ============================================================================
+- name: drop_sequence_iterate
+  template: "{% for item in items %}{{ item }} {% endfor %}"
+  environment:
+    items: "instantiate:SequenceDrop"
+  expected: "first second third "
+  complexity: 200
+  hint: |
+    SequenceDrop is enumerable. {% for %} calls each, yielding
+    "first", "second", "third".
+  features: [drops]
+
+- name: drop_sequence_size
+  template: "{{ items.size }}"
+  environment:
+    items: "instantiate:SequenceDrop"
+  expected: "3"
+  complexity: 200
+  hint: |
+    SequenceDrop.size → 3 (three items in the sequence).
+  features: [drops]
+
+- name: drop_sequence_first
+  template: "{{ items.first }}"
+  environment:
+    items: "instantiate:SequenceDrop"
+  expected: "first"
+  complexity: 200
+  hint: |
+    SequenceDrop.first → "first".
+  features: [drops]
+
+- name: drop_sequence_last
+  template: "{{ items.last }}"
+  environment:
+    items: "instantiate:SequenceDrop"
+  expected: "third"
+  complexity: 200
+  hint: |
+    SequenceDrop.last → "third".
+  features: [drops]
+
+- name: drop_sequence_forloop_index
+  template: "{% for item in items %}{{ forloop.index }}:{{ item }} {% endfor %}"
+  environment:
+    items: "instantiate:SequenceDrop"
+  expected: "1:first 2:second 3:third "
+  complexity: 210
+  hint: |
+    SequenceDrop in a for loop. forloop.index gives 1-based position.
+  features: [drops]
+
+# ============================================================================
+# NilDrop — nil materialization
+# ============================================================================
+- name: drop_nil_renders_empty
+  template: "[{{ drop }}]"
+  environment:
+    drop: "instantiate:NilDrop"
+  expected: "[]"
+  complexity: 200
+  hint: |
+    NilDrop.to_liquid returns nil. nil renders as empty string.
+    So [{{ drop }}] → "[]".
+  features: [drops]
+
+- name: drop_nil_is_falsy
+  template: "{% if drop %}yes{% else %}no{% endif %}"
+  environment:
+    drop: "instantiate:NilDrop"
+  expected: "no"
+  complexity: 200
+  hint: |
+    NilDrop materializes to nil, which is falsy in Liquid.
+  features: [drops]
+
+# ============================================================================
+# OpaqueDrop — truthy without to_liquid_value
+# ============================================================================
+- name: drop_opaque_renders
+  template: "{{ drop }}"
+  environment:
+    drop: "instantiate:OpaqueDrop"
+  expected: "opaque"
+  complexity: 200
+  hint: |
+    OpaqueDrop has no to_liquid_value. It renders via to_s → "opaque".
+    Drops without to_liquid_value are the liquid-ruby default behavior.
+  features: [drops]
+
+- name: drop_opaque_is_truthy
+  template: "{% if drop %}yes{% else %}no{% endif %}"
+  environment:
+    drop: "instantiate:OpaqueDrop"
+  expected: "yes"
+  complexity: 200
+  hint: |
+    OpaqueDrop has no to_liquid_value. Drops are truthy by default
+    (they don't implement falsiness). This is why to_liquid_value exists —
+    it lets drops opt into falsiness.
+  features: [drops]
+
+# ============================================================================
+# ErrorDrop — error on access
+# ============================================================================
+- name: drop_error_raises
+  template: "{{ drop.foo }}"
+  environment:
+    drop: "instantiate:ErrorDrop"
+  errors:
+    render_error:
+      - ErrorDrop
+  complexity: 200
+  hint: |
+    ErrorDrop raises on any property access. The error should propagate
+    as a render error.
+  features: [drops]
+
+# ============================================================================
+# Drop truthiness comparison with empty/blank
+# ============================================================================
+- name: drop_boolean_false_not_empty
+  template: "{% if flag == empty %}empty{% else %}not{% endif %}"
+  environment:
+    flag:
+      instantiate:BooleanDrop:
+        value: false
+  expected: "not"
+  complexity: 210
+  hint: |
+    BooleanDrop(false) is falsy but NOT empty. empty checks for
+    empty strings, arrays, hashes — not false. false is a boolean,
+    not an empty container.
+  features: [drops]
+
+- name: drop_opaque_not_empty
+  template: "{% if drop == empty %}empty{% else %}not{% endif %}"
+  environment:
+    drop: "instantiate:OpaqueDrop"
+  expected: "not"
+  complexity: 210
+  hint: |
+    OpaqueDrop is not empty — it's a drop object, not a container.
+  features: [drops]
+
+- name: drop_nil_is_falsy_but_not_empty
+  template: "{% if drop == empty %}empty{% else %}not{% endif %}"
+  environment:
+    drop: "instantiate:NilDrop"
+  expected: "not"
+  complexity: 210
+  hint: |
+    NilDrop materializes to nil. nil is falsy but nil == empty is false
+    in liquid-ruby (empty checks for "", [], {}, not nil).
+  features: [drops]
+
+- name: drop_nested_returns_self
+  template: "{{ drop.nested }}"
+  environment:
+    drop: "instantiate:NestedDrop"
+  expected: "3"
+  complexity: 220
+  hint: |
+    NestedDrop.nested returns self. The implementation must resolve
+    the returned drop again via to_liquid_value — rendering the same
+    value as {{ drop }}. This tests drop-to-drop resolution.
+  features: [drops]
+
+- name: drop_nested_chained_self
+  template: "{{ drop.nested.nested.nested }}"
+  environment:
+    drop: "instantiate:NestedDrop"
+  expected: "3"
+  complexity: 220
+  hint: |
+    Chaining .nested multiple times always returns self. Each access
+    returns a drop that must be resolved again. The value stays 3.
+  features: [drops]
+
+- name: drop_nested_square_returns_new_drop
+  template: "{{ drop.square }}"
+  environment:
+    drop:
+      instantiate:NestedDrop:
+        value: 3
+  expected: "9"
+  complexity: 220
+  hint: |
+    NestedDrop.square returns a NEW NestedDrop with value squared.
+    The implementation must resolve the returned drop via
+    to_liquid_value to get 9. This tests that drop property access
+    can return a different drop that gets independently resolved.
+  features: [drops]
+
+- name: drop_nested_square_chained
+  template: "{{ drop.square.square }}"
+  environment:
+    drop:
+      instantiate:NestedDrop:
+        value: 3
+  expected: "81"
+  complexity: 230
+  hint: |
+    Chaining .square twice: 3 → 9 → 81. Each .square returns a new
+    NestedDrop that must be resolved, then .square called again.
+  features: [drops]
+
+- name: drop_nested_mixed_chain
+  template: "{{ drop.nested.square.nested }}"
+  environment:
+    drop:
+      instantiate:NestedDrop:
+        value: 3
+  expected: "9"
+  complexity: 230
+  hint: |
+    Mixed chain: .nested (self, value=3) → .square (new drop, value=9)
+    → .nested (self, value=9). Tests that self-returning and
+    new-drop-returning accessors interleave correctly.
+  features: [drops]
