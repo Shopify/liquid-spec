@@ -600,6 +600,7 @@ specs:
       bar: baz
   render_errors: false
   complexity: 300
+  error_mode: strict
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L139
 - name: CaseTagUnitTest#test_case_when_with_invalid_expression_dbb047d3
@@ -711,6 +712,7 @@ specs:
       bar: baz
   render_errors: false
   complexity: 300
+  error_mode: strict
   expected: one
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/case_tag_unit_test.rb#L117
 - name: CaseTagUnitTest#test_case_with_trailing_element_1b3c77a9
@@ -1034,6 +1036,7 @@ specs:
     bar: foo
   render_errors: false
   complexity: 140
+  error_mode: strict
   expected: baz
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L300
 - name: ContextTest#test_access_variable_with_hash_notation_74ed5eac
@@ -1042,6 +1045,7 @@ specs:
     foo: baz
   render_errors: false
   complexity: 140
+  error_mode: strict
   expected: baz
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/context_test.rb#L299
 - name: ContextTest#test_array_notation_14fba9fe
@@ -8387,6 +8391,7 @@ specs:
     foo: bar
   render_errors: false
   complexity: 180
+  error_mode: strict
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L138
 - name: VariableTest#test_dynamic_find_var_with_drop_4ca2f954
@@ -8428,6 +8433,7 @@ specs:
       b: result
   render_errors: false
   complexity: 300
+  error_mode: strict
   expected: result
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L57
 - name: VariableTest#test_expression_with_whitespace_in_square_brackets_6f8ef4f8
