@@ -8715,6 +8715,7 @@ specs:
     foo: :bar
   render_errors: false
   complexity: 160
+  features: [ruby_types]
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L130
 - name: VariableTest#test_simple_variable_801ffb29

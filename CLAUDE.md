@@ -564,6 +564,7 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 - `:shopify_objects` - Shopify-specific objects (section, block)
 - `:shopify_filters` - Shopify-specific filters (asset_url, image_url)
 - `:shopify_includes`, `:shopify_blank`, `:shopify_error_handling`, `:shopify_error_format`, `:shopify_string_access` - Shopify platform/theme behavior beyond portable Liquid
+- `:shopify_resource_limits` - Shopify render score tracking and cumulative limit enforcement across partials. Implementation plumbing, not Liquid semantics; recursion/stack-depth specs are core.
 
 **JSON-RPC adapters** that can't support the standard test drops yet should set `config.missing_features = [:drops, :ruby_types, :ruby_drops, :binary_data]` (plus any Shopify capabilities they lack).
 

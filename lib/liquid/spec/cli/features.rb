@@ -107,6 +107,11 @@ module Liquid
             recommendation: :optional,
             note: "Values are generated before sending to the adapter. On by default; opt out for deterministic runs.",
           },
+          shopify_resource_limits: {
+            description: "Shopify resource limit enforcement (render score tracking, cumulative limits across partials)",
+            recommendation: :optional,
+            note: "Score bookkeeping and limit enforcement is implementation plumbing, not Liquid semantics. Recursion depth / stack overflow specs are core; score-counting specs are opt-out.",
+          },
         }.freeze
 
         RECOMMENDATION_LABELS = {

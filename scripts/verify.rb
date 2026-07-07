@@ -25,6 +25,7 @@ VERIFIER_MODULES = {
   "minimum_complexity"  => "MinimumComplexityVerifier",
   "ruby_type_tags"      => "RubyTypeTagVerifier",
   "spec_schema"         => "SpecSchemaVerifier",
+  "jsonrpc_portability"  => "JsonRpcPortabilityVerifier",
 }
 
 results = []

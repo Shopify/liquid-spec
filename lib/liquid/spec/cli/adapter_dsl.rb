@@ -66,9 +66,9 @@ module LiquidSpec
     shopify_filters: "Shopify-specific filters (asset_url, image_url, etc.)",
     shopify_error_handling: "Shopify-specific error handling and recovery behavior",
     drops: "Standard test drop library (BooleanDrop, MethodDrop, SequenceDrop, etc.)",
+    shopify_resource_limits: "Shopify resource limit enforcement (render score tracking, cumulative limits across partials)",
     randomness: "Specs using generated random values for increased coverage",
   }.freeze
-
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
     attr_reader :missing_features, :known_failures, :suites
