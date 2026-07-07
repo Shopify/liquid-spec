@@ -37,13 +37,14 @@ module Liquid
       # Utilities for wrapping/unwrapping drops for JSON-RPC transport
       module DropProxy
         RPC_DROP_KEY = "_rpc_drop"
+        RUBY_TYPE_KEY = "_ruby_type"
 
         class << self
           # Wrap an object for JSON transport
           # Drops become { "_rpc_drop": "id", "type": "ClassName" }
           # Primitives pass through unchanged
           # Hashes and arrays are recursively wrapped
-          def wrap(obj, registry, seen = {}.compare_by_identity)
+          def wrap(obj, registry, seen = {}.compare_by_identity, root: true)
             # Return placeholder for circular references to prevent JSON nesting errors
             return "[circular]" if seen.key?(obj)
 
@@ -59,40 +60,57 @@ module Liquid
               end
             when Symbol
               # Symbols can't be faithfully represented in JSON.
-              # Use inspect so :foo comes through as ":foo", not "foo".
-              # Specs with ruby_types are already filtered out when the
-              # adapter opts out, so if we reach here the server needs
-              # the Ruby inspect representation.
-              obj.inspect
+              # Send a _ruby_type marker so the server can optionally
+              # reconstruct the Symbol. The inspect field gives the
+              # Ruby representation for {{ v }} output.
+              { RUBY_TYPE_KEY => "Symbol", "value" => obj.to_s, "inspect" => obj.inspect }
             when String
               # Ensure valid UTF-8 for JSON encoding
               sanitize_string(obj)
             when Hash
-              # Symbol keys are converted to strings (they're variable names
-              # in the environment). But hashes with non-string, non-symbol
-              # keys (Integer, Float, etc.) can't be faithfully represented
-              # in JSON — inspect the entire hash so {1=>1} comes through
-              # as "{1 => 1}", not {"1": 1}.
-              if obj.keys.any? { |k| !k.is_a?(String) && !k.is_a?(Symbol) }
-                obj.inspect
-              else
+              if root
+                # Root hash = environment. Keys are variable names — convert
+                # symbols to strings (normal behavior for JSON transport).
                 wrapped = {}
                 seen[obj] = wrapped
                 obj.each do |k, v|
-                  # Convert keys to strings (symbols → strings for JSON)
                   key = k.is_a?(String) ? sanitize_string(k) : k.to_s
-                  wrapped[key] = wrap(v, registry, seen)
+                  wrapped[key] = wrap(v, registry, seen, root: false)
+                end
+                wrapped
+              elsif obj.keys.any? { |k| !k.is_a?(String) }
+                # Inner hash with non-string keys (Symbol, Integer, etc.) —
+                # can't be faithfully represented in JSON. Send a _ruby_type
+                # marker with the inspect string (for {{ v }} output) and a
+                # JSON-safe version (for hash access like {{ v.foo }}).
+                json_safe = {}
+                obj.each do |k, v|
+                  json_safe[k.to_s] = wrap(v, registry, seen, root: false)
+                end
+                { RUBY_TYPE_KEY => "Hash", "inspect" => obj.inspect, "data" => json_safe }
+              else
+                # Inner hash with string keys — normal JSON transport
+                wrapped = {}
+                seen[obj] = wrapped
+                obj.each do |k, v|
+                  wrapped[k] = wrap(v, registry, seen, root: false)
                 end
                 wrapped
               end
             when Array
               wrapped = []
               seen[obj] = wrapped
-              obj.each { |v| wrapped << wrap(v, registry, seen) }
+              obj.each { |v| wrapped << wrap(v, registry, seen, root: false) }
               wrapped
             when Range
-              # Convert ranges to array for JSON
-              obj.to_a
+              # Ranges can't be faithfully represented in JSON.
+              # Send a _ruby_type marker so the server can reconstruct
+              # the Range for comparisons like {% if (1..5) == expect %}.
+              { RUBY_TYPE_KEY => "Range",
+                "begin" => obj.begin,
+                "end" => obj.end,
+                "exclude_end" => obj.exclude_end?,
+                "inspect" => obj.inspect }
             else
               # Check if it's a drop or liquid-compatible object
               if drop_like?(obj)

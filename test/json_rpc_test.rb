@@ -135,10 +135,11 @@ class JsonRpcDropProxyTest < Minitest::Test
     assert_nil DropProxy.wrap(nil, @registry)
   end
 
-  def test_wrap_symbol_to_inspect_string
-    # Symbols are inspect'd so :foo comes through as ":foo", not "foo".
-    # This preserves Ruby-ness for JSON-RPC adapters that support ruby_types.
-    assert_equal ":test", DropProxy.wrap(:test, @registry)
+  def test_wrap_symbol_to_ruby_type_marker
+    # Symbols are sent as _ruby_type markers so the server can optionally
+    # reconstruct them. The inspect field gives the Ruby representation.
+    result = DropProxy.wrap(:test, @registry)
+    assert_equal({ "_ruby_type" => "Symbol", "value" => "test", "inspect" => ":test" }, result)
   end
 
   def test_wrap_hash
@@ -148,22 +149,32 @@ class JsonRpcDropProxyTest < Minitest::Test
     assert_equal({ "a" => 1, "b" => "hello" }, result)
   end
 
-  def test_wrap_hash_with_symbol_keys
-    # Symbol keys are converted to strings (they're variable names in the
-    # environment). Values are wrapped recursively.
+  def test_wrap_hash_with_symbol_keys_root
+    # Root hash = environment. Symbol keys are variable names → converted
+    # to strings for JSON transport.
     input = { a: 1, b: "hello" }
     result = DropProxy.wrap(input, @registry)
 
     assert_equal({ "a" => 1, "b" => "hello" }, result)
   end
-
-  def test_wrap_hash_with_non_string_keys_inspects
-    # Hashes with non-string, non-symbol keys (Integer, Float, etc.) can't
-    # be faithfully represented in JSON — inspect the entire hash.
-    input = { 1 => 1 }
+  def test_wrap_inner_hash_with_symbol_keys_ruby_type
+    # Inner hash with symbol keys — sent as _ruby_type marker with inspect
+    # string (for {{ v }} output) and JSON-safe data (for hash access).
+    input = { "v" => { a: 1, b: "hello" } }
     result = DropProxy.wrap(input, @registry)
+    inner = result["v"]
+    assert_equal "Hash", inner["_ruby_type"]
+    assert inner["inspect"].include?("a")
+    assert_equal({ "a" => 1, "b" => "hello" }, inner["data"])
+  end
 
-    assert_equal "{1 => 1}", result
+  def test_wrap_inner_hash_with_integer_keys_ruby_type
+    # Inner hash with integer keys — sent as _ruby_type marker.
+    input = { "v" => { 1 => 1 } }
+    result = DropProxy.wrap(input, @registry)
+    inner = result["v"]
+    assert_equal "Hash", inner["_ruby_type"]
+    assert inner["inspect"].include?("1")
   end
 
   def test_wrap_array
@@ -173,11 +184,17 @@ class JsonRpcDropProxyTest < Minitest::Test
     assert_equal [1, "hello", true], result
   end
 
-  def test_wrap_range_to_array
+  def test_wrap_range_to_ruby_type_marker
+    # Ranges are sent as _ruby_type markers so the server can reconstruct
+    # them for comparisons like {% if (1..5) == expect %}.
     input = 1..5
     result = DropProxy.wrap(input, @registry)
 
-    assert_equal [1, 2, 3, 4, 5], result
+    assert_equal "Range", result["_ruby_type"]
+    assert_equal 1, result["begin"]
+    assert_equal 5, result["end"]
+    assert_equal false, result["exclude_end"]
+    assert_equal (1..5).inspect, result["inspect"]
   end
 
   def test_wrap_drop_creates_rpc_marker

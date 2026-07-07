@@ -290,8 +290,8 @@ module RemoteLiquid
       filesystem = params["filesystem"] || {}
 
       # Validate options
-      if options["error_mode"] && !%w[strict lax warn].include?(options["error_mode"])
-        raise ArgumentError, "Invalid error_mode '#{options["error_mode"]}': expected 'strict', 'lax', or 'warn'"
+      if options["error_mode"] && !%w[strict strict2 lax warn].include?(options["error_mode"])
+        raise ArgumentError, "Invalid error_mode '#{options["error_mode"]}': expected 'strict', 'strict2', 'lax', or 'warn'"
       end
 
       template_id = "tmpl_#{next_id}"
@@ -409,6 +409,8 @@ module RemoteLiquid
       when Hash
         if env["_rpc_drop"]
           RpcDropProxy.new(env["_rpc_drop"], env["type"], self)
+        elsif env["_ruby_type"]
+          unwrap_ruby_type(env)
         else
           env.transform_values { |v| unwrap_environment(v) }
         end
@@ -419,11 +421,36 @@ module RemoteLiquid
       end
     end
 
+    # Reconstruct Ruby-specific types from _ruby_type markers.
+    # A server that doesn't support ruby_types can use the inspect string
+    # or the JSON-safe data field instead.
+    def unwrap_ruby_type(marker)
+      case marker["_ruby_type"]
+      when "Symbol"
+        marker["value"].to_sym
+      when "Hash"
+        # Reconstruct the hash with original key types using inspect
+        # for output, and JSON-safe data for access. Since this is
+        # liquid-ruby, we eval the inspect to get the real hash.
+        # A non-Ruby server would need to parse the inspect string.
+        begin
+          eval(marker["inspect"]) rescue marker["data"] || {}
+        end
+      when "Range"
+        Range.new(marker["begin"], marker["end"], marker["exclude_end"] || false)
+      else
+        # Unknown ruby type — fall back to inspect string or data
+        marker["inspect"] || marker["data"] || marker.to_s
+      end
+    end
+
     def unwrap_value(value)
       case value
       when Hash
         if value["_rpc_drop"]
           RpcDropProxy.new(value["_rpc_drop"], value["type"], self)
+        elsif value["_ruby_type"]
+          unwrap_ruby_type(value)
         else
           value.transform_values { |v| unwrap_value(v) }
         end
