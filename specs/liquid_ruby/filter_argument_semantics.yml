@@ -57,6 +57,7 @@ specs:
 - name: assign_swallows_filter_error
   template: 'before{% assign v = "x" | truncate: nil %}after[{{ v }}]'
   expected: beforeafter[]
+  render_errors: true
   complexity: 500
   hint: |
     A filter that raises during the expression of an {% assign %} does not

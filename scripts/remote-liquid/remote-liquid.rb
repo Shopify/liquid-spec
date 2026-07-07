@@ -304,7 +304,7 @@ module RemoteLiquid
       # Build parse options
       parse_options = {}
       parse_options[:line_numbers] = true if options["line_numbers"]
-      parse_options[:error_mode] = options["error_mode"]&.to_sym
+      parse_options[:error_mode] = (options["error_mode"] || "strict").to_sym
 
       # Parse template - capture parse errors in result, not as exception
       begin
@@ -346,11 +346,13 @@ module RemoteLiquid
       registers = {}
       registers[:file_system] = @filesystems[template_id]
 
-      # Build context - never rethrow errors, we capture them
+      # Build context — rethrow errors when strict_errors is true
+      # so the adapter can match them against expected error patterns
+      strict_errors = options["strict_errors"] || false
       context = Liquid::Context.build(
         static_environments: unwrapped_env,
         registers: Liquid::Registers.new(registers),
-        rethrow_errors: false
+        rethrow_errors: strict_errors
       )
 
       # Handle time freezing
