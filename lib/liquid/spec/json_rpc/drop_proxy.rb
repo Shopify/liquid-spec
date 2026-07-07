@@ -58,23 +58,33 @@ module Liquid
                 obj
               end
             when Symbol
-              obj.to_s
+              # Symbols can't be faithfully represented in JSON.
+              # Use inspect so :foo comes through as ":foo", not "foo".
+              # Specs with ruby_types are already filtered out when the
+              # adapter opts out, so if we reach here the server needs
+              # the Ruby inspect representation.
+              obj.inspect
             when String
               # Ensure valid UTF-8 for JSON encoding
               sanitize_string(obj)
             when Hash
-              wrapped = {}
-              seen[obj] = wrapped
-              obj.each do |k, v|
-                # Sanitize keys for JSON (symbols -> strings, binary -> utf8)
-                key = case k
-                      when Symbol then k.to_s
-                      when String then sanitize_string(k)
-                      else k.to_s
-                      end
-                wrapped[key] = wrap(v, registry, seen)
+              # Symbol keys are converted to strings (they're variable names
+              # in the environment). But hashes with non-string, non-symbol
+              # keys (Integer, Float, etc.) can't be faithfully represented
+              # in JSON — inspect the entire hash so {1=>1} comes through
+              # as "{1 => 1}", not {"1": 1}.
+              if obj.keys.any? { |k| !k.is_a?(String) && !k.is_a?(Symbol) }
+                obj.inspect
+              else
+                wrapped = {}
+                seen[obj] = wrapped
+                obj.each do |k, v|
+                  # Convert keys to strings (symbols → strings for JSON)
+                  key = k.is_a?(String) ? sanitize_string(k) : k.to_s
+                  wrapped[key] = wrap(v, registry, seen)
+                end
+                wrapped
               end
-              wrapped
             when Array
               wrapped = []
               seen[obj] = wrapped

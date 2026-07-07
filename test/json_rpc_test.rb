@@ -135,8 +135,10 @@ class JsonRpcDropProxyTest < Minitest::Test
     assert_nil DropProxy.wrap(nil, @registry)
   end
 
-  def test_wrap_symbol_to_string
-    assert_equal "test", DropProxy.wrap(:test, @registry)
+  def test_wrap_symbol_to_inspect_string
+    # Symbols are inspect'd so :foo comes through as ":foo", not "foo".
+    # This preserves Ruby-ness for JSON-RPC adapters that support ruby_types.
+    assert_equal ":test", DropProxy.wrap(:test, @registry)
   end
 
   def test_wrap_hash
@@ -147,10 +149,21 @@ class JsonRpcDropProxyTest < Minitest::Test
   end
 
   def test_wrap_hash_with_symbol_keys
+    # Symbol keys are converted to strings (they're variable names in the
+    # environment). Values are wrapped recursively.
     input = { a: 1, b: "hello" }
     result = DropProxy.wrap(input, @registry)
 
     assert_equal({ "a" => 1, "b" => "hello" }, result)
+  end
+
+  def test_wrap_hash_with_non_string_keys_inspects
+    # Hashes with non-string, non-symbol keys (Integer, Float, etc.) can't
+    # be faithfully represented in JSON — inspect the entire hash.
+    input = { 1 => 1 }
+    result = DropProxy.wrap(input, @registry)
+
+    assert_equal "{1 => 1}", result
   end
 
   def test_wrap_array
