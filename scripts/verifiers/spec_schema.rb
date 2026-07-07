@@ -131,10 +131,16 @@ module SpecSchemaVerifier
         end
       end
 
-      # error_mode: one of strict/strict2/lax if present
+      # error_mode: one of strict/strict2/lax if present.
+      # Can be a single value or an array of compatible modes.
       em = spec["error_mode"]
-      if em && !VALID_ERROR_MODES.include?(em.to_s)
-        issues << "error_mode '#{em}' is not one of #{VALID_ERROR_MODES.join(", ")}"
+      if em
+        modes = em.is_a?(Array) ? em : [em]
+        modes.each do |m|
+          if !VALID_ERROR_MODES.include?(m.to_s)
+            issues << "error_mode '#{m}' is not one of #{VALID_ERROR_MODES.join(", ")}"
+          end
+        end
       end
 
       # environment: hash if present

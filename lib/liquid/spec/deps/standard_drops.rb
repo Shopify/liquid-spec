@@ -183,6 +183,35 @@ class StandardErrorDrop < Liquid::Drop
   alias_method :[], :invoke_drop
 end
 
+# NestedDrop — returns drops from property access, testing drop-to-drop resolution.
+#   drop.value      → the integer (e.g. 3)
+#   drop.nested     → returns self (same drop)
+#   drop.square     → returns a new NestedDrop with value squared
+#
+# This tests that when a drop's property returns another drop, the
+# implementation recursively resolves it via to_liquid/to_liquid_value.
+class StandardNestedDrop < Liquid::Drop
+  def initialize(params = {})
+    @value = params["value"] || params[:value] || 3
+  end
+
+  def to_liquid_value
+    @value
+  end
+
+  def to_s
+    @value.to_s
+  end
+
+  def nested
+    self
+  end
+
+  def square
+    StandardNestedDrop.new("value" => @value * @value)
+  end
+end
+
 # Register all standard drops with the ClassRegistry
 # Use "Standard" prefix in Ruby class names to avoid collision with legacy drops,
 # but register under the portable names (BooleanDrop, NumberDrop, etc.)
@@ -196,6 +225,7 @@ STANDARD_DROPS = {
   "NilDrop" => StandardNilDrop,
   "OpaqueDrop" => StandardOpaqueDrop,
   "ErrorDrop" => StandardErrorDrop,
+  "NestedDrop" => StandardNestedDrop,
 }.freeze
 
 STANDARD_DROPS.each do |name, klass|

@@ -393,3 +393,68 @@ specs:
     NilDrop materializes to nil. nil is falsy but nil == empty is false
     in liquid-ruby (empty checks for "", [], {}, not nil).
   features: [drops]
+
+- name: drop_nested_returns_self
+  template: "{{ drop.nested }}"
+  environment:
+    drop: "instantiate:NestedDrop"
+  expected: "3"
+  complexity: 220
+  hint: |
+    NestedDrop.nested returns self. The implementation must resolve
+    the returned drop again via to_liquid_value — rendering the same
+    value as {{ drop }}. This tests drop-to-drop resolution.
+  features: [drops]
+
+- name: drop_nested_chained_self
+  template: "{{ drop.nested.nested.nested }}"
+  environment:
+    drop: "instantiate:NestedDrop"
+  expected: "3"
+  complexity: 220
+  hint: |
+    Chaining .nested multiple times always returns self. Each access
+    returns a drop that must be resolved again. The value stays 3.
+  features: [drops]
+
+- name: drop_nested_square_returns_new_drop
+  template: "{{ drop.square }}"
+  environment:
+    drop:
+      instantiate:NestedDrop:
+        value: 3
+  expected: "9"
+  complexity: 220
+  hint: |
+    NestedDrop.square returns a NEW NestedDrop with value squared.
+    The implementation must resolve the returned drop via
+    to_liquid_value to get 9. This tests that drop property access
+    can return a different drop that gets independently resolved.
+  features: [drops]
+
+- name: drop_nested_square_chained
+  template: "{{ drop.square.square }}"
+  environment:
+    drop:
+      instantiate:NestedDrop:
+        value: 3
+  expected: "81"
+  complexity: 230
+  hint: |
+    Chaining .square twice: 3 → 9 → 81. Each .square returns a new
+    NestedDrop that must be resolved, then .square called again.
+  features: [drops]
+
+- name: drop_nested_mixed_chain
+  template: "{{ drop.nested.square.nested }}"
+  environment:
+    drop:
+      instantiate:NestedDrop:
+        value: 3
+  expected: "9"
+  complexity: 230
+  hint: |
+    Mixed chain: .nested (self, value=3) → .square (new drop, value=9)
+    → .nested (self, value=9). Tests that self-returning and
+    new-drop-returning accessors interleave correctly.
+  features: [drops]

@@ -575,61 +575,51 @@
     URL encoding first stringifies SelfDrop to Liquid::SelfDrop, then
     percent-encodes the class-name string.
 
-- name: lax_allows_bare_bracket_access
+- name: bare_bracket_access_works_in_lax_and_strict
   template: "{{ ['product'] }}"
   environment:
     product: shoes
-  error_mode: :lax
+  error_mode: [lax, strict]
   expected: "shoes"
   complexity: 300
   hint: |
-    Bare-bracket access is still allowed in lax mode for backwards
-    compatibility. Only strict2 mode rejects it.
+    Bare-bracket access works in lax and strict mode for backwards
+    compatibility. Only strict2 mode rejects it. The bracket content
+    is a string literal used as a variable name lookup.
 
-- name: strict_allows_bare_bracket_access
-  template: "{{ ['product'] }}"
-  environment:
-    product: shoes
-  error_mode: strict
-  expected: "shoes"
-  complexity: 300
-  hint: |
-    Bare-bracket access works in strict mode, same as lax. Only strict2
-    rejects it. The bracket content is a string literal used as a
-    variable name lookup.
-
-- name: strict_allows_bare_bracket_dynamic_lookup
+- name: bare_bracket_dynamic_lookup_works_in_lax_and_strict
   template: "{{ [key] }}"
   environment:
     key: target
     target: found it
-  error_mode: strict
+  error_mode: [lax, strict]
   expected: "found it"
   complexity: 300
   hint: |
-    Dynamic variable lookup via bare brackets works in strict mode.
-    [key] resolves 'key' to 'target', then looks up 'target'.
+    Dynamic variable lookup via bare brackets works in lax and strict
+    mode. [key] resolves 'key' to 'target', then looks up 'target'.
+    Use self[key] for strict2-compatible dynamic lookups.
 
-- name: strict_allows_bare_bracket_in_for
+- name: bare_bracket_in_for_works_in_lax_and_strict
   template: "{% for item in ['collection'] %}{{ item }}{% endfor %}"
   environment:
     collection: hello
-  error_mode: strict
+  error_mode: [lax, strict]
   expected: "hello"
   complexity: 300
   hint: |
-    Bare brackets in for loop collections work in strict mode.
+    Bare brackets in for loop collections work in lax and strict mode.
     ['collection'] resolves to the variable 'collection'.
 
-- name: strict_allows_bare_bracket_in_assign
+- name: bare_bracket_in_assign_works_in_lax_and_strict
   template: "{% assign x = ['product'] %}{{ x }}"
   environment:
     product: val
-  error_mode: strict
+  error_mode: [lax, strict]
   expected: "val"
   complexity: 300
   hint: |
-    Bare brackets in assign values work in strict mode.
+    Bare brackets in assign values work in lax and strict mode.
 
 - name: self_sees_loop_variables_across_three_nested_loops
   template: '{% assign av = "a" %}{% assign bv = "b" %}{% assign cv = "c" %}{% for a in aa %}A{{ forloop.index }}({% for b in bb %}B({% for c in cc %}{{ self[av] }}.{{ self[bv] }}.{{ self[cv] }};{% endfor %}){% endfor %}){% endfor %}'

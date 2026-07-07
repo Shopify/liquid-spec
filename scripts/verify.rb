@@ -26,6 +26,7 @@ VERIFIER_MODULES = {
   "ruby_type_tags"      => "RubyTypeTagVerifier",
   "spec_schema"         => "SpecSchemaVerifier",
   "jsonrpc_portability"  => "JsonRpcPortabilityVerifier",
+  "cross_mode_compatibility" => "CrossModeCompatibilityVerifier",
 }
 
 results = []

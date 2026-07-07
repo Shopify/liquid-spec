@@ -51,6 +51,7 @@ module Liquid
           "NilDrop" => proc { |_o| {} },
           "OpaqueDrop" => proc { |_o| {} },
           "ErrorDrop" => proc { |_o| {} },
+          "NestedDrop" => proc { |o| { "value" => o.instance_variable_get(:@value) } },
         }.freeze
 
         class << self

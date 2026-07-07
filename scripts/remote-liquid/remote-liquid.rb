@@ -493,6 +493,8 @@ module RemoteLiquid
         StandardOpaqueDrop.new(params)
       when "ErrorDrop"
         StandardErrorDrop.new(params)
+      when "NestedDrop"
+        StandardNestedDrop.new(params)
       else
         raise "Unknown standard drop: #{name}"
       end

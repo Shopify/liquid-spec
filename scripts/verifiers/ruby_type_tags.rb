@@ -31,7 +31,7 @@ COMPLEXITY_FLOOR = 100
 STANDARD_DROPS = %w[
   BooleanDrop NumberDrop StringDrop
   MethodDrop IndexDrop SequenceDrop
-  NilDrop OpaqueDrop ErrorDrop
+  NilDrop OpaqueDrop ErrorDrop NestedDrop
 ].freeze
 
 module RubyTypeTagVerifier

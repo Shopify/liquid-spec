@@ -223,8 +223,16 @@ module Liquid
             end
 
             # Determine error_mode: spec > metadata > suite default
+            # Can be a single mode (:lax, :strict, :strict2) or an array
+            # of compatible modes. The first mode is the "primary" mode
+            # used for testing; all modes generate feature tags.
             spec_error_mode = if spec_data.key?("error_mode")
-              spec_data["error_mode"]&.to_sym
+              mode = spec_data["error_mode"]
+              if mode.is_a?(Array)
+                mode.map(&:to_sym)
+              else
+                mode&.to_sym
+              end
             elsif source_required_options.key?(:error_mode)
               source_required_options[:error_mode]
             else
