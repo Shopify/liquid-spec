@@ -44,7 +44,7 @@ module Liquid
           # Drops become { "_rpc_drop": "id", "type": "ClassName" }
           # Primitives pass through unchanged
           # Hashes and arrays are recursively wrapped
-          def wrap(obj, registry, seen = {}.compare_by_identity, root: true)
+          def wrap(obj, registry, seen = {}.compare_by_identity)
             # Return placeholder for circular references to prevent JSON nesting errors
             return "[circular]" if seen.key?(obj)
 
@@ -68,40 +68,29 @@ module Liquid
               # Ensure valid UTF-8 for JSON encoding
               sanitize_string(obj)
             when Hash
-              if root
-                # Root hash = environment. Keys are variable names — convert
-                # symbols to strings (normal behavior for JSON transport).
-                wrapped = {}
-                seen[obj] = wrapped
-                obj.each do |k, v|
-                  key = k.is_a?(String) ? sanitize_string(k) : k.to_s
-                  wrapped[key] = wrap(v, registry, seen, root: false)
-                end
-                wrapped
-              elsif obj.keys.any? { |k| !k.is_a?(String) }
-                # Inner hash with non-string keys (Symbol, Integer, etc.) —
+              if obj.keys.any? { |k| !k.is_a?(String) }
+                # Hash with non-string keys (Symbol, Integer, etc.) —
                 # can't be faithfully represented in JSON. Send a _ruby_type
                 # marker with the inspect string (for {{ v }} output) and a
                 # JSON-safe version (for hash access like {{ v.foo }}).
                 json_safe = {}
                 obj.each do |k, v|
-                  json_safe[k.to_s] = wrap(v, registry, seen, root: false)
+                  json_safe[k.to_s] = wrap(v, registry, seen)
                 end
                 { RUBY_TYPE_KEY => "Hash", "inspect" => obj.inspect, "data" => json_safe }
               else
-                # Inner hash with string keys — normal JSON transport
+                # String-keyed hash — normal JSON transport
                 wrapped = {}
                 seen[obj] = wrapped
                 obj.each do |k, v|
-                  wrapped[k] = wrap(v, registry, seen, root: false)
+                  wrapped[k] = wrap(v, registry, seen)
                 end
                 wrapped
               end
             when Array
               wrapped = []
               seen[obj] = wrapped
-              obj.each { |v| wrapped << wrap(v, registry, seen, root: false) }
-              wrapped
+              obj.each { |v| wrapped << wrap(v, registry, seen) }
             when Range
               # Ranges can't be faithfully represented in JSON.
               # Send a _ruby_type marker so the server can reconstruct

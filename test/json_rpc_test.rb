@@ -149,15 +149,18 @@ class JsonRpcDropProxyTest < Minitest::Test
     assert_equal({ "a" => 1, "b" => "hello" }, result)
   end
 
-  def test_wrap_hash_with_symbol_keys_root
-    # Root hash = environment. Symbol keys are variable names → converted
-    # to strings for JSON transport.
+  def test_wrap_hash_with_symbol_keys_ruby_type
+    # Hash with symbol keys — can't be faithfully represented in JSON.
+    # Sent as _ruby_type marker with inspect and JSON-safe data.
     input = { a: 1, b: "hello" }
     result = DropProxy.wrap(input, @registry)
 
-    assert_equal({ "a" => 1, "b" => "hello" }, result)
+    assert_equal "Hash", result["_ruby_type"]
+    assert result["inspect"].include?("a")
+    assert_equal({ "a" => 1, "b" => "hello" }, result["data"])
   end
-  def test_wrap_inner_hash_with_symbol_keys_ruby_type
+
+  def test_wrap_inner_hash_with_integer_keys_ruby_type
     # Inner hash with symbol keys — sent as _ruby_type marker with inspect
     # string (for {{ v }} output) and JSON-safe data (for hash access).
     input = { "v" => { a: 1, b: "hello" } }
