@@ -68,6 +68,7 @@ module Liquid
           require_relative "suite"
 
           specs = []
+          srand # re-seed RNG for each run so generate: values vary
 
           case suite
           when :all
@@ -249,11 +250,25 @@ module Liquid
             generate_spec = spec_data["generate"]
             if generate_spec.is_a?(Hash)
               generated = {}
-              generate_spec.each do |var_name, range|
-                if range.is_a?(Array) && range.size == 2
-                  generated[var_name] = rand(range[0]..range[1])
-                elsif range.is_a?(Integer)
-                  generated[var_name] = range
+              generate_spec.each do |var_name, config|
+                case config
+                when Hash
+                  # Explicit format: {type: numeric, min: 0, max: 1000}
+                  type = config["type"] || "numeric"
+                  min = config["min"] || 0
+                  max = config["max"] || 1000
+                  case type
+                  when "numeric", "integer"
+                    generated[var_name] = rand(min..max)
+                  else
+                    generated[var_name] = rand(min..max)
+                  end
+                when Array
+                  # Shorthand: [min, max]
+                  generated[var_name] = rand(config[0]..config[1])
+                when Integer
+                  # Fixed value (not random, but available for interpolation)
+                  generated[var_name] = config
                 end
               end
               spec_data["template"] = substitute_generated(spec_data["template"], generated) if spec_data["template"]

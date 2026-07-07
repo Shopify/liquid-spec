@@ -211,17 +211,22 @@ coverage without requiring the adapter to support randomness.
   template: "{{ drop.square_#{n} }}"
   expected: "#{n * n}"
   generate:
-    n: [1, 100]          # [min, max] for integer generation
+    n:
+      type: numeric
+      min: 1
+      max: 100
   features: [drops, randomness]
   complexity: 220
 ```
 
 **How it works:**
-1. The spec loader sees `generate: { n: [1, 100] }`
+1. The spec loader sees `generate: { n: { type: numeric, min: 1, max: 100 } }`
 2. Generates a random integer `n` (e.g., 7)
 3. Substitutes `#{n}` in template → `{{ drop.square_7 }}`
 4. Evaluates `#{n * n}` in expected → `"49"`
 5. Sends the final concrete spec to the adapter
+
+Shorthand `n: [1, 100]` is also accepted but the explicit form is preferred.
 
 The adapter never sees `#{...}` — it receives a fully concrete spec. The
 `randomness` feature flag (on by default) controls whether specs with
