@@ -103,6 +103,11 @@ task :coverage_check do
   end
 end
 
+desc "Run all spec verifiers (prints findings, does not modify files)"
+task :check do
+  load File.join(__dir__, "scripts", "verify.rb")
+end
+
 # Spec generation tasks (only needed for development)
 import("tasks/liquid_ruby.rake")
 import("tasks/standard_filters.rake")

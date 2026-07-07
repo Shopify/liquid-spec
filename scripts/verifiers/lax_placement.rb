@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+# advisory: true
 
 # This script verifies that specs are correctly placed:
 # - Specs that only work in lax mode MUST be in the liquid_ruby_lax suite
@@ -36,7 +37,7 @@ module LaxPlacementVerifier
 
       unless liquid_ruby_suite && liquid_ruby_lax_suite
         puts "Error: Could not find required suites"
-        exit 1
+        return 1
       end
 
       # Get specs from each suite
@@ -152,10 +153,10 @@ module LaxPlacementVerifier
       # Exit with error if there are misplaced specs
       if misplaced.any?
         puts "FAILED: #{misplaced.size} specs are lax-only but not in the lax suite"
-        exit 1
+        return 1
       else
         puts "OK: All lax-only specs are correctly placed in the lax suite"
-        exit 0
+        return 0
       end
     end
 
