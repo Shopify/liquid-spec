@@ -40,16 +40,28 @@ module RubyTypeTagVerifier
       offenders = []
       each_spec do |spec|
         markers = detect_markers(spec)
-        next if markers.empty?
-        reasons = []
         feats = spec[:features] || []
-        unless (feats & RUBY_FEATURES).any?
-          reasons << "missing ruby feature tag (needs one of: #{RUBY_FEATURES.join(", ")})"
+        reasons = []
+
+        # Check 1: Ruby-specific content without a ruby feature tag
+        unless markers.empty?
+          unless (feats & RUBY_FEATURES).any?
+            reasons << "missing ruby feature tag (needs one of: #{RUBY_FEATURES.join(", ")})"
+          end
+          c = spec[:complexity]
+          if c && c <= COMPLEXITY_FLOOR
+            reasons << "complexity #{c} <= #{COMPLEXITY_FLOOR} (Ruby-quirk specs belong above the beginner ramp)"
+          end
         end
-        c = spec[:complexity]
-        if c && c <= COMPLEXITY_FLOOR
-          reasons << "complexity #{c} <= #{COMPLEXITY_FLOOR} (Ruby-quirk specs belong above the beginner ramp)"
+
+        # Check 2: tagged ruby_drops but only uses standard drops (should be drops)
+        if feats.include?("ruby_drops")
+          all_drops = all_instantiate_classes(spec[:environment], 0)
+          if all_drops.any? && all_drops.all? { |c| STANDARD_DROPS.include?(c) }
+            reasons << "tagged ruby_drops but only uses standard drops (should be 'drops' — portable via _instantiate markers)"
+          end
         end
+
         next if reasons.empty?
         offenders << {
           file: spec[:file],
@@ -68,7 +80,7 @@ module RubyTypeTagVerifier
       puts "Found #{offenders.size} spec(s) with Ruby-specific content that violate the rules:\n\n"
       offenders.each do |o|
         puts "  #{o[:file]}:#{o[:line]}  #{o[:name]}"
-        puts "    markers: #{o[:markers].join(", ")}"
+        puts "    markers: #{o[:markers].join(", ")}" unless o[:markers].empty?
         o[:reasons].each { |r| puts "    - #{r}" }
         puts
       end
@@ -182,6 +194,33 @@ module RubyTypeTagVerifier
         if obj.start_with?("instantiate:")
           class_name = obj.sub("instantiate:", "").split(/\.|\z/).first
           STANDARD_DROPS.include?(class_name) ? [] : [ "instantiate: drop (#{class_name})" ]
+        else
+          []
+        end
+      else
+        []
+      end
+    end
+
+    # Walk a value looking for ALL instantiate: class names (including standard drops).
+    # Used to check whether a ruby_drops-tagged spec actually needs RPC.
+    def all_instantiate_classes(obj, depth)
+      return [] if depth > 40
+      case obj
+      when Hash
+        out = []
+        obj.each do |k, v|
+          if k.is_a?(String) && k.start_with?("instantiate:")
+            out << k.sub("instantiate:", "").chomp(":")
+          end
+          out.concat(all_instantiate_classes(v, depth + 1))
+        end
+        out
+      when Array
+        obj.flat_map { |e| all_instantiate_classes(e, depth + 1) }
+      when String
+        if obj.start_with?("instantiate:")
+          [obj.sub("instantiate:", "").split(/\.|\z/).first]
         else
           []
         end
