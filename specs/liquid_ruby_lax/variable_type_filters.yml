@@ -500,7 +500,7 @@ specs:
 - name: lax_filter_booleandrop_first_last_size
   features: [drops]
   complexity: 520
-  hint: BooleanDrop wraps a boolean value, to_s returns Yay/Nay
+  hint: BooleanDrop wraps a boolean value, to_s returns true/false
   template: |
     drop value:{{- d }}
     drop, first:{{- d | first }}
@@ -511,7 +511,7 @@ specs:
       instantiate:BooleanDrop:
         value: true
   expected: |
-    drop value:Yay
+    drop value:true
     drop, first:
     drop, last:
     drop, size:0
