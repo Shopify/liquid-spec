@@ -1,11 +1,8 @@
 ---
-title: Scopes and Variable Resolution
-description: >
-  How Liquid resolves variables through its three-layer lookup system: scopes, environments, and
-  static environments. Covers the scope stack, assign behavior, register stores, and depth limiting.
-  Essential for understanding variable visibility and isolation.
+title: "Scopes and Variable Resolution"
+position: 4
+description: "Read when variables, assign, capture, or partial visibility fail. Covers scope stacks, environments, registers, and lookup order."
 optional: false
-order: 3
 ---
 
 # Scopes and Variable Resolution

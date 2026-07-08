@@ -1,3 +1,10 @@
+---
+title: "Tablerow Tag"
+position: 11
+description: "Read after for-loops. Covers tablerow HTML output, tablerowloop state, column wrapping, whitespace, and interrupts."
+optional: false
+---
+
 # Tablerow Tag Implementation
 
 The `{% tablerow %}` tag generates HTML table rows from a collection. It looks like a for loop but **it is not** - it's an HTML generator with specific output format requirements.
@@ -174,7 +181,7 @@ Example with `cols:3`:
 
 Run tablerow-specific specs:
 ```bash
-liquid-spec your_adapter.rb -n tablerow
+liquid-spec run your_adapter.rb -n tablerow
 ```
 
 Start with basic tablerow (complexity 180), then move to tablerowloop properties (250+).

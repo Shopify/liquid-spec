@@ -28,9 +28,19 @@ module Liquid
             note: "Strict parsing should be the default. Lax mode is for legacy compatibility.",
           },
           strict_parsing: {
-            description: "Supports error_mode: :strict (recommended default)",
+            description: "Supports error_mode: :strict",
             recommendation: :required,
-            note: "New implementations should default to strict mode.",
+            note: "Strict parsing is the historical strict Liquid parser mode.",
+          },
+          strict2_parsing: {
+            description: "Supports error_mode: :strict2 (Liquid 5.12+ relaxed trailing comma/colon syntax)",
+            recommendation: :required,
+            note: "Recommended default for new implementations; many parser-error specs require it.",
+          },
+          self_environment_shadowing: {
+            description: "Environment variables named self shadow the synthetic SelfDrop",
+            recommendation: :optional,
+            note: "Compatibility behavior for specs that distinguish bare self lookup from the synthetic SelfDrop fallback.",
           },
           shopify_tags: {
             description: "Shopify-specific tags (schema, style, section, etc.)",

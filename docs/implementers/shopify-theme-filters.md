@@ -1,11 +1,8 @@
 ---
-title: Shopify Theme Filters Reference
-description: >
-  Reference implementation for Shopify-specific filters and tags needed by the
-  theme benchmark suite. Provides working Ruby code that can serve as pseudocode
-  for any language.
+title: "Shopify Theme Filters Reference"
+position: 40
+description: "Read when targeting Shopify themes. Provides reference-style implementations for Shopify-specific filters and paginate behavior."
 optional: true
-order: 20
 ---
 
 # Shopify Theme Filters

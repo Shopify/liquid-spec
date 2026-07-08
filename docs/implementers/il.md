@@ -1,11 +1,8 @@
 ---
-title: Intermediate Language (IL)
-description: >
-  Advanced guide to compiling Liquid templates into a flat bytecode-like IL for high-performance
-  execution. Covers opcodes, control flow, and stack-based evaluation. Optional reading - a tree-walking
-  interpreter works fine. Only needed if building a high-performance or compiled implementation.
+title: "Intermediate Language (IL)"
+position: 30
+description: "Read when optimizing or compiling. Sketches a bytecode-like IL, lowering strategy, source tracking, and error discipline."
 optional: true
-order: 11
 ---
 
 # Liquid IL and AST Flattening (Strict Mode)

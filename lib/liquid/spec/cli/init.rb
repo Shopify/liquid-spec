@@ -13,22 +13,22 @@ module Liquid
           # This file defines how your Liquid implementation compiles and renders templates.
           # Implement the methods below to test your implementation against the spec.
           #
-          # Run directly:  ./%<filename>s              # runs all specs via liquid-spec
-          # Run directly:  ./%<filename>s -n assign    # filter specs by name
-          # Or load via:   liquid-spec %<filename>s
+          # Run directly:  ./%<filename>s                  # re-launches via liquid-spec
+          # Run directly:  ./%<filename>s -n assign        # filter specs by name
+          # Or run via:    liquid-spec run %<filename>s
           #
           # Not using Ruby? liquid-spec can drive an implementation in any language
           # (Rust, Go, Python, Node.js, ...) over JSON-RPC. Generate a JSON-RPC
           # adapter instead:
           #
-          #   liquid-spec init my_adapter.rb --jsonrpc
+          #   liquid-spec init --jsonrpc my_adapter.rb
           #
           # See docs/json-rpc-protocol.md for the full protocol specification.
 
           # When executed directly, re-launch through liquid-spec on this file.
           # When loaded by liquid-spec, this guard is skipped and the adapter DSL runs.
           if __FILE__ == $PROGRAM_NAME
-            cmd = ["liquid-spec", __FILE__, *ARGV]
+            cmd = ["liquid-spec", "run", __FILE__, *ARGV]
             cmd = ["bundle", "exec"] + cmd if File.exist?("Gemfile")
             exec(*cmd)
           end
@@ -41,7 +41,8 @@ module Liquid
           end
 
           LiquidSpec.configure do |config|
-            # Which spec suites to run: :all, :liquid_ruby, :dawn
+            # Which spec suites to run: :all, :basics, :liquid_ruby, :liquid_ruby_lax,
+            # :partials, :parser_errors, :benchmarks, :shopify_theme_dawn, ...
             config.suite = :liquid_ruby
 
             # Optional: filter specs by name pattern
@@ -135,7 +136,7 @@ module Liquid
           # When executed directly, re-launch through liquid-spec on this file.
           # When loaded by liquid-spec, this guard is skipped and the adapter DSL runs.
           if __FILE__ == $PROGRAM_NAME
-            cmd = ["liquid-spec", __FILE__, *ARGV]
+            cmd = ["liquid-spec", "run", __FILE__, *ARGV]
             cmd = ["bundle", "exec"] + cmd if File.exist?("Gemfile")
             exec(*cmd)
           end
@@ -151,8 +152,8 @@ module Liquid
           #
           # Usage:
           #   ./%<filename>s                         # run directly (re-launches via liquid-spec)
-          #   liquid-spec %<filename>s
-          #   liquid-spec %<filename>s --command="./my-liquid-server"
+          #   liquid-spec run %<filename>s
+          #   liquid-spec run %<filename>s --command="./my-liquid-server"
           #
           # ==============================================================================
           # PROTOCOL SPECIFICATION
@@ -306,18 +307,22 @@ module Liquid
             # of :drops. See docs/test_drops.md for the standard library.
             #
             # Common opt-out features:
-            #   :drops          - Standard test drop library (see docs/test_drops.md)
-            #   :randomness     - Specs using generated random values
-            #   :lax_parsing    - error_mode: :lax (lenient parsing)
-            #   :ruby_types     - Ruby-specific types (symbols, ranges, etc.)
-            #   :ruby_drops     - Ruby-specific drop objects (security tests, etc.)
-            #   :binary_data    - Raw bytes that JSON cannot transport safely
-            #   :shopify_*      - Shopify platform/theme extensions
+            #   :drops                       - Standard test drop library (see docs/test_drops.md)
+            #   :randomness                  - Specs using generated random values
+            #   :lax_parsing                 - error_mode: :lax (lenient parsing)
+            #   :ruby_types                  - Ruby-specific types (symbols, ranges, etc.)
+            #   :ruby_drops                  - Ruby-specific drop objects (security tests, etc.)
+            #   :drop_class_output           - Ruby-specific Drop class-name string output
+            #   :self_environment_shadowing  - optional `self` lookup compatibility behavior
+            #   :binary_data                 - Raw bytes that JSON cannot transport safely
+            #   :shopify_*                   - Shopify platform/theme extensions
             config.missing_features = [
               :drops,
               :randomness,
               :ruby_types,
               :ruby_drops,
+              :drop_class_output,
+              :self_environment_shadowing,
               :binary_data,
               :template_factory,
               :shopify_filters,
@@ -358,10 +363,11 @@ module Liquid
 
             You are building a production-grade [Liquid](https://shopify.github.io/liquid/)
             template engine. This directory is wired to **liquid-spec**, which defines what
-            "correct" means: ~5,400 executable specs, ordered by complexity from trivial
-            passthrough (score 0) to full production compatibility (score 1000). Your job is
-            to climb that ramp. The suite is the definition of done — when it is green, you
-            have a real Liquid implementation.
+            "correct" means: 7,000+ executable specs, ordered by complexity from trivial
+            passthrough (score 0) to full production compatibility (score 1000). The suite
+            is a curriculum for observable behavior, not a mandated internal architecture:
+            tree-walking, bytecode, compiled templates, strict-first, and compatibility-first
+            implementations can all use the same ramp.
 
             **Your Liquid library is standalone.** The adapter file(s) in this directory are
             test harnesses that run liquid-spec against your library — they are NOT part of your
@@ -388,25 +394,45 @@ module Liquid
             ```
 
             1. Run the suite. Specs execute in complexity order, so the FIRST failure is
-               always the right thing to work on. Do not skip ahead: later features depend
-               on earlier ones, and the ramp is designed so each fix is small.
+               usually the best next lesson. You can batch related work or follow product
+               needs, but keep returning to the ramp because later specs often assume earlier
+               semantics are already solid.
             2. Read the failing spec completely — template, environment, expected, got, and
                especially the `hint:`. Hints are written by implementers for implementers;
                they usually state the exact rule you are missing.
-            3. If the behavior is unclear, read the relevant guide first
+            3. Keep the implementer docs close. Run `liquid-spec docs` to print the full
+               docs directory and the available guide names; start with
+               `liquid-spec docs curriculum`, then open the guide named by the failing spec
+               or hint. These docs are the intended companion to the spec ramp.
+            4. If the behavior is unclear, read the relevant guide first
                (see "Documentation" below) — minutes of reading routinely save hours of
                guessing. Reproduce interactively before coding:
                ```bash
-               liquid-spec eval #{filename} -l "{% assign x = 1 %}{{ x }}" --compare
-               liquid-spec eval #{filename} -l "{{ x | size }}" -a '{"x": [1,2,3]}' --compare
+               cat <<'EOF' | liquid-spec eval #{filename} --compare
+               name: scratch_assign
+               template: "{% assign x = 1 %}{{ x }}"
+               expected: "1"
+               complexity: 40
+               hint: "Assign stores a value in the current scope."
+               EOF
+
+               cat <<'EOF' | liquid-spec eval #{filename} --compare
+               name: scratch_array_size
+               template: "{{ x | size }}"
+               environment:
+                 x: [1, 2, 3]
+               expected: "3"
+               complexity: 40
+               hint: "The size filter returns array length."
+               EOF
                ```
                `--compare` shows the reference implementation's output next to yours.
-            4. Implement the smallest change that makes the spec pass for the RIGHT reason.
-            5. Re-run. Every previously-passing spec must still pass — a fix that breaks
+            5. Implement the smallest change that makes the spec pass for the RIGHT reason.
+            6. Re-run. Every previously-passing spec must still pass — a fix that breaks
                earlier specs is wrong, not a tradeoff.
-            6. Judge progress by **`Complexity level cleared`**, not the raw pass count. A
+            7. Judge progress by **`Complexity level cleared`**, not the raw pass count. A
                partial implementation accidentally passes many later specs whose expected
-               output happens to be empty; complexity-reached is the honest meter.
+               output happens to be empty; the cleared complexity level is the honest meter.
 
             ## Hard rules
 
@@ -461,18 +487,19 @@ module Liquid
 
             ## Documentation
 
-            All implementer guides are served by the CLI — `liquid-spec docs` lists
-            them, `liquid-spec docs <name>` prints one (works from this directory; no
-            paths or checkouts needed):
+            All implementer guides are served by the CLI. `liquid-spec docs` prints the
+            full docs directory plus a tree of guide names; `liquid-spec docs <name>`
+            prints one guide. These guides explain Liquid semantics at the level the specs
+            expect, without requiring you to mirror any particular internal architecture:
 
             | `liquid-spec docs ...` | What it explains |
             |---|---|
-            | `complexity` | the full ramp: what to build at every score |
-            | `grammar` | the syntax: tags, output, expressions, literals |
-            | `parsing` | tokenizer/parser structure, error modes, whitespace control |
-            | `core-abstractions` | truthiness, nil, coercion, drops, special keys |
-            | `filters` | filter dispatch, arguments, coercion rules |
+            | `curriculum` | the learning path: what to build, when to read each guide, and what to defer |
+            | `core-abstractions` | truthiness, nil, output conversion, iteration, emptiness, scope shape |
+            | `grammar` | the syntax: tags, output, expressions, literals, irregularities |
+            | `complexity` | the full ramp: why each lesson appears when it does |
             | `scopes` | variable scoping: assign, capture, loops, includes |
+            | `filters` | filter dispatch, arguments, coercion rules |
             | `for-loops` | for/forloop/offset/limit/else, iteration protocol |
             | `interrupts` | break/continue, incl. across include boundaries |
             | `partials` | include vs render semantics |
@@ -486,11 +513,11 @@ module Liquid
 
             ## Architecture advice for a fresh implementation
 
-            Start boring: tokenizer → parser → node tree → tree-walking renderer with a
-            scope stack. Do not build a compiler or VM first — correctness across ~5,400
-            specs is the hard part, and a simple renderer is much easier to make correct.
-            Two things ARE worth designing in from day one, because they weave through
-            everything and are painful to retrofit:
+            A common low-risk route is tokenizer → parser → node tree → tree-walking
+            renderer with a scope stack. A compiler/VM is also fine if that fits your project,
+            but correctness across 7,000+ specs is the hard part, so keep the observable
+            semantics easy to test. Two things ARE worth designing in from day one, because
+            they weave through everything and are painful to retrofit:
 
             1. **Error plumbing** — every node needs a line number and a uniform way to
                either emit `Liquid error (line N): ...` text or raise, per the error model
@@ -545,7 +572,8 @@ module Liquid
             liquid-spec run #{filename} -l              # list specs without running
             liquid-spec run #{filename} --list-passed   # audit accidental passes
             liquid-spec run #{filename} --json          # machine-readable results
-            liquid-spec eval #{filename} -l "{{ 1 | plus: 1 }}" --compare   # one-off template
+            cat spec.yml | liquid-spec eval #{filename} --compare           # one-off YAML spec
+            liquid-spec docs curriculum                 # the implementation learning path
             liquid-spec docs complexity                 # any guide from the table above
             ```
 
@@ -781,20 +809,20 @@ module Liquid
 
           # Liquid Spec Adapter for Shopify/liquid
           #
-          # Run directly:  ./%<filename>s              # runs all specs via liquid-spec
-          # Run directly:  ./%<filename>s -n assign    # filter specs by name
-          # Or load via:   liquid-spec %<filename>s
+          # Run directly:  ./%<filename>s                  # re-launches via liquid-spec
+          # Run directly:  ./%<filename>s -n assign        # filter specs by name
+          # Or run via:    liquid-spec run %<filename>s
           #
           # Not using Ruby? liquid-spec can drive an implementation in any language
           # (Rust, Go, Python, Node.js, ...) over JSON-RPC. Generate a JSON-RPC
           # adapter instead:
           #
-          #   liquid-spec init my_adapter.rb --jsonrpc
+          #   liquid-spec init --jsonrpc my_adapter.rb
 
           # When executed directly, re-launch through liquid-spec on this file.
           # When loaded by liquid-spec, this guard is skipped and the adapter DSL runs.
           if __FILE__ == $PROGRAM_NAME
-            cmd = ["liquid-spec", __FILE__, *ARGV]
+            cmd = ["liquid-spec", "run", __FILE__, *ARGV]
             cmd = ["bundle", "exec"] + cmd if File.exist?("Gemfile")
             exec(*cmd)
           end

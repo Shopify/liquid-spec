@@ -1,11 +1,8 @@
 ---
-title: Filter Reference
-description: >
-  Implementation details for Liquid filters that have non-obvious behavior or commonly cause
-  issues. Covers type coercion, edge cases, and the difference between standard and URL-safe
-  variants.
+title: "Filter Reference"
+position: 5
+description: "Read when filter specs fail. Covers dispatch, arguments, coercion, and edge cases for the filters that usually trip implementations."
 optional: false
-order: 8
 ---
 
 # Filter Reference

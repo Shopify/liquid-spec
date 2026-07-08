@@ -13,7 +13,8 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  # Which spec suites to run: :all, :liquid_ruby, :dawn
+  # Which spec suites to run: :all, :basics, :liquid_ruby, :liquid_ruby_lax,
+  # :partials, :parser_errors, :benchmarks, :shopify_theme_dawn, ...
   config.suite = :liquid_ruby
 
   # Optional: filter specs by name pattern

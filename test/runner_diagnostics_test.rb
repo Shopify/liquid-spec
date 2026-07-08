@@ -92,7 +92,7 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_includes stdout, "Complexity level cleared: 0"
   end
 
-  def test_plain_output_starts_with_complexity_bar_summary_and_omits_suite_preamble
+  def test_plain_output_starts_with_complexity_level_summary_and_omits_suite_preamble
     stdout, _stderr, status = run_liquid_spec(
       "source_echo_adapter.rb",
       "-n", "^empty_template$|^literal_passthrough$|^object_string_literal$",

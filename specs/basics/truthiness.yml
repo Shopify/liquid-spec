@@ -158,13 +158,7 @@ specs:
     empty_arr:{{ a | default: 'fb' }}
     whitespace:{{ w | default: 'fb' }}
     zero:{{ z | default: 'fb' }}
-  expected: |-
-    nil:fb
-    false:fb
-    empty_str:fb
-    empty_arr:fb
-    whitespace:   
-    zero:0
+  expected: "nil:fb\nfalse:fb\nempty_str:fb\nempty_arr:fb\nwhitespace:\x20\x20\x20\nzero:0"
   environment:
     s: ""
     w: "   "
@@ -188,12 +182,7 @@ specs:
     ws|default:{{ w | default: 'fb' }}
     nil==empty:{% if n == empty %}Y{% else %}N{% endif %}
     nil==blank:{% if n == blank %}Y{% else %}N{% endif %}
-  expected: |-
-    ws==empty:N
-    ws==blank:Y
-    ws|default:   
-    nil==empty:N
-    nil==blank:Y
+  expected: "ws==empty:N\nws==blank:Y\nws|default:\x20\x20\x20\nnil==empty:N\nnil==blank:Y"
   environment:
     w: "   "
   complexity: 140

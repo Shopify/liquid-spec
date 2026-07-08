@@ -1,11 +1,8 @@
 ---
 title: "Filesystem: include and render template lookup"
-description: >
-  How Liquid's file system resolves template names for {% include %} and
-  {% render %}. Covers extension handling, case sensitivity, path traversal,
-  and error behavior. Essential for implementing partial template loading.
+position: 9
+description: "Read when partial lookup fails. Covers filename normalization, extensions, case sensitivity, subpaths, traversal, and missing templates."
 optional: false
-order: 6
 ---
 
 # Filesystem: `include` and `render` template lookup

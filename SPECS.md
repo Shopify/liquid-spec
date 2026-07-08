@@ -88,9 +88,10 @@ Run the complexity ramp analysis to verify your spec fits:
 The test suite includes spec-quality checks that encode the current ramp policy:
 
 ```bash
-ruby -Ilib -I$LIQUID -Itest -e 'require File.expand_path("test/spec_quality_test.rb")'
+rake check
 ```
 
+`rake check` runs the spec-quality gate plus mechanical feature/error-mode audits.
 These checks currently enforce:
 
 - no complexity score may exceed 1000
@@ -141,7 +142,7 @@ Complexity determines learning order. A spec at complexity 70 (for loops) should
 
 **Rule:** If your spec fails for an implementer who passed all lower-complexity specs, your complexity is too low. If it passes without implementing anything new, it's too high. Complexity is capped at 1000; do not assign scores above 1000.
 
-**Dumb-adapter test:** For early specs, sanity-check the ramp with intentionally bad adapters. Run with `--list-passed` to inspect accidental passes and `--json --list-passed` when you want machine-readable output: one that echoes the source, one that always returns `""`, and one that raises for every compile/render. These should pass only the obvious first specs and then fail with a clear expected/got message plus an actionable hint. Use `Max complexity reached` to judge progress, because an always-empty adapter may accidentally pass later empty-output specs. If a dumb adapter advances through the contiguous ramp, the spec is too weak; if the first failure is confusing, improve the hint or move the spec later.
+**Dumb-adapter test:** For early specs, sanity-check the ramp with intentionally bad adapters. Run with `--list-passed` to inspect accidental passes and `--json --list-passed` when you want machine-readable output: one that echoes the source, one that always returns `""`, and one that raises for every compile/render. These should pass only the obvious first specs and then fail with a clear expected/got message plus an actionable hint. Use `Complexity level cleared` to judge progress, because an always-empty adapter may accidentally pass later empty-output specs. If a dumb adapter advances through the contiguous ramp, the spec is too weak; if the first failure is confusing, improve the hint or move the spec later.
 
 ### 3. Actionable Hints
 
@@ -472,10 +473,10 @@ Saved specs go to `/tmp/liquid-spec-{date}.yml`. Browse them:
 bundle exec rake run
 
 # Run specific suite
-liquid-spec examples/liquid_ruby.rb -s basics
+liquid-spec run examples/liquid_ruby.rb -s basics
 
 # Filter by name pattern
-liquid-spec examples/liquid_ruby.rb -n tablerow
+liquid-spec run examples/liquid_ruby.rb -n tablerow
 
 # Compare multiple adapters
 liquid-spec matrix --adapters=a.rb,b.rb -s basics
@@ -527,9 +528,10 @@ minimum_complexity: 1000
 ### Process
 
 1. Write spec and verify with `liquid-spec eval --compare`
-2. Add to appropriate file in `specs/basics/` or create new file
-3. Run `bundle exec rake run` to verify no regressions
-4. Submit PR with description of what the spec teaches
+2. Add to the appropriate file under `specs/`
+3. Run `rake check` to verify spec metadata, feature tags, and quality gates
+4. Run `bundle exec rake run` when the spec change could affect reference-adapter behavior
+5. Submit PR with description of what the spec teaches
 
 ---
 

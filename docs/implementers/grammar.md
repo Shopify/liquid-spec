@@ -1,3 +1,10 @@
+---
+title: "Liquid Grammar Reference"
+position: 2
+description: "Read while building the parser. A compact grammar for templates, tags, expressions, filters, and the important irregularities."
+optional: false
+---
+
 # Liquid Grammar Reference
 
 A pseudo-grammar for implementing Liquid. Liquid is **mostly regular** with specific documented irregularities.

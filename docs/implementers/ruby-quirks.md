@@ -1,11 +1,8 @@
 ---
-title: Ruby Quirks
-description: >
-  Liquid inherits several surprising behaviors from Ruby. This document catalogs these quirks
-  with exact input/output tables so implementers can match Ruby's behavior precisely.
-  Essential reading for anyone implementing Liquid outside of Ruby.
+title: "Ruby Quirks"
+position: 12
+description: "Read when output looks Ruby-specific. Catalogs size, first/last, hash rendering, ranges, and other Ruby compatibility behavior."
 optional: false
-order: 7
 ---
 
 # Ruby Quirks
@@ -257,13 +254,13 @@ Ranges have a size equal to their length.
 
 ```bash
 # Test integer size quirk
-liquid-spec my_adapter.rb -n filter_int
+liquid-spec run my_adapter.rb -n filter_int
 
 # Test hash first/last
-liquid-spec my_adapter.rb -n filter_hash
+liquid-spec run my_adapter.rb -n filter_hash
 
 # Test all type filters
-liquid-spec my_adapter.rb -n filter_ -n variable_type
+liquid-spec run my_adapter.rb -n filter_ -n variable_type
 ```
 
 See also:

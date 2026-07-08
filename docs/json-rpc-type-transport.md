@@ -201,11 +201,11 @@ The server can:
 ```
 function unwrap_ruby_type(marker):
     type = marker["_ruby_type"]
-    
+
     if type == "Symbol":
         # Reconstruct the symbol
         return Symbol(marker["value"])
-    
+
     if type == "Hash":
         # Option A: reconstruct from inspect (Ruby server can eval)
         # Option B: use data field for access, inspect for output
@@ -216,7 +216,7 @@ function unwrap_ruby_type(marker):
                 inspect: marker["inspect"],
                 data: marker["data"]
             )
-    
+
     # Unknown type — fall back to inspect string
     return marker["inspect"] or marker["data"] or to_string(marker)
 ```
@@ -231,16 +231,16 @@ If your server can't reconstruct the Ruby hash, create a proxy object that:
 class RubyHashProxy:
     inspect_string  # "{:foo => \"bar\"}"
     data            # {"foo": "bar"}
-    
+
     to_liquid_output():
         return inspect_string
-    
+
     [](key):
         return data[key] or data[key.to_s]
-    
+
     size():
         return length(data)
-    
+
     # For filters that call to_s or inspect
     to_s():
         return inspect_string

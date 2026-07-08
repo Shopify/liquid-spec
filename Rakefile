@@ -41,7 +41,7 @@ end
 
 desc "Run liquid-spec against the reference liquid-ruby adapter"
 task :run do
-  system("bundle", "exec", "ruby", "bin/liquid-spec", "examples/liquid_ruby.rb", "--no-max-failures") || abort
+  system("bundle", "exec", "ruby", "bin/liquid-spec", "run", "examples/liquid_ruby.rb", "--no-max-failures") || abort
 end
 
 desc "Run liquid-spec matrix across all adapters"

@@ -1,11 +1,8 @@
 ---
-title: For Loops
-description: >
-  How to implement Liquid's for loop correctly, including the forloop object, offset:continue
-  for pagination, parentloop for nested loops, and the else block. Essential reading for any
-  implementation that needs iteration.
+title: "For Loops"
+position: 6
+description: "Read when implementing iteration. Covers for, forloop, limit, offset, reversed, else, parentloop, and offset:continue."
 optional: false
-order: 2
 ---
 
 # The `for` Loop
