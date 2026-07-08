@@ -102,7 +102,7 @@ module CrossModeCompatibilityVerifier
             environment: s["environment"],
             filesystem: s["filesystem"],
             template_factory: s["template_factory"],
-            error_mode: em,
+            error_mode: em
           )
         end
       end
