@@ -25,7 +25,7 @@ gem "minitest-focus"
 # Development only
 group :development do
   gem "rake"
-  gem "activesupport", require: false
+  gem "timecop"
 end
 
 gem "base64", "~> 0.3.0"
