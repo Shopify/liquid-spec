@@ -82,7 +82,7 @@ module LaxModeDeclaredVerifier
             expected: s["expected"],
             error_mode: s["error_mode"],
             errors: s["errors"],
-            lax_applied: lax_applied,
+            lax_applied: lax_applied
           )
         end
       end

@@ -81,7 +81,7 @@ module JsonRpcPortabilityVerifier
             line: name_lines[s["name"]],
             name: s["name"],
             environment: s["environment"],
-            features: (s["features"] || []).map(&:to_s),
+            features: (s["features"] || []).map(&:to_s)
           )
         end
       end

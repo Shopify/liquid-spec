@@ -185,7 +185,7 @@ module LaxPlacementVerifier
       context = Liquid::Context.build(
         static_environments: assigns,
         registers: Liquid::Registers.new(build_registers(spec)),
-        rethrow_errors: false,
+        rethrow_errors: false
       )
 
       begin

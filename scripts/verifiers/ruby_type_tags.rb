@@ -107,7 +107,7 @@ module RubyTypeTagVerifier
             expected: s["expected"],
             environment: s["environment"],
             features: (s["features"] || []).map(&:to_s),
-            complexity: s["complexity"],
+            complexity: s["complexity"]
           )
         end
       end

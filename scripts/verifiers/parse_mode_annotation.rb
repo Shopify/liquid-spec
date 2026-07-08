@@ -152,7 +152,7 @@ module ParseModeAnnotationVerifier
             template_factory: s["template_factory"],
             errors: s["errors"],
             generate: s["generate"],
-            error_mode: spec_mode,
+            error_mode: spec_mode
           )
         end
       end
