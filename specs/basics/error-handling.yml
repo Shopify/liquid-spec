@@ -452,3 +452,98 @@
     HIGH COMPLEXITY: Parse errors should also include precise line numbers.
     The malformed {% if tag is on line 3. The parse error message should
     indicate where the syntax problem was detected.
+
+
+# ============================================================================
+# Structured error location specs — use line/position keys to check the
+# exception's attributes directly, not just the message string.
+# Requires the error_location feature (line/position as valid error keys).
+# ============================================================================
+- name: parse_error_line_3_structured
+  template: |
+    line 1
+    line 2
+    {% if true
+  errors:
+    parse_error:
+      - "if"
+    line: 3
+  complexity: 530
+  error_mode: lax
+  hint: |
+    Uses the structured 'line: 3' key to check the SyntaxError's line
+    attribute directly, rather than relying on 'line 3' appearing in
+    the error message string.
+
+- name: parse_error_line_5_strict_structured
+  template: |
+    a
+    b
+    c
+    d
+    {{ foo | }}
+  error_mode: :strict
+  errors:
+    parse_error:
+      - "Expected filter name"
+    line: 5
+  complexity: 530
+  hint: |
+    Strict mode parse error on line 5. The structured 'line: 5' key
+    checks the exception's line attribute. The 'Expected filter name'
+    substring verifies the error type.
+
+- name: parse_error_line_3_with_position
+  template: |
+    line 1
+    line 2
+    {{ 'oops }}
+  error_mode: :strict
+  errors:
+    parse_error:
+      - "Unterminated string"
+    line: 3
+    position: 4
+  complexity: 540
+  hint: |
+    Checks both line and position (column) via structured keys. The
+    unterminated string starts at column 4 (after "{{ ") on line 3.
+    position is only checked for raised exceptions (parse_error),
+    not for inline errors (output).
+
+- name: render_error_line_5_structured
+  template: |
+    line 1
+    line 2
+    line 3
+    line 4
+    {{ 10 | divided_by: 0 }}
+  errors:
+    render_error:
+      - "divided by 0"
+    line: 5
+  complexity: 530
+  error_mode: lax
+  hint: |
+    Uses the structured 'line: 5' key to check the RuntimeError's line
+    attribute directly. The 'divided by 0' substring verifies the error
+    type. This complements error_on_line_5_precise which checks the
+    message string.
+
+- name: partial_error_line_2_structured
+  template: "{% render 'bad_syntax' %}"
+  filesystem:
+    bad_syntax.liquid: |
+      first line
+      {% if true
+  errors:
+    render_error:
+      - "bad_syntax"
+    line: 2
+  complexity: 540
+  error_mode: lax
+  hint: |
+    A parse error on line 2 of a rendered partial. The structured
+    'line: 2' key checks the exception's line attribute (relative to
+    the partial source). The 'bad_syntax' substring verifies the
+    partial name is in the error.
