@@ -466,7 +466,7 @@
     {% if true
   errors:
     parse_error:
-      - "if"
+      - "not properly terminated"
     line: 3
   complexity: 530
   error_mode: lax
@@ -538,12 +538,12 @@
       {% if true
   errors:
     render_error:
-      - "bad_syntax"
+      - "not properly terminated"
     line: 2
   complexity: 540
   error_mode: lax
   hint: |
     A parse error on line 2 of a rendered partial. The structured
     'line: 2' key checks the exception's line attribute (relative to
-    the partial source). The 'bad_syntax' substring verifies the
+    the partial source). The substring verifies the
     partial name is in the error.
