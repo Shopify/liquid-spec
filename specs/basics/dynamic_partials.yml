@@ -6,6 +6,7 @@ _metadata:
     These tests focus on include with variable template names.
 specs:
 - name: dynamic_include_switches_per_render
+  complexity: 1000
   template: "{% include tpl %}"
   filesystem:
     a: "A"
@@ -15,6 +16,7 @@ specs:
   expected: "A"
 
 - name: dynamic_include_for_iterates
+  complexity: 1000
   template: "{% include tpl for items %}"
   filesystem:
     item: "[{{ item }}]"
@@ -24,6 +26,7 @@ specs:
   expected: "[1][2][3][4]"
 
 - name: dynamic_include_nested
+  complexity: 1000
   template: "{% include tpl %}"
   filesystem:
     outer: "[OUT:{% include inner_tpl %}]"
@@ -35,6 +38,7 @@ specs:
   expected: "[OUT:ok]"
 
 - name: dynamic_include_missing_partial_error
+  complexity: 1000
   template: "{% include tpl %}"
   error_mode: strict
   filesystem: {}
@@ -45,6 +49,7 @@ specs:
       - Could not find
 
 - name: dynamic_include_missing_partial_inline_error
+  complexity: 1000
   template: "{% include tpl %}"
   error_mode: strict
   filesystem: {}
@@ -57,6 +62,7 @@ specs:
       - Could not find
 
 - name: dynamic_include_illegal_name_error
+  complexity: 1000
   template: "{% include tpl %}"
   error_mode: strict
   filesystem:
@@ -68,6 +74,7 @@ specs:
       - Illegal template name
 
 - name: dynamic_include_illegal_name_inline_error
+  complexity: 1000
   template: "{% include tpl %}"
   error_mode: strict
   filesystem:

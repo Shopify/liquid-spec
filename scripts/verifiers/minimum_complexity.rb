@@ -38,7 +38,7 @@ CONDITION_FLOORS = {
   "error_mode: strict2"         => 100,
 }.freeze
 
-SPEC_ROOT = File.expand_path("../../../specs", __dir__)
+SPEC_ROOT ||= File.expand_path("../../specs", __dir__)
 
 module MinimumComplexityVerifier
   class << self
@@ -83,13 +83,14 @@ module MinimumComplexityVerifier
         specs = extract_specs(data)
         next unless specs
 
+        suite_min = suite_minimum_complexity(file)
         name_lines = index_name_lines(file)
         specs.each_with_index do |spec, idx|
           next unless spec.is_a?(Hash)
           name = spec["name"] || "(spec ##{idx + 1})"
           line = name_lines[name] || 0
           yield({ file: rel, line: line, name: name,
-                  complexity: spec["complexity"],
+                  complexity: spec["complexity"] || suite_min,
                   features: spec["features"] || [],
                   environment: spec["environment"],
                   render_errors: spec["render_errors"],
@@ -138,17 +139,26 @@ module MinimumComplexityVerifier
       issues
     end
 
-    def has_instantiate?(obj)
+    def has_instantiate?(obj, depth = 0)
+      return false if depth > 20  # prevent infinite recursion
       case obj
       when Hash
-        obj.any? { |k, v| (k.is_a?(String) && k.start_with?("instantiate:")) || has_instantiate?(v) }
+        obj.any? { |k, v| (k.is_a?(String) && k.start_with?("instantiate:")) || has_instantiate?(v, depth + 1) }
       when Array
-        obj.any? { |e| has_instantiate?(e) }
+        obj.any? { |e| has_instantiate?(e, depth + 1) }
       when String
         obj.start_with?("instantiate:")
       else
         false
       end
+    end
+
+    def suite_minimum_complexity(spec_file)
+      suite_file = File.join(File.dirname(spec_file), "suite.yml")
+      return nil unless File.exist?(suite_file)
+      suite = safe_load(suite_file)
+      return nil unless suite.is_a?(Hash)
+      suite["minimum_complexity"]
     end
 
     def safe_load(file)

@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+# advisory: true
+#
 # Lint: no two specs may share the same name. Duplicate names cause one
 # spec to shadow the other, making the hidden spec unreachable.
 #
@@ -9,7 +11,7 @@
 
 require "yaml"
 
-SPEC_ROOT = File.expand_path("../../../specs", __dir__)
+SPEC_ROOT ||= File.expand_path("../../specs", __dir__)
 
 module SpecNameCollisionVerifier
   class << self

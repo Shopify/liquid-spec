@@ -9,6 +9,7 @@
 # chain (local > file > global) without exposing context internals.
 
 - name: strict2_rejects_bare_bracket_string_variable
+  complexity: 1000
   template: "{{ ['product'] }}"
   error_mode: strict2
   errors:
@@ -22,6 +23,7 @@
     normal scope chain.
 
 - name: strict2_rejects_bare_bracket_double_quoted
+  complexity: 1000
   template: '{{ ["product"] }}'
   error_mode: strict2
   errors:
@@ -33,6 +35,7 @@
     Use self["product"] instead.
 
 - name: strict2_rejects_bare_bracket_dynamic_lookup
+  complexity: 1000
   template: "{{ [key] }}"
   error_mode: strict2
   errors:
@@ -44,6 +47,7 @@
     Use self[key] instead.
 
 - name: strict2_rejects_bare_bracket_in_for
+  complexity: 1000
   template: "{% for item in ['collection'] %}{{ item }}{% endfor %}"
   error_mode: strict2
   errors:
@@ -55,6 +59,7 @@
     Use self['collection'] instead.
 
 - name: strict2_rejects_bare_bracket_in_if
+  complexity: 1000
   template: "{% if ['product'] == true %}hello{% endif %}"
   error_mode: strict2
   errors:
@@ -66,6 +71,7 @@
     Use self['product'] instead.
 
 - name: strict2_rejects_bare_bracket_in_case
+  complexity: 1000
   template: "{% case ['product'] %}{% when 'a' %}hello{% endcase %}"
   error_mode: strict2
   errors:
@@ -77,6 +83,7 @@
     Use self['product'] instead.
 
 - name: strict2_rejects_bare_bracket_in_assign
+  complexity: 1000
   template: "{% assign x = ['product'] %}"
   error_mode: strict2
   errors:

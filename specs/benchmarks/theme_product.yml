@@ -8,6 +8,7 @@ _metadata:
     - _data/theme_database.yml
 specs:
 - name: shopify_theme_product_page
+  complexity: 1000
   template: |
     <div class="template-product">
       <div class="container">

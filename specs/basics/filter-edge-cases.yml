@@ -190,7 +190,7 @@
   errors:
     output:
       - "cannot sort"
-  complexity: 90
+  complexity: 100
   error_mode: strict
   hint: |
     Sorting arrays with mixed types (numbers, strings, booleans) raises

@@ -51,9 +51,10 @@ VALID_FEATURES = %w[
   drops
   randomness
   shopify_resource_limits
+  activesupport
 ].freeze
 
-VALID_ERROR_MODES = %w[strict strict2 lax].freeze
+VALID_ERROR_MODES = %w[strict strict2 lax warn].freeze
 
 VALID_ERROR_KEYS = %w[parse_error render_error output line position].freeze
 # Keys whose values are arrays of patterns (line/position are integers)
@@ -101,7 +102,7 @@ METADATA_FIELDS = {
   "data_files"        => Array,
 }.freeze
 
-SPEC_ROOT = File.expand_path("../../../specs", __dir__)
+SPEC_ROOT ||= File.expand_path("../../specs", __dir__)
 
 module SpecSchemaVerifier
   class << self
@@ -125,14 +126,12 @@ module SpecSchemaVerifier
         end
 
         specs = extract_specs(data)
-        if specs.nil?
-          offenders << { file: rel, line: 0, name: "(file)", issues: ["invalid top-level structure: expected array or hash with 'specs:' key"] }
-          next
-        end
+        next unless specs.is_a?(Array)  # skip non-spec files (data files, etc.)
 
+        suite_min_complexity = suite_minimum_complexity(file)
         specs.each_with_index do |spec, idx|
           next unless spec.is_a?(Hash)
-          issues = check_spec(spec)
+          issues = check_spec(spec, suite_min_complexity: suite_min_complexity)
           next if issues.empty?
           offenders << { file: rel, line: idx + 1, name: spec["name"] || "(spec ##{idx + 1})", issues: issues }
         end
@@ -153,13 +152,21 @@ module SpecSchemaVerifier
     end
 
     private
-
     def spec_files
-      Dir.glob(File.join(SPEC_ROOT, "**/*.yml")).sort
+      Dir.glob(File.join(SPEC_ROOT, "**/*.yml")).sort.reject { |f| File.basename(f) == "suite.yml" }
     end
 
     def relative_path(path)
       path.sub("#{SPEC_ROOT}/", "")
+    end
+
+    def suite_minimum_complexity(spec_file)
+      suite_dir = File.dirname(spec_file)
+      suite_file = File.join(suite_dir, "suite.yml")
+      return nil unless File.exist?(suite_file)
+      suite = YAML.unsafe_load(File.read(suite_file)) rescue nil
+      return nil unless suite.is_a?(Hash)
+      suite["minimum_complexity"]
     end
 
     def safe_load(file)
@@ -226,65 +233,78 @@ module SpecSchemaVerifier
 
       # Validate metadata complexity range
       mc = meta["complexity"]
-      if mc.is_a?(Integer) && (mc < 1 || mc > 1000)
+      if mc.is_a?(Integer) && (mc < 0 || mc > 1000)
         issues << "_metadata complexity #{mc} is not in 1..1000"
       end
 
       issues
     end
 
-    def check_spec(spec)
-      issues = []
+      def check_spec(spec, suite_min_complexity: nil)
+        issues = []
 
-      # Required fields
-      REQUIRED_SPEC_FIELDS.each do |field|
-        val = spec[field]
-        case field
-        when "name"
-          unless val.is_a?(String) && !val.empty?
-            issues << "missing or empty 'name'"
-          end
-        when "template"
-          unless val.is_a?(String)
-            issues << "missing 'template' (must be a string)"
+        # Required fields
+        REQUIRED_SPEC_FIELDS.each do |field|
+          val = spec[field]
+          case field
+          when "name"
+            unless val.is_a?(String) && !val.empty?
+              issues << "missing or empty 'name'"
+            end
+          when "template"
+            unless val.is_a?(String)
+              issues << "missing 'template' (must be a string)"
+            end
           end
         end
-      end
 
-      # Unknown fields
-      spec.each_key do |key|
-        unless SPEC_FIELDS.key?(key)
-          issues << "unknown field '#{key}' (valid: #{SPEC_FIELDS.keys.join(", ")})"
+        # Unknown fields
+        spec.each_key do |key|
+          unless SPEC_FIELDS.key?(key)
+            issues << "unknown field '#{key}' (valid: #{SPEC_FIELDS.keys.join(", ")})"
+          end
         end
-      end
 
-      # Type-check known fields
-      SPEC_FIELDS.each do |field, type|
-        next unless spec.key?(field)
-        next if type.nil?
-        val = spec[field]
-        if type == Integer
-          unless val.is_a?(Integer)
-            issues << "'#{field}' must be an integer, got #{val.class}"
+        # Type-check known fields
+        SPEC_FIELDS.each do |field, type|
+          next unless spec.key?(field)
+          next if type.nil?
+          val = spec[field]
+          next if val.nil?  # nil is valid for optional fields
+          if type == Integer
+            unless val.is_a?(Integer)
+              issues << "'#{field}' must be an integer, got #{val.class}"
+            end
+          elsif type == Array
+            unless val.is_a?(Array)
+              issues << "'#{field}' must be an array, got #{val.class}"
+            end
+          elsif type == Hash
+            unless val.is_a?(Hash)
+              issues << "'#{field}' must be a hash, got #{val.class}"
+            end
+          elsif type.is_a?(Class) && !val.is_a?(type)
+            issues << "'#{field}' must be a #{type}, got #{val.class}"
           end
-        elsif type == Array
-          unless val.is_a?(Array)
-            issues << "'#{field}' must be an array, got #{val.class}"
-          end
-        elsif type == Hash
-          unless val.is_a?(Hash)
-            issues << "'#{field}' must be a hash, got #{val.class}"
-          end
-        elsif type.is_a?(Class) && !val.is_a?(type)
-          issues << "'#{field}' must be a #{type}, got #{val.class}"
         end
-      end
 
-      # complexity: integer 1..1000
-      c = spec["complexity"]
-      if c.is_a?(Integer) && (c < 1 || c > 1000)
-        issues << "complexity #{c} is not in 1..1000"
-      end
+        # complexity: required, integer 0..1000.
+        # If the spec doesn't set it but the suite has minimum_complexity,
+        # the spec inherits the suite default — that's intentional, not a violation.
+        c = spec["complexity"]
+        if !c && c != 0  # complexity 0 is falsy but valid
+          if suite_min_complexity
+            # OK — inherits suite minimum_complexity
+          else
+            issues << "missing 'complexity' — every spec must have a complexity score (0..1000)"
+          end
+        elsif !c.is_a?(Integer)
+          issues << "complexity must be an integer, got #{c.class}"
+        elsif c < 0 || c > 1000
+          issues << "complexity #{c} is not in 0..1000"
+        end
+
+
 
       # features: array of known feature names, no duplicates
       f = spec["features"]

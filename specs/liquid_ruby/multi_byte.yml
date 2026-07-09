@@ -2,3 +2,4 @@
   environment:
   expected: "foo © bar pass"
   name: Handles multi-byte characters
+  complexity: 1000

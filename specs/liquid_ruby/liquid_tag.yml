@@ -626,6 +626,7 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
 - name: RecordedTest#LiquidTagParityTest#test_if_with_tablerow_inside_1c48c77f
+  complexity: 1000
   template: |-
     {% liquid
     if show
@@ -758,6 +759,7 @@
     snippet: Hello {{ name }}
   caller_location: test/liquid_tag_test.rb:27
 - name: RecordedTest#LiquidTagParityTest#test_tablerow_basic_27c09d63
+  complexity: 1000
   template: |-
     {% liquid
     tablerow item in items
@@ -776,6 +778,7 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
 - name: RecordedTest#LiquidTagParityTest#test_tablerow_empty_878313e6
+  complexity: 1000
   template: |-
     {% liquid
     tablerow item in items
@@ -791,6 +794,7 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
 - name: RecordedTest#LiquidTagParityTest#test_tablerow_with_cols_b66abba1
+  complexity: 1000
   template: |-
     {% liquid
     tablerow item in items cols:2
@@ -811,6 +815,7 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
 - name: RecordedTest#LiquidTagParityTest#test_tablerow_with_limit_b774ae45
+  complexity: 1000
   template: |-
     {% liquid
     tablerow item in items limit:2
@@ -830,6 +835,7 @@
     _error-message: This liquid context does not allow includes.
   caller_location: test/liquid_tag_test.rb:27
 - name: RecordedTest#LiquidTagParityTest#test_tablerow_with_offset_d6053a99
+  complexity: 1000
   template: |-
     {% liquid
     tablerow item in items offset:1

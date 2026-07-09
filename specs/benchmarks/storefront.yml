@@ -19,6 +19,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_storefront_product_page
+  complexity: 1000
   template: |
     {%- comment -%}Full product page — standard Liquid only{%- endcomment -%}
     <!DOCTYPE html>
@@ -522,6 +523,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_storefront_collection_page
+  complexity: 1000
   template: |
     {%- comment -%}Collection page with server-side filtering, sorting, and pagination{%- endcomment -%}
     <!DOCTYPE html>
@@ -885,6 +887,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_storefront_cart_page
+  complexity: 1000
   template: |
     {%- comment -%}Shopping cart — heavy math and filter chain usage{%- endcomment -%}
     <!DOCTYPE html>
@@ -1105,6 +1108,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_storefront_order_email
+  complexity: 1000
   template: |
     {%- comment -%}Order confirmation email — tests capture, date, and complex nesting{%- endcomment -%}
     {% capture email_subject %}Order {{ order.name }} confirmed — {{ shop.name }}{% endcapture %}
@@ -1284,6 +1288,7 @@ specs:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 - name: bench_storefront_cms_page
+  complexity: 1000
   template: |
     {%- comment -%}CMS page with dynamic section rendering — tests dynamic includes heavily{%- endcomment -%}
     <!DOCTYPE html>

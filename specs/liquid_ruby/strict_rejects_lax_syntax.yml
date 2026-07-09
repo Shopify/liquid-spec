@@ -6,6 +6,7 @@
 # but with error_mode: :strict and expecting syntax errors.
 
 - name: StrictModeTest#test_assign_with_parentheses_rejected
+  complexity: 1000
   template: "{% assign foo = ('X' | downcase) %}"
   error_mode: :strict
   errors:
@@ -14,6 +15,7 @@
   hint: "Filters cannot appear inside parentheses - lax mode tolerates this, strict rejects it"
 
 - name: StrictModeTest#test_quirky_negative_sign_rejected
+  complexity: 1000
   template: "{{ - 'theme.css' - }}"
   error_mode: :strict
   errors:
@@ -22,6 +24,7 @@
   hint: "Leading/trailing dashes in variable output are invalid - lax mode tolerates this, strict rejects it"
 
 - name: StrictModeTest#test_unclosed_bracket_lookup_rejected
+  complexity: 1000
   template: "{{['foo'}}"
   error_mode: :strict
   errors:

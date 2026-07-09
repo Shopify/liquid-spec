@@ -11,6 +11,7 @@ _metadata:
 
 specs:
 - name: recursion_include_error_inline
+  complexity: 1000
   template: |
     start
     {% include 'snippets/foo' %}
@@ -36,6 +37,7 @@ specs:
     The counter reaches 99 before the error because we start at depth 1.
 
 - name: recursion_render_error_inline
+  complexity: 1000
   template: |
     start
     {% render 'snippets/foo' with depth as depth %}
@@ -60,6 +62,7 @@ specs:
     execution continues after the error, so "done" still appears.
 
 - name: recursion_render_named_arg_inline
+  complexity: 1000
   template: |
     start
     {% render 'snippets/foo' with depth as depth %}

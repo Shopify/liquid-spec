@@ -150,6 +150,7 @@ specs:
   expected: '0'
   complexity: 160
 - name: StandardFilterTest#test_base64_decode_0524bc39
+  complexity: 1000
   template: "{{ a0 | base64_decode }}"
   environment:
     a0: true
@@ -164,6 +165,7 @@ specs:
   expected: ''
   complexity: 160
 - name: StandardFilterTest#test_base64_decode_3a53835f
+  complexity: 1000
   template: "{{ a0 | base64_decode }}"
   environment:
     a0: "/w=="
@@ -353,6 +355,7 @@ specs:
   expected: "✅"
   complexity: 160
 - name: StandardFilterTest#test_base64_url_safe_decode_57dc2594
+  complexity: 1000
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: true
@@ -361,6 +364,7 @@ specs:
   features:
   - binary_data
 - name: StandardFilterTest#test_base64_url_safe_decode_5de5c9e0
+  complexity: 1000
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: _w==
@@ -369,6 +373,7 @@ specs:
   features:
   - binary_data
 - name: StandardFilterTest#test_base64_url_safe_decode_844ec741
+  complexity: 1000
   template: "{{ a0 | base64_url_safe_decode }}"
   environment:
     a0: foo
@@ -638,6 +643,7 @@ specs:
   expected: "-99999999"
   complexity: 160
 - name: StandardFilterTest#test_capitalize_c219139a
+  complexity: 1000
   template: "{{ a0 | capitalize }}"
   environment:
     a0:
@@ -1458,6 +1464,7 @@ specs:
   features:
   - ruby_types
 - name: StandardFilterTest#test_downcase_92e1d269
+  complexity: 1000
   template: "{{ a0 | downcase }}"
   environment:
     a0:
@@ -1661,6 +1668,7 @@ specs:
   expected: "&lt;strong&gt;"
   complexity: 160
 - name: StandardFilterTest#test_escape_fa9d5e38
+  complexity: 1000
   template: "{{ a0 | escape }}"
   environment:
     a0:
@@ -1687,6 +1695,7 @@ specs:
   expected: "{&quot;foo&quot;=&gt;&quot;bar&quot;}"
   complexity: 160
 - name: StandardFilterTest#test_escape_once_0fadc690
+  complexity: 1000
   template: "{{ a0 | escape_once }}"
   environment:
     a0:
@@ -2239,6 +2248,7 @@ specs:
   expected: 'false'
   complexity: 160
 - name: StandardFilterTest#test_h_90aa2f49
+  complexity: 1000
   template: "{{ a0 | h }}"
   environment:
     a0:
@@ -2384,6 +2394,7 @@ specs:
   expected: '123'
   complexity: 160
 - name: StandardFilterTest#test_join_4f707377
+  complexity: 1000
   template: "{{ a0 | join }}"
   environment:
     a0:
@@ -2769,6 +2780,7 @@ specs:
   expected: foo
   complexity: 160
 - name: StandardFilterTest#test_lstrip_ea81e581
+  complexity: 1000
   template: "{{ a0 | lstrip }}"
   environment:
     a0:
@@ -2906,6 +2918,7 @@ specs:
   expected: foo
   complexity: 160
 - name: StandardFilterTest#test_newline_to_br_8e868ecc
+  complexity: 1000
   template: "{{ a0 | newline_to_br }}"
   environment:
     a0:
@@ -3420,6 +3433,7 @@ specs:
   features:
   - ruby_types
 - name: StandardFilterTest#test_rstrip_1f72cde9
+  complexity: 1000
   template: "{{ a0 | rstrip }}"
   environment:
     a0:
@@ -4057,6 +4071,7 @@ specs:
   expected: 'true'
   complexity: 160
 - name: StandardFilterTest#test_sort_1efd1ab9
+  complexity: 1000
   template: "{{ a0 | sort: a1 }}"
   environment:
     a0:
@@ -4394,6 +4409,7 @@ specs:
   expected: "-99999999"
   complexity: 160
 - name: StandardFilterTest#test_sort_natural_98a92f5b
+  complexity: 1000
   template: "{{ a0 | sort_natural: a1 }}"
   environment:
     a0:
@@ -4657,6 +4673,7 @@ specs:
   expected: '123'
   complexity: 160
 - name: StandardFilterTest#test_squish_c30a81ae
+  complexity: 1000
   template: "{{ a0 | squish }}"
   environment:
     a0:
@@ -4771,6 +4788,7 @@ specs:
   expected: '0.0'
   complexity: 160
 - name: StandardFilterTest#test_strip_c1ea16c3
+  complexity: 1000
   template: "{{ a0 | strip }}"
   environment:
     a0:
@@ -4827,6 +4845,7 @@ specs:
   expected: '0'
   complexity: 160
 - name: StandardFilterTest#test_strip_html_0c27088d
+  complexity: 1000
   template: "{{ a0 | strip_html }}"
   environment:
     a0:
@@ -5142,6 +5161,7 @@ specs:
   features:
   - ruby_types
 - name: StandardFilterTest#test_strip_newlines_d61eb5c8
+  complexity: 1000
   template: "{{ a0 | strip_newlines }}"
   environment:
     a0:
@@ -5804,6 +5824,7 @@ specs:
   expected: 测试测试测试测试
   complexity: 160
 - name: StandardFilterTest#test_truncatewords_29f226da
+  complexity: 1000
   template: "{{ a0 | truncatewords: a1 }}"
   environment:
     a0: Two small (13&#8221; x 5.5&#8221; x 10&#8221; high) baskets fit inside one
@@ -5818,6 +5839,7 @@ specs:
   expected: "-99999999"
   complexity: 160
 - name: StandardFilterTest#test_truncatewords_4896de83
+  complexity: 1000
   template: "{{ a0 | truncatewords }}"
   environment:
     a0:
@@ -6019,7 +6041,7 @@ specs:
     - 'instantiate:StringDrop:':
         value: bar
   expected: foobar
-  complexity: 160
+  complexity: 200
   features:
   - drops
 - name: StandardFilterTest#test_uniq_0ce0fecb
@@ -6140,7 +6162,7 @@ specs:
         value: bar
     - foo
   expected: foobar
-  complexity: 160
+  complexity: 200
   features:
   - drops
 - name: StandardFilterTest#test_uniq_9c0e7ae6
@@ -6264,6 +6286,7 @@ specs:
   features:
   - ruby_types
 - name: StandardFilterTest#test_upcase_2abc21fb
+  complexity: 1000
   template: "{{ a0 | upcase }}"
   environment:
     a0:
@@ -6440,6 +6463,7 @@ specs:
   expected: foo
   complexity: 160
 - name: StandardFilterTest#test_url_decode_708a685e
+  complexity: 1000
   template: "{{ a0 | url_decode }}"
   environment:
     a0:

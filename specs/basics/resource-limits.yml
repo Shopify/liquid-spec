@@ -9,6 +9,7 @@ _metadata:
 
 specs:
 - name: cumulative_render_score_across_partials
+  complexity: 1000
   template: "{% render 'a' %}{% render 'b' %}{% render 'c' %}"
   error_mode: strict
   filesystem:
@@ -26,6 +27,7 @@ specs:
     is fine, but cumulative limit (25) is exceeded after the second partial.
 
 - name: cumulative_limits_not_triggered_when_unset
+  complexity: 1000
   template: "{% render 'a' %}{% render 'b' %}"
   filesystem:
     a: "{% for i in (1..5) %}x{% endfor %}"
@@ -38,6 +40,7 @@ specs:
     cumulative score grows. Only per-template limits are checked.
 
 - name: per_template_limit_still_works_with_cumulative
+  complexity: 1000
   template: "{% for i in (1..100) %}x{% endfor %}"
   error_mode: strict
   resource_limits:

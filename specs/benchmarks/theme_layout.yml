@@ -8,6 +8,7 @@ _metadata:
     - _data/theme_database.yml
 specs:
 - name: shopify_theme_full_page
+  complexity: 1000
   template: |
     <!DOCTYPE html>
     <html lang="en">

@@ -8,5 +8,6 @@
       - bar
   expected: "hellohel\nlo{\"nested\"=>[\"foo\", \"bar\"]}"
   name: Array to_s handles escape sequences
+  complexity: 1000
   features:
   - ruby_types

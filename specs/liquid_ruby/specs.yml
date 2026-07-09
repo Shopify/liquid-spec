@@ -4196,7 +4196,7 @@ specs:
     errors:
       'instantiate:ErrorDrop:': {}
   render_errors: true
-  complexity: 190
+  complexity: 200
   expected: 'Liquid error (foo line 1): ErrorDrop: access triggered an error'
   filesystem:
     foo: "{{ foo.standard_error }}"
@@ -4209,7 +4209,7 @@ specs:
     errors:
       'instantiate:ErrorDrop:': {}
   render_errors: true
-  complexity: 190
+  complexity: 200
   expected: 'Liquid error (some/path/foo line 1): ErrorDrop: access triggered an error'
   template_factory:
     'instantiate:StubTemplateFactory:': {}
@@ -5007,7 +5007,7 @@ specs:
     errors:
       'instantiate:ErrorDrop:': {}
   render_errors: true
-  complexity: 190
+  complexity: 200
   expected: 'Liquid error (foo line 1): ErrorDrop: access triggered an error'
   filesystem:
     foo: "{{ foo.standard_error }}"
@@ -5020,7 +5020,7 @@ specs:
     errors:
       'instantiate:ErrorDrop:': {}
   render_errors: true
-  complexity: 190
+  complexity: 200
   expected: 'Liquid error (some/path/foo line 1): ErrorDrop: access triggered an error'
   template_factory:
     'instantiate:StubTemplateFactory:': {}
@@ -5351,7 +5351,7 @@ specs:
       'instantiate:BooleanDrop:':
         value: true
   render_errors: false
-  complexity: 180
+  complexity: 200
   expected: "true"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L874
   features:
@@ -5369,7 +5369,7 @@ specs:
       'instantiate:BooleanDrop:':
         value: false
   render_errors: false
-  complexity: 180
+  complexity: 200
   expected: bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L873
   features:
@@ -5387,7 +5387,7 @@ specs:
       'instantiate:BooleanDrop:':
         value: false
   render_errors: false
-  complexity: 180
+  complexity: 200
   expected: "false"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L885
   features:
@@ -5399,7 +5399,7 @@ specs:
       'instantiate:BooleanDrop:':
         value: true
   render_errors: false
-  complexity: 180
+  complexity: 200
   expected: "true"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/standard_filter_test.rb#L886
   features:

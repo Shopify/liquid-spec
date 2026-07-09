@@ -18,6 +18,7 @@ specs:
 # =============================================================================
 
 - name: bench_simple_product_listing
+  complexity: 1000
   template: |
     {% render 'header' with 'Products' as title %}
     <ul>
@@ -54,6 +55,7 @@ specs:
 # =============================================================================
 
 - name: bench_render_with_params
+  complexity: 1000
   template: |
     {% for product in products %}
     {% render 'product_card', product: product, show_price: true %}
@@ -90,6 +92,7 @@ specs:
 # =============================================================================
 
 - name: bench_render_for_loop
+  complexity: 1000
   template: "{% render 'item' for items as item %}"
   environment:
     items:
@@ -124,6 +127,7 @@ specs:
 # =============================================================================
 
 - name: bench_nested_partials
+  complexity: 1000
   template: "{% render 'layout' %}"
   environment:
     title: My Store
@@ -211,6 +215,7 @@ specs:
 # =============================================================================
 
 - name: bench_notification_center
+  complexity: 1000
   template: |
     <div class="notifications">
       {% for notification in notifications %}
@@ -590,6 +595,7 @@ specs:
 # =============================================================================
 
 - name: bench_ecommerce_product_page
+  complexity: 1000
   template: |
     {% render 'page_header', page_title: product.name %}
     {% render 'breadcrumbs', items: breadcrumbs %}
@@ -1640,6 +1646,7 @@ specs:
 # =============================================================================
 
 - name: bench_dynamic_include_switch
+  complexity: 1000
   template: |
     {% for t in template_names %}
       {% assign tpl = t %}
@@ -1666,6 +1673,7 @@ specs:
 
 
 - name: bench_dynamic_include_for_loop
+  complexity: 1000
   template: "{% include tpl for items %}"
   environment:
     tpl: item_row
@@ -1697,6 +1705,7 @@ specs:
 
 
 - name: bench_dynamic_include_nested
+  complexity: 1000
   template: |
     {% assign tpl = 'outer' %}
     {% include tpl %}

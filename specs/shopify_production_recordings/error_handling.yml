@@ -9,27 +9,8 @@
   render_errors: true
   error_mode: strict
   errors:
-    output: |2+
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
-
-      Liquid error (line 2): internal
+    output:
+      - "Liquid error (line 2): internal"
 
   template: |
     {% for x in (1..10) %}

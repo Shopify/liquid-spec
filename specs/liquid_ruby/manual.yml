@@ -3,20 +3,24 @@
   environment: {}
   expected: "2.0"
   name: Float serialization with zero in decimal place
+  complexity: 1000
 
 - template: "{%- assign min_aspect_ratio = 0.000000000000000000000000001 -%}{{ min_aspect_ratio }}"
   environment: {}
   expected: "1.0e-27"
   name: Float serialization with very long float
+  complexity: 1000
 
 - template: "{%- assign min_aspect_ratio = 2.1 -%}{{ min_aspect_ratio }}"
   environment: {}
   expected: "2.1"
   name: Float serialization with non-zero in decimal place
+  complexity: 1000
 
 - template: "{% include 'locale_variables' echo1: 'test123' %}"
   environment: {}
   name: Rendering include tag with variables and file does not exist
+  complexity: 1000
   filesystem: {}
   render_errors: true
   features: [inline_errors, shopify_error_format]
@@ -28,6 +32,7 @@
 - template: "{% include 'foo.liquid' %}"
   environment: {}
   name: Rendering include tag with file does not exist does not repeat .liquid extension
+  complexity: 1000
   filesystem: {}
   render_errors: true
   features: [inline_errors, shopify_error_format]
@@ -54,18 +59,21 @@
     x: 1
   expected: "1 2"
   name: Find variable before assign in subscope
+  complexity: 1000
   issue: https://github.com/Shopify/liquid-wasm/issues/477
 
 - template: "{{ foo }}{% increment foo %} {{ foo }}"
   environment: {}
   expected: "0 1"
   name: Find variable before initialization through increment
+  complexity: 1000
   issue: https://github.com/Shopify/liquid-wasm/issues/477
 
 - template: "{{ foo }}{% decrement foo %} {{ foo }}"
   environment: {}
   expected: "-1 -1"
   name: Find variable before initialization through decrement
+  complexity: 1000
   issue: https://github.com/Shopify/liquid-wasm/issues/477
 
 - name: Liquid error in snippet
@@ -184,12 +192,14 @@
   complexity: 300
 
 - name: Tablerow renders single column when lookup is a string and limit is less than 1
+  complexity: 1000
   template: "{% tablerow a in 'abc' limit: 0 %}{{ a }}{% endtablerow %}"
   expected: |
     <tr class="row1">
     <td class="col1">abc</td></tr>
 
 - name: Tablerow renders single column when lookup is a string and offset is greater than 1
+  complexity: 1000
   template: "{% tablerow a in 'abc' offset: 9999 %}{{ a }}{% endtablerow %}"
   expected: |
     <tr class="row1">

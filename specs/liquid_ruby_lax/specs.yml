@@ -74,7 +74,8 @@ specs:
 - name: Does not ignore unknown operators when the tags body is empty but there is an else
   template: "{% if true true %}{% else %}1{% endif %}"
   errors:
-      output: "Unknown operator true"
+      output:
+      - "Unknown operator true"
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -93,7 +94,8 @@ specs:
       b
     {% endif %}
   errors:
-      output: "Unknown operator true"
+      output:
+      - "Unknown operator true"
   render_errors: true
   features: [inline_errors]
   hint: |
@@ -101,7 +103,8 @@ specs:
 - name: Unsupported operators render an error
   template: "{% if 0 = 0 %}NOPE{% endif %}"
   errors:
-      output: "Unknown operator ="
+      output:
+      - "Unknown operator ="
   render_errors: true
   features: [inline_errors]
   hint: |

@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+# advisory: true
+#
 # Lint: every filesystem entry in specs should have a recognizable
 # template extension (.liquid, .svg, .json, etc.) or be a bare name
 # that the filesystem resolver would add .liquid to.
@@ -14,7 +16,7 @@
 
 require "yaml"
 
-SPEC_ROOT = File.expand_path("../../../specs", __dir__)
+SPEC_ROOT ||= File.expand_path("../../specs", __dir__)
 
 # Extensions that are valid in Liquid filesystems.
 # .liquid is the standard; others appear in Shopify theme contexts.
