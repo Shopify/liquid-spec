@@ -25,7 +25,7 @@ module Liquid
     # A lazy spec that delays drop instantiation until render time
     # Environment data may be stored as a YAML string for deferred instantiation
     class LazySpec
-      VALID_ERROR_KEYS = ["parse_error", "render_error", "output"].freeze
+      VALID_ERROR_KEYS = ["parse_error", "render_error", "output", "line", "position"].freeze
 
       attr_reader :name, :template, :template_name, :expected, :expected_pattern, :errors, :hint, :doc, :complexity
       attr_reader :error_mode, :error_modes, :render_errors, :features
