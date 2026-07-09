@@ -349,10 +349,21 @@ module RemoteLiquid
       # Build context — rethrow errors when strict_errors is true
       # so the adapter can match them against expected error patterns
       strict_errors = options["strict_errors"] || false
+
+      # Build resource limits if provided
+      resource_limits = nil
+      if options["resource_limits"]
+        resource_limits = Liquid::ResourceLimits.new({})
+        options["resource_limits"].each do |key, value|
+          resource_limits.send(:"#{key}=", value)
+        end
+      end
+
       context = Liquid::Context.build(
         static_environments: unwrapped_env,
         registers: Liquid::Registers.new(registers),
-        rethrow_errors: strict_errors
+        rethrow_errors: strict_errors,
+        resource_limits: resource_limits,
       )
 
       # Handle time freezing

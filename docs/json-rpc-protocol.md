@@ -142,6 +142,7 @@ Render a compiled template with environment variables.
 | `template_id` | string | yes | ID from compile response |
 | `environment` | object | no | Variables available to the template |
 | `options.strict_errors` | boolean | no | If true, render errors should be reported as errors; if false, render them inline in `output` when possible |
+| `options.resource_limits` | object | no | Resource limits: `render_score_limit` (int), `cumulative_render_score_limit` (int) |
 | `frozen_time` | string | no | ISO 8601 timestamp for `now` keyword |
 
 **Response (always success for valid template_id):**
@@ -351,16 +352,41 @@ Use JSON-RPC errors for actual protocol failures. liquid-spec also tolerates the
 
 ### Error Handling
 
-Liquid has complex error handling that implementers need to understand:
+Liquid has two orthogonal error axes that interact through the protocol:
 
-1. **Parse errors** - Syntax problems that prevent compilation. Prefer `result.error` with `type: "parse_error"`.
+**Parse mode** (set at compile time via `options.error_mode`):
+- `strict` — reject invalid syntax with a parse error
+- `strict2` — like strict but with relaxed trailing comma/colon syntax (default)
+- `lax` — recover from syntax errors, render what parsed
 
-2. **Render errors with `strict_errors: true`** - Problems during rendering should be reported as `result.error` with `type: "render_error"`.
+**Error rendering** (set at render time via `options.strict_errors`):
+- `true` (default) — render errors are raised as `result.error`
+- `false` — render errors are rendered inline as `Liquid error: ...` text in `output`
 
-3. **Render errors with `strict_errors: false`** - Render the inline Liquid error text into `output` and optionally include details in `result.errors`.
+**How errors flow through the protocol:**
 
-4. **Protocol errors** - Only malformed JSON-RPC usage should use JSON-RPC `error`, except for tolerated legacy `-32000` / `-32001` Liquid errors.
+1. **Parse errors** — returned in `result.error` with `type: "parse_error"`.
+   The template fails to compile. `template_id` is null.
 
+2. **Render errors with `strict_errors: true`** — returned in `result.error`
+   with `type: "render_error"`. `output` is null.
+
+3. **Render errors with `strict_errors: false`** — rendered inline as
+   `Liquid error (line N): <message>` in `output`. The error is also
+   reported in `result.errors[]` for structured access.
+
+4. **Protocol errors** — only for malformed JSON-RPC usage. Legacy
+   `-32000` (parse error) and `-32001` (render error) codes are
+   tolerated for backwards compatibility; liquid-spec converts them
+   to the appropriate inline output or raised error.
+
+**Subprocess crashes** — if the subprocess exits unexpectedly or times
+out, liquid-spec raises a `SubprocessError` that includes the spec name
+and source file for correlation: `[spec 'test_foo' at specs/basics/x.yml:42] Subprocess closed stdout unexpectedly`.
+
+**Resource limits** — forwarded as `options.resource_limits` with
+`render_score_limit` and `cumulative_render_score_limit` (integers).
+The server should enforce these and raise a render error when exceeded.
 ### Time Handling
 
 The `frozen_time` parameter allows deterministic testing of date/time filters:

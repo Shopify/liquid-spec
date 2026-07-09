@@ -536,7 +536,8 @@ module Liquid
                 passed_specs: all_passed,
                 list_passed: options[:list_passed],
                 max_failures: max_failures,
-                skipped_features: skipped_features
+                skipped_features: skipped_features,
+                suite_label: suite_selection_label(config, suites_to_run)
               )
             end
 
@@ -1354,6 +1355,16 @@ module Liquid
             end
           end
 
+          def suite_selection_label(config, suites_to_run)
+            if config.suites&.any?
+              config.suites.map(&:to_s).join(", ")
+            elsif config.suite == :all
+              "all (#{suites_to_run.map(&:id).join(", ")})"
+            else
+              config.suite.to_s
+            end
+          end
+
           def print_labeled_value(label, value)
             padding = " " * [11 - label.length, 1].max
             value_str = value.to_s
@@ -1436,7 +1447,7 @@ module Liquid
             end
           end
 
-          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, max_possible:, total_skipped:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:, skipped_features:)
+          def print_run_summary(total_passed:, total_failed:, total_errors:, max_complexity_reached:, max_possible:, total_skipped:, failures:, known_fixed:, passed_specs:, list_passed:, max_failures:, skipped_features:, suite_label: nil)
             failures_count = total_failed + total_errors
             if failures.any?
               puts "Next best specs to work on:"
@@ -1448,6 +1459,17 @@ module Liquid
             parts = ["Complexity level cleared: #{max_complexity_reached} of #{max_possible}", "#{total_passed} passes", "#{failures_count} failures"]
             parts << "#{total_skipped} skipped" if total_skipped > 0
             puts parts.join(", ") + "."
+
+            # Show suite selection so output is self-describing — a complexity
+            # of 1000 with -s basics means something different from :all.
+            puts "  Suite: #{suite_label}" if suite_label
+
+            # Show which features caused skips (non-verbose only; verbose shows
+            # per-suite detail above). Helps distinguish "passing everything"
+            # from "passing everything that wasn't skipped for feature X".
+            if total_skipped > 0 && skipped_features.any?
+              puts "  Skipped features: #{skipped_features.map(&:to_s).sort.join(", ")}"
+            end
 
             # Congrats addendum: 100% of the run passes (no failures, level = max).
             print_congrats(skipped_features) if failures_count == 0 && max_complexity_reached == max_possible
@@ -1665,6 +1687,7 @@ module Liquid
             render_options = {
               registers: build_registers(spec, filesystem),
               strict_errors: !render_errors,
+              resource_limits: spec.raw_resource_limits.empty? ? nil : spec.raw_resource_limits,
             }.compact
 
             reference_result, reference_error = run_reference_spec(spec, compile_options, assigns, render_options)

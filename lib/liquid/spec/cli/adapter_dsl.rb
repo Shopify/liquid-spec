@@ -274,6 +274,9 @@ module LiquidSpec
           end
           context[:source_file] = location
         end
+        context[:complexity] = spec.complexity if spec.respond_to?(:complexity) && spec.complexity
+        context[:features] = spec.features if spec.respond_to?(:features) && spec.features&.any?
+        context[:error_mode] = spec.error_mode if spec.respond_to?(:error_mode) && spec.error_mode
       end
 
       overrides&.each do |key, value|

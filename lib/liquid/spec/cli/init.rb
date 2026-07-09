@@ -347,12 +347,14 @@ module Liquid
           # targeting those modes be skipped.
           LiquidSpec.compile do |ctx, source, options|
             options[:error_mode] ||= :strict2
+            ctx[:adapter].spec_context = ctx
             ctx[:adapter].compile(source, options)
           end
 
           # Render errors are raised by default (strict_errors: true). Only specs
           # that opt into render_errors set strict_errors to false.
           LiquidSpec.render do |ctx, template_id, assigns, options|
+            ctx[:adapter].spec_context = ctx
             ctx[:adapter].render(template_id, assigns, options)
           end
         RUBY

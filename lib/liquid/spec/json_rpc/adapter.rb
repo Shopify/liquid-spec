@@ -17,11 +17,13 @@ module Liquid
       # - Time freezing is supported via frozen_time parameter
       #
       # See docs/json-rpc-protocol.md for the full specification.
-      class Adapter
+    class Adapter
         attr_reader :subprocess
+        attr_accessor :spec_context
 
         def initialize(command, timeout: Subprocess::DEFAULT_TIMEOUT)
           @subprocess = Subprocess.new(command, timeout: timeout)
+          @spec_context = {}
         end
 
         # Initialize the subprocess connection
@@ -33,8 +35,6 @@ module Liquid
         def features
           @subprocess.features
         end
-
-        # Compile a template and return a template_id
         def compile(source, options = {})
           @subprocess.initialize! unless @subprocess.running?
 
@@ -63,6 +63,8 @@ module Liquid
           end
 
           result&.dig("template_id")
+        rescue SubprocessError => e
+          raise SubprocessError, wrap_with_spec_context(e.message)
         end
 
         # Render a compiled template
@@ -120,6 +122,8 @@ module Liquid
           # Return output - Liquid errors are already rendered inline
           # The errors array is informational for test assertions
           response.dig("result", "output") || ""
+        rescue SubprocessError => e
+          raise SubprocessError, wrap_with_spec_context(e.message)
         end
 
         # Shutdown the subprocess
@@ -128,6 +132,16 @@ module Liquid
         end
 
         private
+
+        def wrap_with_spec_context(message)
+          spec_name = @spec_context[:spec_name]
+          source = @spec_context[:source_file]
+          context = []
+          context << "spec '#{spec_name}'" if spec_name
+          context << "at #{source}" if source
+          prefix = context.any? ? "[#{context.join(" ")}] " : ""
+          "#{prefix}#{message}"
+        end
 
         def extract_filesystem(options)
           fs = options.delete(:file_system) || options.delete("file_system")
@@ -165,6 +179,10 @@ module Liquid
 
           strict_errors = options[:strict_errors] || options["strict_errors"]
           result["strict_errors"] = !!strict_errors if strict_errors != nil
+
+          # Forward resource limits so the subprocess can enforce them
+          resource_limits = options[:resource_limits] || options["resource_limits"]
+          result["resource_limits"] = resource_limits if resource_limits
 
           result
         end
