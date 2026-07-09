@@ -496,7 +496,7 @@ module Liquid
             # never an interpolated number.
             sorted_complexities = results_by_complexity.keys.sort
             first_failure_complexity = results_by_complexity.select { |_, r| r[:fail] > 0 || r[:error] > 0 }.keys.min
-            max_possible = sorted_complexities.max || 0
+            max_possible = 1000  # always 1000 — the global complexity cap
             max_complexity_reached = if first_failure_complexity
               sorted_complexities.select { |c| c < first_failure_complexity }.max || 0
             else
