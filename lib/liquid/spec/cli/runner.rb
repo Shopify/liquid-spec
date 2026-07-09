@@ -498,7 +498,7 @@ module Liquid
             max_complexity_reached = if first_failure_complexity
               sorted_complexities.select { |c| c < first_failure_complexity }.max || 0
             else
-              max_possible
+              sorted_complexities.max || 0
             end
 
             if json_mode
