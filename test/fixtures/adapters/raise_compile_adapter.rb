@@ -7,7 +7,7 @@ LiquidSpec.setup { require "liquid" }
 
 LiquidSpec.configure do |config|
   config.suite = :basics
-  config.missing_features = [:runtime_drops, :inline_errors, :lax_parsing]
+  config.missing_features = [:drops, :inline_errors, :lax_parsing]
 end
 
 LiquidSpec.compile { |_ctx, _source, _parse_options| raise SyntaxError, "dumb compile boom" }

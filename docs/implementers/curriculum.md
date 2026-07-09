@@ -123,7 +123,7 @@ Useful checkpoints:
 liquid-spec run my_adapter.rb
 
 # Audit accidental passes when building early behavior
-liquid-spec run my_adapter.rb -s basics --list-passed --json
+liquid-spec run my_adapter.rb --list-passed --json
 
 # Validate liquid-spec/spec changes when contributing to this repository
 rake check

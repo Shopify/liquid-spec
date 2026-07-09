@@ -13,7 +13,7 @@ end
 LiquidSpec.configure do |config|
   config.suite = :basics
   config.missing_features = [
-    :runtime_drops,
+    :drops,
     :inline_errors,
     :lax_parsing,
     :ruby_types,

@@ -277,7 +277,7 @@ module RemoteLiquid
         "version" => VERSION,
         "implementation" => "remote-liquid",
         "liquid_version" => Liquid::VERSION,
-        "features" => ["core", "runtime_drops"],
+        "features" => ["core", "drops"],
       }
     end
 

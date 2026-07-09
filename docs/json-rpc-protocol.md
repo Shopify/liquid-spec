@@ -37,7 +37,7 @@ Called once when the connection starts.
     "version": "1.0",
     "implementation": "my-liquid",
     "liquid_version": "6.0.0",
-    "features": ["runtime_drops"]
+    "features": ["drops"]
   }
 }
 ```
@@ -47,10 +47,10 @@ Called once when the connection starts.
 `features` is informational metadata reported by the subprocess. The Ruby adapter file still controls which specs run via `config.missing_features` because spec selection happens in liquid-spec, not inside the subprocess.
 
 Common feature names:
-- `runtime_drops` - Supports bidirectional drop callbacks (see Drop Callbacks section)
+- `drops` - Supports Liquid drop objects. Portable standard test drops are documented in `docs/test_drops.md`; the callback protocol below supports host-owned runtime drops.
 - `lax_parsing` - Supports `error_mode: lax`
 
-For a minimal JSON-RPC server, start with `features: []` and set the adapter's `config.missing_features` to skip unsupported capabilities such as `:runtime_drops`, `:lax_parsing`, `:ruby_types`, `:ruby_drops`, `:binary_data`, and Shopify-specific features.
+For a minimal JSON-RPC server, start with `features: []` and set the adapter's `config.missing_features` to skip unsupported capabilities such as `:drops`, `:lax_parsing`, `:ruby_types`, `:ruby_drops`, `:binary_data`, and Shopify-specific features.
 
 ### `compile`
 

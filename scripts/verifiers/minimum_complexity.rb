@@ -5,7 +5,7 @@
 #
 # Specs that use advanced features must sit above the beginner ramp.
 # The floor depends on the feature — Ruby-specific content and inline
-# errors belong above 100; runtime drops above 150; template factories
+# errors belong above 100; portable drops above 200; template factories
 # and Shopify-specific features above 200.
 #
 # Usage: ruby -Ilib scripts/verifiers/minimum_complexity.rb

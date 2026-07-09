@@ -197,14 +197,14 @@ When changing early complexity scores or adding beginner specs, play dumb and ve
 
 ```bash
 # Source echo adapter: should pass only raw text, then fail on first object output
-liquid-spec run /tmp/echo_adapter.rb -s basics --list-passed
+liquid-spec run /tmp/echo_adapter.rb --list-passed
 
 # Always-empty adapter: may pass many empty-output specs accidentally; check max complexity
-liquid-spec run /tmp/empty_adapter.rb -s basics --json --list-passed > /tmp/empty-results.json
+liquid-spec run /tmp/empty_adapter.rb --json --list-passed > /tmp/empty-results.json
 
 # Always-raise adapters: should fail at complexity 0 with clear Error + Hint output
-liquid-spec run /tmp/raise_compile_adapter.rb -s basics
-liquid-spec run /tmp/raise_render_adapter.rb -s basics
+liquid-spec run /tmp/raise_compile_adapter.rb
+liquid-spec run /tmp/raise_render_adapter.rb
 ```
 
 Use `--list-passed` to inspect accidental passes and `--json` for tooling. Prefer `Complexity level cleared` (or JSON `max_complexity_reached`) over raw pass count when judging partial or deliberately naive adapters.

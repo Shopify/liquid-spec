@@ -61,7 +61,7 @@ module Liquid
           # @param ctx [Hash] Adapter context (from setup block)
           # @param source [String] The Liquid template source code
           # @param options [Hash] Parse options (e.g., :error_mode, :line_numbers)
-          # @return [Object] Your compiled template object (passed to render)
+          # Store the compiled template in ctx for the render block.
           #
           # ERROR MODES
           # -----------
@@ -90,18 +90,17 @@ module Liquid
             options[:error_mode] ||= :strict2
 
             # Example for Shopify/liquid:
-            #   Liquid::Template.parse(source, options)
+            #   ctx[:template] = Liquid::Template.parse(source, options)
             #
             # Example for a custom implementation:
-            #   MyLiquid::Template.new(source, error_mode: options[:error_mode])
+            #   ctx[:template] = MyLiquid::Template.new(source, error_mode: options[:error_mode])
             #
             raise NotImplementedError, "Implement LiquidSpec.compile to parse templates"
           end
 
-          # Called to render a compiled template with the given context.
+          # Called to render the template stored in ctx by the compile block.
           #
           # @param ctx [Hash] Adapter context (from setup block)
-          # @param template [Object] The compiled template (from compile block)
           # @param assigns [Hash] Variables available as {{ var }}
           # @param options [Hash] Render options (:registers, :strict_errors, :error_mode)
           # @return [String] The rendered output
@@ -113,17 +112,17 @@ module Liquid
           # to strict_errors: true (raise) — only specs that opt into render_errors
           # set it to false. Pass it through to your implementation so both modes work.
           #
-          LiquidSpec.render do |ctx, template, assigns, options|
+          LiquidSpec.render do |ctx, assigns, options|
             # Example for Shopify/liquid:
             #   context = Liquid::Context.build(
             #     static_environments: assigns,
             #     registers: Liquid::Registers.new(options[:registers] || {}),
             #     rethrow_errors: options[:strict_errors]
             #   )
-            #   template.render(context)
+            #   ctx[:template].render(context)
             #
             # Example for a custom implementation:
-            #   template.render(assigns, raise_errors: options[:strict_errors])
+            #   ctx[:template].render(assigns, raise_errors: options[:strict_errors])
             #
             raise NotImplementedError, "Implement LiquidSpec.render to render templates"
           end
@@ -348,24 +347,26 @@ module Liquid
           LiquidSpec.compile do |ctx, source, options|
             options[:error_mode] ||= :strict2
             ctx[:adapter].spec_context = ctx
-            ctx[:adapter].compile(source, options)
+            ctx[:template_id] = ctx[:adapter].compile(source, options)
           end
 
           # Render errors are raised by default (strict_errors: true). Only specs
           # that opt into render_errors set strict_errors to false.
-          LiquidSpec.render do |ctx, template_id, assigns, options|
+          LiquidSpec.render do |ctx, assigns, options|
             ctx[:adapter].spec_context = ctx
-            ctx[:adapter].render(template_id, assigns, options)
+            ctx[:adapter].render(ctx[:template_id], assigns, options)
           end
         RUBY
 
-        def self.agents_md_content(filename, json_rpc: false)
+        def self.agents_md_content(filename, json_rpc: false, both: false)
+          json_rpc_guide = json_rpc || both
+
           <<~MARKDOWN
             # Implementing a Liquid Template Engine
 
             You are building a production-grade [Liquid](https://shopify.github.io/liquid/)
             template engine. This directory is wired to **liquid-spec**, which defines what
-            "correct" means: 7,000+ executable specs, ordered by complexity from trivial
+            "correct" means: thousands of executable specs, ordered by complexity from trivial
             passthrough (score 0) to full production compatibility (score 1000). The suite
             is a curriculum for observable behavior, not a mandated internal architecture:
             tree-walking, bytecode, compiled templates, strict-first, and compatibility-first
@@ -379,7 +380,7 @@ module Liquid
             shims that exist only so liquid-spec can exercise your implementation. Build your
             library as a library; wire up the adapter afterward.
 
-            #{json_rpc ? non_ruby_notice : ""}
+            #{json_rpc_guide ? non_ruby_notice : ""}
             ## Which adapter file?
 
             - **Implementing in Ruby?** Use `liquid_adapter.rb`. It calls your code directly
@@ -517,7 +518,7 @@ module Liquid
 
             A common low-risk route is tokenizer → parser → node tree → tree-walking
             renderer with a scope stack. A compiler/VM is also fine if that fits your project,
-            but correctness across 7,000+ specs is the hard part, so keep the observable
+            but correctness across thousands of specs is the hard part, so keep the observable
             semantics easy to test. Two things ARE worth designing in from day one, because
             they weave through everything and are painful to retrofit:
 
@@ -541,7 +542,13 @@ module Liquid
             | 4 | 190-400 | Partials/filesystem, scope interactions, generated compatibility breadth |
             | 5 | 500-900 | Parser error matrices, error-model matrix, recursion/deep nesting, security/date/time/Ruby quirks |
             | 6 | 1000 | Production recordings and unscored mature-compatibility checks |
-            #{json_rpc ? json_rpc_section(filename) : ruby_adapter_section}
+            #{if both
+                "#{ruby_adapter_section}\n#{json_rpc_section(filename)}"
+              elsif json_rpc
+                json_rpc_section(filename)
+              else
+                ruby_adapter_section
+              end}
 
             ## Local specs for development
 
@@ -569,7 +576,6 @@ module Liquid
             liquid-spec run #{filename}                 # the loop
             liquid-spec run #{filename} -n case         # only specs matching a pattern
             liquid-spec run #{filename} -n /^case_b/    # regex form
-            liquid-spec run #{filename} -s basics       # one suite
             liquid-spec run #{filename} --list-suites   # what suites exist
             liquid-spec run #{filename} -l              # list specs without running
             liquid-spec run #{filename} --list-passed   # audit accidental passes
@@ -608,9 +614,10 @@ module Liquid
             end
             ```
 
-            ### compile(ctx, source, options) → template
+            ### compile(ctx, source, options)
 
-            Parse the source string into your template representation. Called once per template.
+            Parse the source string and store your template representation in `ctx`.
+            Called once per template.
 
             ```ruby
             LiquidSpec.compile do |ctx, source, options|
@@ -619,21 +626,21 @@ module Liquid
               #   :line_numbers - true/false
               #   :file_system - for include/render tags
               options[:error_mode] ||= :strict2
-              MyLiquid::Template.parse(source, environment: ctx[:environment])
+              ctx[:template] = MyLiquid::Template.parse(source, environment: ctx[:environment])
             end
             ```
 
-            ### render(ctx, template, assigns, options) → string
+            ### render(ctx, assigns, options) → string
 
-            Render a compiled template with variables. Called for each test.
+            Render the compiled template from `ctx` with variables. Called for each test.
 
             ```ruby
-            LiquidSpec.render do |ctx, template, assigns, options|
+            LiquidSpec.render do |ctx, assigns, options|
               # assigns: Hash of variables available as {{ var }}
               # options may include:
               #   :registers - internal state (file_system, etc.)
               #   :strict_errors - whether to raise or capture errors
-              template.render(assigns)
+              ctx[:template].render(assigns)
             end
             ```
           MARKDOWN
@@ -850,18 +857,18 @@ module Liquid
           # for new implementations unless you need that compatibility.
           LiquidSpec.compile do |ctx, source, options|
             options[:error_mode] ||= :strict2
-            Liquid::Template.parse(source, **options)
+            ctx[:template] = Liquid::Template.parse(source, **options)
           end
 
           # Render errors are raised by default (strict_errors: true). Only specs
           # that opt into render_errors set strict_errors to false.
-          LiquidSpec.render do |ctx, template, assigns, options|
+          LiquidSpec.render do |ctx, assigns, options|
             context = Liquid::Context.build(
               static_environments: assigns,
               registers: Liquid::Registers.new(options[:registers] || {}),
               rethrow_errors: options[:strict_errors]
             )
-            template.render(context)
+            ctx[:template].render(context)
           end
         RUBY
 
@@ -898,8 +905,10 @@ module Liquid
             generate_adapter("liquid_adapter.rb", :basic)
             generate_adapter("liquid_adapter_jsonrpc.rb", :json_rpc)
 
-            # Create AGENTS.md once (covers both adapters)
-            create_agents_md("liquid_adapter.rb", json_rpc: false)
+            # Create AGENTS.md once. Lead with the cross-language adapter because
+            # agents building in TypeScript/Rust/Go/Python need the protocol guide;
+            # include the direct Ruby adapter section as well.
+            create_agents_md("liquid_adapter_jsonrpc.rb", json_rpc: true, both: true)
 
             puts ""
             puts "Next steps:"
@@ -938,12 +947,12 @@ module Liquid
           puts "Created #{filename} (executable)"
         end
 
-        def self.create_agents_md(filename, json_rpc:)
+        def self.create_agents_md(filename, json_rpc:, both: false)
           agents_filename = "AGENTS.md"
           if File.exist?(agents_filename)
             puts "AGENTS.md already exists, skipping"
           else
-            agents_md = agents_md_content(filename, json_rpc: json_rpc)
+            agents_md = agents_md_content(filename, json_rpc: json_rpc, both: both)
             File.write(agents_filename, agents_md)
             puts "Created AGENTS.md"
           end

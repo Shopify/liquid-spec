@@ -472,14 +472,14 @@ Saved specs go to `/tmp/liquid-spec-{date}.yml`. Browse them:
 # Run all specs
 bundle exec rake run
 
-# Run specific suite
-liquid-spec run examples/liquid_ruby.rb -s basics
+# Run the default ordered ramp
+liquid-spec run examples/liquid_ruby.rb
 
 # Filter by name pattern
 liquid-spec run examples/liquid_ruby.rb -n tablerow
 
 # Compare multiple adapters
-liquid-spec matrix --adapters=a.rb,b.rb -s basics
+liquid-spec matrix --adapters=a.rb,b.rb
 ```
 
 ---

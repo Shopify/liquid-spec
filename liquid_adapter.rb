@@ -26,36 +26,35 @@ end
 # @param ctx [Hash] Adapter context (from setup block)
 # @param source [String] The Liquid template source code
 # @param options [Hash] Parse options (e.g., :error_mode, :line_numbers)
-# @return [Object] Your compiled template object (passed to render)
+# Store the compiled template in ctx for the render block.
 #
 LiquidSpec.compile do |ctx, source, options|
   # Example for Shopify/liquid:
-  #   Liquid::Template.parse(source, options)
+  #   ctx[:template] = Liquid::Template.parse(source, options)
   #
   # Example for a custom implementation:
-  #   MyLiquid::Template.new(source)
+  #   ctx[:template] = MyLiquid::Template.new(source)
   #
   raise NotImplementedError, "Implement LiquidSpec.compile to parse templates"
 end
 
-# Called to render a compiled template with the given context.
+# Called to render the compiled template stored in ctx.
 #
 # @param ctx [Hash] Adapter context (from setup block)
-# @param template [Object] The compiled template (from compile block)
 # @param assigns [Hash] Variables available as {{ var }}
 # @param options [Hash] Render options (:registers, :strict_errors, :error_mode)
 # @return [String] The rendered output
 #
-LiquidSpec.render do |ctx, template, assigns, options|
+LiquidSpec.render do |ctx, assigns, options|
   # Example for Shopify/liquid:
   #   context = Liquid::Context.build(
   #     static_environments: assigns,
   #     registers: Liquid::Registers.new(options[:registers] || {})
   #   )
-  #   template.render(context)
+  #   ctx[:template].render(context)
   #
   # Example for a custom implementation:
-  #   template.render(assigns)
+  #   ctx[:template].render(assigns)
   #
   raise NotImplementedError, "Implement LiquidSpec.render to render templates"
 end

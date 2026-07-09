@@ -120,7 +120,7 @@ class LazySpecTest < Minitest::Test
     refute spec.skipped_by?([])
     assert spec.skipped_by?([:shopify_tags])
     assert spec.skipped_by?([:shopify_filters])
-    refute spec.skipped_by?([:runtime_drops])
+    refute spec.skipped_by?([:drops])
   end
 
   def test_location_with_file_and_line

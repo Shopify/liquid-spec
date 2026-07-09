@@ -2,48 +2,107 @@
 
 [![CI](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml/badge.svg)](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml)
 
-A conformance test suite for [Liquid](https://github.com/Shopify/liquid) template implementations. Run **7,000+ test cases** extracted from Shopify's reference implementation, curated basics, parser-error matrices, Dawn theme fixtures, and production recordings to verify your Liquid parser/renderer produces correct output.
+**liquid-spec is both an acceptance suite and an implementation system for
+[Liquid](https://github.com/Shopify/liquid).** It can verify an existing parser and
+renderer, but it is also designed to guide a human or coding agent from an empty project
+to a production-ready Liquid implementation, one observable behavior at a time.
 
-## Why liquid-spec?
+The suite contains thousands of executable examples drawn from Shopify's reference
+implementation, a curated beginner ramp, parser-error matrices, Dawn theme fixtures,
+and production recordings. The adapter boundary works with any implementation strategy
+and, over JSON-RPC, any programming language.
 
-Building a Liquid implementation (compiler, interpreter, or transpiler)? liquid-spec helps you:
+## More Than a Conformance Suite
 
-- **Build gradually** from an empty-template renderer into a production-ready Liquid implementation
-- **Verify correctness** against the reference Shopify/liquid behavior
-- **Catch regressions** when optimizing or refactoring
-- **Discover edge cases** you might not have considered
-- **Track compatibility** with specific Liquid versions
+A conventional conformance suite answers **“is this implementation compatible?”**
+liquid-spec also answers:
 
-## How It Works
+- **What is the smallest useful behavior to implement next?**
+- **Why does Liquid behave this way?**
+- **Which earlier behavior did this change regress?**
+- **How far has the implementation progressed from a text passthrough to production
+  compatibility?**
 
+Every spec has a `complexity` from 0 to 1000. Foundation cases come first: empty input,
+literal text, and object output. Variables, filters, control flow, loops, scopes,
+partials, parser modes, compatibility quirks, and production recordings follow. The
+runner reports the lowest-complexity failures as **“Next best specs to work on”** and
+shows an implementation hint with each failure.
+
+That turns the suite into an executable curriculum:
+
+```text
+run liquid-spec
+      │
+      ▼
+read the first failure + hint ──► implement the general rule
+      ▲                                      │
+      └──────── rerun every earlier spec ◄───┘
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                             liquid-spec                                  │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌─────────────┐     ┌─────────────┐     ┌─────────────────────────┐    │
-│  │  YAML Spec  │     │   Adapter   │     │   Your Implementation   │    │
-│  │    Files    │────▶│   (Bridge)  │────▶│   (compile + render)    │    │
-│  │             │     │             │     │                         │    │
-│  │ • template  │     │ LiquidSpec  │     │  MyLiquid.parse(src)    │    │
-│  │ • env vars  │     │   .compile  │     │  template.render(vars)  │    │
-│  │ • expected  │     │   .render   │     │                         │    │
-│  └─────────────┘     └─────────────┘     └─────────────────────────┘    │
-│         │                   │                        │                  │
-│         └───────────────────┼────────────────────────┘                  │
-│                             ▼                                           │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │                        Test Runner                                │  │
-│  │                                                                   │  │
-│  │  For each spec:                                                   │  │
-│  │    1. Compile template via adapter                                │  │
-│  │    2. Render with environment variables                           │  │
-│  │    3. Compare output to expected                                  │  │
-│  │    4. Report pass/fail                                            │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
+
+`Complexity level cleared: 70 of 1000` means all exercised levels before the first
+failing level are solid. It is deliberately more honest than a raw pass count: a toy
+renderer may accidentally pass hundreds of empty-output cases without clearing the
+beginner ramp.
+
+## Why the Agent Loop Works
+
+liquid-spec gives an agent the ingredients that open-ended “implement Liquid” prompts
+normally lack:
+
+1. **A stable, observable contract.** Specs describe templates, input values,
+   filesystems, expected output, and expected errors—not a required internal
+   architecture. An AST interpreter, bytecode VM, compiler, or transpiler can follow the
+   same path.
+2. **A prerequisite-ordered search space.** Complexity scoring reduces a language-sized
+   task to a small next step. Later behavior is introduced after the semantics it builds
+   on.
+3. **Just-in-time implementation guidance.** Curated failures include actionable hints,
+   and `liquid-spec docs` supplies deeper implementer guides for values, grammar, scopes,
+   filters, loops, partials, parsing, and quirks.
+4. **A tight verification loop.** Every change is immediately checked against all earlier
+   behavior. The agent cannot make apparent progress by silently trading one feature for
+   another.
+5. **Reference and production evidence.** `liquid-spec eval --compare` answers ambiguous
+   questions against Shopify/liquid, while integration tests and production recordings
+   prevent a classroom-only implementation from looking complete.
+6. **Explicit scope.** Feature gates distinguish portable Liquid, legacy parser modes,
+   Ruby-specific behavior, and Shopify extensions. Unsupported features are visible debt,
+   not noise hidden among failures.
+7. **Machine-readable operation.** `--json`, name/suite filters, inspection, and focused
+   eval commands let an agent gather precise evidence and iterate without scraping an
+   unstructured test log.
+
+`liquid-spec init` makes this workflow agent-ready. It generates disposable adapter
+shims plus an `AGENTS.md` that explains the loop, hard rules, architecture advice,
+protocol, feature gates, and documentation commands. Your Liquid package remains a
+standalone library; the adapter exists only to let liquid-spec exercise it.
+
+## How Acceptance Testing Works
+
+```text
+YAML behavior specs
+  (template, environment, filesystem, expected output/error)
+                           │
+                           ▼
+                  liquid-spec runner
+                           │
+                  compile + render calls
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+       direct Ruby adapter       JSON-RPC adapter
+                                  (TypeScript, Rust,
+                                   Go, Python, ...)
+              │                         │
+              └────────────┬────────────┘
+                           ▼
+                  your Liquid engine
 ```
+
+For each case, liquid-spec compiles the source, renders it with the recorded environment
+and filesystem, then compares output or errors with the accepted behavior. The bridge is
+small enough that results describe the engine rather than the test integration.
 
 ## Installation
 
@@ -69,17 +128,65 @@ gem specific_install https://github.com/Shopify/liquid-spec
 ## Quick Start
 
 ```bash
-# 1. Generate an adapter template
-liquid-spec init my_adapter.rb
+# Generate both adapter choices and an agent implementation guide.
+liquid-spec init
 
-# 2. Read the implementation curriculum
+# Read the curriculum, then run the adapter for your language.
 liquid-spec docs curriculum
-
-# 3. Edit my_adapter.rb to wire up your implementation (see below)
-
-# 4. Run the specs; the first failure is your next lesson
-liquid-spec run my_adapter.rb
+liquid-spec run liquid_adapter.rb                 # Ruby
+liquid-spec run liquid_adapter_jsonrpc.rb \
+  --command="your-liquid-jsonrpc-server"           # any other language
 ```
+
+The first failure is the next lesson. Implement the behavior described by its hint and
+rerun the same command.
+
+## Full CLI Example: Ask an Agent to Build Liquid in TypeScript
+
+The complete bootstrap is intentionally small. Start in an empty directory:
+
+```bash
+mkdir liquid-typescript
+cd liquid-typescript
+
+gem install specific_install
+gem specific_install https://github.com/Shopify/liquid-spec
+
+# Creates liquid_adapter.rb, liquid_adapter_jsonrpc.rb, and AGENTS.md.
+# The JSON-RPC adapter is the bridge the TypeScript implementation will use.
+liquid-spec init
+
+codex -p "/goal Implement a full production-ready Liquid implementation in TypeScript. \
+Read AGENTS.md first. Use liquid_adapter_jsonrpc.rb only as the test bridge; build the \
+engine as a standalone TypeScript library. Ask liquid-spec for guidance on the next \
+steps, implement the general behavior behind each lowest-complexity failure, and rerun \
+the suite after every change. Do not special-case specs or hide required behavior with \
+missing_features. Keep going until liquid-spec reports Complexity level cleared: \
+1000 of 1000 for every applicable suite."
+```
+
+That is enough context because `liquid-spec init` wrote the detailed operating manual
+into `AGENTS.md`. The agent can discover and use the whole feedback loop itself:
+
+```bash
+# After setting DEFAULT_COMMAND in liquid_adapter_jsonrpc.rb to the TypeScript server:
+liquid-spec run liquid_adapter_jsonrpc.rb
+liquid-spec inspect liquid_adapter_jsonrpc.rb -n "the_failing_spec"
+liquid-spec docs curriculum
+liquid-spec docs core-abstractions
+cat scratch.yml | liquid-spec eval liquid_adapter_jsonrpc.rb --compare
+liquid-spec run liquid_adapter_jsonrpc.rb --json
+```
+
+The generated JSON-RPC adapter initially opts out of capabilities that cannot be carried
+portably or have not been wired yet, such as Ruby-only values, standard test drops, and
+Shopify extensions. Reaching `1000 of 1000` means every spec selected for the adapter
+passes; a production target also requires reviewing `missing_features` and removing each
+entry that belongs in that target. Use `liquid-spec features` to audit that scope.
+
+For a human-driven implementation, use exactly the same loop: run, read the first hint,
+implement, and rerun. `liquid-spec docs json-rpc-protocol` documents the four subprocess
+methods (`initialize`, `compile`, `render`, and `quit`).
 
 ## Writing an Adapter
 
@@ -89,8 +196,8 @@ An adapter is a small Ruby file that tells liquid-spec how to use your implement
 #!/usr/bin/env ruby
 require "liquid/spec/cli/adapter_dsl"
 
-# Load your implementation
-LiquidSpec.setup do
+# Load your implementation; ctx carries compiled state between callbacks.
+LiquidSpec.setup do |ctx|
   require "my_liquid"
 end
 
@@ -99,17 +206,17 @@ LiquidSpec.configure do |config|
   config.missing_features = [:shopify_tags, :shopify_filters]
 end
 
-# Parse template source into a template object
-LiquidSpec.compile do |source, options|
+# Parse template source and retain the result in the adapter context.
+LiquidSpec.compile do |ctx, source, options|
   # options includes: :line_numbers, :error_mode
-  MyLiquid::Template.parse(source, **options)
+  ctx[:template] = MyLiquid::Template.parse(source, **options)
 end
 
-# Render a compiled template
-LiquidSpec.render do |template, assigns, options|
+# Render the template compiled immediately above.
+LiquidSpec.render do |ctx, assigns, options|
   # assigns = variables hash
-  # options includes: :registers, :strict_errors, :exception_renderer
-  template.render(assigns, **options)
+  # options includes: :registers, :strict_errors, :error_mode
+  ctx[:template].render(assigns, **options)
 end
 ```
 
@@ -128,8 +235,8 @@ Key setup points:
 - Your server implements `initialize`, `compile`, `render`, and `quit`.
 - Server debug logs go to stderr; stdout must contain only newline-delimited JSON-RPC messages.
 - The adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
-- Minimal JSON-RPC adapters should usually opt out of Ruby/transport-specific features such as `:runtime_drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
-- If you implement bidirectional drop callbacks (`drop_get`, `drop_call`, `drop_iterate`), remove `:runtime_drops` from `missing_features`.
+- Minimal JSON-RPC adapters should usually opt out of unsupported or non-portable features such as `:drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
+- Remove `:drops` when the engine supports the standard test-drop library. Bidirectional runtime objects can use the protocol's `drop_get`, `drop_call`, and `drop_iterate` callbacks.
 - Read `docs/json-rpc-protocol.md` for the exact message format and error-handling rules.
 
 ```bash
@@ -176,8 +283,8 @@ regular runs.
 
 | Suite | Tests | Description |
 |-------|-------|-------------|
-| **basics** | 850 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
-| **liquid_ruby** | 2,101 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
+| **basics** | 940 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
+| **liquid_ruby** | 2,097 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
 | **parser_errors** | 1,901 | Strict parser error compatibility and mutation matrices |
 | **partials** | 12 | Include/render focused compatibility specs |
@@ -273,8 +380,8 @@ When changing complexity scores or adding early specs, test the harness with int
 Use `--list-passed` to see accidental passes and `--json` for machine-readable analysis:
 
 ```bash
-liquid-spec run /tmp/echo_adapter.rb -s basics --max-failures 3 --list-passed
-liquid-spec run /tmp/empty_adapter.rb -s basics --json --list-passed > empty-results.json
+liquid-spec run /tmp/echo_adapter.rb --list-passed
+liquid-spec run /tmp/empty_adapter.rb --json --list-passed > empty-results.json
 ```
 
 A source-echo adapter should only pass raw-text specs before failing on first object output. An always-empty adapter may pass many empty-output specs, so judge progress by `Complexity level cleared` (or JSON `max_complexity_reached`), not by total passes.

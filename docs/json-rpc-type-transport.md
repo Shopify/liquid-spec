@@ -43,7 +43,7 @@ params. The `instantiate:ClassName.new(arg)` format passes a single argument.
 | `LoaderDrop` | Lazy-loading collection | `ruby_drops` |
 | `ArrayDrop` | Enumerable drop | `ruby_drops` |
 | `TestEnumerable` | Enumerable for loop tests | `ruby_drops` |
-| `ErrorDrop` | Raises errors during render | `runtime_drops` |
+| `ErrorDrop` | Raises errors during render | `drops` |
 | `StubTemplateFactory` | Template factory for partials | `template_factory` |
 | `SettingsDrop` | Shopify settings drop | `shopify_objects` |
 | `SecurityVictimDrop` | Security boundary tests | `ruby_drops` |
@@ -122,12 +122,12 @@ function unwrap_value(value):
     return value
 ```
 
-> **Note on `runtime_drops`:** The bidirectional RPC callback mechanism
-> (`drop_get`, `drop_call`, `drop_iterate`) is an alternative to boxed
-> objects. It's more flexible (the drop logic stays in Ruby) but slower
-> (every access is a round-trip) and more complex. For most implementations,
-> boxed objects are recommended. Only use `runtime_drops` if you need
-> drop behavior that can't be replicated with a static boxed implementation.
+> **Note on `drops`:** Portable standard test drops should normally be
+> implemented as native boxed objects as described in `docs/test_drops.md`.
+> The bidirectional RPC callback mechanism (`drop_get`, `drop_call`,
+> `drop_iterate`) is available for host-owned runtime drops whose behavior
+> cannot be reproduced statically. Both forms are part of drop support; there
+> is no separate feature for runtime-backed drops.
 
 **With `ruby_types`** (adapter handles Ruby-specific value formats):
 - You must handle `_ruby_type` markers (see below).
@@ -281,15 +281,15 @@ Do you need Shopify production compatibility?
 | (none) | Basic compile + render | ~4900 | Moderate |
 | `ruby_drops` | Drop callbacks + `_rpc_drop` handling | ~200 | Hard |
 | `ruby_types` | `_ruby_type` markers + Hash#inspect format | ~50 | Very hard (non-Ruby) |
-| `runtime_drops` | Bidirectional drop callbacks | ~20 | Hard |
+| `drops` | Standard test drops; callbacks when host-owned runtime objects are needed | ~20 | Hard |
 | `template_factory` | Template creation callbacks | ~10 | Moderate |
 | `lax_parsing` | Lax error mode (inline errors) | ~100 | Moderate |
 | `strict2_parsing` | Strict2 error mode | ~50 | Easy |
 
 **Recommendation for non-Ruby implementations:**
-1. Start with `missing_features = [:ruby_types, :ruby_drops, :binary_data, :runtime_drops, :template_factory, :lax_parsing, ...shopify_*]`
-2. Remove `:lax_parsing` first (easy, big gain).
-3. Remove `:ruby_drops` next (requires drop callbacks, big gain).
-4. Remove `:runtime_drops` (requires bidirectional callbacks).
+1. Start with `missing_features = [:drops, :ruby_types, :ruby_drops, :binary_data, :template_factory, :lax_parsing, ...shopify_*]`
+2. Remove `:lax_parsing` when legacy lenient parsing is part of your target.
+3. Remove `:drops` after implementing the portable standard test-drop library.
+4. Remove `:ruby_drops` only when Ruby-specific host objects are part of your target.
 5. Remove `:ruby_types` last (requires Ruby inspect emulation, small gain, hard).
 6. Only remove `:ruby_types` if you must be Shopify-production-compatible.
