@@ -82,8 +82,6 @@ module Liquid
             --list-passed         After running, list specs that passed (useful for ramp audits)
             --json                Output one JSON summary object (non-benchmark runs)
             --jsonl               Output JSON Lines for benchmark streaming
-            --max-failures N      Stop after N failures (default: #{MAX_FAILURES_DEFAULT})
-            --no-max-failures     Run all specs regardless of failures (not recommended)
             -h, --help            Show this help
 
           Known Failures File Format:
@@ -1460,8 +1458,7 @@ module Liquid
             parts << "#{total_skipped} skipped" if total_skipped > 0
             puts parts.join(", ") + "."
 
-            # Show suite selection so output is self-describing — a complexity
-            # of 1000 with -s basics means something different from :all.
+            # Show suite selection so output is self-describing.
             puts "  Suite: #{suite_label}" if suite_label
 
             # Show which features caused skips (non-verbose only; verbose shows
@@ -1498,13 +1495,11 @@ module Liquid
               end
             elsif skipped_features.any?
               puts "  1. The features you skipped specs for (#{skipped_features.map(&:to_s).join(", ")}) are all"
-              puts "     Ruby-interop or core — not worth implementing for a non-Ruby adapter. Try the"
-              puts "     shopify_theme_dawn suite (-s shopify_theme_dawn) for real-world theme specs."
-              puts "     Pros: production-shaped coverage. Cons: requires Shopify tags/objects/filters."
+              puts "     Ruby-interop or core — not worth implementing for a non-Ruby adapter."
+              puts "     Your implementation covers all portable Liquid behavior. Nice."
             else
-              puts "  1. Push beyond the suite: try the shopify_theme_dawn suite (-s shopify_theme_dawn)"
-              puts "     for real-world theme specs. Pros: production-shaped coverage."
-              puts "     Cons: requires Shopify-specific tags/objects/filters."
+              puts "  1. Your implementation passes every spec with no skips — full coverage."
+              puts "     Consider contributing new specs for edge cases you discover."
             end
             puts ""
             puts "  2. Run `liquid-spec <adapter> --bench` to measure render speed and contrast"

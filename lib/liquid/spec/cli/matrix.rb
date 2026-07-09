@@ -28,8 +28,6 @@ module Liquid
             -s, --suite SUITE     Spec suite: all, basics, liquid_ruby, etc.
             -b, --bench           Run timing suites as benchmarks, compare across adapters
             --profile             Profile with StackProf (use with --bench), outputs to /tmp/
-            --max-failures N      Stop after N differences (default: 10)
-            --no-max-failures     Show all differences (not recommended)
             -v, --verbose         Show detailed output
             -h, --help            Show this help
 
