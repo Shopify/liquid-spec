@@ -227,7 +227,7 @@ module Liquid
         rescue ::StandardError => e
           # Check if this was an expected error
           # NOTE: Must use ::StandardError to avoid resolving to Liquid::StandardError
-          check_result(spec, error: "#{e.class}: #{e.message}")
+          check_result(spec, error: "#{e.class}: #{e.message}", exception: e)
         end
       end
 
@@ -257,10 +257,10 @@ module Liquid
         $stderr = original_stderr
       end
 
-      def check_result(spec, output: nil, error: nil)
+      def check_result(spec, output: nil, error: nil, exception: nil)
         # If we got an error, check if it was expected
         if error
-          if spec.errors.any? && matches_error_patterns?(spec, error)
+          if spec.errors.any? && matches_error_patterns?(spec, error) && matches_error_location?(spec, exception)
             return SpecResult.new(spec: spec, status: :pass, output: error)
           elsif spec.errors.any?
             return SpecResult.new(
@@ -306,14 +306,15 @@ module Liquid
           end
         elsif spec.errors.key?("output") || spec.errors.key?(:output)
           patterns = spec.errors["output"] || spec.errors[:output]
-          if matches_patterns?(output, patterns)
+          if matches_patterns?(output, patterns) && matches_output_location?(spec, output)
             SpecResult.new(spec: spec, status: :pass, output: output)
           else
             SpecResult.new(
               spec: spec,
               status: :fail,
               output: output,
-              expected: "output matching #{patterns.inspect}",
+              expected: "output matching #{patterns.inspect}" +
+                (spec.errors["line"] ? " with line #{spec.errors["line"]}" : ""),
             )
           end
         else
@@ -329,6 +330,43 @@ module Liquid
 
           matches_patterns?(error, patterns)
         end
+      end
+
+      # Check structured line/position keys against the exception's attributes.
+      # Returns true if no line/position keys are present (nothing to check),
+      # or if the exception's attributes match the expected values.
+      # line: checks exception.line (or exception.line_number as fallback)
+      # position: checks exception.column (or exception.position as fallback)
+      def matches_error_location?(spec, exception)
+        expected_line = spec.errors["line"] || spec.errors[:line]
+        expected_pos = spec.errors["position"] || spec.errors[:position]
+        return true unless expected_line || expected_pos
+        return false unless exception
+
+        if expected_line
+          actual_line = exception.respond_to?(:line) ? exception.line :
+                        (exception.respond_to?(:line_number) ? exception.line_number : nil)
+          return false unless actual_line == expected_line.to_i
+        end
+
+        if expected_pos
+          actual_pos = exception.respond_to?(:column) ? exception.column :
+                       (exception.respond_to?(:position) ? exception.position : nil)
+          return false unless actual_pos && actual_pos == expected_pos.to_i
+        end
+
+        true
+      end
+
+      # For inline errors (errors: output): check that "line N" appears as a
+      # substring in the output. This is lenient — it matches any format that
+      # includes the text "line N" (e.g. "(line 3)", "at line 3:1", etc.).
+      # position is NOT checked for inline errors (it's not commonly in the string).
+      def matches_output_location?(spec, output)
+        expected_line = spec.errors["line"] || spec.errors[:line]
+        return true unless expected_line
+        return false unless output
+        output.match?(/line #{expected_line.to_i}\b/i)
       end
 
       # Extract core message from Liquid error formats:
