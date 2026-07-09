@@ -45,6 +45,11 @@ liquid-spec inspect my_adapter.rb -n "case.*empty"
 cat my_spec.yml | liquid-spec eval my_adapter.rb --compare
 liquid-spec eval my_adapter.rb --spec=my_spec.yml --compare
 
+# Generated differential coverage after the recorded ramp is green
+liquid-spec mutate my_adapter.rb --around=for_loops
+liquid-spec fuzz my_adapter.rb --seed=1234 --json
+liquid-spec stress my_adapter.rb --depth=64
+
 # Benchmarks, cross-adapter matrices, reports, feature docs, implementer docs
 liquid-spec bench
 liquid-spec bench my_adapter.rb
@@ -416,6 +421,32 @@ Spec-level settings override source-level settings. For example, a spec with its
 ## Good Specs
 
 Good specs preserve the project goal: help someone build a production-ready Liquid implementation gradually. A spec should teach one behavior at the right time, fail with an actionable message, and point to implementation guidance when the behavior is not obvious.
+
+### Evolve the curriculum when agents get stuck
+
+A repeated agent failure is evidence about the curriculum, not necessarily just a weak
+agent. Do not hand-fix the latest generated implementation or weaken correct acceptance
+behavior. Diagnose why the general rule was hard to discover, then make the durable fix
+in liquid-spec. Depending on the failure:
+
+- **Improve the hint** when it describes the expected output but not the semantic rule or
+  implementation strategy.
+- **Move the complexity score** when the spec appears before its prerequisites or so late
+  that it no longer teaches anything new.
+- **Add a missing prerequisite spec** when the jump combines multiple new concepts. Give
+  the prerequisite a smaller, focused template and place it immediately before the harder
+  interaction.
+- **Add or improve an implementer guide** when the rule is cross-cutting or too large for
+  a failure hint, then link the spec to it with `doc:`.
+- **Add a verifier** when the same spec-authoring mistake can recur mechanically. A
+  verifier turns review advice into a permanent quality gate.
+- **Split an overly broad spec into smaller lessons** when one failure can have several
+  unrelated causes. Each resulting spec should isolate one new behavior and retain a
+  useful regression boundary.
+
+After evolving a spec, replay the dumb-adapter audits and the surrounding complexity
+levels. The change is good only if it makes the next implementation step clearer without
+letting source-echo, always-empty, or special-cased implementations advance falsely.
 
 ### Ramp discipline
 

@@ -125,9 +125,15 @@ liquid-spec run my_adapter.rb
 # Audit accidental passes when building early behavior
 liquid-spec run my_adapter.rb --list-passed --json
 
+# Search around recorded behavior after the ramp is green
+liquid-spec mutate my_adapter.rb --around=for_loops
+liquid-spec fuzz my_adapter.rb --seed=1234 --json
+
 # Validate liquid-spec/spec changes when contributing to this repository
 rake check
 ```
 
 `rake check` is for liquid-spec contributors. Adapter authors usually want
-`liquid-spec run my_adapter.rb`; that is the real curriculum loop.
+`liquid-spec run my_adapter.rb`; that is the real curriculum loop. Once the recorded
+ramp is green, read `liquid-spec docs adversarial` before promoting generated
+differential discoveries into permanent specs.

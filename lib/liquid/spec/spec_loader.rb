@@ -65,11 +65,13 @@ module Liquid
 
       class << self
         # Load all specs from the default suites
-        def load_all(suite: :all, filter: nil)
+        def load_all(suite: :all, filter: nil, random_seed: nil)
           require_relative "suite"
 
           specs = []
-          srand # re-seed RNG for each run so generate: values vary
+          # Normal runs vary generated values; adversarial runs pass a seed so
+          # their complete input corpus, not just mutation selection, reproduces.
+          random_seed.nil? ? srand : srand(random_seed)
 
           case suite
           when :all

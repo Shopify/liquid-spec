@@ -509,6 +509,7 @@ module Liquid
             | `filesystem` | partial lookup, extensions, path rules |
             | `cycle`, `tablerow` | the stateful tags |
             | `ruby-quirks` | behaviors inherited from Ruby's semantics |
+            | `adversarial` | generated differential mutation, fuzz-style testing, and bounded stress |
             | `json-rpc-protocol` | the non-Ruby adapter protocol |
 
             Also read `QUIRKS.md` in the liquid-spec repository when an expectation looks
@@ -550,6 +551,24 @@ module Liquid
                 ruby_adapter_section
               end}
 
+            ## After the recorded ramp: generated adversarial coverage
+
+            Once recorded specs are green, use the same corpus to search nearby behavior.
+            `mutate` deterministically varies templates, `fuzz` reproducibly chains random
+            mutations, and `stress` adds bounded valid nesting/repetition. All compare your
+            adapter with Shopify/liquid and save differences as runnable YAML regressions:
+
+            ```bash
+            liquid-spec mutate #{filename} --around=for_loops --limit=100
+            liquid-spec fuzz #{filename} --seed=1234 --rounds=500 --minimize
+            liquid-spec stress #{filename} --depth=64 --repetitions=100
+            ```
+
+            Read `liquid-spec docs adversarial` before promoting a generated case. Minimize
+            it, explain the general rule in its hint, place it after its prerequisites, and
+            add it permanently only when it creates a useful regression boundary. This is
+            differential corpus mutation, not native coverage-guided fuzzing.
+
             ## Local specs for development
 
             Any `.yml` under a local `specs/` directory is picked up automatically — use it
@@ -581,6 +600,9 @@ module Liquid
             liquid-spec run #{filename} --list-passed   # audit accidental passes
             liquid-spec run #{filename} --json          # machine-readable results
             cat spec.yml | liquid-spec eval #{filename} --compare           # one-off YAML spec
+            liquid-spec mutate #{filename} --around=for_loops               # deterministic generated cases
+            liquid-spec fuzz #{filename} --seed=1234 --json                 # reproducible fuzz-style run
+            liquid-spec stress #{filename} --depth=64                       # bounded structural stress
             liquid-spec docs curriculum                 # the implementation learning path
             liquid-spec docs complexity                 # any guide from the table above
             ```

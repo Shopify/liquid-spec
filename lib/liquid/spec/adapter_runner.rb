@@ -216,9 +216,12 @@ module Liquid
 
           render_options = {
             registers: registers,
-            strict_errors: false,
+            strict_errors: !spec.render_errors,
           }
           render_options[:error_mode] = spec.error_mode if spec.error_mode
+          unless spec.raw_resource_limits.empty?
+            render_options[:resource_limits] = spec.raw_resource_limits
+          end
 
           output = @render_block.call(@ctx, environment, render_options)
 

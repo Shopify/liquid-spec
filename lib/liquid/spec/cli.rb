@@ -10,6 +10,7 @@ require_relative "cli/matrix"
 require_relative "cli/docs"
 require_relative "cli/features"
 require_relative "cli/report"
+require_relative "cli/adversarial"
 
 module Liquid
   module Spec
@@ -28,6 +29,9 @@ module Liquid
           report              Analyze and compare benchmark results
           inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
           eval ADAPTER        Quick test a YAML spec against your adapter
+          mutate ADAPTER      Deterministic differential mutation of spec seeds
+          fuzz ADAPTER        Seeded differential fuzz-style mutation
+          stress ADAPTER      Bounded differential nesting/repetition stress
           init [FILE]         Generate adapter templates.
                              No FILE: generates both liquid_adapter.rb and
                              liquid_adapter_jsonrpc.rb (executable, self-launching).
@@ -44,6 +48,8 @@ module Liquid
           liquid-spec bench my_adapter.rb               # Benchmark my_adapter vs liquid_ruby
           liquid-spec bench my_adapter.rb -n storefront # Benchmark specific specs
           liquid-spec inspect adapter.rb -n "case.*empty"  # Inspect failing spec
+          liquid-spec mutate adapter.rb --around=for_loops  # Generated edge cases
+          liquid-spec fuzz adapter.rb --seed=1234           # Reproducible fuzz-style run
           liquid-spec docs curriculum          # Implementation learning path
           cat spec.yml | liquid-spec eval adapter.rb --compare  # Quick YAML spec test
 
@@ -111,6 +117,12 @@ module Liquid
           Inspect.run(args)
         when "eval"
           Eval.run(args)
+        when "mutate"
+          Adversarial.run(args, mode: :mutate)
+        when "fuzz"
+          Adversarial.run(args, mode: :fuzz)
+        when "stress"
+          Adversarial.run(args, mode: :stress)
         when "docs"
           Docs.run(args)
         when "features"

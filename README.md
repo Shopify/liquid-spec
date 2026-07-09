@@ -328,6 +328,27 @@ LiquidSpec.configure do |config|
 end
 ```
 
+## Generated Adversarial Coverage
+
+After the recorded ramp passes, generate nearby cases and compare them directly with
+Shopify/liquid:
+
+```bash
+liquid-spec mutate adapter.rb --around=for_loops --limit=100
+liquid-spec fuzz adapter.rb --seed=1234 --rounds=500 --minimize
+liquid-spec stress adapter.rb --depth=64 --repetitions=100
+```
+
+`mutate` deterministically changes existing specs; `fuzz` reproducibly chains random
+mutations; `stress` generates bounded valid nesting and repetition. Differences are saved
+as runnable YAML regression specs by default. These commands cover whitespace controls,
+literal boundaries, lookups, filters, conditionals, loop options, malformed block
+structure, opaque bodies, Unicode, and newlines.
+
+This is differential corpus mutation, not native coverage-guided fuzzing. See
+`liquid-spec docs adversarial` for comparison semantics, seed selection, JSON output,
+minimization, and how to curate a generated discovery into the permanent suite.
+
 ## CLI Reference
 
 ```bash
@@ -339,6 +360,9 @@ Commands:
   liquid-spec test                 Run specs against all bundled example adapters
   liquid-spec eval ADAPTER         Quick test a template (YAML via stdin)
   liquid-spec inspect ADAPTER      Inspect specific specs (use with -n)
+  liquid-spec mutate ADAPTER       Deterministic differential mutations
+  liquid-spec fuzz ADAPTER         Seeded differential fuzz-style testing
+  liquid-spec stress ADAPTER       Bounded nesting/repetition stress
   liquid-spec init [FILE]          Generate adapter template
 
 Run Options:
@@ -366,6 +390,8 @@ Examples:
   liquid-spec run my_adapter.rb -s benchmarks --bench  # Run benchmarks
   liquid-spec test                                 # Test all bundled adapters
   liquid-spec inspect my_adapter.rb -n "case"      # Debug specific specs
+  liquid-spec mutate my_adapter.rb --around=for_loops
+  liquid-spec fuzz my_adapter.rb --seed=1234 --json
 ```
 
 
