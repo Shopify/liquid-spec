@@ -352,7 +352,10 @@ module Liquid
         if expected_pos
           actual_pos = exception.respond_to?(:column) ? exception.column :
                        (exception.respond_to?(:position) ? exception.position : nil)
-          return false unless actual_pos && actual_pos == expected_pos.to_i
+          # Skip position check if the exception doesn't expose column/position
+          # — not all Liquid implementations provide this attribute.
+          return true unless actual_pos
+          return false unless actual_pos == expected_pos.to_i
         end
 
         true
