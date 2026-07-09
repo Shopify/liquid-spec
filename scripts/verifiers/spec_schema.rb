@@ -55,7 +55,9 @@ VALID_FEATURES = %w[
 
 VALID_ERROR_MODES = %w[strict strict2 lax].freeze
 
-VALID_ERROR_KEYS = %w[parse_error render_error output].freeze
+VALID_ERROR_KEYS = %w[parse_error render_error output line position].freeze
+# Keys whose values are arrays of patterns (line/position are integers)
+ARRAY_ERROR_KEYS = %w[parse_error render_error output].freeze
 
 VALID_GENERATE_TYPES = %w[numeric string boolean].freeze
 
@@ -320,11 +322,18 @@ module SpecSchemaVerifier
             issues << "errors has unknown key '#{key}' (valid: #{VALID_ERROR_KEYS.join(", ")})"
           end
         end
-        # Each error value should be an array of patterns
+        # parse_error/render_error/output must be arrays of patterns
+        # line/position must be integers
         errors.each do |key, val|
           next unless VALID_ERROR_KEYS.include?(key.to_s)
-          unless val.is_a?(Array)
-            issues << "errors.#{key} must be an array of patterns, got #{val.class}"
+          if ARRAY_ERROR_KEYS.include?(key.to_s)
+            unless val.is_a?(Array)
+              issues << "errors.#{key} must be an array of patterns, got #{val.class}"
+            end
+          elsif key.to_s == "line" || key.to_s == "position"
+            unless val.is_a?(Integer)
+              issues << "errors.#{key} must be an integer, got #{val.class}"
+            end
           end
         end
       end
