@@ -19,8 +19,11 @@ class RunnerDiagnosticsTest < Minitest::Test
       File.join(FIXTURES, adapter),
       *args,
     ]
-    stdout, stderr, status = Open3.capture3(*cmd, chdir: ROOT)
-    [stdout, stderr, status.exitstatus]
+    # Exercise the CLI without relying on a UTF-8 process locale. The CLI's
+    # specs, adapters, and output are UTF-8 even when Ruby defaults to US-ASCII.
+    env = { "LANG" => "C", "LC_ALL" => "C" }
+    stdout, stderr, status = Open3.capture3(env, *cmd, chdir: ROOT)
+    [stdout.force_encoding(Encoding::UTF_8), stderr.force_encoding(Encoding::UTF_8), status.exitstatus]
   end
 
   def test_json_summary_includes_failures_and_passed_specs_when_requested

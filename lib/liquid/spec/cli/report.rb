@@ -141,7 +141,7 @@ module Liquid
               adapter_from_filename = File.basename(path, ".jsonl")
               next if options[:adapters].any? && !options[:adapters].include?(adapter_from_filename)
 
-              File.foreach(path) do |line|
+              File.foreach(path, encoding: Encoding::UTF_8) do |line|
                 next if line.strip.empty?
 
                 begin

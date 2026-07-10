@@ -71,7 +71,7 @@ module Liquid
               exit(1)
             end
 
-            content = File.read(doc_file)
+            content = File.read(doc_file, encoding: Encoding::UTF_8)
 
             # Strip frontmatter for display
             if content.start_with?("---")
@@ -105,7 +105,7 @@ module Liquid
           end
 
           def load_doc_metadata(file)
-            content = File.read(file)
+            content = File.read(file, encoding: Encoding::UTF_8)
             name = File.basename(file, ".md")
 
             # Parse YAML frontmatter if present

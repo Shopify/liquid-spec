@@ -60,7 +60,7 @@ task :coverage_check do
   spec_tags = Set.new
   Dir.glob(File.join(base, "specs/**/*.yml")).each do |f|
     begin
-      data = YAML.safe_load(File.read(f), permitted_classes: [Symbol, Range], aliases: true)
+      data = YAML.safe_load(File.read(f, encoding: Encoding::UTF_8), permitted_classes: [Symbol, Range], aliases: true)
       next unless data
 
       meta = data.is_a?(Hash) ? (data["_metadata"] || {}) : {}
@@ -80,7 +80,7 @@ task :coverage_check do
   adapter_files = Dir.glob(File.join(base, "examples/*.rb"))
   adapter_missing = {}
   adapter_files.each do |path|
-    source = File.read(path)
+    source = File.read(path, encoding: Encoding::UTF_8)
     if (m = source.match(/config\.missing_features\s*=\s*\[(.*?)\]/m))
       symbols = m[1].scan(/:(\w+)/).flatten.map(&:to_sym)
       adapter_missing[File.basename(path)] = symbols.to_set

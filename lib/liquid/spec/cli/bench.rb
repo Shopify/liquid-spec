@@ -327,7 +327,7 @@ module Liquid
           # without executing it. Returns array of flags like ["--yjit"].
           def scan_rubyopt(adapter_path)
             return [] unless File.exist?(adapter_path)
-            content = File.read(adapter_path)
+            content = File.read(adapter_path, encoding: Encoding::UTF_8)
             flags = []
             content.scan(/LiquidSpec\.rubyopt\s+["']([^"']+)["']/) do |match|
               flags.concat(match[0].split)

@@ -128,7 +128,7 @@ module Liquid
         # Load specs from a single YAML file
         # Returns array of LazySpec objects
         def load_yaml_file(path, suite: nil)
-          content = File.read(path)
+          content = File.read(path, encoding: Encoding::UTF_8)
           specs = []
 
           # Fail fast if file contains dangerous !ruby/ tags (e.g. !ruby/object)
@@ -334,20 +334,20 @@ module Liquid
           template_file = File.join(dir, "template.liquid")
           return unless File.exist?(template_file)
 
-          template = File.read(template_file)
+          template = File.read(template_file, encoding: Encoding::UTF_8)
           name = File.basename(dir)
 
           # Load environment
           env_file = File.join(dir, "environment.yml")
           raw_environment = if File.exist?(env_file)
-            safe_load_with_permitted_classes(File.read(env_file)) || {}
+            safe_load_with_permitted_classes(File.read(env_file, encoding: Encoding::UTF_8)) || {}
           else
             {}
           end
 
           # Load expected output
           expected_file = File.join(dir, "expected.html")
-          expected = File.exist?(expected_file) ? File.read(expected_file) : nil
+          expected = File.exist?(expected_file) ? File.read(expected_file, encoding: Encoding::UTF_8) : nil
 
           minimum_complexity = suite&.minimum_complexity || 1000
 
@@ -427,7 +427,7 @@ module Liquid
             unless File.exist?(file_path)
               raise "Data file not found: #{file_path} (referenced from spec in #{base_dir})"
             end
-            file_data = safe_load_with_permitted_classes(File.read(file_path))
+            file_data = safe_load_with_permitted_classes(File.read(file_path, encoding: Encoding::UTF_8))
             next unless file_data.is_a?(Hash)
 
             merged = deep_merge_hashes(merged, file_data)

@@ -483,7 +483,7 @@ module Liquid
               exit(1)
             end
 
-            load_spec_from_string(File.read(spec_file), options)
+            load_spec_from_string(File.read(spec_file, encoding: Encoding::UTF_8), options)
           end
 
           def load_spec_from_string(yaml_content, options)
@@ -558,7 +558,7 @@ module Liquid
 
             existing_specs = []
             if File.exist?(daily_file) && File.size?(daily_file).to_i > 0
-              existing_specs = Liquid::Spec.safe_yaml_load(File.read(daily_file)) || []
+              existing_specs = Liquid::Spec.safe_yaml_load(File.read(daily_file, encoding: Encoding::UTF_8)) || []
               existing_specs = [] unless existing_specs.is_a?(Array)
             end
 

@@ -102,7 +102,7 @@ end
 pattern = parse_pattern(options[:pattern])
 
 # Read source file
-from_content = File.read(from_file)
+from_content = File.read(from_file, encoding: Encoding::UTF_8)
 from_header, from_specs = parse_specs(from_content)
 
 # Find matching specs
@@ -135,7 +135,7 @@ end
 
 # Read or create destination file
 if File.exist?(to_file)
-  to_content = File.read(to_file)
+  to_content = File.read(to_file, encoding: Encoding::UTF_8)
   to_header, to_specs = parse_specs(to_content)
 else
   to_header = ""

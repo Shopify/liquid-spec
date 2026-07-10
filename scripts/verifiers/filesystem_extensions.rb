@@ -29,7 +29,7 @@ module FilesystemExtensionVerifier
 
       Dir.glob(File.join(SPEC_ROOT, "**/*.yml")).sort.each do |file|
         next if File.basename(file) == "suite.yml"
-        doc = YAML.unsafe_load(File.read(file)) rescue next
+        doc = YAML.unsafe_load(File.read(file, encoding: Encoding::UTF_8)) rescue next
         specs = specs_of(doc)
         next unless specs.is_a?(Array)
         rel = file.sub("#{SPEC_ROOT}/", "")

@@ -49,7 +49,7 @@ def process_yaml_file(filepath)
   filename = File.basename(filepath)
   puts "Processing #{filename}..."
 
-  content = File.read(filepath)
+  content = File.read(filepath, encoding: Encoding::UTF_8)
   specs = parse_specs(content)
 
   if specs.empty?

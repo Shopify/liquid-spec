@@ -189,7 +189,7 @@ module Liquid
 
           Dir.glob(File.join(spec_root, "**/*.yml")).each do |file|
             begin
-              content = File.read(file)
+              content = File.read(file, encoding: Encoding::UTF_8)
               data = YAML.safe_load(content, permitted_classes: [Symbol, Range], aliases: true)
               next unless data
 
@@ -222,7 +222,7 @@ module Liquid
 
           Dir.glob(File.join(spec_root, "**/*.yml")).each do |file|
             begin
-              content = File.read(file)
+              content = File.read(file, encoding: Encoding::UTF_8)
               data = YAML.safe_load(content, permitted_classes: [Symbol, Range], aliases: true)
               next unless data
 

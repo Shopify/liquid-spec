@@ -24,7 +24,7 @@ class DocumentationFreshnessTest < Minitest::Test
     assert_equal [".beads/README.md", "AGENTS.md", "README.md"], relative_documentation_files
 
     DOCUMENTATION_FILES.each do |path|
-      content = File.read(path)
+      content = File.read(path, encoding: Encoding::UTF_8)
       STALE_PATTERNS.each do |pattern, description|
         refute_match pattern, content, "#{relative(path)} contains #{description}"
       end
@@ -32,20 +32,20 @@ class DocumentationFreshnessTest < Minitest::Test
   end
 
   def test_agents_verifier_categories_match_script_headers
-    agents = File.read(File.join(ROOT, "AGENTS.md"))
+    agents = File.read(File.join(ROOT, "AGENTS.md"), encoding: Encoding::UTF_8)
     blocking_section = agents[/\*\*Blocking verifiers\*\*.*?(?=\*\*Advisory verifiers\*\*)/m]
     advisory_section = agents[/\*\*Advisory verifiers\*\*.*?(?=Error-mode policy)/m]
 
     Liquid::Spec::Verifiers::VERIFIER_MODULES.each_key do |name|
       script = File.join(Liquid::Spec::Verifiers.default_verifiers_dir, "#{name}.rb")
-      expected_section = File.read(script, 500).include?("advisory: true") ? advisory_section : blocking_section
+      expected_section = File.open(script, "r:UTF-8") { |file| file.read(500) }.include?("advisory: true") ? advisory_section : blocking_section
       assert_includes expected_section, "`#{name}`",
         "AGENTS.md puts #{name} in the wrong verifier category"
     end
   end
 
   def test_agents_suite_defaults_match_suite_configuration
-    agents = File.read(File.join(ROOT, "AGENTS.md"))
+    agents = File.read(File.join(ROOT, "AGENTS.md"), encoding: Encoding::UTF_8)
 
     Liquid::Spec::Suite.all.each do |suite|
       expected = "**`#{suite.id}`** (default: #{suite.default?})"
@@ -54,7 +54,7 @@ class DocumentationFreshnessTest < Minitest::Test
   end
 
   def test_readme_suite_counts_match_loaded_suites
-    readme = File.read(File.join(ROOT, "README.md"))
+    readme = File.read(File.join(ROOT, "README.md"), encoding: Encoding::UTF_8)
     documented_counts = readme.scan(/^\| \*\*(\w+)\*\* \| ([\d,]+) \|/).to_h do |name, count|
       [name.to_sym, count.delete(",").to_i]
     end
@@ -67,7 +67,7 @@ class DocumentationFreshnessTest < Minitest::Test
   end
 
   def test_readme_lists_the_current_benchmark_specs
-    readme = File.read(File.join(ROOT, "README.md"))
+    readme = File.read(File.join(ROOT, "README.md"), encoding: Encoding::UTF_8)
     suite = Liquid::Spec::Suite.find(:benchmarks)
 
     specs = Liquid::Spec::SpecLoader.load_suite(suite)

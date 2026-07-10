@@ -148,7 +148,7 @@ def last_run_ids(path, count)
 
   ids = []
   last = nil
-  File.foreach(path) do |line|
+  File.foreach(path, encoding: Encoding::UTF_8) do |line|
     row = JSON.parse(line) rescue next
     run_id = row[0]
     next if run_id == last
@@ -173,7 +173,7 @@ recent_id_set = last_run_ids(log_path, options[:recent_runs])
 stats = {}
 malformed = 0
 
-File.foreach(log_path) do |line|
+File.foreach(log_path, encoding: Encoding::UTF_8) do |line|
   row = JSON.parse(line) rescue (malformed += 1; next)
   run_id, version, source_file, test_name, complexity, status = row
   next if recent_id_set && !recent_id_set[run_id]

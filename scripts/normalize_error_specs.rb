@@ -160,7 +160,7 @@ end
 def process_file(path, dry_run: false, verbose: false)
   puts "Processing: #{path}"
 
-  content = File.read(path)
+  content = File.read(path, encoding: Encoding::UTF_8)
   data = YAML.unsafe_load(content)
 
   # Handle both array format and hash format with _metadata

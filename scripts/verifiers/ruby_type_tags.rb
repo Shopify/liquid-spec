@@ -93,7 +93,7 @@ module RubyTypeTagVerifier
     # { file, line, name, expected, environment, features, complexity }
     def each_spec
       Dir.glob("specs/**/*.yml").sort.each do |file|
-        doc = YAML.unsafe_load(File.read(file)) rescue next
+        doc = YAML.unsafe_load(File.read(file, encoding: Encoding::UTF_8)) rescue next
         specs = specs_of(doc)
         next unless specs.is_a?(Array)
         # line numbers: scan the raw file for "- name:" anchors
@@ -124,7 +124,7 @@ module RubyTypeTagVerifier
     # `name:` is a later field (e.g. `- template:` first).
     def index_name_lines(file)
       map = {}
-      lines = File.readlines(file)
+      lines = File.readlines(file, encoding: Encoding::UTF_8)
       # block starts: any list-item mapping opener ("- <key>:")
       starts = lines.each_index.select { |i| lines[i] =~ /^- [A-Za-z]/ }
       starts.each_with_index do |st, k|

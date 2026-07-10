@@ -44,7 +44,7 @@ module Helpers
   end
 
   def insert_patch(file_path, patch)
-    contents = File.read(file_path)
+    contents = File.read(file_path, encoding: Encoding::UTF_8)
     return if contents.include?(patch)
 
     # For gem declarations, check if gem is already declared (any version)
@@ -62,7 +62,7 @@ module Helpers
   end
 
   def format_and_write_specs(capture_path, outfile, metadata: nil)
-    yaml = File.read(capture_path)
+    yaml = File.read(capture_path, encoding: Encoding::UTF_8)
     data = YAML.safe_load(yaml, permitted_classes: [Symbol, Date, Time], aliases: true)
 
     data.each { |spec| annotate_required_features!(spec) }

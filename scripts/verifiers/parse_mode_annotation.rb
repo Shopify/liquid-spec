@@ -121,7 +121,7 @@ module ParseModeAnnotationVerifier
       # Build map of directory → suite-level default error_mode
       suite_modes = {}
       Dir.glob("specs/**/suite.yml").sort.each do |sf|
-        doc = YAML.unsafe_load(File.read(sf)) rescue next
+        doc = YAML.unsafe_load(File.read(sf, encoding: Encoding::UTF_8)) rescue next
         next unless doc.is_a?(Hash)
         mode = doc.dig("defaults", "error_mode")
         dir = File.dirname(sf).sub("specs/", "")
@@ -130,7 +130,7 @@ module ParseModeAnnotationVerifier
 
       Dir.glob("specs/**/*.yml").sort.each do |file|
         next if File.basename(file) == "suite.yml"
-        doc = YAML.unsafe_load(File.read(file)) rescue next
+        doc = YAML.unsafe_load(File.read(file, encoding: Encoding::UTF_8)) rescue next
         specs = specs_of(doc)
         next unless specs.is_a?(Array)
         meta_opts = doc.is_a?(Hash) ? (doc["_metadata"] || {}) : {}
@@ -166,7 +166,7 @@ module ParseModeAnnotationVerifier
 
     def index_name_lines(file)
       map = {}
-      lines = File.readlines(file)
+      lines = File.readlines(file, encoding: Encoding::UTF_8)
       starts = lines.each_index.select { |i| lines[i] =~ /^- [A-Za-z]/ }
       starts.each_with_index do |st, k|
         en = (k + 1 < starts.size) ? starts[k + 1] : lines.size

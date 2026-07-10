@@ -200,7 +200,7 @@ module Liquid
         end
 
         def adapter_transport(path)
-          source = File.read(path)
+          source = File.read(path, encoding: Encoding::UTF_8)
           if source.match?(/liquid\/spec\/json_rpc\/adapter|JsonRpc::Adapter/)
             :json_rpc
           else

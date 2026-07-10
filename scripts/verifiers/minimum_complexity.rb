@@ -162,7 +162,7 @@ module MinimumComplexityVerifier
     end
 
     def safe_load(file)
-      YAML.unsafe_load(File.read(file))
+      YAML.unsafe_load(File.read(file, encoding: Encoding::UTF_8))
     rescue
       nil
     end
@@ -178,7 +178,7 @@ module MinimumComplexityVerifier
 
     def index_name_lines(file)
       names = {}
-      File.readlines(file).each_with_index do |line, idx|
+      File.readlines(file, encoding: Encoding::UTF_8).each_with_index do |line, idx|
         if line =~ /^\s*-?\s*name:\s*(.+)$/
           names[$1.strip] = idx + 1
         end

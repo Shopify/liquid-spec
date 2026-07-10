@@ -67,7 +67,7 @@ module LaxModeDeclaredVerifier
 
     def each_spec
       Dir.glob("specs/**/*.yml").sort.each do |file|
-        doc = YAML.unsafe_load(File.read(file)) rescue next
+        doc = YAML.unsafe_load(File.read(file, encoding: Encoding::UTF_8)) rescue next
         specs = specs_of(doc)
         next unless specs.is_a?(Array)
         starts = index_block_starts(file)
@@ -96,7 +96,7 @@ module LaxModeDeclaredVerifier
       return true if req["error_mode"].to_s == "lax"
       suite_yml = File.join(File.dirname(file), "suite.yml")
       if File.file?(suite_yml)
-        s = YAML.unsafe_load(File.read(suite_yml)) rescue nil
+        s = YAML.unsafe_load(File.read(suite_yml, encoding: Encoding::UTF_8)) rescue nil
         defaults = s.is_a?(Hash) ? (s["defaults"] || {}) : {}
         return true if defaults["error_mode"].to_s == "lax"
       end
@@ -111,7 +111,7 @@ module LaxModeDeclaredVerifier
 
     def index_block_starts(file)
       map = {}
-      lines = File.readlines(file)
+      lines = File.readlines(file, encoding: Encoding::UTF_8)
       starts = lines.each_index.select { |i| lines[i] =~ /^- [A-Za-z]/ }
       starts.each_with_index do |st, k|
         en = (k + 1 < starts.size) ? starts[k + 1] : lines.size

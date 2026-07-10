@@ -164,13 +164,13 @@ module SpecSchemaVerifier
       suite_dir = File.dirname(spec_file)
       suite_file = File.join(suite_dir, "suite.yml")
       return nil unless File.exist?(suite_file)
-      suite = YAML.unsafe_load(File.read(suite_file)) rescue nil
+      suite = YAML.unsafe_load(File.read(suite_file, encoding: Encoding::UTF_8)) rescue nil
       return nil unless suite.is_a?(Hash)
       suite["minimum_complexity"]
     end
 
     def safe_load(file)
-      YAML.unsafe_load(File.read(file))
+      YAML.unsafe_load(File.read(file, encoding: Encoding::UTF_8))
     rescue => e
       nil
     end

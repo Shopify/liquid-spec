@@ -34,7 +34,7 @@ module Liquid
           def load_file(path)
             return unless path && File.exist?(path)
 
-            File.readlines(path).each do |line|
+            File.readlines(path, encoding: Encoding::UTF_8).each do |line|
               add(line.strip)
             end
           end

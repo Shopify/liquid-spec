@@ -50,7 +50,7 @@ module Liquid
 
         def run_verifier(script, output:, error:)
           name = File.basename(script, ".rb")
-          advisory = File.read(script, 500).include?("advisory: true")
+          advisory = File.open(script, "r:UTF-8") { |file| file.read(500) }.include?("advisory: true")
           module_name = VERIFIER_MODULES[name]
 
           unless module_name
