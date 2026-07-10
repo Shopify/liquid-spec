@@ -12,7 +12,7 @@ module Liquid
         TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
 
         HELP = <<~HELP
-          Usage: liquid-spec inspect ADAPTER -n PATTERN [options]
+          Usage: liquid-spec tools inspect ADAPTER -n PATTERN [options]
 
           Shows detailed information about matching specs including:
           - Full template source
@@ -32,10 +32,10 @@ module Liquid
             -h, --help              Show this help
 
           Examples:
-            liquid-spec inspect my_adapter.rb -n "case.*empty"
-            liquid-spec inspect my_adapter.rb -n "for loop first"
-            liquid-spec inspect my_adapter.rb -n "include tag" --print-actual
-            liquid-spec inspect my_adapter.rb -n "some error" --print-actual --render-errors=false
+            liquid-spec tools inspect my_adapter.rb -n "case.*empty"
+            liquid-spec tools inspect my_adapter.rb -n "for loop first"
+            liquid-spec tools inspect my_adapter.rb -n "include tag" --print-actual
+            liquid-spec tools inspect my_adapter.rb -n "some error" --print-actual --render-errors=false
 
           The --print-actual flag outputs a YAML spec that matches the actual behavior,
           using best practices like error substring matching for error specs.
@@ -54,7 +54,7 @@ module Liquid
 
             unless options[:filter]
               $stderr.puts "Error: -n PATTERN is required for inspect"
-              $stderr.puts "Run 'liquid-spec inspect --help' for usage"
+              $stderr.puts "Run 'liquid-spec tools inspect --help' for usage"
               exit(1)
             end
 

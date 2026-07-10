@@ -9,7 +9,7 @@ module Liquid
       # Handles --adapter, --adapters params, resolves paths, and tracks
       # whether adapters are builtin (from examples/) or local.
       class Runs
-        Adapter = Struct.new(:name, :path, :builtin, keyword_init: true)
+        Adapter = Struct.new(:name, :path, :builtin, :transport, keyword_init: true)
 
         attr_reader :adapters, :output_dir, :extra_specs
 
@@ -78,7 +78,12 @@ module Liquid
         def add_all_builtin_adapters
           Dir[File.join(examples_dir, "*.rb")].sort.each do |path|
             name = File.basename(path, ".rb")
-            @adapters << Adapter.new(name: name, path: path, builtin: true)
+            @adapters << Adapter.new(
+              name: name,
+              path: path,
+              builtin: true,
+              transport: adapter_transport(path)
+            )
           end
 
           # Ensure liquid_ruby is first (reference)
@@ -135,6 +140,14 @@ module Liquid
           @adapters.empty?
         end
 
+        def mixed_transports?
+          @adapters.map(&:transport).uniq.size > 1
+        end
+
+        def adapters_by_transport
+          @adapters.group_by(&:transport)
+        end
+
         private
 
         def resolve_adapter(name_or_path)
@@ -169,7 +182,23 @@ module Liquid
         def make_adapter(path, local:)
           full_path = File.realpath(path)
           name = File.basename(full_path, ".rb")
-          Adapter.new(name: name, path: full_path, builtin: !local)
+          Adapter.new(
+            name: name,
+            path: full_path,
+            builtin: !local,
+            transport: adapter_transport(full_path)
+          )
+        end
+
+        def adapter_transport(path)
+          source = File.read(path)
+          if source.match?(/liquid\/spec\/json_rpc\/adapter|JsonRpc::Adapter/)
+            :json_rpc
+          else
+            :inline
+          end
+        rescue Errno::ENOENT, Errno::EACCES
+          :inline
         end
 
         def examples_dir

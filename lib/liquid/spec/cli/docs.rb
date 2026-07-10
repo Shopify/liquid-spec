@@ -8,10 +8,22 @@ module Liquid
       # Command to list and display implementer documentation
       module Docs
         DOCS_PATH = File.expand_path("../../../../docs/implementers", __dir__)
+        HELP = <<~HELP
+          Usage: liquid-spec docs [NAME]
+
+          List implementer guides, or print one guide by name.
+
+          Examples:
+            liquid-spec docs
+            liquid-spec docs curriculum
+            liquid-spec docs core-abstractions
+        HELP
 
         class << self
           def run(args)
-            if args.empty?
+            if args.include?("-h") || args.include?("--help")
+              puts HELP
+            elsif args.empty?
               list_docs
             else
               show_doc(args.first)

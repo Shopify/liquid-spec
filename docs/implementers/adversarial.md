@@ -20,13 +20,13 @@ tags while exploring nearby syntax and values.
 
 ```bash
 # Deterministically enumerate mutations around matching seed specs.
-liquid-spec mutate liquid_adapter_jsonrpc.rb --around=for_loops --limit=100
+liquid-spec tools mutate specs/adapter-jsonrpc.rb --around=for_loops --limit=100
 
 # Randomly chain mutations. The printed seed reproduces the same generated corpus.
-liquid-spec fuzz liquid_adapter_jsonrpc.rb --seed=1234 --rounds=500
+liquid-spec tools fuzz specs/adapter-jsonrpc.rb --seed=1234 --rounds=500
 
 # Exercise bounded valid nesting and template repetition.
-liquid-spec stress liquid_adapter_jsonrpc.rb --depth=64 --repetitions=100
+liquid-spec tools stress specs/adapter-jsonrpc.rb --depth=64 --repetitions=100
 ```
 
 All three commands are differential by default. `--compare` is accepted for readability
@@ -69,7 +69,7 @@ class names do not create noise. A reference timeout or crash is inconclusive an
 Use `--json` for a stable summary suitable for an agent or CI:
 
 ```bash
-liquid-spec fuzz adapter.rb --seed=1234 --limit=200 --json
+liquid-spec tools fuzz adapter.rb --seed=1234 --limit=200 --json
 ```
 
 The summary includes the seed, parent spec, mutation chain, classification, both outcomes,
@@ -81,8 +81,8 @@ Discrepancies are saved under a timestamped `/tmp/liquid-spec-<mode>-...` direct
 default. Override or disable this behavior with:
 
 ```bash
-liquid-spec mutate adapter.rb --save=tmp/adversarial
-liquid-spec mutate adapter.rb --no-save
+liquid-spec tools mutate adapter.rb --save=tmp/adversarial
+liquid-spec tools mutate adapter.rb --no-save
 ```
 
 When the reference renders successfully, the generated YAML records its output as
@@ -98,7 +98,7 @@ reductions that preserve the same discrepancy classification. The result is a sm
 reproducer, not a promise of global minimality:
 
 ```bash
-liquid-spec fuzz adapter.rb --seed=1234 --minimize --minimize-budget=60
+liquid-spec tools fuzz adapter.rb --seed=1234 --minimize --minimize-budget=60
 ```
 
 ## Selecting Seeds
@@ -108,9 +108,9 @@ and punctuation are treated as spaces, so `--around=for_loops` finds loop-relate
 Use `-n` for a name regexp or `--features` to require feature tags:
 
 ```bash
-liquid-spec mutate adapter.rb --around=partials
-liquid-spec mutate adapter.rb -n 'offset.*continue'
-liquid-spec fuzz adapter.rb --features=drops --seed=99
+liquid-spec tools mutate adapter.rb --around=partials
+liquid-spec tools mutate adapter.rb -n 'offset.*continue'
+liquid-spec tools fuzz adapter.rb --features=drops --seed=99
 ```
 
 Generated cases inherit feature tags. If the subject adapter honestly opts out of one of
@@ -133,7 +133,7 @@ one:
 
 1. Reproduce it with its printed seed and saved YAML.
 2. Remove irrelevant environment, filesystem, and syntax.
-3. Confirm the behavior against Shopify/liquid with `liquid-spec eval --compare`.
+3. Confirm the behavior against Shopify/liquid with `liquid-spec tools eval --compare`.
 4. Give it a unique descriptive name, an actionable hint, and the correct complexity.
 5. Place it after its prerequisites rather than at the parent seed's score by reflex.
 6. Add a verifier if the discovery exposes a recurring spec-quality rule.
@@ -149,7 +149,7 @@ provided and always prints it. Supply that seed to regenerate the same case sele
 mutation chains:
 
 ```bash
-liquid-spec fuzz adapter.rb --seed=847293 --limit=100 --rounds=500
+liquid-spec tools fuzz adapter.rb --seed=847293 --limit=100 --rounds=500
 ```
 
 This is generated differential fuzz-style testing—not coverage-guided fuzzing. The name

@@ -42,7 +42,7 @@ grep -r "offset:continue" specs/
 
 ```bash
 # Quick inline test with automatic comparison
-liquid-spec eval examples/liquid_ruby.rb --compare <<EOF
+liquid-spec tools eval examples/liquid_ruby.rb --compare <<EOF
 name: test_my_feature
 template: "{{ items | sort | first }}"
 environment:
@@ -88,10 +88,11 @@ Run the complexity ramp analysis to verify your spec fits:
 The test suite includes spec-quality checks that encode the current ramp policy:
 
 ```bash
-rake check
+liquid-spec tools check  # CLI
+rake check               # equivalent contributor task
 ```
 
-`rake check` runs the spec-quality gate plus mechanical feature/error-mode audits.
+Both commands run the spec-quality gate plus every mechanical feature/error-mode verifier.
 These checks currently enforce:
 
 - no complexity score may exceed 1000
@@ -395,7 +396,7 @@ Use multiple stable patterns: class name plus one meaningful message substring. 
 
 **Solution:** Always use `--compare` first
 ```bash
-liquid-spec eval examples/liquid_ruby.rb --compare <<EOF
+liquid-spec tools eval examples/liquid_ruby.rb --compare <<EOF
 name: split_at_end
 template: "{{ 'abc' | split: 'c' | join: '-' }}"
 EOF
@@ -425,20 +426,20 @@ EOF
 
 ## Using the Tools
 
-### liquid-spec eval
+### liquid-spec tools eval
 
 Quick testing with automatic comparison:
 
 ```bash
 # Inline template
-liquid-spec eval examples/liquid_ruby.rb --compare <<EOF
+liquid-spec tools eval examples/liquid_ruby.rb --compare <<EOF
 name: my_test
 template: "{{ x | size }}"
 environment: { x: [1, 2, 3] }
 EOF
 
 # From file
-liquid-spec eval examples/liquid_ruby.rb --spec=my_test.yml --compare
+liquid-spec tools eval examples/liquid_ruby.rb --spec=my_test.yml --compare
 ```
 
 Saved specs go to `/tmp/liquid-spec-{date}.yml`. Browse them:
@@ -479,7 +480,7 @@ liquid-spec run examples/liquid_ruby.rb
 liquid-spec run examples/liquid_ruby.rb -n tablerow
 
 # Compare multiple adapters
-liquid-spec matrix --adapters=a.rb,b.rb
+liquid-spec tools matrix --adapters=a.rb,b.rb
 ```
 
 ---
@@ -527,9 +528,9 @@ minimum_complexity: 1000
 
 ### Process
 
-1. Write spec and verify with `liquid-spec eval --compare`
+1. Write spec and verify with `liquid-spec tools eval --compare`
 2. Add to the appropriate file under `specs/`
-3. Run `rake check` to verify spec metadata, feature tags, and quality gates
+3. Run `liquid-spec tools check` (or `rake check`) to verify metadata, feature tags, and quality gates
 4. Run `bundle exec rake run` when the spec change could affect reference-adapter behavior
 5. Submit PR with description of what the spec teaches
 

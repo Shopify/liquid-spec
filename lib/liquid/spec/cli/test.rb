@@ -6,7 +6,7 @@ module Liquid
       # Test command - run specs against all available example adapters
       module Test
         HELP = <<~HELP
-          Usage: liquid-spec test [options]
+          Usage: liquid-spec tools test [options]
 
           Run specs against all available example adapters in the gem.
           Automatically skips adapters whose dependencies are not installed.
@@ -17,9 +17,9 @@ module Liquid
             -h, --help            Show this help
 
           Examples:
-            liquid-spec test                    # Run all available adapters
-            liquid-spec test --compare          # Compare mode
-            liquid-spec test -v                 # Verbose output
+            liquid-spec tools test                    # Run all available adapters
+            liquid-spec tools test --compare          # Compare mode
+            liquid-spec tools test -v                 # Verbose output
 
         HELP
 

@@ -105,7 +105,9 @@ end
 
 desc "Run all spec verifiers (prints findings, does not modify files)"
 task :check do
-  load File.join(__dir__, "scripts", "verify.rb")
+  require_relative "lib/liquid/spec/verifiers"
+  status = Liquid::Spec::Verifiers.run
+  abort "Verifier gate failed" unless status.zero?
 end
 
 desc "Run unit tests then all verifiers (standard pre-push gate)"

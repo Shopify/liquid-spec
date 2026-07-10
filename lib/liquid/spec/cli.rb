@@ -1,103 +1,60 @@
 # frozen_string_literal: true
 
 require_relative "cli/bench"
-require_relative "cli/runner"
-require_relative "cli/init"
-require_relative "cli/inspect"
-require_relative "cli/eval"
-require_relative "cli/test"
-require_relative "cli/matrix"
 require_relative "cli/docs"
-require_relative "cli/features"
-require_relative "cli/report"
-require_relative "cli/adversarial"
+require_relative "cli/init"
+require_relative "cli/runner"
+require_relative "cli/tools"
 
 module Liquid
   module Spec
     module CLI
       HELP = <<~HELP
-        liquid-spec - Test your Liquid implementation against the official spec
+        liquid-spec - Build and verify Liquid implementations
 
         Usage:
-          liquid-spec [command] [options]
+          liquid-spec COMMAND [options]
 
-        Commands:
-          run ADAPTER         Run specs using the specified adapter file
-          bench [ADAPTER]     Run benchmarks (all adapters, or ADAPTER vs liquid_ruby)
-          test                Run specs against all available example adapters
-          matrix              Run specs across multiple adapters and compare results
-          report              Analyze and compare benchmark results
-          inspect ADAPTER     Inspect specific specs in detail (use with -n PATTERN)
-          eval ADAPTER        Quick test a YAML spec against your adapter
-          mutate ADAPTER      Deterministic differential mutation of spec seeds
-          fuzz ADAPTER        Seeded differential fuzz-style mutation
-          stress ADAPTER      Bounded differential nesting/repetition stress
-          init [FILE]         Generate adapter templates.
-                             No FILE: generates both liquid_adapter.rb and
-                             liquid_adapter_jsonrpc.rb (executable, self-launching).
-                             Flags: --jsonrpc (JSON-RPC), --liquid-ruby (reference)
-          features            List available features and their test counts
-          docs [NAME]         List or view implementer documentation
-          help                Show this help message
+        Core commands:
+          init [FILE]         Generate adapters and AGENTS.md implementation guidance
+          docs [NAME]         Read the implementation curriculum and semantic guides
+          run ADAPTER         Run the acceptance ramp against an implementation
+          bench [ADAPTER]     Benchmark one or more implementations
 
-        Examples:
-          liquid-spec init                              # Creates liquid_adapter.rb
-          liquid-spec run adapter.rb                    # Run all specs
-          liquid-spec run adapter.rb -n for             # Run specs matching 'for'
-          liquid-spec bench                             # Benchmark all builtin adapters
-          liquid-spec bench my_adapter.rb               # Benchmark my_adapter vs liquid_ruby
-          liquid-spec bench my_adapter.rb -n storefront # Benchmark specific specs
-          liquid-spec inspect adapter.rb -n "case.*empty"  # Inspect failing spec
-          liquid-spec mutate adapter.rb --around=for_loops  # Generated edge cases
-          liquid-spec fuzz adapter.rb --seed=1234           # Reproducible fuzz-style run
-          liquid-spec docs curriculum          # Implementation learning path
-          cat spec.yml | liquid-spec eval adapter.rb --compare  # Quick YAML spec test
+        Additional tools:
+          tools COMMAND       Inspection, eval, matrix, feature, verifier, and
+                              generated adversarial utilities
 
-        Eval Command (quick testing):
-          The eval command tests specs from YAML files or stdin:
+        Other:
+          help                Show this help
 
-          # From YAML file
-          liquid-spec eval adapter.rb --spec=test.yml
+        Start a new implementation:
+          liquid-spec init
+          liquid-spec docs curriculum
+          liquid-spec run specs/adapter.rb
 
-          # From stdin (heredoc)
-          cat <<EOF | liquid-spec eval adapter.rb
-          name: test_upcase
-          hint: "Test upcase filter"
-          complexity: 200
-          template: "{{ x | upcase }}"
-          expected: "HI"
-          environment:
-            x: hi
-          EOF
+        Non-Ruby implementation:
+          liquid-spec init --jsonrpc
+          liquid-spec run specs/adapter-jsonrpc.rb --command="./my-liquid-server"
 
-          # Compare against reference liquid-ruby
-          liquid-spec eval adapter.rb --compare < test.yml
+        Explore the tool collection:
+          liquid-spec tools help
+          liquid-spec tools inspect adapter.rb -n "case.*empty"
+          cat spec.yml | liquid-spec tools eval adapter.rb --compare
+          liquid-spec tools check
 
-          Specs are automatically saved to /tmp/liquid-spec-{date}.yml
+        Backward compatibility:
+          `liquid-spec ADAPTER` remains shorthand for `liquid-spec run ADAPTER`.
+          Former top-level utility commands remain temporary deprecated aliases
+          under their new `liquid-spec tools ...` names.
 
-        Programmatic API:
-          You can also use eval from Ruby code:
-
-            require 'liquid/spec/cli/adapter_dsl'
-            LiquidSpec.evaluate("adapter.rb", <<~YAML, compare: true)
-              name: test_upcase
-              hint: "Test upcase filter"
-              complexity: 200
-              template: "{{ 'hello' | upcase }}"
-              expected: "HELLO"
-            YAML
-
-        Implementation Curriculum:
-          Start with `liquid-spec docs curriculum`. Specs are ordered by complexity so
-          a failing run doubles as a learning path. Complexity is a guide, not an
-          architecture mandate: different implementations can choose different internals
-          while using the same observable-behavior ramp.
-
-          See also: `liquid-spec docs core-abstractions` and `liquid-spec docs complexity`.
-
-        Run 'liquid-spec <command> --help' for command-specific help.
-
+        Run `liquid-spec COMMAND --help` or `liquid-spec tools COMMAND --help`
+        for command-specific help.
       HELP
+
+      LEGACY_TOOL_COMMANDS = %w[
+        eval features fuzz inspect matrix mutate report stress test
+      ].freeze
 
       def self.run(args)
         command = args.shift
@@ -105,35 +62,22 @@ module Liquid
         case command
         when "init"
           Init.run(args)
+        when "docs"
+          Docs.run(args)
         when "run"
           Runner.run(args)
         when "bench"
           Bench.run(args)
-        when "test"
-          Test.run(args)
-        when "matrix"
-          Matrix.run(args)
-        when "inspect"
-          Inspect.run(args)
-        when "eval"
-          Eval.run(args)
-        when "mutate"
-          Adversarial.run(args, mode: :mutate)
-        when "fuzz"
-          Adversarial.run(args, mode: :fuzz)
-        when "stress"
-          Adversarial.run(args, mode: :stress)
-        when "docs"
-          Docs.run(args)
-        when "features"
-          Features.run(args)
-        when "report"
-          Report.run(args)
+        when "tools"
+          Tools.run(args)
         when "help", "-h", "--help", nil
           puts HELP
         else
-          # If first arg looks like a file, treat it as 'run'
-          if File.exist?(command) || command.end_with?(".rb")
+          if LEGACY_TOOL_COMMANDS.include?(command)
+            warn "Deprecated: use `liquid-spec tools #{command}` instead."
+            Tools.run([command] + args)
+          # If first arg looks like a file, treat it as `run`.
+          elsif File.exist?(command) || command.end_with?(".rb")
             Runner.run([command] + args)
           else
             $stderr.puts "Unknown command: #{command}"

@@ -9,7 +9,7 @@ module Liquid
       # Eval command - quick test of a template against an adapter
       module Eval
         HELP = <<~HELP
-          Usage: liquid-spec eval ADAPTER <<EOF
+          Usage: liquid-spec tools eval ADAPTER <<EOF
                  name: upcase-test
                  complexity: 20
                  template: "{{ x | upcase }}"
@@ -19,7 +19,7 @@ module Liquid
                  hint: "Test upcase filter on simple string variable"
                  EOF
 
-                 liquid-spec eval ADAPTER --spec=FILE.yml [options]
+                 liquid-spec tools eval ADAPTER --spec=FILE.yml [options]
 
           Quickly test a Liquid template against your adapter.
 
@@ -31,7 +31,7 @@ module Liquid
             -h, --help              Show this help
 
           Examples:
-            liquid-spec eval examples/liquid_ruby.rb <<EOF
+            liquid-spec tools eval examples/liquid_ruby.rb <<EOF
             name: upcase-test
             complexity: 20
             template: "{{ x | upcase }}"
@@ -41,8 +41,8 @@ module Liquid
             hint: "Test upcase filter on simple string variable"
             EOF
 
-            liquid-spec eval my_adapter.rb --spec=my_test.yml
-            liquid-spec eval my_adapter.rb --compare < my_test.yml
+            liquid-spec tools eval my_adapter.rb --spec=my_test.yml
+            liquid-spec tools eval my_adapter.rb --compare < my_test.yml
 
           When using --compare, 'expected' and 'errors' can be omitted - they will
           be filled in from the reference implementation output.
@@ -68,7 +68,7 @@ module Liquid
                 options[:stdin_yaml] = $stdin.read
               else
                 $stderr.puts "Error: --spec FILE is required (or pipe YAML via stdin)"
-                $stderr.puts "Run 'liquid-spec eval --help' for usage"
+                $stderr.puts "Run 'liquid-spec tools eval --help' for usage"
                 exit(1)
               end
             end

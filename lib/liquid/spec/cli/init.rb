@@ -1,9 +1,33 @@
 # frozen_string_literal: true
 
+require "fileutils"
+
 module Liquid
   module Spec
     module CLI
       module Init
+        DEFAULT_RUBY_ADAPTER = "specs/adapter.rb"
+        DEFAULT_JSON_RPC_ADAPTER = "specs/adapter-jsonrpc.rb"
+
+        HELP = <<~HELP
+          Usage: liquid-spec init [FILE] [options]
+
+          Generate adapter test bridges and AGENTS.md implementation guidance.
+
+          With no FILE or type flag, creates:
+            #{DEFAULT_RUBY_ADAPTER}
+            #{DEFAULT_JSON_RPC_ADAPTER}
+
+          Options:
+            --jsonrpc, --json-rpc, -j  Generate a JSON-RPC adapter
+            --liquid-ruby, -l          Generate a Shopify/liquid reference adapter
+            -h, --help                 Show this help
+
+          Existing generated files are left unchanged when identical. If a file
+          exists with different content, init asks before overwriting and defaults
+          to No.
+        HELP
+
         TEMPLATE = <<~RUBY
           #!/usr/bin/env ruby
           # frozen_string_literal: true
@@ -358,8 +382,10 @@ module Liquid
           end
         RUBY
 
-        def self.agents_md_content(filename, json_rpc: false, both: false)
+        def self.agents_md_content(filename, json_rpc: false, both: false, ruby_filename: nil)
           json_rpc_guide = json_rpc || both
+          ruby_adapter = ruby_filename || (json_rpc ? DEFAULT_RUBY_ADAPTER : filename)
+          json_rpc_adapter = json_rpc ? filename : DEFAULT_JSON_RPC_ADAPTER
 
           <<~MARKDOWN
             # Implementing a Liquid Template Engine
@@ -383,10 +409,10 @@ module Liquid
             #{json_rpc_guide ? non_ruby_notice : ""}
             ## Which adapter file?
 
-            - **Implementing in Ruby?** Use `liquid_adapter.rb`. It calls your code directly
+            - **Implementing in Ruby?** Use `#{ruby_adapter}`. It calls your code directly
               (see "The Adapter Pattern" below).
             - **Implementing in ANY other language** (Rust, Go, Python, Node, Zig, ...)? Use
-              `liquid_adapter_jsonrpc.rb`. It talks to your engine over a simple JSON-RPC
+              `#{json_rpc_adapter}`. It talks to your engine over a simple JSON-RPC
               protocol on stdin/stdout — run `liquid-spec docs json-rpc-protocol` for the
               full protocol.
 
@@ -411,7 +437,7 @@ module Liquid
                (see "Documentation" below) — minutes of reading routinely save hours of
                guessing. Reproduce interactively before coding:
                ```bash
-               cat <<'EOF' | liquid-spec eval #{filename} --compare
+               cat <<'EOF' | liquid-spec tools eval #{filename} --compare
                name: scratch_assign
                template: "{% assign x = 1 %}{{ x }}"
                expected: "1"
@@ -419,7 +445,7 @@ module Liquid
                hint: "Assign stores a value in the current scope."
                EOF
 
-               cat <<'EOF' | liquid-spec eval #{filename} --compare
+               cat <<'EOF' | liquid-spec tools eval #{filename} --compare
                name: scratch_array_size
                template: "{{ x | size }}"
                environment:
@@ -559,9 +585,9 @@ module Liquid
             adapter with Shopify/liquid and save differences as runnable YAML regressions:
 
             ```bash
-            liquid-spec mutate #{filename} --around=for_loops --limit=100
-            liquid-spec fuzz #{filename} --seed=1234 --rounds=500 --minimize
-            liquid-spec stress #{filename} --depth=64 --repetitions=100
+            liquid-spec tools mutate #{filename} --around=for_loops --limit=100
+            liquid-spec tools fuzz #{filename} --seed=1234 --rounds=500 --minimize
+            liquid-spec tools stress #{filename} --depth=64 --repetitions=100
             ```
 
             Read `liquid-spec docs adversarial` before promoting a generated case. Minimize
@@ -599,10 +625,10 @@ module Liquid
             liquid-spec run #{filename} -l              # list specs without running
             liquid-spec run #{filename} --list-passed   # audit accidental passes
             liquid-spec run #{filename} --json          # machine-readable results
-            cat spec.yml | liquid-spec eval #{filename} --compare           # one-off YAML spec
-            liquid-spec mutate #{filename} --around=for_loops               # deterministic generated cases
-            liquid-spec fuzz #{filename} --seed=1234 --json                 # reproducible fuzz-style run
-            liquid-spec stress #{filename} --depth=64                       # bounded structural stress
+            cat spec.yml | liquid-spec tools eval #{filename} --compare     # one-off YAML spec
+            liquid-spec tools mutate #{filename} --around=for_loops         # deterministic generated cases
+            liquid-spec tools fuzz #{filename} --seed=1234 --json           # reproducible fuzz-style run
+            liquid-spec tools stress #{filename} --depth=64                 # bounded structural stress
             liquid-spec docs curriculum                 # the implementation learning path
             liquid-spec docs complexity                 # any guide from the table above
             ```
@@ -895,18 +921,32 @@ module Liquid
         RUBY
 
         def self.run(args)
-          filename = args.find { |a| !a.start_with?("-") }
+          if args.include?("-h") || args.include?("--help")
+            puts HELP
+            return
+          end
+
+          filenames = args.reject { |arg| arg.start_with?("-") }
+          cli_error("init accepts at most one FILE") if filenames.length > 1
+          filename = filenames.first
+
+          known_flags = %w[--json-rpc --jsonrpc --json -j --liquid-ruby -l]
+          unknown_flags = args.select { |arg| arg.start_with?("-") && !known_flags.include?(arg) }
+          cli_error("Unknown init option: #{unknown_flags.first}") if unknown_flags.any?
 
           # Check for template type flags
           # --json, --jsonrpc, and --json-rpc (plus -j) all select the JSON-RPC adapter
           json_rpc_flag = args.intersect?(%w[--json-rpc --jsonrpc --json -j])
           liquid_ruby_flag = args.intersect?(%w[--liquid-ruby -l])
+          if json_rpc_flag && liquid_ruby_flag
+            cli_error("Choose either --jsonrpc or --liquid-ruby, not both")
+          end
 
           # A type flag without a filename selects single-file mode with the
           # canonical filename for that type (previously the flag was
           # silently ignored and both adapters were generated).
-          filename ||= "liquid_adapter_jsonrpc.rb" if json_rpc_flag
-          filename ||= "liquid_adapter.rb" if liquid_ruby_flag
+          filename ||= DEFAULT_JSON_RPC_ADAPTER if json_rpc_flag
+          filename ||= DEFAULT_RUBY_ADAPTER if liquid_ruby_flag
 
           if filename
             # Single-file mode: generate one adapter, type determined by flags
@@ -921,39 +961,44 @@ module Liquid
             create_agents_md(filename, json_rpc: template_type == :json_rpc)
             print_next_steps(filename, template_type)
           else
-            # Default mode: generate both a Ruby adapter and a JSON-RPC adapter
+            # Default mode: generate both adapters under specs/.
             puts "Generating both adapters..."
             puts ""
-            generate_adapter("liquid_adapter.rb", :basic)
-            generate_adapter("liquid_adapter_jsonrpc.rb", :json_rpc)
+            generate_adapter(DEFAULT_RUBY_ADAPTER, :basic)
+            generate_adapter(DEFAULT_JSON_RPC_ADAPTER, :json_rpc)
 
             # Create AGENTS.md once. Lead with the cross-language adapter because
             # agents building in TypeScript/Rust/Go/Python need the protocol guide;
             # include the direct Ruby adapter section as well.
-            create_agents_md("liquid_adapter_jsonrpc.rb", json_rpc: true, both: true)
+            create_agents_md(
+              DEFAULT_JSON_RPC_ADAPTER,
+              json_rpc: true,
+              both: true,
+              ruby_filename: DEFAULT_RUBY_ADAPTER
+            )
 
             puts ""
             puts "Next steps:"
             puts "  Ruby implementation:"
-            puts "    1. Edit liquid_adapter.rb to implement compile and render"
-            puts "    2. Run: ./liquid_adapter.rb   (or: liquid-spec liquid_adapter.rb)"
+            puts "    1. Edit #{DEFAULT_RUBY_ADAPTER} to implement compile and render"
+            puts "    2. Run: liquid-spec run #{DEFAULT_RUBY_ADAPTER}"
             puts ""
             puts "  Any language (JSON-RPC):"
-            puts "    1. Edit DEFAULT_COMMAND in liquid_adapter_jsonrpc.rb"
+            puts "    1. Edit DEFAULT_COMMAND in #{DEFAULT_JSON_RPC_ADAPTER}"
             puts "    2. Implement the JSON-RPC protocol in your server (see comments)"
-            puts "    3. Run: ./liquid_adapter_jsonrpc.rb   (or: liquid-spec liquid_adapter_jsonrpc.rb)"
+            puts "    3. Run: liquid-spec run #{DEFAULT_JSON_RPC_ADAPTER}"
             puts ""
             puts "If using an AI agent, point it at AGENTS.md for implementation guidance."
           end
         end
 
-        def self.generate_adapter(filename, template_type)
-          if File.exist?(filename)
-            $stderr.puts "Error: #{filename} already exists"
-            $stderr.puts "Delete it first or choose a different name"
-            exit(1)
-          end
+        def self.cli_error(message)
+          $stderr.puts "Error: #{message}"
+          $stderr.puts "Run 'liquid-spec init --help' for usage"
+          exit(2)
+        end
 
+        def self.generate_adapter(filename, template_type)
           template = case template_type
           when :json_rpc
             # JSON-RPC template uses gsub because format() chokes on JSON examples
@@ -964,20 +1009,43 @@ module Liquid
             format(TEMPLATE, filename: filename)
           end
 
-          File.write(filename, template)
-          File.chmod(0o755, filename)
-          puts "Created #{filename} (executable)"
+          write_generated_file(filename, template, executable: true)
         end
 
-        def self.create_agents_md(filename, json_rpc:, both: false)
-          agents_filename = "AGENTS.md"
-          if File.exist?(agents_filename)
-            puts "AGENTS.md already exists, skipping"
-          else
-            agents_md = agents_md_content(filename, json_rpc: json_rpc, both: both)
-            File.write(agents_filename, agents_md)
-            puts "Created AGENTS.md"
+        def self.create_agents_md(filename, json_rpc:, both: false, ruby_filename: nil)
+          agents_md = agents_md_content(
+            filename,
+            json_rpc: json_rpc,
+            both: both,
+            ruby_filename: ruby_filename
+          )
+          write_generated_file("AGENTS.md", agents_md)
+        end
+
+        def self.write_generated_file(filename, content, executable: false)
+          existed = File.exist?(filename)
+          if existed
+            existing = File.binread(filename)
+            if existing.b == content.b
+              puts "Unchanged #{filename}"
+              return :unchanged
+            end
+
+            $stdout.print "#{filename} exists and differs. Overwrite? [y/N] "
+            $stdout.flush
+            answer = $stdin.gets&.strip&.downcase
+            unless %w[y yes].include?(answer)
+              puts "Skipped #{filename}"
+              return :skipped
+            end
           end
+
+          FileUtils.mkdir_p(File.dirname(filename))
+          File.write(filename, content)
+          File.chmod(0o755, filename) if executable
+          action = existed ? "Overwrote" : "Created"
+          puts "#{action} #{filename}#{executable ? " (executable)" : ""}"
+          :written
         end
 
         def self.print_next_steps(filename, template_type)
@@ -987,12 +1055,12 @@ module Liquid
             puts "Next steps:"
             puts "  1. Edit DEFAULT_COMMAND in #{filename} to point to your Liquid server"
             puts "  2. Implement the JSON-RPC protocol in your server (see comments in file)"
-            puts "  3. Run: ./#{filename}"
-            puts "     Or:  liquid-spec #{filename} --command='./your-server'"
+            puts "  3. Run: liquid-spec run #{filename}"
+            puts "     Override: liquid-spec run #{filename} --command='./your-server'"
           else
             puts "Next steps:"
             puts "  1. Edit #{filename} to implement compile and render"
-            puts "  2. Run: ./#{filename}   (or: liquid-spec #{filename})"
+            puts "  2. Run: liquid-spec run #{filename}"
           end
 
           puts ""

@@ -24,6 +24,9 @@ module Liquid
           With no adapter:    runs all builtin adapters sequentially
           With an adapter:    runs ADAPTER vs liquid_ruby (reference)
 
+          Comparisons that mix inline and JSON-RPC adapters emit a warning because
+          JSON-RPC timings include subprocess and protocol overhead.
+
           Options:
             -n, --name PATTERN    Filter specs by name pattern
             -s, --suite SUITE     Spec suite (default: benchmarks)
@@ -75,6 +78,7 @@ module Liquid
 
             # Default to --all if no adapters specified
             runs.add_all_builtin_adapters if runs.empty?
+            warn_mixed_transport_comparison(runs) if runs.adapters.size > 1
 
             # Extract --jsonl (don't pass to subprocesses — they always write files)
             jsonl_mode = args.delete("--jsonl")
@@ -256,6 +260,22 @@ module Liquid
                 print_comparison(adapter_names, results_by_adapter)
               end
             end
+          end
+
+          def warn_mixed_transport_comparison(runs)
+            return unless runs.mixed_transports?
+
+            groups = runs.adapters_by_transport
+            inline = groups.fetch(:inline, []).map(&:name).join(", ")
+            json_rpc = groups.fetch(:json_rpc, []).map(&:name).join(", ")
+            warn <<~WARNING
+
+              WARNING: This benchmark compares inline and JSON-RPC adapters.
+              JSON-RPC measurements include subprocess and protocol overhead, so the
+              performance results are not directly comparable.
+                Inline:   #{inline}
+                JSON-RPC: #{json_rpc}
+            WARNING
           end
 
           private

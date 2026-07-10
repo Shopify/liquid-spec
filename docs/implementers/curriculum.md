@@ -40,14 +40,14 @@ liquid-spec run my_adapter.rb
 2. Usually start with the first/lowest-complexity failure.
 3. Read the full spec: template, environment, filesystem, expected output, errors, and hint.
 4. If the rule is unclear, read the relevant guide below.
-5. Reproduce a tiny case with `liquid-spec eval` when useful.
+5. Reproduce a tiny case with `liquid-spec tools eval` when useful.
 6. Implement the general behavior behind the failure, not a one-off special case.
 7. Rerun and judge progress by `Complexity level cleared`, not raw pass count.
 
 For a one-off experiment, feed `eval` a YAML spec:
 
 ```bash
-cat <<'EOF' | liquid-spec eval my_adapter.rb --compare
+cat <<'EOF' | liquid-spec tools eval my_adapter.rb --compare
 name: scratch_assign
 template: "{% assign x = 1 %}{{ x }}"
 expected: "1"
@@ -126,14 +126,14 @@ liquid-spec run my_adapter.rb
 liquid-spec run my_adapter.rb --list-passed --json
 
 # Search around recorded behavior after the ramp is green
-liquid-spec mutate my_adapter.rb --around=for_loops
-liquid-spec fuzz my_adapter.rb --seed=1234 --json
+liquid-spec tools mutate my_adapter.rb --around=for_loops
+liquid-spec tools fuzz my_adapter.rb --seed=1234 --json
 
 # Validate liquid-spec/spec changes when contributing to this repository
-rake check
+liquid-spec tools check  # equivalent: rake check
 ```
 
-`rake check` is for liquid-spec contributors. Adapter authors usually want
+`liquid-spec tools check` / `rake check` are for liquid-spec contributors. Adapter authors usually want
 `liquid-spec run my_adapter.rb`; that is the real curriculum loop. Once the recorded
 ramp is green, read `liquid-spec docs adversarial` before promoting generated
 differential discoveries into permanent specs.

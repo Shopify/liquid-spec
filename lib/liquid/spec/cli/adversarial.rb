@@ -12,9 +12,9 @@ module Liquid
       module Adversarial
         HELP = <<~HELP
           Usage:
-            liquid-spec mutate ADAPTER [options]
-            liquid-spec fuzz ADAPTER [options]
-            liquid-spec stress ADAPTER [options]
+            liquid-spec tools mutate ADAPTER [options]
+            liquid-spec tools fuzz ADAPTER [options]
+            liquid-spec tools stress ADAPTER [options]
 
           Generate Liquid cases from the existing spec corpus and compare the
           adapter against Shopify/liquid. This is differential corpus mutation,
@@ -51,9 +51,9 @@ module Liquid
             2  Invalid command/configuration or adapter setup failed
 
           Examples:
-            liquid-spec mutate adapter.rb --around=for_loops --limit=100
-            liquid-spec fuzz adapter.rb --seed=1234 --rounds=500 --minimize
-            liquid-spec stress adapter.rb --depth=64 --repetitions=100
+            liquid-spec tools mutate adapter.rb --around=for_loops --limit=100
+            liquid-spec tools fuzz adapter.rb --seed=1234 --rounds=500 --minimize
+            liquid-spec tools stress adapter.rb --depth=64 --repetitions=100
 
           Saved files contain reference expectations and can be run later with:
             liquid-spec run adapter.rb --add-specs='tmp/regressions/*.yml'

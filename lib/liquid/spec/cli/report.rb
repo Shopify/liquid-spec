@@ -11,7 +11,7 @@ module Liquid
       # Report command - analyze and compare benchmark results across adapters
       module Report
         HELP = <<~HELP
-          Usage: liquid-spec report [options]
+          Usage: liquid-spec tools report [options]
 
           Analyze and compare benchmark results across adapters.
           Reads JSONL files from $LIQUID_SPEC_REPORTS (default: #{Config::DEFAULT_REPORTS_DIR}/)
@@ -32,11 +32,11 @@ module Liquid
             -h, --help            Show this help
 
           Examples:
-            liquid-spec report
-            liquid-spec report --compare
-            liquid-spec report --adapter=liquid_ruby --compare
-            liquid-spec report --spec=loops --trend
-            liquid-spec report --json > results.json
+            liquid-spec tools report
+            liquid-spec tools report --compare
+            liquid-spec tools report --adapter=liquid_ruby --compare
+            liquid-spec tools report --spec=loops --trend
+            liquid-spec tools report --json > results.json
 
         HELP
 
@@ -53,7 +53,7 @@ module Liquid
 
             unless Dir.exist?(reports_dir)
               puts "No benchmark data found at #{reports_dir}"
-              puts "Run benchmarks first with: liquid-spec run adapter.rb -s benchmarks --bench"
+              puts "Run benchmarks first with: liquid-spec bench adapter.rb"
               return
             end
 
@@ -61,7 +61,7 @@ module Liquid
 
             if data.empty?
               puts "No benchmark data found"
-              puts "Run benchmarks first with: liquid-spec run adapter.rb -s benchmarks --bench"
+              puts "Run benchmarks first with: liquid-spec bench adapter.rb"
               return
             end
 
@@ -400,8 +400,8 @@ module Liquid
               puts "Found: #{data.keys.join(", ")}"
               puts ""
               puts "Run benchmarks with different configurations:"
-              puts "  - Different adapters: liquid-spec matrix --adapters=a,b --bench"
-              puts "  - Different JIT: ruby --yjit bin/liquid-spec run ... --bench"
+              puts "  - Different adapters: liquid-spec bench --adapters=a,b"
+              puts "  - Builtin/JIT adapters: liquid-spec bench --all"
               return
             end
 

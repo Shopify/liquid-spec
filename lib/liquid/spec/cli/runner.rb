@@ -74,8 +74,6 @@ module Liquid
             --timeout=SECS        Timeout in seconds for JSON-RPC requests (default: 2)
             --adapter-timeout=SECS Adapter compile/render timeout in seconds (default: #{LiquidSpec::DEFAULT_ADAPTER_TIMEOUT})
             -c, --compare         Compare adapter output against reference liquid-ruby
-            -b, --bench           Run timing suites as benchmarks (measure iterations/second)
-            --profile             Profile with StackProf (use with --bench), outputs to /tmp/
             -v, --verbose         Show verbose output
             -l, --list            List available specs without running
             --list-suites         List available suites
@@ -101,7 +99,6 @@ module Liquid
             liquid-spec run my_adapter.rb --compare
             liquid-spec run my_adapter.rb --add-specs="my_specs/*.yml"
             liquid-spec run my_adapter.rb --list-suites
-            liquid-spec run my_adapter.rb -s benchmarks --bench
             liquid-spec run my_adapter.rb --known-failures=known_failures.txt
 
         HELP
@@ -184,6 +181,7 @@ module Liquid
               when "-c", "--compare"
                 options[:compare] = true
               when "-b", "--bench"
+                warn "Deprecated: use the core `liquid-spec bench` command for benchmarks."
                 options[:bench] = true
               when "--jsonl"
                 options[:jsonl] = true
@@ -1502,12 +1500,12 @@ module Liquid
               puts "     Consider contributing new specs for edge cases you discover."
             end
             puts ""
-            puts "  2. Run `liquid-spec <adapter> --bench` to measure render speed and contrast"
+            puts "  2. Run `liquid-spec bench <adapter>` to measure render speed and contrast"
             puts "     against other implementations. Pros: performance is production-critical."
             puts "     Cons: optimizing early can distract from correctness."
             puts ""
             puts "  3. Check deep correctness or give back:"
-            puts "     - Run a matrix test against all known Liquid implementations to find"
+            puts "     - Run `liquid-spec tools matrix --all` to find"
             puts "       behavioral divergences."
             puts "     - Write up what you learned and open a PR against Shopify/liquid-spec"
             puts "       with improvements to spec coverage, the ramp, hints, or docs."

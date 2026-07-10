@@ -13,7 +13,7 @@ module Liquid
       # Matrix command - run specs across multiple adapters and compare results
       module Matrix
         HELP = <<~HELP
-          Usage: liquid-spec matrix [options]
+          Usage: liquid-spec tools matrix [options]
 
           Run specs across multiple adapters and compare results.
           Shows differences between implementations.
@@ -26,17 +26,14 @@ module Liquid
             --reference=NAME      Reference adapter (default: liquid_ruby)
             -n, --name PATTERN    Filter specs by name pattern
             -s, --suite SUITE     Spec suite: all, basics, liquid_ruby, etc.
-            -b, --bench           Run timing suites as benchmarks, compare across adapters
-            --profile             Profile with StackProf (use with --bench), outputs to /tmp/
             -v, --verbose         Show detailed output
             -h, --help            Show this help
 
           Examples:
-            liquid-spec matrix --all
-            liquid-spec matrix --all --adapter=./my_adapter.rb
-            liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax
-            liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -n truncate
-            liquid-spec matrix --adapters=liquid_ruby,liquid_c -s benchmarks --bench
+            liquid-spec tools matrix --all
+            liquid-spec tools matrix --all --adapter=./my_adapter.rb
+            liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax
+            liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax -n truncate
 
         HELP
 
@@ -84,6 +81,7 @@ module Liquid
               when /\A--suite=(.+)\z/
                 options[:suite] = ::Regexp.last_match(1).to_sym
               when "-b", "--bench"
+                warn "Deprecated: use the core `liquid-spec bench` command for benchmarks."
                 options[:bench] = true
               when "--profile"
                 options[:profile] = true
@@ -111,9 +109,9 @@ module Liquid
               $stderr.puts "Error: No adapters specified"
               $stderr.puts ""
               $stderr.puts "Usage:"
-              $stderr.puts "  liquid-spec matrix --all"
-              $stderr.puts "  liquid-spec matrix --adapters=liquid_ruby,liquid_c"
-              $stderr.puts "  liquid-spec matrix --adapter=./my_adapter.rb"
+              $stderr.puts "  liquid-spec tools matrix --all"
+              $stderr.puts "  liquid-spec tools matrix --adapters=liquid_ruby,liquid_c"
+              $stderr.puts "  liquid-spec tools matrix --adapter=./my_adapter.rb"
               exit(1)
             end
 

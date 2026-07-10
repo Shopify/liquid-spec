@@ -13,14 +13,17 @@ liquid-spec is a test suite and CLI for testing Liquid template implementations.
 gem install specific_install
 gem specific_install https://github.com/Shopify/liquid-spec
 
-# See top-level commands
+# The top level stays focused on init, docs, run, and bench.
 liquid-spec help
 
+# Inspection, comparison, generated coverage, and contributor checks live here.
+liquid-spec tools help
+
 # Generate starter adapters. With no FILE, init creates both:
-#   liquid_adapter.rb and liquid_adapter_jsonrpc.rb
+#   specs/adapter.rb and specs/adapter-jsonrpc.rb
 liquid-spec init
 liquid-spec init my_adapter.rb
-liquid-spec init --jsonrpc liquid_adapter_jsonrpc.rb
+liquid-spec init --jsonrpc
 
 # Run specs with an adapter
 liquid-spec run examples/liquid_ruby.rb
@@ -39,23 +42,24 @@ liquid-spec run my_adapter.rb -l
 liquid-spec run my_adapter.rb --list-suites
 
 # Inspect/debug a specific spec in detail
-liquid-spec inspect my_adapter.rb -n "case.*empty"
+liquid-spec tools inspect my_adapter.rb -n "case.*empty"
 
 # Quick YAML-spec eval against an adapter, usually with reference comparison
-cat my_spec.yml | liquid-spec eval my_adapter.rb --compare
-liquid-spec eval my_adapter.rb --spec=my_spec.yml --compare
+cat my_spec.yml | liquid-spec tools eval my_adapter.rb --compare
+liquid-spec tools eval my_adapter.rb --spec=my_spec.yml --compare
 
 # Generated differential coverage after the recorded ramp is green
-liquid-spec mutate my_adapter.rb --around=for_loops
-liquid-spec fuzz my_adapter.rb --seed=1234 --json
-liquid-spec stress my_adapter.rb --depth=64
+liquid-spec tools mutate my_adapter.rb --around=for_loops
+liquid-spec tools fuzz my_adapter.rb --seed=1234 --json
+liquid-spec tools stress my_adapter.rb --depth=64
 
 # Benchmarks, cross-adapter matrices, reports, feature docs, implementer docs
 liquid-spec bench
 liquid-spec bench my_adapter.rb
-liquid-spec matrix --all
-liquid-spec report
-liquid-spec features
+liquid-spec tools matrix --all
+liquid-spec tools report
+liquid-spec tools features
+liquid-spec tools check       # runs every verifier in scripts/verifiers/
 liquid-spec docs curriculum
 ```
 
@@ -84,7 +88,7 @@ When every run spec passes (0 failures, level = max), a **Congrats** addendum pr
 suggested paths forward: implement an optional feature that actually had specs skipped
 this run (listed dynamically from the skipped-features set, filtered through
 `Features::FEATURE_DOCS` to `:optional`, excluding Ruby-interop `:unnecessary` ones),
-run `--bench` for performance, or run a matrix test / contribute back to liquid-spec.
+run `liquid-spec bench <adapter>` for performance, or use a matrix tool / contribute back to liquid-spec.
 
 
 ### Spec Quality Gates
@@ -112,15 +116,17 @@ The spec-quality portion currently enforces:
 
 ### `rake check` — spec verifiers
 
-`rake check` runs all verifiers in `scripts/verifiers/` in-process. Each
-verifier is a standalone Ruby script that prints findings (never modifies
+`liquid-spec tools check` runs all verifiers in `scripts/verifiers/` in-process;
+`rake check` is the contributor-task equivalent. Each verifier is a standalone Ruby
+script that prints findings (never modifies
 files) and returns 0 on success or non-zero on violations. Verifiers marked
 `# advisory: true` in their header are non-blocking — they report known debt
 but don't fail the overall check.
 
 ```bash
-rake check          # run all verifiers
-rake prepush        # run unit tests then all verifiers (standard pre-push gate)
+liquid-spec tools check  # run all verifiers through the CLI
+rake check               # equivalent contributor task
+rake prepush             # run unit tests then all verifiers (standard pre-push gate)
 ```
 
 You can also run individual verifiers directly:
@@ -650,7 +656,7 @@ end
 
 ### Available Features
 
-Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing. Use `liquid-spec features` (backed by `lib/liquid/spec/cli/features.rb`) as the source of truth for the current feature inventory and recommendations.
+Feature selection is denylist-based. Leave `missing_features` empty to try everything, or add unsupported capabilities while the implementation is still growing. Use `liquid-spec tools features` (backed by `lib/liquid/spec/cli/features.rb`) as the source of truth for the current feature inventory and recommendations.
 
 **Common features to list in `missing_features`:**
 - `:drops` - Adapter cannot support the standard test drop library yet (see docs/test_drops.md)
@@ -676,7 +682,7 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 
 JSON-RPC is the main path for non-Ruby Liquid implementations. Keep it especially well documented and tested.
 
-- Generate with `liquid-spec init --jsonrpc my_adapter.rb`. Running `liquid-spec init` with no filename generates both `liquid_adapter.rb` and `liquid_adapter_jsonrpc.rb`.
+- Generate with `liquid-spec init --jsonrpc my_adapter.rb`. Running `liquid-spec init` with no filename generates both `specs/adapter.rb` and `specs/adapter-jsonrpc.rb`.
 - The generated JSON-RPC adapter is executable/self-launching; use `--command=...` when you need to point it at a separate server command.
 - The server implements `initialize`, `compile`, `render`, and `quit` over newline-delimited JSON-RPC on stdin/stdout.
 - Server logs must go to stderr, never stdout.
@@ -695,7 +701,7 @@ ruby -Ilib -I$LIQUID bin/liquid-spec run examples/json_rpc_ruby_liquid.rb -n '^e
 
 ## The Eval Tool
 
-The `liquid-spec eval` command is the primary tool for testing individual templates and discovering behavioral differences. **Always use `--compare`** to validate your implementation against the reference liquid-ruby.
+The `liquid-spec tools eval` command is the primary tool for testing individual templates and discovering behavioral differences. **Always use `--compare`** to validate your implementation against the reference liquid-ruby.
 
 ### Why Use Eval?
 
@@ -711,7 +717,7 @@ The `liquid-spec eval` command is the primary tool for testing individual templa
 
 ```bash
 # Quick test with automatic comparison to reference
-cat <<'EOF' | liquid-spec eval adapter.rb --compare
+cat <<'EOF' | liquid-spec tools eval adapter.rb --compare
 name: test_upcase_literal
 complexity: 40
 template: "{{ 'hello' | upcase }}"
@@ -720,7 +726,7 @@ hint: "The upcase filter should uppercase a string literal."
 EOF
 
 # Test with environment variables
-cat <<'EOF' | liquid-spec eval adapter.rb --compare
+cat <<'EOF' | liquid-spec tools eval adapter.rb --compare
 name: test_array_size
 complexity: 40
 template: "{{ x | size }}"
@@ -731,7 +737,7 @@ hint: "The size filter returns array length."
 EOF
 
 # Or read from a file
-liquid-spec eval adapter.rb --spec=my_test.yml --compare
+liquid-spec tools eval adapter.rb --spec=my_test.yml --compare
 ```
 
 ### Using --compare (Recommended)
@@ -739,7 +745,7 @@ liquid-spec eval adapter.rb --spec=my_test.yml --compare
 The `--compare` flag runs your template against the reference liquid-ruby implementation first, then compares results. This is the best way to find behavioral differences:
 
 ```bash
-cat <<'EOF' | liquid-spec eval adapter.rb --compare
+cat <<'EOF' | liquid-spec tools eval adapter.rb --compare
 name: test_filter
 template: "{{ 'hi' | upcase }}"
 expected: "HI"
@@ -763,7 +769,7 @@ For complex tests, use YAML input via stdin or file:
 
 ```bash
 # From stdin (heredoc) - great for multi-line templates
-cat <<EOF | liquid-spec eval adapter.rb --compare
+cat <<EOF | liquid-spec tools eval adapter.rb --compare
 name: test_for_loop_with_break
 hint: "break should exit the loop immediately"
 complexity: 120
@@ -781,7 +787,7 @@ expected: |
 EOF
 
 # From a YAML file
-liquid-spec eval adapter.rb --spec=my_test.yml --compare
+liquid-spec tools eval adapter.rb --spec=my_test.yml --compare
 ```
 
 ### Spec YAML Format

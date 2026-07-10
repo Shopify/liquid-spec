@@ -63,7 +63,7 @@ normally lack:
 4. **A tight verification loop.** Every change is immediately checked against all earlier
    behavior. The agent cannot make apparent progress by silently trading one feature for
    another.
-5. **Reference and production evidence.** `liquid-spec eval --compare` answers ambiguous
+5. **Reference and production evidence.** `liquid-spec tools eval --compare` answers ambiguous
    questions against Shopify/liquid, while integration tests and production recordings
    prevent a classroom-only implementation from looking complete.
 6. **Explicit scope.** Feature gates distinguish portable Liquid, legacy parser modes,
@@ -133,13 +133,14 @@ liquid-spec init
 
 # Read the curriculum, then run the adapter for your language.
 liquid-spec docs curriculum
-liquid-spec run liquid_adapter.rb                 # Ruby
-liquid-spec run liquid_adapter_jsonrpc.rb \
+liquid-spec run specs/adapter.rb                 # Ruby
+liquid-spec run specs/adapter-jsonrpc.rb \
   --command="your-liquid-jsonrpc-server"           # any other language
 ```
 
 The first failure is the next lesson. Implement the behavior described by its hint and
-rerun the same command.
+rerun the same command. Re-running `init` leaves identical generated files alone; when a
+target differs, it asks before overwriting and defaults to **No**.
 
 ## Full CLI Example: Ask an Agent to Build Liquid in TypeScript
 
@@ -152,12 +153,12 @@ cd liquid-typescript
 gem install specific_install
 gem specific_install https://github.com/Shopify/liquid-spec
 
-# Creates liquid_adapter.rb, liquid_adapter_jsonrpc.rb, and AGENTS.md.
+# Creates specs/adapter.rb, specs/adapter-jsonrpc.rb, and AGENTS.md.
 # The JSON-RPC adapter is the bridge the TypeScript implementation will use.
 liquid-spec init
 
 codex -p "/goal Implement a full production-ready Liquid implementation in TypeScript. \
-Read AGENTS.md first. Use liquid_adapter_jsonrpc.rb only as the test bridge; build the \
+Read AGENTS.md first. Use specs/adapter-jsonrpc.rb only as the test bridge; build the \
 engine as a standalone TypeScript library. Ask liquid-spec for guidance on the next \
 steps, implement the general behavior behind each lowest-complexity failure, and rerun \
 the suite after every change. Do not special-case specs or hide required behavior with \
@@ -169,20 +170,20 @@ That is enough context because `liquid-spec init` wrote the detailed operating m
 into `AGENTS.md`. The agent can discover and use the whole feedback loop itself:
 
 ```bash
-# After setting DEFAULT_COMMAND in liquid_adapter_jsonrpc.rb to the TypeScript server:
-liquid-spec run liquid_adapter_jsonrpc.rb
-liquid-spec inspect liquid_adapter_jsonrpc.rb -n "the_failing_spec"
+# After setting DEFAULT_COMMAND in specs/adapter-jsonrpc.rb to the TypeScript server:
+liquid-spec run specs/adapter-jsonrpc.rb
+liquid-spec tools inspect specs/adapter-jsonrpc.rb -n "the_failing_spec"
 liquid-spec docs curriculum
 liquid-spec docs core-abstractions
-cat scratch.yml | liquid-spec eval liquid_adapter_jsonrpc.rb --compare
-liquid-spec run liquid_adapter_jsonrpc.rb --json
+cat scratch.yml | liquid-spec tools eval specs/adapter-jsonrpc.rb --compare
+liquid-spec run specs/adapter-jsonrpc.rb --json
 ```
 
 The generated JSON-RPC adapter initially opts out of capabilities that cannot be carried
 portably or have not been wired yet, such as Ruby-only values, standard test drops, and
 Shopify extensions. Reaching `1000 of 1000` means every spec selected for the adapter
 passes; a production target also requires reviewing `missing_features` and removing each
-entry that belongs in that target. Use `liquid-spec features` to audit that scope.
+entry that belongs in that target. Use `liquid-spec tools features` to audit that scope.
 
 For a human-driven implementation, use exactly the same loop: run, read the first hint,
 implement, and rerun. `liquid-spec docs json-rpc-protocol` documents the four subprocess
@@ -334,9 +335,9 @@ After the recorded ramp passes, generate nearby cases and compare them directly 
 Shopify/liquid:
 
 ```bash
-liquid-spec mutate adapter.rb --around=for_loops --limit=100
-liquid-spec fuzz adapter.rb --seed=1234 --rounds=500 --minimize
-liquid-spec stress adapter.rb --depth=64 --repetitions=100
+liquid-spec tools mutate adapter.rb --around=for_loops --limit=100
+liquid-spec tools fuzz adapter.rb --seed=1234 --rounds=500 --minimize
+liquid-spec tools stress adapter.rb --depth=64 --repetitions=100
 ```
 
 `mutate` deterministically changes existing specs; `fuzz` reproducibly chains random
@@ -352,24 +353,29 @@ minimization, and how to curate a generated discovery into the permanent suite.
 ## CLI Reference
 
 ```bash
-liquid-spec [command] [options]
+liquid-spec COMMAND [options]
 
-Commands:
-  liquid-spec run ADAPTER          Run specs with adapter
-  liquid-spec matrix               Compare multiple adapters side-by-side
-  liquid-spec test                 Run specs against all bundled example adapters
-  liquid-spec eval ADAPTER         Quick test a template (YAML via stdin)
-  liquid-spec inspect ADAPTER      Inspect specific specs (use with -n)
-  liquid-spec mutate ADAPTER       Deterministic differential mutations
-  liquid-spec fuzz ADAPTER         Seeded differential fuzz-style testing
-  liquid-spec stress ADAPTER       Bounded nesting/repetition stress
-  liquid-spec init [FILE]          Generate adapter template
+Core commands:
+  liquid-spec init [FILE]                 Generate adapters and AGENTS.md
+  liquid-spec docs [NAME]                 Read implementer documentation
+  liquid-spec run ADAPTER                 Run the acceptance ramp
+  liquid-spec bench [ADAPTER]             Benchmark implementations
 
-Run Options:
+Tool collection (`liquid-spec tools help`):
+  liquid-spec tools inspect ADAPTER       Inspect matching specs in detail
+  liquid-spec tools eval ADAPTER          Evaluate one YAML spec
+  liquid-spec tools matrix                Compare adapters side-by-side
+  liquid-spec tools test                  Exercise bundled example adapters
+  liquid-spec tools features              Audit feature tags and scope
+  liquid-spec tools report                Analyze benchmark results
+  liquid-spec tools check                 Run every verifier
+  liquid-spec tools mutate ADAPTER        Deterministic differential mutations
+  liquid-spec tools fuzz ADAPTER          Seeded differential fuzz-style testing
+  liquid-spec tools stress ADAPTER        Bounded structural stress
+
+Run options:
   -n, --name PATTERN       Only run specs matching PATTERN
   -s, --suite SUITE        Run specific suite (liquid_ruby, benchmarks, etc.)
-  -b, --bench              Run timing suites as benchmarks (measure compile/render times)
-  --profile                Profile with StackProf (use with --bench), outputs to /tmp/
   -c, --compare            Compare output against reference liquid-ruby
   -v, --verbose            Show detailed output
   -l, --list               List available specs
@@ -387,11 +393,12 @@ Examples:
   liquid-spec run my_adapter.rb -s liquid_ruby     # Run only liquid_ruby suite
   liquid-spec run my_adapter.rb --compare          # Compare against reference
   liquid-spec run my_adapter.rb --no-max-failures  # See all failures
-  liquid-spec run my_adapter.rb -s benchmarks --bench  # Run benchmarks
-  liquid-spec test                                 # Test all bundled adapters
-  liquid-spec inspect my_adapter.rb -n "case"      # Debug specific specs
-  liquid-spec mutate my_adapter.rb --around=for_loops
-  liquid-spec fuzz my_adapter.rb --seed=1234 --json
+  liquid-spec bench my_adapter.rb -n storefront      # Benchmark adapter vs reference
+  liquid-spec tools check                            # Run every spec verifier
+  liquid-spec tools features                         # Audit supported feature scope
+  liquid-spec tools inspect my_adapter.rb -n "case"  # Debug specific specs
+  liquid-spec tools mutate my_adapter.rb --around=for_loops
+  liquid-spec tools fuzz my_adapter.rb --seed=1234 --json
 ```
 
 
@@ -417,7 +424,7 @@ A source-echo adapter should only pass raw-text specs before failing on first ob
 The `matrix` command runs specs across multiple adapters simultaneously and shows differences between implementations. This is useful for comparing behavior across different Liquid implementations or configurations.
 
 ```bash
-liquid-spec matrix [options]
+liquid-spec tools matrix [options]
 
 Options:
   --all                    Run all available adapters from examples/
@@ -425,24 +432,19 @@ Options:
   --reference=NAME         Reference adapter (default: liquid_ruby)
   -n, --name PATTERN       Filter specs by name pattern
   -s, --suite SUITE        Spec suite to run
-  -b, --bench              Run timing suites as benchmarks, compare performance
-  --profile                Profile with StackProf (use with --bench), outputs to /tmp/
   --max-failures N         Stop after N differences (default: 10)
   --no-max-failures        Show all differences
   -v, --verbose            Show detailed output
 
 Examples:
   # Compare all bundled adapters
-  liquid-spec matrix --all
+  liquid-spec tools matrix --all
 
   # Compare specific adapters
-  liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax
+  liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax
 
   # Compare adapters on specific tests
-  liquid-spec matrix --adapters=liquid_ruby,liquid_c -n truncate
-
-  # Benchmark performance across implementations
-  liquid-spec matrix --adapters=liquid_ruby,liquid_c -s benchmarks --bench
+  liquid-spec tools matrix --adapters=liquid_ruby,liquid_c -n truncate
 ```
 
 Output shows which adapters produce different results for each spec:
@@ -478,7 +480,7 @@ liquid-spec includes a benchmark suite for measuring and comparing implementatio
 Run benchmarks against a single adapter to measure its performance:
 
 ```bash
-liquid-spec run examples/liquid_ruby.rb -s benchmarks --bench
+liquid-spec bench examples/liquid_ruby.rb
 ```
 
 Output:
@@ -501,13 +503,13 @@ Benchmarks show allocation counts for each phase, helping identify memory-heavy 
 
 #### Multi-Adapter Performance Comparison
 
-Compare performance across different implementations using `matrix --bench`:
+Compare performance across different implementations using the core `bench` command:
 
 ```bash
-liquid-spec matrix --adapters=liquid_ruby,liquid_ruby_lax -s benchmarks --bench
+liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax
 ```
 
-Each benchmark runs against all adapters, then a summary shows relative performance and allocation differences:
+Each benchmark runs against all adapters, then a summary shows relative performance and allocation differences. When a comparison mixes inline adapters with JSON-RPC adapters, `bench` warns that subprocess and protocol overhead make the timings non-equivalent.
 
 ```
 ======================================================================
@@ -563,10 +565,10 @@ Use `--profile` with `--bench` to generate StackProf profiles for detailed perfo
 
 ```bash
 # Single adapter profiling
-liquid-spec run examples/liquid_ruby.rb -s benchmarks --bench --profile
+liquid-spec bench examples/liquid_ruby.rb --profile
 
 # Multi-adapter profiling
-liquid-spec matrix --adapters=liquid_ruby,liquid_c -s benchmarks --bench --profile
+liquid-spec bench --adapters=liquid_ruby,liquid_c --profile
 ```
 
 Profiles are saved to `/tmp/liquid-spec-profile-{timestamp}/`:
@@ -592,7 +594,7 @@ Profile types:
 The `eval` command lets you quickly test individual templates. Specs are passed via YAML on stdin, and results are compared against the reference liquid-ruby implementation by default:
 
 ```bash
-liquid-spec eval examples/liquid_ruby.rb <<EOF
+liquid-spec tools eval examples/liquid_ruby.rb <<EOF
 name: upcase-test
 complexity: 20
 template: "{{ x | upcase }}"
@@ -703,7 +705,8 @@ cd liquid-spec
 # Install dependencies
 bundle install
 
-# Fast contributor checks for spec metadata / feature tags / quality gates
+# Run every verifier (the Rake task is equivalent)
+liquid-spec tools check
 rake check
 
 # Unit tests for liquid-spec itself

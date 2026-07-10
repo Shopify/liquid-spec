@@ -6,6 +6,13 @@ module Liquid
   module Spec
     module CLI
       module Features
+        HELP = <<~HELP
+          Usage: liquid-spec tools features
+
+          List every feature tag with its spec count, recommendation, and the
+          `missing_features` guidance for adapter authors.
+        HELP
+
         FEATURE_DOCS = {
           core: {
             description: "Full Liquid implementation with drop support",
@@ -131,6 +138,11 @@ module Liquid
         }.freeze
 
         def self.run(args)
+          if args.include?("-h") || args.include?("--help")
+            puts HELP
+            return
+          end
+
           counts = count_specs_by_feature
           total_specs = count_total_specs
 
