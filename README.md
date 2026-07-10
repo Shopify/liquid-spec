@@ -213,10 +213,10 @@ LiquidSpec.compile do |ctx, source, options|
   ctx[:template] = MyLiquid::Template.parse(source, **options)
 end
 
-# Render the template compiled immediately above.
+# Render the template stored by compile or load_artifact.
 LiquidSpec.render do |ctx, assigns, options|
   # assigns = variables hash
-  # options includes: :registers, :strict_errors, :error_mode
+  # options includes: :registers, :strict_errors, :error_mode, :exception_renderer
   ctx[:template].render(assigns, **options)
 end
 ```
@@ -248,28 +248,54 @@ liquid-spec run my_adapter.rb --json --list-passed > results.json
 
 ### Optional: compiled-artifact protocol
 
-If your implementation can persist a compiled template as a string (e.g. an
-ISeq/bytecode blob stored in memcache or a database) and load it back in a
-process that never saw the source, declare both hooks:
+Some Liquid implementations compile source once, store executable bytecode or
+an equivalent compiled representation in a shared cache, and load those bytes
+in application processes that never receive the source. `compile` and `render`
+alone cannot measure that important production path: parsing again is not an
+artifact-cache hit, while repeatedly rendering a resident template omits the
+load and first-use costs.
+
+If your implementation has such a persistent compiled format, declare both
+hooks:
 
 ```ruby
-# Serialize the compiled template (ctx[:template]) into a String
+# Called immediately after LiquidSpec.compile, before the template is rendered.
+# Return the exact binary String you would put in memcache, a database, etc.
 LiquidSpec.dump_artifact do |ctx|
   ctx[:template].to_artifact
 end
 
-# Load an artifact string back into a renderable template
-LiquidSpec.load_artifact do |ctx, blob, options|
-  ctx[:template] = MyLiquid::Artifact.load(blob)
+# Called in a runtime-loaded, template-cold fork that has the bytes but no source.
+# Restore all adapter state expected by the regular LiquidSpec.render hook.
+LiquidSpec.load_artifact do |ctx, bytes, _options|
+  ctx[:template] = MyLiquid::Artifact.load(bytes)
 end
 ```
 
-The core `liquid-spec bench ADAPTER` command then adds an artifact stage per spec: it
-verifies that the dump → load → render roundtrip reproduces the compiled template's output,
-and measures payload bytes, cold artifact load time, first render after a
-cold load, and steady-state load time/allocations (the compile-once →
-persist → cold load+render production path). Adapters without these hooks
-are unaffected.
+The contract is deliberately production-oriented:
+
+1. `dump_artifact` receives the state produced by `compile` and must return a
+   binary-safe `String`. It is invoked before any validation render, because
+   rendering is allowed to mutate template runtime state.
+2. The returned bytes must contain all immutable compile-time information needed
+   to load the template without its source. Do not capture assigns, observed
+   values, request objects, or render-time object shapes.
+3. `load_artifact` must leave `ctx` in the same renderable state that `compile`
+   would. The source is unavailable. Its third argument is the runtime options
+   Hash that the following `render` hook will receive; most loaders ignore it.
+4. Assigns, registers, and runtime filesystems are still supplied to the normal
+   `render` hook for every call; they are not part of the artifact.
+
+With both hooks, `--bench` validates the dump → load → render roundtrip, reports
+raw artifact bytes and steady-state load diagnostics, and measures the atomic
+artifact-load + first-render workflow in 30 forked children. The parent runtime
+is loaded but has never seen the benchmark template, and fork/IPC work is outside
+the timer. This models a shared artifact fetched into memory in another process.
+
+`--bench` warns when either hook is missing because artifact size and
+load+first-render results will be omitted. Implementations without a persistent
+compiled format may leave the hooks absent; the warning documents that the
+benchmark is then limited to source compile and resident render paths.
 
 ### Optional: local suites
 

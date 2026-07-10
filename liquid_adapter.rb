@@ -26,11 +26,11 @@ end
 # @param ctx [Hash] Adapter context (from setup block)
 # @param source [String] The Liquid template source code
 # @param options [Hash] Parse options (e.g., :error_mode, :line_numbers)
-# Store the compiled template in ctx for the render block.
+# Store the compiled template in ctx for the render and artifact hooks.
 #
 LiquidSpec.compile do |ctx, source, options|
   # Example for Shopify/liquid:
-  #   ctx[:template] = Liquid::Template.parse(source, options)
+  #   ctx[:template] = Liquid::Template.parse(source, **options)
   #
   # Example for a custom implementation:
   #   ctx[:template] = MyLiquid::Template.new(source)
@@ -38,7 +38,7 @@ LiquidSpec.compile do |ctx, source, options|
   raise NotImplementedError, "Implement LiquidSpec.compile to parse templates"
 end
 
-# Called to render the compiled template stored in ctx.
+# Called to render the template stored by the compile or load_artifact hook.
 #
 # @param ctx [Hash] Adapter context (from setup block)
 # @param assigns [Hash] Variables available as {{ var }}
@@ -58,3 +58,17 @@ LiquidSpec.render do |ctx, assigns, options|
   #
   raise NotImplementedError, "Implement LiquidSpec.render to render templates"
 end
+
+# Optional compiled-artifact protocol
+# -----------------------------------
+# Implement BOTH hooks only if compiled templates can be persisted and loaded
+# without source in another process. They let --bench measure the production
+# artifact-cache-hit path: bytes already fetched -> load -> first render.
+#
+# LiquidSpec.dump_artifact do |ctx|
+#   ctx[:template].to_artifact # exact binary String stored in the cache
+# end
+#
+# LiquidSpec.load_artifact do |ctx, bytes, _options|
+#   ctx[:template] = MyLiquid::Artifact.load(bytes)
+# end

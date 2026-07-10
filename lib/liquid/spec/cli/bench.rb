@@ -101,17 +101,17 @@ module Liquid
             gem_root = File.expand_path("../../../../..", __FILE__)
             reports_dir = runs.reports_dir
             results_by_adapter = {}
+            metadata_by_adapter = {}
             profile_dirs = []
             profile_requested = pass_through.include?("--profile")
             adapter_names = runs.adapter_names
             pad = adapter_names.map(&:size).max
 
-            f = Benchmark.method(:fmt)
-
             # ── Phase 1: Collect results from each adapter ───────────────
             unless jsonl_mode
               puts ""
-              puts "\e[1mCollecting benchmarks\e[0m (#{adapter_names.size} adapters)"
+              puts "\e[1;36m◆ LIQUID BENCH · GRID\e[0m"
+              puts "\e[2m  #{adapter_names.size} engines  ·  collecting isolated runs  ·  lower is better\e[0m"
               puts ""
             end
 
@@ -131,7 +131,7 @@ module Liquid
               end
 
               unless jsonl_mode
-                print "  \e[2m⏱\e[0m  #{adapter.name} …"
+                print "  \e[36m◐\e[0m  #{adapter.name.ljust(pad)}  \e[2mwarming → sampling\e[0m"
                 $stdout.flush
               end
 
@@ -141,6 +141,7 @@ module Liquid
               }
 
               specs = []
+              metadata = nil
               output.each_line do |line|
                 data = JSON.parse(line.strip, symbolize_names: true) rescue nil
                 next unless data
@@ -148,15 +149,28 @@ module Liquid
                   puts JSON.generate(Benchmark.compact(data))
                   $stdout.flush
                 end
+                metadata = data if data[:type] == "run_metadata"
                 specs << data if (data[:type] == "spec" || data[:type] == "result") && data[:status] == "success"
               end
               results_by_adapter[adapter.name] = specs
+              metadata_by_adapter[adapter.name] = metadata
               profile_dirs << [adapter.name, profile_dir] if profile_dir && Dir.exist?(profile_dir)
 
               unless jsonl_mode
                 print "\r\e[2K"
                 jit = specs.first&.dig(:jit) || "?"
-                puts "  \e[32m✓\e[0m  #{adapter.name} (#{jit}, #{specs.size} specs)"
+                case_label = specs.size == 1 ? "case" : "cases"
+                puts "  \e[32m✓\e[0m  #{adapter.name.ljust(pad)}  \e[2m#{jit} · #{specs.size} #{case_label}\e[0m"
+              end
+            end
+
+            unless jsonl_mode
+              missing_artifacts = adapter_names.select do |name|
+                metadata_by_adapter[name]&.dig(:artifact_protocol) == false
+              end
+              if missing_artifacts.any?
+                puts ""
+                puts "  \e[33m◇ artifact lane unavailable\e[0m  \e[2m#{missing_artifacts.join(", ")} · no compiled-artifact hooks\e[0m"
               end
             end
 
@@ -174,102 +188,10 @@ module Liquid
               puts ""
 
               all_spec_names.each_with_index do |spec_name, idx|
-                label = spec_name.sub(/\Abench_/, "")
-                puts "\e[1mBenchmark #{idx + 1}/#{all_spec_names.size}:\e[0m #{label}"
-
-                adapter_names.each do |name|
-                  r = results_by_adapter[name]&.find { |x| sk.call(x) == spec_name }
-                  unless r
-                    puts "  \e[1m#{name.ljust(pad)}\e[0m  \e[2m(skipped)\e[0m"
-                    next
-                  end
-
-                  # Extract values (handle both nested and flat formats)
-                  pmean = r.dig(:parse, :mean) || r[:parse_mean] || 0
-                  pstd  = r.dig(:parse, :stddev) || r[:parse_stddev] || 0
-                  pall  = r.dig(:parse, :allocs) || r[:parse_allocs_per_op] || 0
-                  pitr  = r.dig(:parse, :iters) || r[:parse_iters] || 0
-                  rmean = r.dig(:render, :mean) || r[:render_mean] || 0
-                  rstd  = r.dig(:render, :stddev) || r[:render_stddev] || 0
-                  rmin  = r.dig(:render, :min) || r[:render_min] || 0
-                  rmax  = r.dig(:render, :max) || r[:render_max] || 0
-                  rall  = r.dig(:render, :allocs) || r[:render_allocs_per_op] || 0
-                  ritr  = r.dig(:render, :iters) || r[:render_iters] || 0
-                  cold1 = r.dig(:cold, :at_1) || r[:render_cold_1]
-                  cold10 = r.dig(:cold, :at_10) || r[:render_cold_10_mean]
-                  abytes = r.dig(:artifact, :bytes) || r[:artifact_bytes]
-                  lmean  = r.dig(:artifact, :load_mean) || r[:load_mean]
-                  lstd   = r.dig(:artifact, :load_stddev) || r[:load_stddev] || 0
-                  litr   = r.dig(:artifact, :load_iters) || r[:load_iters] || 0
-                  lcold  = r.dig(:artifact, :load_cold_1) || r[:load_cold_1]
-
-                  puts "  \e[1m#{name.ljust(pad)}\e[0m  " \
-                       "Parse  (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
-                       "\e[1;32m#{f.call(pmean).rjust(9)}\e[0m ± " \
-                       "\e[32m#{f.call(pstd).rjust(8)}\e[0m    " \
-                       "[\e[34m#{Benchmark.fmt_allocs(pall)} allocs\e[0m, " \
-                       "\e[2m#{Benchmark.fmt_iters(pitr)} runs\e[0m]"
-
-                  puts "  #{" " * pad}  " \
-                       "Render (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
-                       "\e[1;32m#{f.call(rmean).rjust(9)}\e[0m ± " \
-                       "\e[32m#{f.call(rstd).rjust(8)}\e[0m    " \
-                       "[\e[34m#{Benchmark.fmt_allocs(rall)} allocs\e[0m, " \
-                       "\e[2m#{Benchmark.fmt_iters(ritr)} runs\e[0m]"
-
-                  puts "  #{" " * pad}  " \
-                       "Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):  " \
-                       "\e[36m#{f.call(rmin).rjust(9)}\e[0m … " \
-                       "\e[35m#{f.call(rmax).rjust(8)}\e[0m    " \
-                       "[\e[2m#{Benchmark.fmt_iters(ritr)} runs\e[0m]"
-
-                  if abytes && lmean
-                    lcold_s = lcold ? "    \e[2m(cold @1 #{f.call(lcold)})\e[0m" : ""
-                    puts "  #{" " * pad}  " \
-                         "Load   (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
-                         "\e[1;32m#{f.call(lmean).rjust(9)}\e[0m ± " \
-                         "\e[32m#{f.call(lstd).rjust(8)}\e[0m    " \
-                         "[\e[34m#{"%.1f" % (abytes / 1024.0)}KB artifact\e[0m, " \
-                         "\e[2m#{Benchmark.fmt_iters(litr)} runs\e[0m]#{lcold_s}"
-                  end
-
-                  if cold1
-                    ratio = rmean > 0 ? cold1 / rmean : 0
-                    ratio_s = ratio > 1.05 ? "    \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
-                    puts "  #{" " * pad}  " \
-                         "Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):  " \
-                         "\e[33m#{f.call(cold1).rjust(9)}\e[0m / " \
-                         "\e[33m#{f.call(cold10 || 0).rjust(8)}\e[0m" \
-                         "#{ratio_s}"
-                  end
-
-                  # YJIT stats
-                  yjit = r[:yjit]
-                  if yjit && yjit[:iseqs]
-                    parts = []
-                    parts << "+#{yjit[:iseqs]} iseqs"
-                    parts << "#{"%.1f" % yjit[:compile_ms]}ms jit" if yjit[:compile_ms] && yjit[:compile_ms] > 0.05
-                    parts << "#{yjit[:invalidations]} inv"
-                    parts << "#{"%.1f" % (yjit[:code_bytes] / 1024.0)}KB" if yjit[:code_bytes] && yjit[:code_bytes] > 0
-                    puts "  #{" " * pad}  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m"
-                  end
-                end
-
-                # Per-spec speedup
-                render_times = {}
-                adapter_names.each do |a|
-                  r = results_by_adapter[a]&.find { |x| sk.call(x) == spec_name }
-                  render_times[a] = r.dig(:render, :mean) || r[:render_mean] if r
-                end
-                if render_times.size >= 2
-                  fastest_name, fastest_t = render_times.min_by { |_, t| t }
-                  slowest_name, slowest_t = render_times.max_by { |_, t| t }
-                  if fastest_t > 0 && slowest_t / fastest_t > 1.1
-                    puts "  \e[2m→ #{fastest_name} is %.2fx faster\e[0m" % (slowest_t / fastest_t)
-                  end
-                end
-
-                puts ""
+                print_case_comparison(
+                  spec_name, idx + 1, all_spec_names.size,
+                  adapter_names, results_by_adapter, sk, pad,
+                )
               end
             end
 
@@ -300,6 +222,83 @@ module Liquid
           end
 
           private
+
+          def print_case_comparison(spec_name, index, total, adapter_names, results_by_adapter, spec_key, pad)
+            label = spec_name.sub(/\Abench_/, "")
+            rows = adapter_names.to_h do |name|
+              result = results_by_adapter[name]&.find { |entry| spec_key.call(entry) == spec_name }
+              [name, result]
+            end
+
+            source_values = rows.values.filter_map { |r| r&.dig(:workflows, :source_compile_render, :mean) }
+            artifact_values = rows.values.filter_map { |r| r&.dig(:workflows, :artifact_load_first_render, :mean) }
+            resident_values = rows.values.filter_map { |r| r&.dig(:render, :mean) || r&.[](:render_mean) }
+            fastest = {
+              source: source_values.min,
+              artifact: artifact_values.min,
+              resident: resident_values.min,
+            }
+
+            puts "\e[2m#{"━" * 78}\e[0m"
+            puts "\e[1;36m◆\e[0m  \e[1m#{label}\e[0m  \e[2m#{index}/#{total}\e[0m"
+            puts ""
+            puts "  #{"adapter".ljust(pad)}  #{"source → 1st".rjust(13)}  #{"artifact → 1st".rjust(14)}  #{"resident".rjust(11)}  #{"payload".rjust(10)}"
+            puts "  \e[2m#{"─" * pad}  #{"─" * 13}  #{"─" * 14}  #{"─" * 11}  #{"─" * 10}\e[0m"
+
+            rows.each do |name, result|
+              unless result
+                puts "  #{name.ljust(pad)}  \e[2m#{"skipped".rjust(54)}\e[0m"
+                next
+              end
+
+              source = result.dig(:workflows, :source_compile_render, :mean)
+              artifact = result.dig(:workflows, :artifact_load_first_render, :mean)
+              resident = result.dig(:render, :mean) || result[:render_mean]
+              bytes = result.dig(:artifact, :bytes) || result[:artifact_bytes]
+
+              puts "  \e[1m#{name.ljust(pad)}\e[0m  " \
+                   "#{comparison_value(source, fastest[:source], 33, 13)}  " \
+                   "#{comparison_value(artifact, fastest[:artifact], 35, 14)}  " \
+                   "#{comparison_value(resident, fastest[:resident], 36, 11)}  " \
+                   "#{Benchmark.fmt_bytes(bytes).rjust(10)}"
+
+              parse = result.dig(:parse, :mean) || result[:parse_mean]
+              load = result.dig(:artifact, :load_mean) || result[:load_mean]
+              stddev = result.dig(:render, :stddev) || result[:render_stddev]
+              stability, cv = Benchmark.stability(resident, stddev)
+              diagnostics = ["parse #{Benchmark.fmt_metric(parse)}"]
+              diagnostics << "load #{Benchmark.fmt_metric(load)}" if load
+              diagnostics << "#{stability} #{"%.1f" % (cv * 100)}% CV" if cv.positive?
+              puts "  #{" " * pad}  \e[2m#{diagnostics.join("  ·  ")}\e[0m"
+            end
+
+            print_case_winner("source lane", rows, fastest[:source]) { |r| r.dig(:workflows, :source_compile_render, :mean) }
+            print_case_winner("artifact lane", rows, fastest[:artifact]) { |r| r.dig(:workflows, :artifact_load_first_render, :mean) }
+            print_case_winner("resident lane", rows, fastest[:resident]) { |r| r.dig(:render, :mean) || r[:render_mean] }
+            puts ""
+          end
+
+          def comparison_value(value, fastest, color, width)
+            return "—".rjust(width) unless value
+            formatted = Benchmark.fmt_metric(value).rjust(width)
+            value == fastest ? "\e[1;#{color}m#{formatted}\e[0m" : formatted
+          end
+
+          def print_case_winner(label, rows, fastest)
+            return unless fastest
+            ranked = rows.filter_map do |name, result|
+              value = yield(result) if result
+              [name, value] if value
+            end.sort_by(&:last)
+            return if ranked.size < 2
+
+            winner, best = ranked[0]
+            runner_up, second = ranked[1]
+            ratio = second / best
+            return if ratio < 1.03
+
+            puts "  \e[2m↳ #{label}: \e[1m#{winner}\e[22m leads #{runner_up} by #{"%.2f" % ratio}×\e[0m"
+          end
 
           def build_cmd(adapter_path, extra_args)
             # Reuse the current Ruby process rather than resolving the gem's own
@@ -337,7 +336,6 @@ module Liquid
           end
 
           def print_comparison(adapter_names, results_by_adapter)
-            f = Benchmark.method(:fmt)
             reference = adapter_names.first
             others = adapter_names[1..]
 
@@ -347,10 +345,14 @@ module Liquid
             common = all_specs.reduce(:&) || []
             return if common.empty?
 
-            puts "─" * 70
-            puts "\e[1mComparison\e[0m (#{common.size} common specs, reference: #{reference})"
+            puts "\e[2m#{"━" * 78}\e[0m"
+            case_label = common.size == 1 ? "case" : "cases"
+            puts "\e[1;36m◆ FINISH LINE\e[0m  \e[1mgeometric mean across #{common.size} common #{case_label}\e[0m"
+            puts "\e[2m  ratios are paired against #{reference}  ·  lower time wins\e[0m"
             puts ""
 
+            source_workflow_ratios = Hash.new { |h, k| h[k] = [] }
+            artifact_workflow_ratios = Hash.new { |h, k| h[k] = [] }
             parse_ratios = Hash.new { |h, k| h[k] = [] }
             render_ratios = Hash.new { |h, k| h[k] = [] }
             load_ratios = Hash.new { |h, k| h[k] = [] }
@@ -359,6 +361,8 @@ module Liquid
               ref = results_by_adapter[reference]&.find { |r| sk.call(r) == sn }
               next unless ref
 
+              ref_source = ref.dig(:workflows, :source_compile_render, :mean)
+              ref_artifact = ref.dig(:workflows, :artifact_load_first_render, :mean)
               ref_parse  = ref.dig(:parse, :mean) || ref[:parse_mean] || ref[:compile_mean]
               ref_render = ref.dig(:render, :mean) || ref[:render_mean]
               ref_load   = ref.dig(:artifact, :load_mean) || ref[:load_mean]
@@ -367,61 +371,59 @@ module Liquid
                 o = results_by_adapter[other]&.find { |r| sk.call(r) == sn }
                 next unless o
 
+                o_source = o.dig(:workflows, :source_compile_render, :mean)
+                o_artifact = o.dig(:workflows, :artifact_load_first_render, :mean)
                 o_parse  = o.dig(:parse, :mean) || o[:parse_mean] || o[:compile_mean]
                 o_render = o.dig(:render, :mean) || o[:render_mean]
                 o_load   = o.dig(:artifact, :load_mean) || o[:load_mean]
 
+                source_workflow_ratios[other] << o_source / ref_source if ref_source && o_source && ref_source > 0
+                artifact_workflow_ratios[other] << o_artifact / ref_artifact if ref_artifact && o_artifact && ref_artifact > 0
                 parse_ratios[other]  << o_parse / ref_parse   if ref_parse  && o_parse  && ref_parse  > 0
                 render_ratios[other] << o_render / ref_render if ref_render && o_render && ref_render > 0
                 load_ratios[other]   << o_load / ref_load     if ref_load   && o_load   && ref_load   > 0
               end
             end
 
-            puts "  \e[1mParse (geometric mean):\e[0m"
-            others.each do |adapter|
-              ratios = parse_ratios[adapter]
-              next if ratios.empty?
-              gm = geometric_mean(ratios)
-              if gm > 1.05
-                puts "    \e[32m#{reference}\e[0m is \e[1;32m%.2fx faster\e[0m than #{adapter}" % gm
-              elsif gm < 0.95
-                puts "    \e[32m#{adapter}\e[0m is \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
-              else
-                puts "    #{adapter} ≈ #{reference}"
-              end
+            print_ratio_comparison("Source compile + first render", reference, others, source_workflow_ratios)
+            if artifact_workflow_ratios.any? { |_, values| values.any? }
+              print_ratio_comparison("Artifact load + first render", reference, others, artifact_workflow_ratios)
             end
 
-            puts "  \e[1mRender (geometric mean):\e[0m"
-            others.each do |adapter|
-              ratios = render_ratios[adapter]
-              next if ratios.empty?
-              gm = geometric_mean(ratios)
-              if gm > 1.05
-                puts "    \e[32m#{reference}\e[0m is \e[1;32m%.2fx faster\e[0m than #{adapter}" % gm
-              elsif gm < 0.95
-                puts "    \e[32m#{adapter}\e[0m is \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
-              else
-                puts "    #{adapter} ≈ #{reference}"
-              end
-            end
+            print_ratio_comparison("Resident render", reference, others, render_ratios)
 
-            if load_ratios.any? { |_, v| v.any? }
-              puts "  \e[1mArtifact load (geometric mean):\e[0m"
-              others.each do |adapter|
-                ratios = load_ratios[adapter]
-                next if ratios.empty?
-                gm = geometric_mean(ratios)
-                if gm > 1.05
-                  puts "    \e[32m#{reference}\e[0m loads \e[1;32m%.2fx faster\e[0m than #{adapter}" % gm
-                elsif gm < 0.95
-                  puts "    \e[32m#{adapter}\e[0m loads \e[1;32m%.2fx faster\e[0m than #{reference}" % (1.0 / gm)
-                else
-                  puts "    #{adapter} ≈ #{reference}"
-                end
-              end
-            end
+            puts "  \e[2mSTAGE DIAGNOSTICS\e[0m"
+            print_ratio_rows("parse", reference, others, parse_ratios, dim: true)
+            print_ratio_rows("artifact load", reference, others, load_ratios, dim: true) if load_ratios.any? { |_, v| v.any? }
 
             puts ""
+          end
+
+          def print_ratio_comparison(label, reference, others, ratios_by_adapter)
+            return unless others.any? { |adapter| ratios_by_adapter[adapter].any? }
+
+            puts "  \e[1m#{label}\e[0m"
+            print_ratio_rows(nil, reference, others, ratios_by_adapter)
+            puts ""
+          end
+
+          def print_ratio_rows(prefix, reference, others, ratios_by_adapter, dim: false)
+            others.each do |adapter|
+              ratios = ratios_by_adapter[adapter]
+              next if ratios.empty?
+
+              ratio = geometric_mean(ratios)
+              winner, loser, speedup = if ratio > 1.0
+                [reference, adapter, ratio]
+              else
+                [adapter, reference, 1.0 / ratio]
+              end
+              bar_length = [[((speedup - 1.0) * 10).round + 3, 3].max, 18].min
+              bar = "█" * bar_length
+              verdict = speedup < 1.03 ? "photo finish" : "#{winner} · #{"%.2f" % speedup}× faster"
+              line = "    #{prefix ? "#{prefix}: " : ""}#{adapter.ljust(20)} #{bar.ljust(18)}  #{verdict}"
+              puts(dim ? "\e[2m#{line}\e[0m" : "\e[36m#{line}\e[0m")
+            end
           end
 
           def emit_comparison_jsonl(adapter_names, results_by_adapter)
@@ -433,6 +435,8 @@ module Liquid
             return if common.empty?
 
             others.each do |other|
+              source_ratios = []
+              artifact_ratios = []
               parse_ratios = []
               render_ratios = []
 
@@ -441,11 +445,17 @@ module Liquid
                 o = results_by_adapter[other]&.find { |r| (r[:spec_name] || r[:spec]) == spec_name }
                 next unless ref && o
 
+                rs = ref.dig(:workflows, :source_compile_render, :mean)
+                os = o.dig(:workflows, :source_compile_render, :mean)
+                ra = ref.dig(:workflows, :artifact_load_first_render, :mean)
+                oa = o.dig(:workflows, :artifact_load_first_render, :mean)
                 rp = ref.dig(:parse, :mean) || ref[:parse_mean]
                 op = o.dig(:parse, :mean) || o[:parse_mean]
                 rr = ref.dig(:render, :mean) || ref[:render_mean]
                 or_ = o.dig(:render, :mean) || o[:render_mean]
 
+                source_ratios << os / rs if rs && os && rs > 0
+                artifact_ratios << oa / ra if ra && oa && ra > 0
                 parse_ratios << op / rp if rp && op && rp > 0
                 render_ratios << or_ / rr if rr && or_ && rr > 0
               end
@@ -455,6 +465,8 @@ module Liquid
                 reference: reference,
                 vs: other,
                 common_specs: common.size,
+                source_compile_render_geomean: geometric_mean(source_ratios),
+                artifact_load_first_render_geomean: geometric_mean(artifact_ratios),
                 parse_geomean: geometric_mean(parse_ratios),
                 render_geomean: geometric_mean(render_ratios),
                 parse_faster: parse_ratios.any? ? (1.0 / geometric_mean(parse_ratios)) : nil,

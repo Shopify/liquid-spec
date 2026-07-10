@@ -12,12 +12,13 @@ module Liquid
       #      let JIT (YJIT/ZJIT) stabilize and caches fill.
       #   3. Stabilize: full GC + compact to settle the heap.
       #   4. Allocation count: median of 3 isolated runs (GC between each).
-      #   5. Timed phase (GC disabled): auto-selects individual timing for
-      #      slow ops (>50µs) or batched timing for fast ops. Records every
-      #      sample so percentiles are real, not averaged.
-      #   6. GC re-enabled between compile and render phases.
+      #   5. Timed phase: use the engine's normal GC policy and clock batches
+      #      of operations to minimize timer overhead. Environment copies are
+      #      prepared outside the timer.
+      #   6. Preserve raw integer-nanosecond batches for downstream analysis.
       #
-      # All times are in seconds. Callers use format helpers for display.
+      # Summary times remain in seconds for compatibility with existing
+      # reports. Raw batch measurements use integer nanoseconds.
       module Benchmark
         WARMUP_SECONDS        = 1.0
         WARMUP_MIN_ITERS      = 50
@@ -36,17 +37,16 @@ module Liquid
           # @param load_proc    [Proc, nil] ->(blob) { load artifact → renderable template }
           # @return [Hash] result with all metrics, or { error: Exception }
           #
-          # When dump_proc AND load_proc are given, an artifact stage measures
-          # the compile-once → persist → cold load+render production path:
-          # payload bytes, cold artifact load, first render after a cold load,
-          # and steady-state load time/allocations. The load loop runs with GC
-          # ENABLED — every load allocates a fresh template (ISeq/proc), which
-          # is exactly the allocation profile of a production cold load.
+          # When dump_proc AND load_proc are given, this same-process diagnostic
+          # stage reports payload bytes, first load/render observations, and
+          # steady-state load time/allocations. Canonical source compile+render
+          # and artifact load+first-render workflows are measured separately by
+          # ForkBenchmark, where every sample has isolated template caches.
           def run(compile_proc:, render_proc:, env_proc:, duration:, dump_proc: nil, load_proc: nil)
             artifact = !dump_proc.nil? && !load_proc.nil?
             half = artifact ? duration / 3.0 : duration / 2.0
 
-            # ── 0. Artifact cold stage (before anything warms) ───────────
+            # ── 0. Artifact first-observation diagnostic ─────────────────
             if artifact
               GC.start(full_mark: true, immediate_sweep: true)
               compile_proc.call
@@ -54,7 +54,8 @@ module Liquid
               payload_bytes = blob.bytesize
               GC.start(full_mark: true, immediate_sweep: true)
               load_cold_1 = time_once { load_proc.call(blob) }
-              artifact_render_cold_1 = time_once { render_proc.call(env_proc.call) }
+              cold_env = env_proc.call
+              artifact_render_cold_1 = time_once { render_proc.call(cold_env) }
             end
 
             # ── 1. Cold renders (before any warmup) ──────────────────────
@@ -63,11 +64,15 @@ module Liquid
 
             GC.start(full_mark: true, immediate_sweep: true)
             compile_proc.call
-            cold_1 = time_once { render_proc.call(env_proc.call) }
+            cold_env = env_proc.call
+            cold_1 = time_once { render_proc.call(cold_env) }
 
             GC.start(full_mark: true, immediate_sweep: true)
             compile_proc.call
-            cold_10 = Array.new(10) { time_once { render_proc.call(env_proc.call) } }
+            cold_10 = Array.new(10) do
+              env = env_proc.call
+              time_once { render_proc.call(env) }
+            end
 
             # ── 2. Warmup ────────────────────────────────────────────────
             warmup do
@@ -81,18 +86,14 @@ module Liquid
 
             # ── 4. Allocations per op (median of 3) ─────────────────────
             compile_allocs = measure_allocs(3) { compile_proc.call }
-            render_allocs  = measure_allocs(3) { render_proc.call(env_proc.call) }
+            render_allocs  = measure_allocs(3, prepare: env_proc) { |env| render_proc.call(env) }
 
-            # ── 5. Timed compile (GC off) ────────────────────────────────
-            GC.disable
+            # ── 5. Timed compile (production/default GC policy) ──────────
             compile_stats = timed_loop(half) { compile_proc.call }
-            GC.enable
             GC.start  # recover between phases
 
-            # ── 6. Timed render (GC off) ─────────────────────────────────
-            GC.disable
-            render_stats = timed_loop(half) { render_proc.call(env_proc.call) }
-            GC.enable
+            # ── 6. Timed render (environment setup outside timer) ────────
+            render_stats = timed_loop(half, prepare: env_proc) { |env| render_proc.call(env) }
 
             # Snapshot YJIT after all renders (cold + warm + timed)
             yjit_after = yjit_snapshot
@@ -123,6 +124,7 @@ module Liquid
                 load_p95:               load_stats[:p95],
                 load_iters:             load_stats[:iters],
                 load_samples:           load_stats[:samples],
+                load_batches:           load_stats[:batches],
                 load_allocs:            load_allocs,
                 load_cold_1:            load_cold_1,
                 artifact_render_cold_1: artifact_render_cold_1,
@@ -147,45 +149,42 @@ module Liquid
           end
 
           def time_once
-            t0 = clock
+            time_once_ns { yield } / 1_000_000_000.0
+          end
+
+          def time_once_ns
+            t0 = clock_ns
             yield
-            clock - t0
+            clock_ns - t0
           end
 
-          # Auto-select individual vs batch timing.
-          def timed_loop(duration)
-            probe = time_once { yield }
-
-            if probe > 0.00005  # > 50µs → individual
-              individual_loop(duration) { yield }
-            else
-              batched_loop(duration, probe) { yield }
-            end
+          # Any per-operation fixture returned by prepare is constructed before
+          # the batch timer. Raw results contain one elapsed time per batch,
+          # rather than thousands of rounded per-operation JSON values.
+          def timed_loop(duration, prepare: nil)
+            probe_input = prepare&.call
+            probe = time_once { yield(probe_input) }
+            batched_loop(duration, probe, prepare: prepare) { |input| yield(input) }
           end
 
-          def individual_loop(duration)
-            times = []
-            deadline = clock + duration
-            while times.size < MAX_ITERS && clock < deadline
-              times << time_once { yield }
-            end
-            stats(times)
-          end
-
-          def batched_loop(duration, probe)
+          def batched_loop(duration, probe, prepare: nil)
             bs = [(TARGET_BATCH_SECS / [probe, 1e-7].max).to_i, 1].max
             bs = [bs, MAX_BATCH_SIZE].min
 
             times = []
+            batches = []
             iters = 0
             deadline = clock + duration
             while iters < MAX_ITERS && clock < deadline
-              t0 = clock
-              bs.times { yield }
-              times << (clock - t0) / bs
+              inputs = Array.new(bs) { prepare.call } if prepare
+              elapsed_ns = time_once_ns do
+                bs.times { |index| yield(inputs && inputs[index]) }
+              end
+              times << (elapsed_ns / 1_000_000_000.0) / bs
+              batches << { iterations: bs, elapsed_ns: elapsed_ns }
               iters += bs
             end
-            stats(times, iters)
+            stats(times, iters).merge(batches: batches)
           end
 
           def stats(times, iters = times.size)
@@ -206,11 +205,12 @@ module Liquid
             }
           end
 
-          def measure_allocs(n)
+          def measure_allocs(n, prepare: nil)
             counts = Array.new(n) do
+              input = prepare&.call
               GC.start
               before = GC.stat(:total_allocated_objects)
-              yield
+              yield(input)
               GC.stat(:total_allocated_objects) - before
             end
             counts.sort[n / 2]
@@ -226,6 +226,7 @@ module Liquid
               compile_stddev: cs[:stddev],
               compile_p75: cs[:p75], compile_p95: cs[:p95], compile_p99: cs[:p99],
               compile_iters: cs[:iters], compile_samples: cs[:samples],
+              compile_batches: cs[:batches],
               compile_allocs: ca,
 
               # Render (warm steady-state)
@@ -234,6 +235,7 @@ module Liquid
               render_stddev: rs[:stddev],
               render_p75: rs[:p75], render_p95: rs[:p95], render_p99: rs[:p99],
               render_iters: rs[:iters], render_samples: rs[:samples],
+              render_batches: rs[:batches],
               render_allocs: ra,
 
               # Cold render
@@ -289,7 +291,11 @@ module Liquid
           end
 
           def clock
-            Process.clock_gettime(Process::CLOCK_MONOTONIC)
+            clock_ns / 1_000_000_000.0
+          end
+
+          def clock_ns
+            Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
           end
         end
 
@@ -321,6 +327,78 @@ module Liquid
           end
         end
 
+        # A slightly more precise format for benchmark result tables.
+        def self.fmt_metric(seconds)
+          return "—" if seconds.nil?
+          if seconds >= 1
+            "%.3f s" % seconds
+          elsif seconds >= 0.01
+            "%.2f ms" % (seconds * 1e3)
+          elsif seconds >= 1e-3
+            "%.3f ms" % (seconds * 1e3)
+          elsif seconds >= 1e-6
+            "%.1f µs" % (seconds * 1e6)
+          else
+            "%.0f ns" % (seconds * 1e9)
+          end
+        end
+
+        def self.fmt_bytes(bytes)
+          return "—" if bytes.nil?
+          return "#{bytes} B" if bytes < 1024
+          return "%.1f KiB" % (bytes / 1024.0) if bytes < 1024 * 1024
+          "%.1f MiB" % (bytes / (1024.0 * 1024.0))
+        end
+
+        # Compact distribution view for raw ns samples or per-operation
+        # seconds. Downsamples long runs into equal-width buckets.
+        def self.sparkline(values, width: 12)
+          values = Array(values).compact.map(&:to_f)
+          return "" if values.empty?
+
+          if values.size > width
+            bucket_size = values.size.fdiv(width)
+            values = width.times.map do |index|
+              from = (index * bucket_size).floor
+              to = [((index + 1) * bucket_size).floor, from + 1].max
+              bucket = values[from...to]
+              bucket.sum / bucket.size
+            end
+          end
+
+          low, high = values.minmax
+          return "▄" * values.size if low == high
+
+          glyphs = "▁▂▃▄▅▆▇█"
+          values.map do |value|
+            index = (((value - low) / (high - low)) * (glyphs.length - 1)).round
+            glyphs[index]
+          end.join
+        end
+
+        def self.batch_samples_seconds(batches)
+          Array(batches).filter_map do |sample|
+            iterations = sample[:iterations] || sample["iterations"]
+            elapsed_ns = sample[:elapsed_ns] || sample["elapsed_ns"]
+            elapsed_ns / 1_000_000_000.0 / iterations if iterations.to_i > 0 && elapsed_ns
+          end
+        end
+
+        def self.stability(mean, stddev)
+          return ["—", 0.0] unless mean.to_f.positive? && stddev
+          cv = stddev / mean
+          label = if cv <= 0.03
+            "steady"
+          elsif cv <= 0.08
+            "stable"
+          elsif cv <= 0.15
+            "lively"
+          else
+            "noisy"
+          end
+          [label, cv]
+        end
+
         # Keep old names as aliases
         class << self
           alias_method :format_time_short, :fmt
@@ -328,23 +406,20 @@ module Liquid
           alias_method :format_allocs, :fmt_allocs
         end
 
-        # Round all floats in a hash (recursive). Removes nil values.
-        # Times (seconds) get 6 decimal places (µs precision).
-        # Ratios/percentages get 3 decimal places.
-        def self.compact(hash)
-          hash.each_with_object({}) do |(k, v), out|
-            case v
-            when Float
-              # Heuristic: values < 1 are likely seconds → 6dp (µs precision)
-              # Values >= 1 are likely ratios/ms/counts → 3dp
-              out[k] = v < 1.0 ? v.round(6) : v.round(3)
-            when Hash
-              out[k] = compact(v)
-            when nil
-              # skip
-            else
-              out[k] = v
+        # Remove nil values recursively without rounding measurements. JSON
+        # numbers preserve enough precision for the compatibility second-based
+        # fields, while raw benchmark batches are emitted as integer ns.
+        def self.compact(value)
+          case value
+          when Hash
+            value.each_with_object({}) do |(key, child), out|
+              next if child.nil?
+              out[key] = compact(child)
             end
+          when Array
+            value.map { |child| compact(child) }
+          else
+            value
           end
         end
       end

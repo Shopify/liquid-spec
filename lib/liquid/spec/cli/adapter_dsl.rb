@@ -163,23 +163,30 @@ module LiquidSpec
       @render_block = block
     end
 
-    # OPTIONAL: define how to serialize the compiled template (ctx[:template])
-    # into a persistable artifact string — the thing an implementation would
-    # store in memcache/DB after compiling once.
-    # Block receives: ctx. Must return a String.
+    # OPTIONAL: export the just-compiled template as the exact binary String
+    # an application would persist in a shared cache or database. This hook is
+    # called immediately after compile, before render can mutate template state.
     #
-    # Declaring BOTH dump_artifact and load_artifact enables the artifact
-    # benchmark stage (`--bench`): payload size, cold artifact load time,
-    # steady-state load time and allocations, plus a roundtrip correctness
-    # check (the loaded artifact must render identical output).
+    # The artifact must be usable without source code by another process running
+    # the same implementation. Include all compile-time state needed by load.
+    # Block receives ctx and must return a binary-safe String.
+    #
+    # Declaring BOTH artifact hooks enables payload-size and runtime-loaded,
+    # template-cold load+first-render benchmarks. --bench warns when either is
+    # absent because those production-path measurements would otherwise vanish.
     def dump_artifact(&block)
       @dump_artifact_block = block
     end
 
-    # OPTIONAL: define how to load an artifact string back into a renderable
-    # template, storing it in ctx[:template] (the regular render block is then
-    # used to render it — exactly the production cold path).
-    # Block receives: ctx, blob, load_options.
+    # OPTIONAL: import bytes produced by dump_artifact in a process that has
+    # loaded the implementation but has never seen this template or its source.
+    # Restore every adapter-context value that the regular render hook needs.
+    #
+    # Block receives ctx, artifact bytes, and the runtime options Hash that the
+    # following render will receive. It must leave ctx ready for the normal
+    # LiquidSpec.render hook. Runtime assigns,
+    # registers, and filesystems still arrive through that render hook and must
+    # not be captured in the artifact.
     def load_artifact(&block)
       @load_artifact_block = block
     end

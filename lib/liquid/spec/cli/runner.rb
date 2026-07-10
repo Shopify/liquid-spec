@@ -4,6 +4,7 @@ require_relative "adapter_dsl"
 require_relative "features"
 require_relative "benchmark"
 require_relative "config"
+require_relative "fork_benchmark"
 require_relative "../time_freezer"
 require "json"
 require "set"
@@ -654,6 +655,23 @@ module Liquid
 
             benchmark_log_path = Config.adapter_jsonl_path(adapter_name, run_id: run_id) unless jsonl_mode
 
+            suite_runs = suites.filter_map do |suite|
+              specs = Liquid::Spec::SpecLoader.load_suite(suite)
+              specs = filter_specs(specs, config.filter) if config.filter
+              specs = filter_by_missing(specs, missing_features)
+              [suite, specs] unless specs.empty?
+            end
+
+            warn_missing_artifact_protocol(adapter_name)
+            fork_benchmark = if fork_benchmark_supported?
+              ForkBenchmark.new(suite_runs.flat_map(&:last)) do |spec, operation, blob|
+                run_forked_benchmark_operation(spec, operation, blob)
+              end
+            else
+              warn "[liquid-spec] WARNING: #{adapter_name} uses JSON-RPC; fork-isolated workflows are omitted because the external engine process would be shared across samples. Existing parse/render timings remain transport-inclusive."
+              nil
+            end
+
             # Write run metadata
             meta = build_run_metadata(run_id, adapter_name)
             if jsonl_mode
@@ -665,12 +683,7 @@ module Liquid
 
             all_results = []
 
-            suites.each do |suite|
-              suite_specs = Liquid::Spec::SpecLoader.load_suite(suite)
-              suite_specs = filter_specs(suite_specs, config.filter) if config.filter
-              suite_specs = filter_by_missing(suite_specs, missing_features)
-              next if suite_specs.empty?
-
+            suite_runs.each do |suite, suite_specs|
               duration_per_spec = suite.default_iteration_seconds
 
               # Profile if requested
@@ -682,8 +695,10 @@ module Liquid
               unless jsonl_mode
                 jit_label = jit_status
                 puts ""
-                puts "\e[1m#{adapter_name}\e[0m — #{suite.name}"
-                puts "Ruby #{RUBY_VERSION} (#{jit_label}) │ #{suite_specs.size} specs │ #{duration_per_spec}s/spec"
+                puts "\e[1;36m◆ LIQUID BENCH\e[0m  \e[1m#{adapter_name}\e[0m"
+                case_label = suite_specs.size == 1 ? "case" : "cases"
+                puts "\e[2m  #{suite.name}  ·  Ruby #{RUBY_VERSION}  ·  #{jit_label}  ·  #{suite_specs.size} #{case_label}  ·  #{duration_per_spec}s budget/case\e[0m"
+                puts "\e[2m  source-cold  ↔  artifact-cold  ↔  resident\e[0m"
 
                 # Pre-run: compile+render every spec once, collect suite-wide stats
                 print_prerun_stats(suite_specs, config)
@@ -695,11 +710,11 @@ module Liquid
                 unless jsonl_mode
                   # Show progress line (overwritten by results)
                   spec_label = spec.name.sub(/\Abench_/, "")
-                  print "\r\e[2K  \e[2m⏱  #{idx + 1}/#{suite_specs.size}\e[0m  #{spec_label} …"
+                  print "\r\e[2K  \e[36m◐\e[0m  \e[2m#{idx + 1}/#{suite_specs.size}\e[0m  #{spec_label}  \e[2m· warming → sampling\e[0m"
                   $stdout.flush
                 end
 
-                result = run_benchmark_spec(spec, config, duration_per_spec)
+                result = run_benchmark_spec(spec, config, duration_per_spec, fork_benchmark)
                 all_results << { spec: spec, result: result }
 
                 if jsonl_mode
@@ -730,6 +745,8 @@ module Liquid
               puts ""
               puts benchmark_log_path
             end
+          ensure
+            fork_benchmark&.close
           end
 
           # ── Pre-run stats (one pass through all specs) ───────────────
@@ -800,86 +817,96 @@ module Liquid
 
           def print_benchmark_spec(spec, r, idx, total)
             name = spec.name.sub(/\Abench_/, "")
+            puts "\e[2m#{"━" * 72}\e[0m"
+            puts "\e[1;36m◆\e[0m  \e[1m#{name}\e[0m  \e[2m#{idx}/#{total}\e[0m"
 
             if r[:error]
-              puts "\e[1mBenchmark #{idx}/#{total}:\e[0m #{name}"
-              puts "  \e[31m✗ #{r[:error].message[0..80]}\e[0m"
+              puts "   \e[31m✗ benchmark failed\e[0m"
+              puts "   \e[2m#{r[:error].message.lines.first.to_s.strip[0..100]}\e[0m"
               puts ""
               return
             end
 
-            f = Benchmark.method(:fmt)
-
-            puts "\e[1mBenchmark #{idx}/#{total}:\e[0m #{name}"
-
-            # Parse: mean ± σ  [allocs, runs]
-            puts "  Parse  (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
-                 "\e[1;32m#{f.call(r[:compile_mean]).rjust(9)}\e[0m ± " \
-                 "\e[32m#{f.call(r[:compile_stddev]).rjust(8)}\e[0m    " \
-                 "[\e[34m#{Benchmark.fmt_allocs(r[:compile_allocs] || 0)} allocs\e[0m, " \
-                 "\e[2m#{Benchmark.fmt_iters(r[:compile_iters])} runs\e[0m]"
-
-            # Render: mean ± σ  [allocs, runs]
-            puts "  Render (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
-                 "\e[1;32m#{f.call(r[:render_mean]).rjust(9)}\e[0m ± " \
-                 "\e[32m#{f.call(r[:render_stddev]).rjust(8)}\e[0m    " \
-                 "[\e[34m#{Benchmark.fmt_allocs(r[:render_allocs] || 0)} allocs\e[0m, " \
-                 "\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m]"
-
-            # Range: min … max
-            puts "  Range  (\e[36mmin\e[0m … \e[35mmax\e[0m):   " \
-                 "\e[36m#{f.call(r[:render_min]).rjust(9)}\e[0m … " \
-                 "\e[35m#{f.call(r[:render_max]).rjust(8)}\e[0m    " \
-                 "[\e[2m#{Benchmark.fmt_iters(r[:render_iters])} runs\e[0m]"
-
-            # Artifact: steady-state load + payload size + cold load
-            if r[:artifact_bytes]
-              kb = r[:artifact_bytes] / 1024.0
-              puts "  Load   (\e[1;32mmean\e[0m ± \e[32mσ\e[0m):  " \
-                   "\e[1;32m#{f.call(r[:load_mean]).rjust(9)}\e[0m ± " \
-                   "\e[32m#{f.call(r[:load_stddev]).rjust(8)}\e[0m    " \
-                   "[\e[34m#{"%.1f" % kb}KB artifact\e[0m, " \
-                   "\e[34m#{Benchmark.fmt_allocs(r[:load_allocs] || 0)} allocs\e[0m, " \
-                   "\e[2m#{Benchmark.fmt_iters(r[:load_iters])} runs\e[0m]"
-              if r[:load_cold_1]
-                total = (r[:load_cold_1] || 0) + (r[:artifact_render_cold_1] || 0)
-                puts "  Load   (\e[33mcold\e[0m + \e[33m1st\e[0m):  " \
-                     "\e[33m#{f.call(r[:load_cold_1]).rjust(9)}\e[0m + " \
-                     "\e[33m#{f.call(r[:artifact_render_cold_1]).rjust(8)}\e[0m    " \
-                     "\e[2m= #{f.call(total)} cold total\e[0m"
+            if r[:compile_render_mean]
+              puts ""
+              puts "   \e[2mCOLD WORKFLOWS  ·  runtime loaded  ·  target unseen  ·  lower is better\e[0m"
+              print_benchmark_metric(
+                "source → first render", r[:compile_render_mean], r[:compile_render_stddev],
+                samples: r[:compile_render_samples_ns], sample_unit: :ns, color: 33,
+                count_label: "forks",
+              )
+              if r[:artifact_load_render_mean]
+                print_benchmark_metric(
+                  "artifact → first render", r[:artifact_load_render_mean], r[:artifact_load_render_stddev],
+                  samples: r[:artifact_load_render_samples_ns], sample_unit: :ns, color: 35,
+                  count_label: "forks",
+                )
+                ratio = r[:compile_render_mean] / r[:artifact_load_render_mean]
+                if ratio >= 1.05
+                  puts "   \e[2m↳ artifact path skips the source lane: \e[1;35m#{"%.2f" % ratio}× faster\e[0m"
+                elsif ratio <= 0.95
+                  puts "   \e[2m↳ artifact path is currently \e[33m#{"%.2f" % (1.0 / ratio)}× slower\e[0m"
+                end
               end
-            end
-
-            # Cold: @1 / @10
-            if r[:render_cold_1]
-              warm = r[:render_mean] || 0
-              cold1 = r[:render_cold_1]
-              ratio = warm > 0 ? cold1 / warm : 0
-              ratio_s = ratio > 1.05 ? "    \e[2m(%.1fx vs warm)\e[0m" % ratio : ""
-              puts "  Cold   (\e[33m@1\e[0m / \e[33m@10\e[0m):   " \
-                   "\e[33m#{f.call(cold1).rjust(9)}\e[0m / " \
-                   "\e[33m#{f.call(r[:render_cold_10_mean]).rjust(8)}\e[0m" \
-                   "#{ratio_s}"
-            end
-
-            # YJIT stats (only when JIT is active)
-            if r[:yjit_compiled_iseqs]
-              parts = []
-              parts << "+#{r[:yjit_compiled_iseqs]} iseqs"
-              parts << "#{"%.1f" % r[:yjit_compile_time_ms]}ms jit time" if r[:yjit_compile_time_ms] && r[:yjit_compile_time_ms] > 0.05
-              inv = r[:yjit_invalidations] || 0
-              parts << (inv > 0 ? "\e[33m#{inv} invalidations\e[2m" : "0 invalidations")
-              if r[:yjit_code_bytes] && r[:yjit_code_bytes] > 0
-                kb = r[:yjit_code_bytes] / 1024.0
-                parts << "#{"%.1f" % kb}KB code"
-              end
-              if r[:yjit_compile_us_per_iter] && r[:yjit_compile_us_per_iter] > 0.01
-                parts << "#{"%.2f" % r[:yjit_compile_us_per_iter]}µs jit/op"
-              end
-              puts "  \e[2mYJIT:  #{parts.join("  │  ")}\e[0m"
             end
 
             puts ""
+            puts "   \e[2mRESIDENT  ·  template loaded once  ·  repeated renders\e[0m"
+            print_benchmark_metric(
+              "render", r[:render_mean], r[:render_stddev],
+              samples: Benchmark.batch_samples_seconds(r[:render_batches]), color: 36,
+              count: r[:render_iters], count_label: "renders",
+            )
+
+            puts ""
+            stage_parts = [
+              "parse #{Benchmark.fmt_metric(r[:compile_mean])}",
+              ("load #{Benchmark.fmt_metric(r[:load_mean])}" if r[:load_mean]),
+              "render #{Benchmark.fmt_metric(r[:render_mean])}",
+            ].compact
+            puts "   \e[2mSTAGE NOTES\e[0m  #{stage_parts.join("  ·  ")}"
+
+            allocation_parts = [
+              "parse #{Benchmark.fmt_allocs(r[:compile_allocs] || 0)}",
+              ("load #{Benchmark.fmt_allocs(r[:load_allocs] || 0)}" if r[:load_allocs]),
+              "render #{Benchmark.fmt_allocs(r[:render_allocs] || 0)}",
+            ].compact
+            puts "   \e[2mallocations/op\e[0m  #{allocation_parts.join("  ·  ")}"
+
+            range = "#{Benchmark.fmt_metric(r[:render_min])} … #{Benchmark.fmt_metric(r[:render_max])}"
+            notes = ["resident range #{range}"]
+            notes << "artifact #{Benchmark.fmt_bytes(r[:artifact_bytes])}" if r[:artifact_bytes]
+            if r[:render_cold_1] && r[:render_mean].to_f.positive?
+              notes << "first resident call #{"%.1f" % (r[:render_cold_1] / r[:render_mean])}× warm"
+            end
+            puts "   \e[2m#{notes.join("  ·  ")}\e[0m"
+
+            if r[:yjit_compiled_iseqs]
+              parts = ["+#{r[:yjit_compiled_iseqs]} iseqs"]
+              parts << "#{"%.1f" % r[:yjit_compile_time_ms]} ms compile" if r[:yjit_compile_time_ms]
+              parts << "#{r[:yjit_invalidations] || 0} invalidations"
+              parts << Benchmark.fmt_bytes(r[:yjit_code_bytes]) if r[:yjit_code_bytes].to_i.positive?
+              puts "   \e[2mYJIT  #{parts.join("  ·  ")}\e[0m"
+            end
+
+            puts ""
+          end
+
+          def print_benchmark_metric(label, mean, stddev, samples:, color:, sample_unit: :seconds,
+            count: nil, count_label: "samples")
+            values = Array(samples)
+            spark_values = sample_unit == :ns ? values : values.map(&:to_f)
+            spark = Benchmark.sparkline(spark_values, width: 14)
+            stability, cv = Benchmark.stability(mean, stddev)
+            count ||= values.size
+            detail = [stability, ("CV #{"%.1f" % (cv * 100)}%" if cv.positive?),
+              "#{Benchmark.fmt_iters(count)} #{count_label}"].compact.join(" · ")
+
+            puts "   #{label.ljust(27)} " \
+                 "\e[1;#{color}m#{Benchmark.fmt_metric(mean).rjust(11)}\e[0m " \
+                 "± \e[#{color}m#{Benchmark.fmt_metric(stddev).rjust(10)}\e[0m  " \
+                 "\e[#{color}m#{spark}\e[0m"
+            puts "   #{" " * 28}\e[2m#{detail}\e[0m"
           end
 
           # ── Totals / summary ───────────────────────────────────────────
@@ -908,17 +935,28 @@ module Liquid
             cold10s = ok.map { |r| r[:result][:render_cold_10_mean] }.compact
             warm_means = ok.map { |r| r[:result][:render_mean] }.compact
 
-            status = "\e[1m#{n} passed\e[0m"
-            status += ", \e[31m#{nfail} failed\e[0m" if nfail > 0
-            puts status
+            status = "\e[32m✓\e[0m \e[1m#{n} #{n == 1 ? "case" : "cases"} landed\e[0m"
+            status += "  ·  \e[31m#{nfail} failed\e[0m" if nfail > 0
+            puts "\e[2m#{"━" * 72}\e[0m"
+            puts "#{status}"
+            puts "\e[2m  suite averages · lower is better\e[0m"
             puts ""
 
-            puts "  \e[1mParse\e[0m   #{f.call(parse_total / n)} mean/op  │  " \
-                 "#{Benchmark.fmt_allocs(parse_allocs / n)} allocs/op  │  " \
-                 "#{Benchmark.fmt_iters(parse_iters)} total runs"
-            puts "  \e[1mRender\e[0m  #{f.call(render_total / n)} mean/op  │  " \
-                 "#{Benchmark.fmt_allocs(render_allocs / n)} allocs/op  │  " \
-                 "#{Benchmark.fmt_iters(render_iters)} total runs"
+            puts "  parse     #{Benchmark.fmt_metric(parse_total / n).rjust(11)}  ·  " \
+                 "#{Benchmark.fmt_allocs(parse_allocs / n)} allocs/op  ·  " \
+                 "#{Benchmark.fmt_iters(parse_iters)} runs"
+            puts "  resident  \e[1;36m#{Benchmark.fmt_metric(render_total / n).rjust(11)}\e[0m  ·  " \
+                 "#{Benchmark.fmt_allocs(render_allocs / n)} allocs/op  ·  " \
+                 "#{Benchmark.fmt_iters(render_iters)} runs"
+
+            source_workflows = ok.filter_map { |entry| entry[:result][:compile_render_mean] }
+            artifact_workflows = ok.filter_map { |entry| entry[:result][:artifact_load_render_mean] }
+            if source_workflows.any?
+              puts "  #{"source→1".ljust(10)}\e[1;33m#{Benchmark.fmt_metric(source_workflows.sum / source_workflows.size).rjust(11)}\e[0m"
+            end
+            if artifact_workflows.any?
+              puts "  #{"artifact→1".ljust(10)}\e[1;35m#{Benchmark.fmt_metric(artifact_workflows.sum / artifact_workflows.size).rjust(11)}\e[0m"
+            end
 
             if cold1s.any? && warm_means.any?
               cold1_avg = cold1s.sum / cold1s.size
@@ -1008,7 +1046,64 @@ module Liquid
             nil
           end
 
-          def run_benchmark_spec(spec, _config, duration_seconds)
+          def fork_benchmark_supported?
+            return true unless defined?(Liquid::Spec::JsonRpc::Adapter)
+
+            LiquidSpec.ctx.values.none? { |value| value.is_a?(Liquid::Spec::JsonRpc::Adapter) }
+          end
+
+          def warn_missing_artifact_protocol(adapter_name)
+            missing = []
+            missing << "LiquidSpec.dump_artifact" unless LiquidSpec.dump_artifact_block
+            missing << "LiquidSpec.load_artifact" unless LiquidSpec.load_artifact_block
+            return if missing.empty?
+
+            warning = if missing.size == 1
+              "#{adapter_name} declares only half of the compiled-artifact protocol; missing #{missing.first}."
+            else
+              "#{adapter_name} does not declare compiled-artifact support."
+            end
+            warn "[liquid-spec] WARNING: #{warning} Artifact size and runtime-loaded, template-cold load+first-render benchmarks will be omitted. See README.md#optional-compiled-artifact-protocol."
+          end
+
+          def run_forked_benchmark_operation(spec, operation, blob)
+            filesystem = spec.instantiate_filesystem
+            compile_options = {
+              line_numbers: true,
+              error_mode: :strict,
+              file_system: filesystem,
+              template_name: spec.template_name,
+            }.compact
+            render_options = {
+              registers: build_registers(spec, filesystem),
+              strict_errors: false,
+            }.compact
+            context = LiquidSpec.adapter_context(spec, adapter_timeout: nil)
+            environment = deep_copy(spec.instantiate_environment)
+            GC.enable
+
+            case operation
+            when :build_artifact
+              LiquidSpec.do_compile(spec.template, compile_options, context)
+              LiquidSpec.do_dump_artifact(context)
+            when :compile_render
+              started_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
+              LiquidSpec.do_compile(spec.template, compile_options, context)
+              output = LiquidSpec.do_render(environment, render_options, context)
+              elapsed_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond) - started_ns
+              { elapsed_ns: elapsed_ns, output: output }
+            when :artifact_load_render
+              started_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
+              LiquidSpec.do_load_artifact(blob, render_options, context)
+              output = LiquidSpec.do_render(environment, render_options, context)
+              elapsed_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond) - started_ns
+              { elapsed_ns: elapsed_ns, output: output }
+            else
+              raise ArgumentError, "unknown forked benchmark operation: #{operation.inspect}"
+            end
+          end
+
+          def run_benchmark_spec(spec, _config, duration_seconds, fork_benchmark)
             # Pre-compile the template
             filesystem = spec.instantiate_filesystem
             compile_options = {
@@ -1020,6 +1115,17 @@ module Liquid
 
             context = LiquidSpec.adapter_context(spec, adapter_timeout: nil)
             LiquidSpec.do_compile(spec.template, compile_options, context)
+            # A compiled artifact is a snapshot of compilation, not of a
+            # potentially stateful template after it has rendered. Capture it
+            # immediately, before correctness validation invokes render.
+            validation_blob = LiquidSpec.do_dump_artifact(context) if LiquidSpec.artifact_capable?
+            unless validation_blob.nil? || validation_blob.is_a?(String)
+              return {
+                name: spec.name,
+                iterations: 0,
+                error: TypeError.new("dump_artifact must return a String, got #{validation_blob.class}"),
+              }
+            end
             render_options = {
               registers: build_registers(spec, filesystem),
               strict_errors: false,
@@ -1044,8 +1150,7 @@ module Liquid
             load_proc = nil
             if LiquidSpec.artifact_capable?
               begin
-                blob = LiquidSpec.do_dump_artifact(context)
-                LiquidSpec.do_load_artifact(blob, render_options, context)
+                LiquidSpec.do_load_artifact(validation_blob, render_options, context)
                 roundtrip = LiquidSpec.do_render(env_master.dup, render_options, context)
                 if roundtrip != actual
                   return {
@@ -1063,9 +1168,25 @@ module Liquid
               end
             end
 
-            # Use shared benchmark infrastructure.
-            # env_proc returns a shallow dup — templates may mutate top-level keys
-            # via assign/include but won't mutate nested objects.
+            isolated = fork_benchmark&.measure(spec, artifact: LiquidSpec.artifact_capable?)
+            expected_output = spec.expected || actual
+            if isolated && isolated[:compile_render_output] != expected_output
+              return {
+                name: spec.name,
+                iterations: 0,
+                error: RuntimeError.new("Forked compile+render mismatch:\n  Expected: #{expected_output.inspect[0..100]}\n  Got: #{isolated[:compile_render_output].inspect[0..100]}"),
+              }
+            end
+            if isolated&.dig(:artifact_load_render_output) && isolated[:artifact_load_render_output] != expected_output
+              return {
+                name: spec.name,
+                iterations: 0,
+                error: RuntimeError.new("Forked artifact load+render mismatch:\n  Expected: #{expected_output.inspect[0..100]}\n  Got: #{isolated[:artifact_load_render_output].inspect[0..100]}"),
+              }
+            end
+
+            # Use shared benchmark infrastructure. env_proc is invoked outside
+            # timed render regions; templates may mutate top-level assigns.
             result = Benchmark.run(
               compile_proc: -> { LiquidSpec.do_compile(spec.template, compile_options, context) },
               render_proc:  ->(env) { LiquidSpec.do_render(env, render_options, context) },
@@ -1079,12 +1200,58 @@ module Liquid
               return { name: spec.name, iterations: 0, error: result[:error] }
             end
 
+            add_isolated_workflow_results(result, isolated) if isolated
+
             result.merge(
               name: spec.name,
               iterations: (result[:compile_iters] || 0) + (result[:render_iters] || 0),
               compile_iterations: result[:compile_iters],
               render_iterations: result[:render_iters],
             )
+          end
+
+          def add_isolated_workflow_results(result, isolated)
+            compile = summarize_ns_samples(isolated.fetch(:compile_render_samples_ns))
+            result.merge!(
+              compile_render_mean: compile[:mean],
+              compile_render_median: compile[:median],
+              compile_render_min: compile[:min],
+              compile_render_max: compile[:max],
+              compile_render_stddev: compile[:stddev],
+              compile_render_p95: compile[:p95],
+              compile_render_samples_ns: isolated[:compile_render_samples_ns],
+              compile_render_freshness: "forked_runtime_loaded_source_cold",
+            )
+
+            return unless isolated[:artifact_load_render_samples_ns]
+
+            loaded = summarize_ns_samples(isolated[:artifact_load_render_samples_ns])
+            result.merge!(
+              artifact_load_render_mean: loaded[:mean],
+              artifact_load_render_median: loaded[:median],
+              artifact_load_render_min: loaded[:min],
+              artifact_load_render_max: loaded[:max],
+              artifact_load_render_stddev: loaded[:stddev],
+              artifact_load_render_p95: loaded[:p95],
+              artifact_load_render_samples_ns: isolated[:artifact_load_render_samples_ns],
+              artifact_load_render_freshness: "forked_runtime_loaded_artifact_cold",
+            )
+          end
+
+          def summarize_ns_samples(samples)
+            seconds = samples.map { |ns| ns / 1_000_000_000.0 }
+            sorted = seconds.sort
+            mean = seconds.sum / seconds.size
+            variance = seconds.sum { |value| (value - mean)**2 } / seconds.size
+            p95_index = ((sorted.size - 1) * 0.95).round
+            {
+              mean: mean,
+              median: sorted[sorted.size / 2],
+              min: sorted.first,
+              max: sorted.last,
+              stddev: Math.sqrt(variance),
+              p95: sorted[p95_index],
+            }
           end
 
           def format_number(num)
@@ -1142,6 +1309,16 @@ module Liquid
                 at_1_avg: ok.sum { |r| r[:result][:render_cold_1] || 0 } / n,
                 at_10_avg: ok.sum { |r| r[:result][:render_cold_10_mean] || 0 } / n,
               },
+              workflows: {
+                source_compile_render_mean: begin
+                  values = ok.filter_map { |r| r[:result][:compile_render_mean] }
+                  values.sum / values.size if values.any?
+                end,
+                artifact_load_first_render_mean: begin
+                  values = ok.filter_map { |r| r[:result][:artifact_load_render_mean] }
+                  values.sum / values.size if values.any?
+                end,
+              },
             }
 
             # Warmup ratio
@@ -1180,6 +1357,7 @@ module Liquid
               p95: result[:compile_p95],
               iters: result[:compile_iters],
               allocs: result[:compile_allocs],
+              batches: result[:compile_batches],
             }
 
             entry[:render] = {
@@ -1190,12 +1368,28 @@ module Liquid
               p95: result[:render_p95],
               iters: result[:render_iters],
               allocs: result[:render_allocs],
+              batches: result[:render_batches],
             }
 
             entry[:cold] = {
               at_1: result[:render_cold_1],
               at_10: result[:render_cold_10_mean],
             }
+
+            if result[:compile_render_mean]
+              entry[:workflows] = {
+                source_compile_render: {
+                  mean: result[:compile_render_mean],
+                  median: result[:compile_render_median],
+                  stddev: result[:compile_render_stddev],
+                  min: result[:compile_render_min],
+                  max: result[:compile_render_max],
+                  p95: result[:compile_render_p95],
+                  freshness: result[:compile_render_freshness],
+                  samples_ns: result[:compile_render_samples_ns],
+                },
+              }
+            end
 
             if result[:artifact_bytes]
               entry[:artifact] = {
@@ -1207,8 +1401,20 @@ module Liquid
                 load_p95: result[:load_p95],
                 load_iters: result[:load_iters],
                 load_allocs: result[:load_allocs],
+                load_batches: result[:load_batches],
                 load_cold_1: result[:load_cold_1],
                 render_cold_1: result[:artifact_render_cold_1],
+              }
+              entry[:workflows] ||= {}
+              entry[:workflows][:artifact_load_first_render] = {
+                mean: result[:artifact_load_render_mean],
+                median: result[:artifact_load_render_median],
+                stddev: result[:artifact_load_render_stddev],
+                min: result[:artifact_load_render_min],
+                max: result[:artifact_load_render_max],
+                p95: result[:artifact_load_render_p95],
+                freshness: result[:artifact_load_render_freshness],
+                samples_ns: result[:artifact_load_render_samples_ns],
               }
             end
 
@@ -1241,6 +1447,10 @@ module Liquid
               jit_engine: jit_info[:engine],
               group_key: [adapter_name, RUBY_VERSION, jit_info[:engine]],
 
+              benchmark_clock: "monotonic_ns",
+              steady_state_timer_scope: fork_benchmark_supported? ? "in_process_adapter_hook" : "controller_transport_inclusive",
+              forked_workflows: fork_benchmark_supported?,
+              artifact_protocol: LiquidSpec.artifact_capable?,
               liquid_spec_version: Liquid::Spec::VERSION,
             }
           end
