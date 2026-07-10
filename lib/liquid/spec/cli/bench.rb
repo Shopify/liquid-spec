@@ -10,7 +10,7 @@ module Liquid
     module CLI
       # `liquid-spec bench` — run benchmarks sequentially with nice per-spec output.
       #
-      # - `liquid-spec bench`              → all builtin adapters, one after another
+      # - `liquid-spec bench`              → default builtin adapters, one after another
       # - `liquid-spec bench my_adapter.rb` → my_adapter vs liquid_ruby
       # - `liquid-spec bench my_adapter.rb -n storefront` → filtered
       #
@@ -22,7 +22,7 @@ module Liquid
 
           Run benchmarks with hyperfine-style output.
 
-          With no adapter:    runs all builtin adapters sequentially
+          With no adapter:    runs default builtin adapters sequentially
           With an adapter:    runs ADAPTER vs liquid_ruby (reference)
 
           Comparisons that mix inline and JSON-RPC adapters emit a warning because
@@ -31,7 +31,7 @@ module Liquid
           Options:
             -n, --name PATTERN    Filter specs by name pattern
             -s, --suite SUITE     Spec suite (default: benchmarks)
-            --all                 Run all builtin adapters
+            --all                 Run all default builtin adapters
             --adapter=PATH        Add a specific adapter
             --adapters=LIST       Comma-separated adapter list
             --profile             Write StackProf CPU/allocation profiles to /tmp
@@ -43,7 +43,7 @@ module Liquid
             liquid-spec bench
             liquid-spec bench my_adapter.rb
             liquid-spec bench my_adapter.rb -n storefront
-            liquid-spec bench --adapters=liquid_ruby,liquid_c
+            liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax
         HELP
 
         class << self

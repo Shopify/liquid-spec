@@ -10,8 +10,16 @@ module Liquid
       # whether adapters are builtin (from examples/) or local.
       class Runs
         Adapter = Struct.new(:name, :path, :builtin, :transport, keyword_init: true)
+        EXAMPLES_DIR = File.expand_path("../../../../examples", __dir__)
+        LEGACY_BUILTIN_ADAPTERS = %w[liquid_c liquid_c_strict].freeze
 
         attr_reader :adapters, :output_dir, :extra_specs
+
+        def self.default_builtin_adapter_paths
+          Dir[File.join(EXAMPLES_DIR, "*.rb")].sort.reject do |path|
+            LEGACY_BUILTIN_ADAPTERS.include?(File.basename(path, ".rb"))
+          end
+        end
 
         def initialize
           @adapters = []
@@ -74,9 +82,10 @@ module Liquid
           @adapters << resolved unless @adapters.any? { |a| a.path == resolved.path }
         end
 
-        # Add all builtin adapters from examples/
+        # Add the default builtin adapters. Legacy examples remain explicitly
+        # addressable by name/path, but are not part of no-argument or --all runs.
         def add_all_builtin_adapters
-          Dir[File.join(examples_dir, "*.rb")].sort.each do |path|
+          self.class.default_builtin_adapter_paths.each do |path|
             name = File.basename(path, ".rb")
             @adapters << Adapter.new(
               name: name,
@@ -202,7 +211,7 @@ module Liquid
         end
 
         def examples_dir
-          @examples_dir ||= File.expand_path("../../../../examples", __dir__)
+          EXAMPLES_DIR
         end
       end
     end

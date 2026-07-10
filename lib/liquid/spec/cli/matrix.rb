@@ -20,7 +20,7 @@ module Liquid
 
           Options:
             -o, --output=DIR      Reports directory (default: $LIQUID_SPEC_REPORTS or #{Config::DEFAULT_REPORTS_DIR})
-            --all                 Run all available adapters from examples/
+            --all                 Run all default adapters from examples/
             --adapter=PATH        Add a local adapter (can be used multiple times)
             --adapters=LIST       Comma-separated list of adapters to run
             --reference=NAME      Reference adapter (default: liquid_ruby)
@@ -110,7 +110,7 @@ module Liquid
               $stderr.puts ""
               $stderr.puts "Usage:"
               $stderr.puts "  liquid-spec tools matrix --all"
-              $stderr.puts "  liquid-spec tools matrix --adapters=liquid_ruby,liquid_c"
+              $stderr.puts "  liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax"
               $stderr.puts "  liquid-spec tools matrix --adapter=./my_adapter.rb"
               exit(1)
             end

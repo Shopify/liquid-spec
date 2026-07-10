@@ -12,12 +12,6 @@ else
   gem "liquid", github: "Shopify/liquid", tag: "v5.13.0"
 end
 
-# liquid-c is an optional C extension for performance. Only use if locally available.
-local_liquid_c_path = File.expand_path("../liquid-c", __dir__)
-if File.exist?(local_liquid_c_path)
-  gem "liquid-c", path: local_liquid_c_path, require: false
-end
-
 # Core test dependencies
 gem "minitest"
 gem "minitest-focus"

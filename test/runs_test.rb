@@ -6,6 +6,27 @@ require "liquid/spec/cli/bench"
 require "liquid/spec/cli/runs"
 
 class RunsTest < Minitest::Test
+  def test_default_builtin_adapters_exclude_legacy_liquid_c
+    paths = Liquid::Spec::CLI::Runs.default_builtin_adapter_paths
+    names = paths.map { |path| File.basename(path, ".rb") }
+
+    assert_includes names, "liquid_ruby"
+    assert_includes names, "json_rpc_ruby_liquid"
+    refute_includes names, "liquid_c"
+    refute_includes names, "liquid_c_strict"
+
+    runs = Liquid::Spec::CLI::Runs.new
+    runs.add_all_builtin_adapters
+    assert_equal names.sort, runs.adapter_names.sort
+  end
+
+  def test_legacy_liquid_c_adapter_remains_explicitly_addressable
+    runs = Liquid::Spec::CLI::Runs.new
+    runs.add_adapter("liquid_c")
+
+    assert_equal ["liquid_c"], runs.adapter_names
+  end
+
   def test_classifies_adapters_and_detects_mixed_benchmark_transports
     Dir.mktmpdir do |dir|
       inline_path = File.join(dir, "inline.rb")

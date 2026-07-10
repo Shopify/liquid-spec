@@ -455,7 +455,7 @@ The `matrix` command runs specs across multiple adapters simultaneously and show
 liquid-spec tools matrix [options]
 
 Options:
-  --all                    Run all available adapters from examples/
+  --all                    Run all default adapters from examples/
   --adapters=LIST          Comma-separated list of adapters
   --reference=NAME         Reference adapter (default: liquid_ruby)
   -n, --name PATTERN       Filter specs by name pattern
@@ -465,14 +465,14 @@ Options:
   -v, --verbose            Show detailed output
 
 Examples:
-  # Compare all bundled adapters
+  # Compare the default bundled adapters
   liquid-spec tools matrix --all
 
   # Compare specific adapters
   liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax
 
   # Compare adapters on specific tests
-  liquid-spec tools matrix --adapters=liquid_ruby,liquid_c -n truncate
+  liquid-spec tools matrix --adapters=liquid_ruby,my_adapter.rb -n truncate
 ```
 
 Output shows which adapters produce different results for each spec:
@@ -493,7 +493,7 @@ Adapters: liquid_ruby
 Output:
   "Hello w..."
 
-Adapters: liquid_c
+Adapters: my_adapter
 Output:
   "Hello wo..."
 ======================================================================
@@ -585,7 +585,7 @@ Use `liquid-spec bench --profile` to generate StackProf profiles for detailed pe
 liquid-spec bench examples/liquid_ruby.rb --profile
 
 # Multi-adapter profiling
-liquid-spec bench --adapters=liquid_ruby,liquid_c --profile
+liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax --profile
 ```
 
 A single-adapter profile directory contains four dumps:
@@ -639,7 +639,7 @@ Complexity: 20
 Saved to: /tmp/liquid-spec-2026-01-02.yml
 ```
 
-When using `--compare` (the default), the `expected` field can be omitted - it will be filled from the reference implementation. If your implementation differs from the reference, you'll see a prominent message encouraging you to contribute the spec.
+When using `--compare`, the `expected` field can be omitted—it will be filled from the reference implementation. If your implementation differs from the reference, you'll see a prominent message encouraging you to contribute the spec.
 
 Specs are automatically saved to `/tmp/liquid-spec-{date}.yml` for easy contribution back to liquid-spec.
 
@@ -684,7 +684,7 @@ See the `examples/` directory:
 - **`liquid_ruby_lax.rb`** - Shopify/liquid configured for lax-mode compatibility specs
 - **`liquid_ruby_shopify.rb`** - Shopify-flavored Liquid behavior
 - **`json_rpc_ruby_liquid.rb`** - JSON-RPC adapter backed by Shopify/liquid
-- **`liquid_c.rb`** / **`liquid_c_strict.rb`** - [liquid-c](https://github.com/Shopify/liquid-c) native extension examples
+- **`liquid_c.rb`** / **`liquid_c_strict.rb`** - Legacy, explicit opt-in liquid-c examples; excluded from default adapter runs
 - **`liquid_ruby_yjit.rb`** / **`liquid_ruby_zjit.rb`** - Ruby JIT benchmark variants
 
 ```bash

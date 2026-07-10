@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "runs"
+
 module Liquid
   module Spec
     module CLI
@@ -8,8 +10,8 @@ module Liquid
         HELP = <<~HELP
           Usage: liquid-spec tools test [options]
 
-          Run specs against all available example adapters in the gem.
-          Automatically skips adapters whose dependencies are not installed.
+          Run specs against the default example adapters in the gem.
+          Legacy adapters remain available explicitly but are not run here.
 
           Options:
             -c, --compare         Compare adapter output against reference liquid-ruby
@@ -17,7 +19,7 @@ module Liquid
             -h, --help            Show this help
 
           Examples:
-            liquid-spec tools test                    # Run all available adapters
+            liquid-spec tools test                    # Run default example adapters
             liquid-spec tools test --compare          # Compare mode
             liquid-spec tools test -v                 # Verbose output
 
@@ -59,7 +61,7 @@ module Liquid
             exit(1)
           end
 
-          adapters = Dir[File.join(adapters_dir, "*.rb")]
+          adapters = Runs.default_builtin_adapter_paths
 
           if adapters.empty?
             $stderr.puts "No example adapters found in #{adapters_dir}"

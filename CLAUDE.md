@@ -331,7 +331,7 @@ bundle exec rake generate
 ### Directory Structure
 
 - `bin/` - CLI executable
-- `examples/` - Example adapters (`liquid_ruby.rb`, `liquid_ruby_lax.rb`, `liquid_ruby_shopify.rb`, `json_rpc_ruby_liquid.rb`, `liquid_c.rb`, `liquid_c_strict.rb`, JIT variants)
+- `examples/` - Example adapters (`liquid_ruby.rb`, `liquid_ruby_lax.rb`, `liquid_ruby_shopify.rb`, `json_rpc_ruby_liquid.rb`, JIT variants); liquid-c examples are legacy explicit opt-ins and are excluded from defaults
 - `lib/liquid/spec/cli/` - CLI implementation
 - `specs/basics/` - Curated beginner ramp specs
 - `specs/liquid_ruby/` - Core Liquid specs from Shopify/liquid
