@@ -2,7 +2,7 @@
 _metadata:
   hint: |
     Full storefront benchmark using ONLY standard Liquid features (no Shopify-specific
-    filters/tags). This is the non-Shopify equivalent of the theme_* benchmarks.
+    filters/tags). It complements the smaller Shopify-shaped portable theme benchmarks.
     Exercises: render, include (static + dynamic), for loops, nested for loops,
     forloop object, if/elsif/else/unless, case/when, assign, capture, increment,
     decrement, cycle, tablerow, comment, raw, liquid tag, echo, whitespace control,

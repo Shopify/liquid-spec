@@ -570,8 +570,8 @@ The benchmark suite currently includes 10 realistic templates:
 | `bench_storefront_cart_page` | Standard-Liquid cart totals, discounts, and line items |
 | `bench_storefront_order_email` | Standard-Liquid transactional order email |
 | `bench_storefront_cms_page` | Standard-Liquid content-management page |
-| `shopify_theme_full_page` | Full Shopify Dream theme layout using Shopify filters |
-| `shopify_theme_product_page` | Shopify Dream product page using Shopify filters |
+| `shopify_theme_full_page` | Shopify-shaped Dream theme layout using portable Liquid |
+| `shopify_theme_product_page` | Shopify-shaped Dream product page using portable Liquid |
 
 Selecting these specs through `liquid-spec run ADAPTER -s benchmarks` checks correctness
 without collecting timings; use `liquid-spec bench` for performance measurements.

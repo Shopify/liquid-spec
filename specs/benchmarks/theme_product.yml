@@ -1,9 +1,8 @@
 ---
 _metadata:
-  hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
-  doc: implementers/shopify-theme-filters.md
-  features:
-    - shopify_filters
+  hint: |
+    Shopify-shaped Dream product benchmark expressed with portable Liquid.
+    CDN paths, cents conversion, and tag slugs use standard filters only.
   data_files:
     - _data/theme_database.yml
 specs:
@@ -26,12 +25,12 @@ specs:
           <div class="product__media">
             <div class="product__gallery">
               <div class="product__main-image">
-                <img src="{{ product.featured_image | product_img_url: 'large' }}" alt="{{ product.title | escape }}">
+                <img src="{{ product.featured_image | prepend: '/cdn/' }}" alt="{{ product.title | escape }}">
               </div>
               <div class="product__thumbnails">
                 {% for image in product.images %}
                   <button class="product__thumbnail-item" data-image-index="{{ forloop.index }}">
-                    <img src="{{ image | product_img_url: 'small' }}" alt="{{ product.title | escape }} - {{ forloop.index }}">
+                    <img src="{{ image | prepend: '/cdn/' }}" alt="{{ product.title | escape }} - {{ forloop.index }}">
                   </button>
                 {% endfor %}
               </div>
@@ -43,11 +42,11 @@ specs:
 
             <div class="product__pricing">
               {% if product.compare_at_price > product.price %}
-                <span class="product__price product__price--sale">{{ product.price | money }}</span>
-                <span class="product__price product__price--compare">{{ product.compare_at_price | money }}</span>
+                <span class="product__price product__price--sale">${{ product.price | divided_by: 100.0 }}</span>
+                <span class="product__price product__price--compare">${{ product.compare_at_price | divided_by: 100.0 }}</span>
                 <span class="product__badge">Sale</span>
               {% else %}
-                <span class="product__price">{{ product.price | money }}</span>
+                <span class="product__price">${{ product.price | divided_by: 100.0 }}</span>
               {% endif %}
             </div>
 
@@ -63,7 +62,7 @@ specs:
                   <select name="id" id="ProductSelect" class="product-form__select">
                     {% for variant in product.variants %}
                       <option value="{{ variant.id }}" {% if variant.available == false %}disabled{% endif %}>
-                        {{ variant.title }} - {{ variant.price | money }}{% if variant.available == false %} - Sold out{% endif %}
+                        {{ variant.title }} - ${{ variant.price | divided_by: 100.0 }}{% if variant.available == false %} - Sold out{% endif %}
                       </option>
                     {% endfor %}
                   </select>
@@ -100,7 +99,7 @@ specs:
               <ul class="tag-list">
                 {% for tag in product.tags %}
                   <li class="tag-list__item">
-                    <a href="/collections/all/{{ tag | handle }}" class="tag">{{ tag }}</a>
+                    <a href="/collections/all/{{ tag | downcase | replace: ' ', '-' | url_encode }}" class="tag">{{ tag }}</a>
                   </li>
                 {% endfor %}
               </ul>
@@ -177,16 +176,16 @@ specs:
       <div class="product-card">
         <a href="{{ product.url }}" class="product-card__link">
           <div class="product-card__image">
-            <img src="{{ product.featured_image | product_img_url: 'medium' }}" alt="{{ product.title | escape }}">
+            <img src="{{ product.featured_image | prepend: '/cdn/' }}" alt="{{ product.title | escape }}">
           </div>
           <div class="product-card__info">
             <h3 class="product-card__title">{{ product.title }}</h3>
             <div class="product-card__price">
               {% if product.compare_at_price > product.price %}
-                <span class="product-card__price--sale">{{ product.price | money }}</span>
-                <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
+                <span class="product-card__price--sale">${{ product.price | divided_by: 100.0 }}</span>
+                <span class="product-card__price--compare">${{ product.compare_at_price | divided_by: 100.0 }}</span>
               {% else %}
-                <span class="product-card__price--regular">{{ product.price | money }}</span>
+                <span class="product-card__price--regular">${{ product.price | divided_by: 100.0 }}</span>
               {% endif %}
             </div>
           </div>

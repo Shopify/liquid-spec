@@ -7,18 +7,20 @@ optional: true
 
 # Shopify Theme Filters
 
-The theme benchmark templates (`specs/benchmarks/theme_*.yml`) use Shopify-specific filters and
-tags that are not part of core Liquid. This document provides a complete reference implementation
-in Ruby that can serve as pseudocode for implementing these in any language.
+The default benchmark templates are intentionally portable and do not require Shopify
+filters. Optional Shopify theme suites still exercise filters and tags that are not part
+of core Liquid. This document provides a reference implementation in Ruby that can serve
+as pseudocode when an adapter deliberately targets that Shopify-specific surface.
 
-These are required when your adapter declares `features: [:shopify_filters]`.
+These helpers apply to specs tagged `shopify_filters`; they are not required for
+`liquid-spec bench`.
 
 ---
 
 ## Complete Reference Implementation
 
-The following Ruby module implements all required filters. Register it with your Liquid
-environment to pass the `shopify_helpers.yml` specs and run the theme benchmarks.
+The following Ruby module illustrates the filter behavior. Register equivalent helpers
+only when running Shopify-specific suites.
 
 ```ruby
 # Reference implementation of Shopify theme filters.

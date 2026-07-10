@@ -1,9 +1,8 @@
 ---
 _metadata:
-  hint: Real Shopify Dream theme benchmark — requires shopify_filters feature
-  doc: implementers/shopify-theme-filters.md
-  features:
-    - shopify_filters
+  hint: |
+    Shopify-shaped Dream theme layout benchmark expressed with portable Liquid.
+    Asset paths use standard string filters, so no Shopify runtime is required.
   data_files:
     - _data/theme_database.yml
 specs:
@@ -19,7 +18,7 @@ specs:
       <title>{{ page_title }}{% if page_title %} - {% endif %}{{ shop.name }}</title>
 
       <link rel="canonical" href="{{ canonical_url }}">
-      <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+      <link rel="stylesheet" href="{{ 'theme.css' | prepend: '/assets/' }}">
 
       {{ content_for_header }}
     </head>
@@ -108,7 +107,7 @@ specs:
         </footer>
       </div>
 
-      <script src="{{ 'theme.js' | asset_url }}" defer></script>
+      <script src="{{ 'theme.js' | prepend: '/assets/' }}" defer></script>
     </body>
     </html>
   environment:

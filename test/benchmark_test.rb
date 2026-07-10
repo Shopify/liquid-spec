@@ -3,12 +3,30 @@
 require_relative "test_helper"
 require "liquid/spec/cli/benchmark"
 require "liquid/spec/cli/fork_benchmark"
+require "liquid/spec/suite"
 
 class BenchmarkTest < Minitest::Test
   Benchmark = Liquid::Spec::CLI::Benchmark
   ForkBenchmark = Liquid::Spec::CLI::ForkBenchmark
 
   FakeSpec = Struct.new(:name)
+
+  def test_shopify_shaped_benchmarks_use_only_portable_liquid
+    suite = Liquid::Spec::Suite.find(:benchmarks)
+    specs = Liquid::Spec::SpecLoader.load_suite(suite).select do |spec|
+      %w[shopify_theme_full_page shopify_theme_product_page].include?(spec.name)
+    end
+
+    assert_equal 2, specs.size
+    specs.each do |spec|
+      source = ([spec.template] + spec.raw_filesystem.values).join("\n")
+      assert_empty spec.features.grep(/shopify/), "#{spec.name} should not require Shopify features"
+      refute_match(/\|\s*(?:asset_url|product_img_url|money|handle)\b/, source,
+        "#{spec.name} should not use Shopify-only filters")
+      refute_match(/\{%[-]?\s*(?:schema|style|section|paginate|form)\b/, source,
+        "#{spec.name} should not use Shopify-only tags")
+    end
+  end
 
   def test_compact_preserves_sub_microsecond_precision_and_integer_ns
     value = {
