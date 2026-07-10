@@ -265,7 +265,7 @@ LiquidSpec.dump_artifact do |ctx|
   ctx[:template].to_artifact
 end
 
-# Called in a runtime-loaded, template-cold fork that has the bytes but no source.
+# Called with the artifact bytes and no source recompilation.
 # Restore all adapter state expected by the regular LiquidSpec.render hook.
 LiquidSpec.load_artifact do |ctx, bytes, _options|
   ctx[:template] = MyLiquid::Artifact.load(bytes)
@@ -287,10 +287,11 @@ The contract is deliberately production-oriented:
    `render` hook for every call; they are not part of the artifact.
 
 With both hooks, `--bench` validates the dump → load → render roundtrip, reports
-raw artifact bytes and steady-state load diagnostics, and measures the atomic
-artifact-load + first-render workflow in 30 forked children. The parent runtime
-is loaded but has never seen the benchmark template, and fork/IPC work is outside
-the timer. This models a shared artifact fetched into memory in another process.
+raw artifact bytes and steady-state load diagnostics, and measures atomic source
+compile + first-render and artifact-load + first-render workflows with 10
+interleaved samples in the adapter process. Each sample invokes compile or load
+before its first render, but process-level runtime, JIT, and global caches remain
+warm. The harness intentionally does not include process startup or IPC.
 
 `--bench` warns when either hook is missing because artifact size and
 load+first-render results will be omitted. Implementations without a persistent

@@ -171,16 +171,16 @@ module LiquidSpec
     # the same implementation. Include all compile-time state needed by load.
     # Block receives ctx and must return a binary-safe String.
     #
-    # Declaring BOTH artifact hooks enables payload-size and runtime-loaded,
-    # template-cold load+first-render benchmarks. --bench warns when either is
-    # absent because those production-path measurements would otherwise vanish.
+    # Declaring BOTH artifact hooks enables payload-size, steady-state load,
+    # and same-process load+first-render benchmarks. --bench warns when either
+    # is absent because those production-path measurements would otherwise vanish.
     def dump_artifact(&block)
       @dump_artifact_block = block
     end
 
-    # OPTIONAL: import bytes produced by dump_artifact in a process that has
-    # loaded the implementation but has never seen this template or its source.
-    # Restore every adapter-context value that the regular render hook needs.
+    # OPTIONAL: import bytes produced by dump_artifact without recompiling the
+    # source. Restore every adapter-context value that the regular render hook
+    # needs.
     #
     # Block receives ctx, artifact bytes, and the runtime options Hash that the
     # following render will receive. It must leave ctx ready for the normal

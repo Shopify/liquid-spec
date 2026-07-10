@@ -36,14 +36,11 @@ class AdapterArtifactTest < Minitest::Test
     refute LiquidSpec.artifact_capable?
   end
 
-  def test_direct_adapters_support_fork_isolated_measurements
-    assert Runner.send(:fork_benchmark_supported?)
-  end
+  def test_json_rpc_adapter_keeps_transport_inclusive_timer_scope
+    refute Runner.send(:json_rpc_adapter?)
 
-  def test_json_rpc_adapters_do_not_claim_fork_isolated_measurements
     LiquidSpec.ctx[:adapter] = Liquid::Spec::JsonRpc::Adapter.allocate
-
-    refute Runner.send(:fork_benchmark_supported?)
+    assert Runner.send(:json_rpc_adapter?)
   end
 
   def test_complete_artifact_protocol_is_silent

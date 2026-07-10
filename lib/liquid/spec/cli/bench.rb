@@ -111,7 +111,7 @@ module Liquid
             unless jsonl_mode
               puts ""
               puts "\e[1;36m◆ LIQUID BENCH · GRID\e[0m"
-              puts "\e[2m  #{adapter_names.size} engines  ·  collecting isolated runs  ·  lower is better\e[0m"
+              puts "\e[2m  #{adapter_names.size} engines  ·  collecting benchmark runs  ·  lower is better\e[0m"
               puts ""
             end
 
@@ -136,9 +136,10 @@ module Liquid
               end
 
               # Run with JSONL to stdout, capture it
-              output = Dir.chdir(gem_root) {
-                IO.popen(env, cmd.map(&:to_s), err: File::NULL, &:read)
-              }
+              output, process_status = Dir.chdir(gem_root) do
+                captured = IO.popen(env, cmd.map(&:to_s), err: File::NULL, &:read)
+                [captured, $?]
+              end
 
               specs = []
               metadata = nil
@@ -152,6 +153,14 @@ module Liquid
                 metadata = data if data[:type] == "run_metadata"
                 specs << data if (data[:type] == "spec" || data[:type] == "result") && data[:status] == "success"
               end
+              begin
+                validate_adapter_subprocess!(adapter.name, process_status, metadata)
+              rescue RuntimeError => error
+                print "\r\e[2K" unless jsonl_mode
+                warn "Error: #{error.message}"
+                exit(1)
+              end
+
               results_by_adapter[adapter.name] = specs
               metadata_by_adapter[adapter.name] = metadata
               profile_dirs << [adapter.name, profile_dir] if profile_dir && Dir.exist?(profile_dir)
@@ -320,7 +329,26 @@ module Liquid
               "LIQUID_SPEC_LOCAL_DIR" => Dir.pwd,
               "LIQUID_SPEC_INTERNAL_BENCH" => "1",
             }
-            Dir.chdir(gem_root) { system(env, *cmd) }
+            success = Dir.chdir(gem_root) { system(env, *cmd) }
+            return if success
+
+            status = $?
+            warn "Error: benchmark adapter exited with #{status&.exitstatus || status.inspect}"
+            exit(1)
+          end
+
+          def validate_adapter_subprocess!(adapter_name, status, metadata)
+            unless status&.success?
+              outcome = if status&.signaled?
+                "signal #{status.termsig}"
+              else
+                "status #{status&.exitstatus || "unknown"}"
+              end
+              raise "benchmark adapter #{adapter_name} exited with #{outcome}"
+            end
+            return if metadata
+
+            raise "benchmark adapter #{adapter_name} produced no run metadata"
           end
 
           # Scan an adapter file for LiquidSpec.rubyopt declarations

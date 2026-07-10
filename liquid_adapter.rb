@@ -62,7 +62,7 @@ end
 # Optional compiled-artifact protocol
 # -----------------------------------
 # Implement BOTH hooks only if compiled templates can be persisted and loaded
-# without source in another process. They let --bench measure the production
+# without recompiling their source. They let --bench measure the production
 # artifact-cache-hit path: bytes already fetched -> load -> first render.
 #
 # LiquidSpec.dump_artifact do |ctx|

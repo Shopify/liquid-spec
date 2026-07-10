@@ -15,7 +15,10 @@ module Liquid
       #   5. Timed phase: use the engine's normal GC policy and clock batches
       #      of operations to minimize timer overhead. Environment copies are
       #      prepared outside the timer.
-      #   6. Preserve raw integer-nanosecond batches for downstream analysis.
+      #   6. Atomic workflow samples: compile+first-render and, when available,
+      #      artifact-load+first-render in the same warmed process. Samples are
+      #      interleaved to limit ordering bias and do not include forking.
+      #   7. Preserve raw integer-nanosecond batches for downstream analysis.
       #
       # Summary times remain in seconds for compatibility with existing
       # reports. Raw batch measurements use integer nanoseconds.
@@ -25,6 +28,7 @@ module Liquid
         TARGET_BATCH_SECS     = 0.02
         MAX_BATCH_SIZE        = 2_000
         MAX_ITERS             = 500_000
+        WORKFLOW_SAMPLES       = 10
 
         class << self
           # Run a full benchmark for one spec.
@@ -37,11 +41,11 @@ module Liquid
           # @param load_proc    [Proc, nil] ->(blob) { load artifact → renderable template }
           # @return [Hash] result with all metrics, or { error: Exception }
           #
-          # When dump_proc AND load_proc are given, this same-process diagnostic
-          # stage reports payload bytes, first load/render observations, and
-          # steady-state load time/allocations. Canonical source compile+render
-          # and artifact load+first-render workflows are measured separately by
-          # ForkBenchmark, where every sample has isolated template caches.
+          # Atomic source compile+first-render samples run in this process after
+          # warmup. When dump_proc AND load_proc are given, the same stage also
+          # reports payload bytes, load diagnostics, and interleaved atomic
+          # artifact load+first-render samples. These are process-warm workflow
+          # measurements, not process-isolated cold-start measurements.
           def run(compile_proc:, render_proc:, env_proc:, duration:, dump_proc: nil, load_proc: nil)
             artifact = !dump_proc.nil? && !load_proc.nil?
             half = artifact ? duration / 3.0 : duration / 2.0
@@ -103,9 +107,18 @@ module Liquid
               GC.start
               load_allocs = measure_allocs(3) { load_proc.call(blob) }
               load_stats = timed_loop(half) { load_proc.call(blob) }
-              # Leave ctx[:template] in the compiled (non-loaded) state
-              compile_proc.call
             end
+
+            # ── 8. Same-process atomic workflows ─────────────────────────
+            workflows = measure_workflows(
+              compile_proc: compile_proc,
+              render_proc: render_proc,
+              env_proc: env_proc,
+              load_proc: load_proc,
+              blob: blob,
+            )
+            # Leave ctx[:template] in the compiled (non-loaded) state.
+            compile_proc.call
 
             result = build_result(
               compile_stats, render_stats,
@@ -113,6 +126,7 @@ module Liquid
               cold_1, cold_10,
               yjit_delta(yjit_before, yjit_after, render_stats[:iters]),
             )
+            result.merge!(workflows)
             if artifact
               result.merge!(
                 artifact_bytes:         payload_bytes,
@@ -214,6 +228,59 @@ module Liquid
               GC.stat(:total_allocated_objects) - before
             end
             counts.sort[n / 2]
+          end
+
+          def measure_workflows(compile_proc:, render_proc:, env_proc:, load_proc:, blob:)
+            source_samples = []
+            artifact_samples = []
+            source_sample = lambda do
+              env = env_proc.call
+              source_samples << time_once_ns do
+                compile_proc.call
+                render_proc.call(env)
+              end
+            end
+            artifact_sample = lambda do
+              env = env_proc.call
+              artifact_samples << time_once_ns do
+                load_proc.call(blob)
+                render_proc.call(env)
+              end
+            end
+
+            WORKFLOW_SAMPLES.times do |index|
+              # Alternate which lane runs first so neither consistently benefits
+              # from being measured later in the process.
+              if load_proc && index.odd?
+                artifact_sample.call
+                source_sample.call
+              else
+                source_sample.call
+                artifact_sample.call if load_proc
+              end
+            end
+
+            workflow_result("compile_render", source_samples).merge(
+              workflow_result("artifact_load_render", artifact_samples),
+            )
+          end
+
+          def workflow_result(prefix, samples_ns)
+            return {} if samples_ns.empty?
+
+            seconds = samples_ns.map { |ns| ns / 1_000_000_000.0 }
+            summary = stats(seconds)
+            {
+              :"#{prefix}_mean" => summary[:mean],
+              :"#{prefix}_median" => summary[:median],
+              :"#{prefix}_min" => summary[:min],
+              :"#{prefix}_max" => summary[:max],
+              :"#{prefix}_stddev" => summary[:stddev],
+              :"#{prefix}_p95" => summary[:p95],
+              :"#{prefix}_samples_ns" => samples_ns,
+              :"#{prefix}_freshness" => prefix == "compile_render" ?
+                "same_process_compile_each_sample" : "same_process_load_each_sample",
+            }
           end
 
           def build_result(cs, rs, ca, ra, cold_1, cold_10, yjit)

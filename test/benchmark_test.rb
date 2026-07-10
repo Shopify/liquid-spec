@@ -2,14 +2,10 @@
 
 require_relative "test_helper"
 require "liquid/spec/cli/benchmark"
-require "liquid/spec/cli/fork_benchmark"
 require "liquid/spec/suite"
 
 class BenchmarkTest < Minitest::Test
   Benchmark = Liquid::Spec::CLI::Benchmark
-  ForkBenchmark = Liquid::Spec::CLI::ForkBenchmark
-
-  FakeSpec = Struct.new(:name)
 
   def test_shopify_shaped_benchmarks_use_only_portable_liquid
     suite = Liquid::Spec::Suite.find(:benchmarks)
@@ -59,43 +55,25 @@ class BenchmarkTest < Minitest::Test
     assert_equal stats[:iters], stats[:batches].sum { |sample| sample[:iterations] }
   end
 
-  def test_fork_benchmark_propagates_child_errors
-    spec = FakeSpec.new("failure")
-    benchmark = ForkBenchmark.new([spec], samples: 1) do |_spec, _operation, _blob|
-      raise ArgumentError, "adapter failed"
-    end
+  def test_workflow_samples_are_atomic_and_stay_in_process
+    process_ids = []
+    rendered_templates = []
+    template = nil
 
-    error = assert_raises(RuntimeError) { benchmark.measure(spec, artifact: false) }
-    assert_includes error.message, "ArgumentError: adapter failed"
-  ensure
-    benchmark&.close
-  end
+    result = Benchmark.send(
+      :measure_workflows,
+      compile_proc: -> { process_ids << Process.pid; template = :source },
+      render_proc: ->(_env) { process_ids << Process.pid; rendered_templates << template },
+      env_proc: -> { {} },
+      load_proc: ->(blob) { process_ids << Process.pid; template = blob },
+      blob: :artifact,
+    )
 
-  def test_fork_benchmark_isolates_every_workflow_sample
-    spec = FakeSpec.new("isolated")
-    process_local_calls = 0
-    large_artifact = "a" * 1_000_000
-    benchmark = ForkBenchmark.new([spec], samples: 3) do |_spec, operation, blob|
-      case operation
-      when :build_artifact
-        large_artifact
-      when :compile_render, :artifact_load_render
-        process_local_calls += 1
-        started = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
-        output = "#{blob ? 'artifact' : 'source'}:#{process_local_calls}"
-        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond) - started
-        { elapsed_ns: [elapsed, 1].max, output: output }
-      end
-    end
-
-    result = benchmark.measure(spec, artifact: true)
-
-    assert_equal 3, result[:compile_render_samples_ns].size
-    assert_equal 3, result[:artifact_load_render_samples_ns].size
-    assert_equal "source:1", result[:compile_render_output]
-    assert_equal "artifact:1", result[:artifact_load_render_output]
-    assert_equal large_artifact.bytesize, result[:artifact_bytes]
-  ensure
-    benchmark&.close
+    assert_equal Benchmark::WORKFLOW_SAMPLES, result[:compile_render_samples_ns].size
+    assert_equal Benchmark::WORKFLOW_SAMPLES, result[:artifact_load_render_samples_ns].size
+    assert_equal [:source, :artifact], rendered_templates.uniq
+    assert_equal [Process.pid], process_ids.uniq
+    assert_equal "same_process_compile_each_sample", result[:compile_render_freshness]
+    assert_equal "same_process_load_each_sample", result[:artifact_load_render_freshness]
   end
 end

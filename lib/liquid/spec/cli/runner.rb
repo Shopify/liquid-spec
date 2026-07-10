@@ -4,7 +4,6 @@ require_relative "adapter_dsl"
 require_relative "features"
 require_relative "benchmark"
 require_relative "config"
-require_relative "fork_benchmark"
 require_relative "../time_freezer"
 require "json"
 require "set"
@@ -663,14 +662,6 @@ module Liquid
             end
 
             warn_missing_artifact_protocol(adapter_name)
-            fork_benchmark = if fork_benchmark_supported?
-              ForkBenchmark.new(suite_runs.flat_map(&:last)) do |spec, operation, blob|
-                run_forked_benchmark_operation(spec, operation, blob)
-              end
-            else
-              warn "[liquid-spec] WARNING: #{adapter_name} uses JSON-RPC; fork-isolated workflows are omitted because the external engine process would be shared across samples. Existing parse/render timings remain transport-inclusive."
-              nil
-            end
 
             # Write run metadata
             meta = build_run_metadata(run_id, adapter_name)
@@ -698,7 +689,7 @@ module Liquid
                 puts "\e[1;36m◆ LIQUID BENCH\e[0m  \e[1m#{adapter_name}\e[0m"
                 case_label = suite_specs.size == 1 ? "case" : "cases"
                 puts "\e[2m  #{suite.name}  ·  Ruby #{RUBY_VERSION}  ·  #{jit_label}  ·  #{suite_specs.size} #{case_label}  ·  #{duration_per_spec}s budget/case\e[0m"
-                puts "\e[2m  source-cold  ↔  artifact-cold  ↔  resident\e[0m"
+                puts "\e[2m  source → first  ↔  artifact → first  ↔  resident\e[0m"
 
                 # Pre-run: compile+render every spec once, collect suite-wide stats
                 print_prerun_stats(suite_specs, config)
@@ -714,7 +705,7 @@ module Liquid
                   $stdout.flush
                 end
 
-                result = run_benchmark_spec(spec, config, duration_per_spec, fork_benchmark)
+                result = run_benchmark_spec(spec, config, duration_per_spec)
                 all_results << { spec: spec, result: result }
 
                 if jsonl_mode
@@ -745,8 +736,6 @@ module Liquid
               puts ""
               puts benchmark_log_path
             end
-          ensure
-            fork_benchmark&.close
           end
 
           # ── Pre-run stats (one pass through all specs) ───────────────
@@ -829,17 +818,17 @@ module Liquid
 
             if r[:compile_render_mean]
               puts ""
-              puts "   \e[2mCOLD WORKFLOWS  ·  runtime loaded  ·  target unseen  ·  lower is better\e[0m"
+              puts "   \e[2mWORKFLOWS  ·  same process  ·  compile/load per sample  ·  lower is better\e[0m"
               print_benchmark_metric(
                 "source → first render", r[:compile_render_mean], r[:compile_render_stddev],
                 samples: r[:compile_render_samples_ns], sample_unit: :ns, color: 33,
-                count_label: "forks",
+                count_label: "samples",
               )
               if r[:artifact_load_render_mean]
                 print_benchmark_metric(
                   "artifact → first render", r[:artifact_load_render_mean], r[:artifact_load_render_stddev],
                   samples: r[:artifact_load_render_samples_ns], sample_unit: :ns, color: 35,
-                  count_label: "forks",
+                  count_label: "samples",
                 )
                 ratio = r[:compile_render_mean] / r[:artifact_load_render_mean]
                 if ratio >= 1.05
@@ -1046,10 +1035,10 @@ module Liquid
             nil
           end
 
-          def fork_benchmark_supported?
-            return true unless defined?(Liquid::Spec::JsonRpc::Adapter)
+          def json_rpc_adapter?
+            return false unless defined?(Liquid::Spec::JsonRpc::Adapter)
 
-            LiquidSpec.ctx.values.none? { |value| value.is_a?(Liquid::Spec::JsonRpc::Adapter) }
+            LiquidSpec.ctx.values.any? { |value| value.is_a?(Liquid::Spec::JsonRpc::Adapter) }
           end
 
           def warn_missing_artifact_protocol(adapter_name)
@@ -1063,47 +1052,10 @@ module Liquid
             else
               "#{adapter_name} does not declare compiled-artifact support."
             end
-            warn "[liquid-spec] WARNING: #{warning} Artifact size and runtime-loaded, template-cold load+first-render benchmarks will be omitted. See README.md#optional-compiled-artifact-protocol."
+            warn "[liquid-spec] WARNING: #{warning} Artifact size and load+first-render benchmarks will be omitted. See README.md#optional-compiled-artifact-protocol."
           end
 
-          def run_forked_benchmark_operation(spec, operation, blob)
-            filesystem = spec.instantiate_filesystem
-            compile_options = {
-              line_numbers: true,
-              error_mode: :strict,
-              file_system: filesystem,
-              template_name: spec.template_name,
-            }.compact
-            render_options = {
-              registers: build_registers(spec, filesystem),
-              strict_errors: false,
-            }.compact
-            context = LiquidSpec.adapter_context(spec, adapter_timeout: nil)
-            environment = deep_copy(spec.instantiate_environment)
-            GC.enable
-
-            case operation
-            when :build_artifact
-              LiquidSpec.do_compile(spec.template, compile_options, context)
-              LiquidSpec.do_dump_artifact(context)
-            when :compile_render
-              started_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
-              LiquidSpec.do_compile(spec.template, compile_options, context)
-              output = LiquidSpec.do_render(environment, render_options, context)
-              elapsed_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond) - started_ns
-              { elapsed_ns: elapsed_ns, output: output }
-            when :artifact_load_render
-              started_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
-              LiquidSpec.do_load_artifact(blob, render_options, context)
-              output = LiquidSpec.do_render(environment, render_options, context)
-              elapsed_ns = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond) - started_ns
-              { elapsed_ns: elapsed_ns, output: output }
-            else
-              raise ArgumentError, "unknown forked benchmark operation: #{operation.inspect}"
-            end
-          end
-
-          def run_benchmark_spec(spec, _config, duration_seconds, fork_benchmark)
+          def run_benchmark_spec(spec, _config, duration_seconds)
             # Pre-compile the template
             filesystem = spec.instantiate_filesystem
             compile_options = {
@@ -1168,23 +1120,6 @@ module Liquid
               end
             end
 
-            isolated = fork_benchmark&.measure(spec, artifact: LiquidSpec.artifact_capable?)
-            expected_output = spec.expected || actual
-            if isolated && isolated[:compile_render_output] != expected_output
-              return {
-                name: spec.name,
-                iterations: 0,
-                error: RuntimeError.new("Forked compile+render mismatch:\n  Expected: #{expected_output.inspect[0..100]}\n  Got: #{isolated[:compile_render_output].inspect[0..100]}"),
-              }
-            end
-            if isolated&.dig(:artifact_load_render_output) && isolated[:artifact_load_render_output] != expected_output
-              return {
-                name: spec.name,
-                iterations: 0,
-                error: RuntimeError.new("Forked artifact load+render mismatch:\n  Expected: #{expected_output.inspect[0..100]}\n  Got: #{isolated[:artifact_load_render_output].inspect[0..100]}"),
-              }
-            end
-
             # Use shared benchmark infrastructure. env_proc is invoked outside
             # timed render regions; templates may mutate top-level assigns.
             result = Benchmark.run(
@@ -1200,58 +1135,12 @@ module Liquid
               return { name: spec.name, iterations: 0, error: result[:error] }
             end
 
-            add_isolated_workflow_results(result, isolated) if isolated
-
             result.merge(
               name: spec.name,
               iterations: (result[:compile_iters] || 0) + (result[:render_iters] || 0),
               compile_iterations: result[:compile_iters],
               render_iterations: result[:render_iters],
             )
-          end
-
-          def add_isolated_workflow_results(result, isolated)
-            compile = summarize_ns_samples(isolated.fetch(:compile_render_samples_ns))
-            result.merge!(
-              compile_render_mean: compile[:mean],
-              compile_render_median: compile[:median],
-              compile_render_min: compile[:min],
-              compile_render_max: compile[:max],
-              compile_render_stddev: compile[:stddev],
-              compile_render_p95: compile[:p95],
-              compile_render_samples_ns: isolated[:compile_render_samples_ns],
-              compile_render_freshness: "forked_runtime_loaded_source_cold",
-            )
-
-            return unless isolated[:artifact_load_render_samples_ns]
-
-            loaded = summarize_ns_samples(isolated[:artifact_load_render_samples_ns])
-            result.merge!(
-              artifact_load_render_mean: loaded[:mean],
-              artifact_load_render_median: loaded[:median],
-              artifact_load_render_min: loaded[:min],
-              artifact_load_render_max: loaded[:max],
-              artifact_load_render_stddev: loaded[:stddev],
-              artifact_load_render_p95: loaded[:p95],
-              artifact_load_render_samples_ns: isolated[:artifact_load_render_samples_ns],
-              artifact_load_render_freshness: "forked_runtime_loaded_artifact_cold",
-            )
-          end
-
-          def summarize_ns_samples(samples)
-            seconds = samples.map { |ns| ns / 1_000_000_000.0 }
-            sorted = seconds.sort
-            mean = seconds.sum / seconds.size
-            variance = seconds.sum { |value| (value - mean)**2 } / seconds.size
-            p95_index = ((sorted.size - 1) * 0.95).round
-            {
-              mean: mean,
-              median: sorted[sorted.size / 2],
-              min: sorted.first,
-              max: sorted.last,
-              stddev: Math.sqrt(variance),
-              p95: sorted[p95_index],
-            }
           end
 
           def format_number(num)
@@ -1448,8 +1337,11 @@ module Liquid
               group_key: [adapter_name, RUBY_VERSION, jit_info[:engine]],
 
               benchmark_clock: "monotonic_ns",
-              steady_state_timer_scope: fork_benchmark_supported? ? "in_process_adapter_hook" : "controller_transport_inclusive",
-              forked_workflows: fork_benchmark_supported?,
+              steady_state_timer_scope: json_rpc_adapter? ? "controller_transport_inclusive" : "in_process_adapter_hook",
+              workflow_execution_model: "same_process",
+              workflow_process_isolated: false,
+              workflow_samples: Benchmark::WORKFLOW_SAMPLES,
+              forked_workflows: false,
               artifact_protocol: LiquidSpec.artifact_capable?,
               liquid_spec_version: Liquid::Spec::VERSION,
             }

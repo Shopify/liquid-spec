@@ -59,6 +59,20 @@ class RunsTest < Minitest::Test
     assert_includes command, adapter
   end
 
+  def test_bench_rejects_failed_or_silent_adapter_subprocesses
+    failed = fake_status(success: false, exitstatus: 7)
+    error = assert_raises(RuntimeError) do
+      Liquid::Spec::CLI::Bench.send(:validate_adapter_subprocess!, "broken", failed, { type: "run_metadata" })
+    end
+    assert_includes error.message, "broken exited with status 7"
+
+    successful = fake_status(success: true, exitstatus: 0)
+    error = assert_raises(RuntimeError) do
+      Liquid::Spec::CLI::Bench.send(:validate_adapter_subprocess!, "silent", successful, nil)
+    end
+    assert_includes error.message, "silent produced no run metadata"
+  end
+
   def test_same_transport_does_not_warn
     Dir.mktmpdir do |dir|
       first = File.join(dir, "first.rb")
@@ -75,6 +89,16 @@ class RunsTest < Minitest::Test
         Liquid::Spec::CLI::Bench.warn_mixed_transport_comparison(runs)
       end
       assert_empty stderr
+    end
+  end
+
+  private
+
+  def fake_status(success:, exitstatus:)
+    Object.new.tap do |status|
+      status.define_singleton_method(:success?) { success }
+      status.define_singleton_method(:signaled?) { false }
+      status.define_singleton_method(:exitstatus) { exitstatus }
     end
   end
 end
