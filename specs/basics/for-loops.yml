@@ -53,6 +53,19 @@ specs:
     collections have independent continue positions.
 
 # =============================================================================
+# reversed with named attributes (Complexity 190)
+# =============================================================================
+
+- name: for_reversed_precedes_limit
+  template: "{% for i in (1..4) reversed limit: 2 %}{{ i }}{% endfor %}"
+  expected: "21"
+  complexity: 190
+  hint: |
+    Parse `reversed` immediately after the collection expression and before
+    named attributes such as `limit:` and `offset:`. Apply the limit to select
+    the segment, then iterate that segment in reverse order (1,2 becomes 2,1).
+
+# =============================================================================
 # parentloop (Complexity 190)
 # =============================================================================
 

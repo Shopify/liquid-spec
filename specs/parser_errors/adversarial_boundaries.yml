@@ -1,0 +1,64 @@
+---
+# Curated from differential mutation against liquid-c 4.2.0. These cases pin
+# strict2 grammar boundaries where liquid-c accepted malformed syntax that the
+# reference parser rejects. Each case has been reduced to one parser rule.
+
+- name: output_open_trim_marker_must_be_adjacent_to_delimiter
+  template: |-
+    {{
+    - 'hi' }}
+  error_mode: strict2
+  errors:
+    parse_error:
+      - SyntaxError
+      - not a valid expression
+      - dash
+  complexity: 500
+  hint: |
+    Recognize an opening whitespace-control marker only when the dash is
+    adjacent to the delimiter (`{{-`). If whitespace or a newline separates
+    them, the dash belongs to the expression and strict2 parsing must reject it.
+
+- name: tag_close_trim_marker_must_be_adjacent_to_delimiter
+  template: |-
+    {% assign x = 'hi' -
+    %}
+  error_mode: strict2
+  errors:
+    parse_error:
+      - SyntaxError
+      - Expected end_of_string
+      - found dash
+  complexity: 500
+  hint: |
+    Recognize a closing tag trim marker only as the contiguous sequence `-%}`.
+    Do not skip a newline between the dash and `%}` and reinterpret the dash as
+    whitespace control; in strict2 mode it is invalid trailing tag markup.
+
+- name: filter_arguments_require_colon_not_comma_after_filter_name
+  template: "{{ 'hi' | append, '!' }}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - SyntaxError
+      - Expected end_of_string
+      - found comma
+  complexity: 500
+  hint: |
+    Filter arguments start with a colon (`append: '!'`). A comma may separate
+    later arguments, but it cannot follow the filter name directly. Reject this
+    in the strict2 parser rather than invoking the filter with malformed args.
+
+- name: for_reversed_must_precede_named_attributes
+  template: "{% for i in (1..3) limit: 2 reversed %}{{ i }}{% endfor %}"
+  error_mode: strict2
+  errors:
+    parse_error:
+      - SyntaxError
+      - Invalid attribute in for loop
+      - limit and offset
+  complexity: 500
+  hint: |
+    Parse `reversed` immediately after the collection expression, before named
+    attributes: `reversed limit: 2` is valid, but `limit: 2 reversed` is not.
+    Once named attributes begin, strict2 accepts only `limit` and `offset`.

@@ -310,10 +310,10 @@ out of regular runs.
 
 | Suite | Tests | Description |
 |-------|-------|-------------|
-| **basics** | 940 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
+| **basics** | 941 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
 | **liquid_ruby** | 2,097 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
-| **parser_errors** | 1,901 | Strict parser error compatibility and mutation matrices |
+| **parser_errors** | 1,905 | Strict parser error compatibility and mutation matrices |
 | **partials** | 12 | Include/render focused compatibility specs and timings |
 | **benchmarks** | 10 | Storefront, dynamic-partial, `{% liquid %}`, and Shopify-theme performance cases |
 | **shopify_production_recordings** | 2,260 | Recorded behavior from Shopify's production Liquid compiler |
