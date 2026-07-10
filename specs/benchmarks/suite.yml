@@ -9,7 +9,7 @@ default_iteration_seconds: 5
 
 hint: |
   These specs are designed for performance measurement.
-  Run with: liquid-spec my_adapter.rb -s benchmarks --bench
+  Run with: liquid-spec bench my_adapter.rb
 
 features:
 

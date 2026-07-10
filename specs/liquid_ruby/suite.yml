@@ -8,7 +8,7 @@ hint: |
   These specs test core Liquid functionality from the reference implementation.
   Failures indicate missing or incorrect Liquid behavior.
 
-# No required_features at suite level - allows JSON-RPC adapters to run
+# No suite-level features requirement, so JSON-RPC adapters can run portable specs.
 # Individual specs that need Ruby-specific drops declare features: [ruby_drops].
 
 # Feature documentation:

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "rbconfig"
 require_relative "benchmark"
 require_relative "config"
 require_relative "runs"
@@ -33,6 +34,8 @@ module Liquid
             --all                 Run all builtin adapters
             --adapter=PATH        Add a specific adapter
             --adapters=LIST       Comma-separated adapter list
+            --profile             Write StackProf CPU/allocation profiles to /tmp
+            --jsonl               Stream machine-readable benchmark events
             -v, --verbose         Verbose output
             -h, --help            Show this help
 
@@ -98,6 +101,8 @@ module Liquid
             gem_root = File.expand_path("../../../../..", __FILE__)
             reports_dir = runs.reports_dir
             results_by_adapter = {}
+            profile_dirs = []
+            profile_requested = pass_through.include?("--profile")
             adapter_names = runs.adapter_names
             pad = adapter_names.map(&:size).max
 
@@ -114,7 +119,16 @@ module Liquid
             runs.adapters.each do |adapter|
               cmd = build_cmd(adapter.path, pass_through + ["--jsonl"])
               run_id = Config.generate_run_id
-              env = { "LIQUID_SPEC_RUN_ID" => run_id, "LIQUID_SPEC_LOCAL_DIR" => invoked_from }
+              env = {
+                "LIQUID_SPEC_RUN_ID" => run_id,
+                "LIQUID_SPEC_LOCAL_DIR" => invoked_from,
+                "LIQUID_SPEC_INTERNAL_BENCH" => "1",
+              }
+              if profile_requested
+                safe_adapter_name = adapter.name.gsub(/[^a-zA-Z0-9_.-]/, "_")
+                profile_dir = "/tmp/liquid-spec-profile-#{run_id}-#{safe_adapter_name}"
+                env["LIQUID_SPEC_PROFILE_DIR"] = profile_dir
+              end
 
               unless jsonl_mode
                 print "  \e[2m⏱\e[0m  #{adapter.name} …"
@@ -137,12 +151,19 @@ module Liquid
                 specs << data if (data[:type] == "spec" || data[:type] == "result") && data[:status] == "success"
               end
               results_by_adapter[adapter.name] = specs
+              profile_dirs << [adapter.name, profile_dir] if profile_dir && Dir.exist?(profile_dir)
 
               unless jsonl_mode
                 print "\r\e[2K"
                 jit = specs.first&.dig(:jit) || "?"
                 puts "  \e[32m✓\e[0m  #{adapter.name} (#{jit}, #{specs.size} specs)"
               end
+            end
+
+            if profile_dirs.any? && !jsonl_mode
+              puts ""
+              puts "\e[1mStackProf profiles\e[0m"
+              profile_dirs.each { |name, dir| puts "  #{name}: #{dir}/" }
             end
 
             # ── Phase 2: Interleaved per-spec display ────────────────────
@@ -281,7 +302,10 @@ module Liquid
           private
 
           def build_cmd(adapter_path, extra_args)
-            cmd = ["bundle", "exec", "ruby"]
+            # Reuse the current Ruby process rather than resolving the gem's own
+            # development Gemfile. If liquid-spec was launched through Bundler,
+            # its environment is inherited and still selects the caller's bundle.
+            cmd = [RbConfig.ruby]
             # Pre-scan adapter for LiquidSpec.rubyopt declarations (e.g. "--yjit")
             rubyopt = scan_rubyopt(adapter_path)
             cmd += rubyopt if rubyopt.any?
@@ -293,7 +317,10 @@ module Liquid
 
           def exec_adapter(cmd)
             gem_root = File.expand_path("../../../../..", __FILE__)
-            env = { "LIQUID_SPEC_LOCAL_DIR" => Dir.pwd }
+            env = {
+              "LIQUID_SPEC_LOCAL_DIR" => Dir.pwd,
+              "LIQUID_SPEC_INTERNAL_BENCH" => "1",
+            }
             Dir.chdir(gem_root) { system(env, *cmd) }
           end
 

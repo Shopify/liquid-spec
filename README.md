@@ -264,8 +264,8 @@ LiquidSpec.load_artifact do |ctx, blob, options|
 end
 ```
 
-`--bench` then adds an artifact stage per spec: it verifies the
-dump → load → render roundtrip reproduces the compiled template's output,
+The core `liquid-spec bench ADAPTER` command then adds an artifact stage per spec: it
+verifies that the dump → load → render roundtrip reproduces the compiled template's output,
 and measures payload bytes, cold artifact load time, first render after a
 cold load, and steady-state load time/allocations (the compile-once →
 persist → cold load+render production path). Adapters without these hooks
@@ -276,9 +276,9 @@ are unaffected.
 Projects can ship their own spec/benchmark suites alongside their adapter:
 any `./specs/<name>/suite.yml` directory in the invoking project is
 discovered next to the gem's builtin suites and selected the same way
-(`-s <name>`). Set `timings: true` in the suite.yml to make it
-benchmarkable with `--bench`, and `default: false` to keep it out of
-regular runs.
+(`-s <name>`). Set `timings: true` in `suite.yml` to make it benchmarkable
+with `liquid-spec bench ADAPTER -s <name>`, and `default: false` to keep it
+out of regular runs.
 
 ## Test Suites
 
@@ -288,7 +288,8 @@ regular runs.
 | **liquid_ruby** | 2,097 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
 | **parser_errors** | 1,901 | Strict parser error compatibility and mutation matrices |
-| **partials** | 12 | Include/render focused compatibility specs |
+| **partials** | 12 | Include/render focused compatibility specs and timings |
+| **benchmarks** | 10 | Storefront, dynamic-partial, `{% liquid %}`, and Shopify-theme performance cases |
 | **shopify_production_recordings** | 2,260 | Recorded behavior from Shopify's production Liquid compiler |
 | **shopify_theme_dawn** | 26 | Real-world templates from [Shopify Dawn](https://github.com/Shopify/dawn) theme |
 
@@ -317,7 +318,8 @@ Each non-trivial spec includes a detailed `hint` explaining how the feature shou
 
 ### Feature-Based Suite Selection
 
-Suites run by default. Declare what your adapter can't handle to skip specific specs:
+Suites marked as default run unless you select one explicitly with `-s`. Declare what
+your adapter cannot handle to skip specs that require those capabilities:
 
 ```ruby
 LiquidSpec.configure do |config|
@@ -480,26 +482,25 @@ liquid-spec includes a benchmark suite for measuring and comparing implementatio
 Run benchmarks against a single adapter to measure its performance:
 
 ```bash
-liquid-spec bench examples/liquid_ruby.rb
+liquid-spec bench examples/liquid_ruby.rb -n leaderboard
 ```
 
-Output:
-```
-Benchmark: Benchmarks
-Duration: 5s per spec
+Abbreviated output:
+```text
+liquid_ruby — Benchmarks
+Ruby 4.x (no-jit) │ 1 specs │ 5s/spec
 
-  ✓ bench_product_listing
-    Compile: 92.305 µs ± 2.399 µs    (89.906 µs … 94.704 µs)  412 allocs
-    Render:  82.574 µs ± 2.437 µs    (80.137 µs … 85.011 µs)  156 allocs
-    Total:   174.879 µs    10245 runs, 568 allocs
+Benchmark 1/1: liquid_tag_leaderboard
+  Parse  (mean ± σ):  270µs ± 38µs   [893 allocs, 9.3k runs]
+  Render (mean ± σ):  564µs ± 116µs  [926 allocs, 4.4k runs]
+  Range  (min … max): 530µs … 3.79ms [4.4k runs]
+  Cold   (@1 / @10):  664µs / 618µs  (1.2x vs warm)
 
-  ✓ bench_shopping_cart
-    Compile: 262.659 µs ± 2.528 µs    1013 allocs
-    Render:  144.638 µs ± 1.081 µs    170 allocs
-    Total:   407.296 µs    8892 runs, 1183 allocs
+1 passed
 ```
 
-Benchmarks show allocation counts for each phase, helping identify memory-heavy operations. GC is disabled during timing to reduce measurement jitter.
+Benchmarks report parse/render distributions, allocation counts, cold-render behavior,
+and iteration totals. GC is disabled during timing to reduce measurement jitter.
 
 #### Multi-Adapter Performance Comparison
 
@@ -509,59 +510,49 @@ Compare performance across different implementations using the core `bench` comm
 liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax
 ```
 
-Each benchmark runs against all adapters, then a summary shows relative performance and allocation differences. When a comparison mixes inline adapters with JSON-RPC adapters, `bench` warns that subprocess and protocol overhead make the timings non-equivalent.
+Each benchmark runs against all adapters. The command prints their measurements together,
+then reports geometric-mean parse and render comparisons across common specs. When a
+comparison mixes inline adapters with JSON-RPC adapters, `bench` warns that subprocess
+and protocol overhead make the timings non-equivalent.
 
+```text
+Benchmark 1/10: storefront_product_page
+  liquid_ruby      Parse ...  Render ...
+  liquid_ruby_lax  Parse ...  Render ...
+  → liquid_ruby is 1.08x faster
+
+──────────────────────────────────────────────────────────────────────
+Comparison (10 common specs, reference: liquid_ruby)
+
+  Parse (geometric mean):
+    liquid_ruby is 1.05x faster than liquid_ruby_lax
+  Render (geometric mean):
+    liquid_ruby_lax ≈ liquid_ruby
 ```
-======================================================================
-SUMMARY
-======================================================================
-
-bench_product_listing
-  Compile: liquid_ruby_lax ran
-    1.08 ± 0.03 times faster than liquid_ruby
-  Compile allocs: liquid_ruby_lax (997)
-    +16 allocs for liquid_ruby (1013)
-  Render: liquid_ruby_lax ran
-    1.01 ± 0.03 times faster than liquid_ruby
-  Render allocs: liquid_ruby_lax (169)
-    +1 allocs for liquid_ruby (170)
-
-----------------------------------------------------------------------
-Overall
-  Compile:
-    liquid_ruby_lax ran 1.05x faster than liquid_ruby (geometric mean)
-  Render:
-    liquid_ruby ran 1.00x faster than liquid_ruby_lax (geometric mean)
-  Total allocations:
-    liquid_ruby_lax: 1166 allocs
-    liquid_ruby: 1183 allocs (+17)
-```
-
-The "Overall" section shows the geometric mean of ratios across all benchmarks, plus total allocation counts for comparing memory efficiency.
 
 #### Benchmark Specs
 
-The benchmark suite includes 11 realistic templates:
+The benchmark suite currently includes 10 realistic templates:
 
 | Benchmark | Description |
 |-----------|-------------|
-| `bench_product_listing` | E-commerce product grid with variants |
-| `bench_navigation_menu` | Nested navigation with dropdowns |
-| `bench_data_table` | Dynamic table rendering |
-| `bench_comment_thread` | Comment thread with nested replies |
-| `bench_multiplication_table` | 12×12 nested loops with forloop object |
-| `bench_sorted_list_with_pagination` | Sort, limit/offset, cycle, tablerow |
-| `bench_invoice_template` | Invoice with line items, discounts, tax |
-| `bench_blog_listing` | Blog posts with pagination, tags |
-| `bench_shopping_cart` | Cart with discounts, shipping logic |
-| `bench_user_directory` | Team directory grouped by department |
-| `bench_email_template` | Email with conditional sections |
+| `bench_dynamic_partials` | Data-selected partials, loops, and three levels of nested includes |
+| `bench_liquid_tag_inventory_report` | Inventory aggregation entirely inside a `{% liquid %}` block |
+| `bench_liquid_tag_leaderboard` | Nested-loop ranking and formatting in `{% liquid %}` syntax |
+| `bench_storefront_product_page` | Standard-Liquid product page with variants, reviews, and partials |
+| `bench_storefront_collection_page` | Standard-Liquid collection browsing and product grids |
+| `bench_storefront_cart_page` | Standard-Liquid cart totals, discounts, and line items |
+| `bench_storefront_order_email` | Standard-Liquid transactional order email |
+| `bench_storefront_cms_page` | Standard-Liquid content-management page |
+| `shopify_theme_full_page` | Full Shopify Dream theme layout using Shopify filters |
+| `shopify_theme_product_page` | Shopify Dream product page using Shopify filters |
 
-Without `--bench`, benchmark specs run as regular tests to verify correctness.
+Selecting these specs through `liquid-spec run ADAPTER -s benchmarks` checks correctness
+without collecting timings; use `liquid-spec bench` for performance measurements.
 
 #### Profiling with StackProf
 
-Use `--profile` with `--bench` to generate StackProf profiles for detailed performance analysis:
+Use `liquid-spec bench --profile` to generate StackProf profiles for detailed performance analysis:
 
 ```bash
 # Single adapter profiling
@@ -571,19 +562,20 @@ liquid-spec bench examples/liquid_ruby.rb --profile
 liquid-spec bench --adapters=liquid_ruby,liquid_c --profile
 ```
 
-Profiles are saved to `/tmp/liquid-spec-profile-{timestamp}/`:
+A single-adapter profile directory contains four dumps:
 
-```
-StackProf profiles saved to: /tmp/liquid-spec-profile-20260107_145903
-  /tmp/liquid-spec-profile-20260107_145903/compile_cpu.dump
-  /tmp/liquid-spec-profile-20260107_145903/compile_object.dump
-  /tmp/liquid-spec-profile-20260107_145903/render_cpu.dump
-  /tmp/liquid-spec-profile-20260107_145903/render_object.dump
-
-View with: stackprof /tmp/liquid-spec-profile-20260107_145903/render_cpu.dump
+```text
+/tmp/liquid-spec-profile-20260710_155637/
+├── compile_cpu.dump
+├── compile_object.dump
+├── render_cpu.dump
+└── render_object.dump
 ```
 
-For matrix mode, each adapter gets its own profile files (e.g., `liquid_ruby_render_cpu.dump`, `liquid_c_render_cpu.dump`).
+Inspect one with `stackprof /tmp/liquid-spec-profile-20260710_155637/render_cpu.dump`.
+
+In multi-adapter bench mode, each adapter gets a separate directory such as
+`/tmp/liquid-spec-profile-{timestamp}-liquid_ruby/`; the command prints every path.
 
 Profile types:
 - `*_cpu.dump` - CPU time profiles (where time is spent)
@@ -591,10 +583,12 @@ Profile types:
 
 ### Quick Testing with `eval`
 
-The `eval` command lets you quickly test individual templates. Specs are passed via YAML on stdin, and results are compared against the reference liquid-ruby implementation by default:
+The `eval` tool lets you quickly test individual templates. Specs are passed via YAML
+on stdin or `--spec=FILE`; add `--compare` to compare with the reference liquid-ruby
+implementation and fill omitted expectations:
 
 ```bash
-liquid-spec tools eval examples/liquid_ruby.rb <<EOF
+liquid-spec tools eval examples/liquid_ruby.rb --compare <<EOF
 name: upcase-test
 complexity: 20
 template: "{{ x | upcase }}"
@@ -692,7 +686,7 @@ Each spec defines:
 - **expected** - Expected output string
 - **complexity** - Optional: ordering hint (lower = simpler, runs first; defaults to 1000 and must not exceed 1000)
 - **hint** - Optional: implementation guidance for this feature
-- **error_mode** - Optional: `:lax` or `:strict`
+- **error_mode** - Optional: `lax`, `strict`, `strict2`, or an array of compatible modes
 - **filesystem** - Optional: mock files for include/render tags
 
 ## Development

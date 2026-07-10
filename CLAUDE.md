@@ -139,8 +139,8 @@ ruby -Ilib scripts/verifiers/lax_placement.rb       # advisory: lax-only specs s
 ruby -Ilib scripts/verifiers/jsonrpc_portability.rb # specs don't send non-primitive Ruby types over JSON-RPC
 ruby -Ilib scripts/verifiers/cross_mode_compatibility.rb # multi-mode error_mode specs produce consistent results
 ruby -Ilib scripts/verifiers/parse_mode_annotation.rb # specs without error_mode behave identically across parse modes
-ruby -Ilib scripts/verifiers/spec_name_collisions.rb # no two specs share the same name
-ruby -Ilib scripts/verifiers/filesystem_extensions.rb # filesystem keys have valid extensions (.liquid, .svg, etc.)
+ruby -Ilib scripts/verifiers/spec_name_collisions.rb # advisory: no two specs share the same name
+ruby -Ilib scripts/verifiers/filesystem_extensions.rb # advisory: filesystem keys should have valid extensions
 ruby -Ilib scripts/verifiers/minimum_complexity.rb  # specs with advanced features sit above the beginner ramp
 ```
 
@@ -152,14 +152,14 @@ ruby -Ilib scripts/verifiers/minimum_complexity.rb  # specs with advanced featur
   (the gem auto-tags `lax_parsing`, so lax-opt-out adapters skip it).
 - `spec_schema` — every spec YAML file must be well-formed: valid YAML, correct
   top-level structure, required fields (name, template, expected or errors),
-  complexity in 1..1000, features from the known set, valid error_mode (single
+  complexity in 0..1000, features from the known set, valid error_mode (single
   or array of strict/strict2/lax), valid errors sub-keys (parse_error,
   render_error, output), valid generate field definitions, no unknown fields.
 - `minimum_complexity` — specs with advanced features must sit above the
   beginner ramp: Ruby content (`ruby_types`/`ruby_drops`/`binary_data`) and
-`instantiate:` drops ≥ 100; `drops` ≥ 200; `template_factory` and
-Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict2`
-≥ 100.
+  `instantiate:` drops ≥ 100; `drops` ≥ 200; `template_factory` and
+  Shopify-specific features ≥ 200; `render_errors: true` and
+  `error_mode: strict2` ≥ 100.
 - `jsonrpc_portability` — specs must not send non-primitive Ruby types
   (non-string keys, symbols, unregistered objects) over JSON-RPC, which would
   trigger `_rpc_drop` markers. Time/Date/DateTime are whitelisted (sent as
@@ -171,16 +171,16 @@ Shopify-specific features ≥ 200; `render_errors: true` and `error_mode: strict
   must declare `error_mode` to indicate which modes they're compatible with.
   Specs with `errors:` must always declare `error_mode` (syntax errors are
   mode-dependent).
-- `spec_name_collisions` — no two specs may share the same name. Duplicate
-  names cause one spec to shadow the other.
-- `filesystem_extensions` — every filesystem key in specs must have a
-  recognized extension (`.liquid`, `.svg`, `.json`, `.css`, `.js`, `.scss`,
-  `.html`, `.txt`).
 
 **Advisory verifiers** (report known debt, don't block push):
 - `lax_placement` — lax-only specs belong in `specs/liquid_ruby_lax/`, not
   `specs/liquid_ruby/`. Reports misplaced ones; move them with
   `scripts/move_spec.rb`.
+- `spec_name_collisions` — duplicate names can shadow another spec and make it
+  unreachable.
+- `filesystem_extensions` — committed filesystem keys should use a recognized
+  extension (`.liquid`, `.svg`, `.json`, `.css`, `.js`, `.scss`, `.html`, or
+  `.txt`).
 
 Error-mode policy these enforce:
 - A spec that needs lax mode must declare `error_mode: lax` (the gem auto-tags
@@ -308,8 +308,9 @@ bundle exec rake generate
 ### CLI Components
 
 - **`bin/liquid-spec`** - Entry point
-- **`lib/liquid/spec/cli.rb`** - Command dispatcher
-- **`lib/liquid/spec/cli/init.rb`** - Generates adapter templates
+- **`lib/liquid/spec/cli.rb`** - Core command dispatcher (`init`, `docs`, `run`, `bench`, `tools`)
+- **`lib/liquid/spec/cli/tools.rb`** - Dispatcher for inspection, comparison, reporting, verifier, and adversarial utilities
+- **`lib/liquid/spec/cli/init.rb`** - Generates adapter templates and implementation guidance
 - **`lib/liquid/spec/cli/runner.rb`** - Runs specs with an adapter
 - **`lib/liquid/spec/cli/adapter_dsl.rb`** - DSL for LiquidSpec.setup/configure/compile/render
 - **`lib/liquid/spec/cli/eval.rb`** - One-off YAML spec evaluation and reference comparison
@@ -317,6 +318,7 @@ bundle exec rake generate
 - **`lib/liquid/spec/cli/matrix.rb`** - Cross-adapter comparison runner
 - **`lib/liquid/spec/cli/inspect.rb`** - Detailed spec inspection/debugging
 - **`lib/liquid/spec/cli/docs.rb` / `features.rb` / `report.rb`** - Implementer docs, feature inventory, benchmark reports
+- **`lib/liquid/spec/cli/check.rb` / `lib/liquid/spec/verifiers.rb`** - CLI check command and shared all-verifier runner
 
 ### Spec Components
 
@@ -596,7 +598,7 @@ hint: |
 
 # Required features/capabilities for this suite.
 # Specs are skipped when the adapter lists any of these in config.missing_features.
-required_features:
+features:
   - core
 
 # Default complexity for specs without explicit complexity (see `liquid-spec docs complexity`)
@@ -625,7 +627,7 @@ Each spec should have a `complexity` field indicating implementation difficulty.
 | 500-900 | Mature compatibility: parser mutation matrices, resource-limit accounting, recursion/deep nesting, security-sensitive quirks, date/time/Ruby quirks |
 | 1000 | Production recordings and unscored specs (default) |
 
-See [`liquid-spec docs complexity`](`liquid-spec docs complexity`) for the full guide with examples.
+Run `liquid-spec docs complexity` for the full guide with examples.
 See [SPECS.md](SPECS.md) for guidelines on writing effective specs.
 
 ### Available Suites
@@ -635,10 +637,10 @@ Current builtin suites (`liquid-spec run ADAPTER --list-suites`):
 - **`basics`** (default: true) - Curated beginner ramp covering fundamental Liquid behavior.
 - **`liquid_ruby`** (default: true) - Core Liquid specs from Shopify/liquid integration tests.
 - **`liquid_ruby_lax`** (default: true) - Lax-mode reference behavior; requires `:lax_parsing`.
-- **`parser_errors`** (default: false) - Parser/error-mode matrix specs; includes strict2-focused behavior.
-- **`partials`** (default: false) - Include/render/filesystem-focused specs; requires `:core`.
-- **`benchmarks`** (default: false) - Timing benchmark specs, normally run with `liquid-spec bench` or `--bench`.
-- **`shopify_production_recordings`** (default: true) - Recorded specs from Shopify production.
+- **`parser_errors`** (default: false) - Parser/error-mode matrix specs; requires `:strict2_parsing`.
+- **`partials`** (default: false) - Include/render/filesystem-focused correctness and timing specs; requires `:core`.
+- **`benchmarks`** (default: false) - Timing specs, normally run with the core `liquid-spec bench` command.
+- **`shopify_production_recordings`** (default: true) - Recorded Shopify production specs; requires `:inline_errors`.
 - **`shopify_theme_dawn`** (default: true) - Real-world templates from Shopify Dawn; requires Shopify-specific tags/objects/filters.
 
 Suites can also be discovered from local project `./specs/<name>/suite.yml` directories when invoking liquid-spec from another project.
@@ -864,7 +866,8 @@ Specs that use `{% include %}` or `{% render %}` need a `filesystem:` field. Thi
     card.liquid: "{{ title }}: ${{ price }}"
 ```
 
-The `.liquid` extension is optional - both `greeting` and `greeting.liquid` work as keys.
+Filesystem keys must include a recognized extension. Use `greeting.liquid`, not
+`greeting`; the `filesystem_extensions` verifier enforces this for committed specs.
 
 ## Object Instantiation in Specs
 

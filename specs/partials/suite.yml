@@ -13,7 +13,7 @@ hint: |
   path: many static render/include call sites, nested partials, loops
   over partials, and dynamic partial names.
 
-required_features:
+features:
   - core
 
 defaults:

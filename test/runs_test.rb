@@ -29,6 +29,15 @@ class RunsTest < Minitest::Test
     end
   end
 
+  def test_bench_subprocess_uses_current_ruby_without_the_gem_development_bundle
+    adapter = File.expand_path("../examples/liquid_ruby.rb", __dir__)
+    command = Liquid::Spec::CLI::Bench.send(:build_cmd, adapter, [])
+
+    assert_equal RbConfig.ruby, command.first
+    refute_includes command, "bundle"
+    assert_includes command, adapter
+  end
+
   def test_same_transport_does_not_warn
     Dir.mktmpdir do |dir|
       first = File.join(dir, "first.rb")

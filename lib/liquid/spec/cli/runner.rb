@@ -181,7 +181,9 @@ module Liquid
               when "-c", "--compare"
                 options[:compare] = true
               when "-b", "--bench"
-                warn "Deprecated: use the core `liquid-spec bench` command for benchmarks."
+                unless ENV["LIQUID_SPEC_INTERNAL_BENCH"] == "1"
+                  warn "Deprecated: use the core `liquid-spec bench` command for benchmarks."
+                end
                 options[:bench] = true
               when "--jsonl"
                 options[:jsonl] = true
@@ -639,15 +641,15 @@ module Liquid
           def run_benchmark_suites(suites, config, options)
             missing_features = config.missing_features
             profile_dir = nil
-            run_id = ENV["LIQUID_SPEC_RUN_ID"] || Time.now.strftime("%Y%m%d_%H%M%S")
+            run_id = ENV["LIQUID_SPEC_RUN_ID"] || Config.generate_run_id
             jsonl_mode = options[:jsonl] || ENV["LIQUID_SPEC_BENCHMARK_JSONL"] == "1"
 
             adapter_name = LiquidSpec.adapter_name || "unknown"
 
-            if options[:profile] && !jsonl_mode
+            if options[:profile]
               require "stackprof"
-              profile_dir = "/tmp/liquid-spec-profile-#{run_id}"
-              Dir.mkdir(profile_dir)
+              profile_dir = ENV["LIQUID_SPEC_PROFILE_DIR"] || "/tmp/liquid-spec-profile-#{run_id}"
+              FileUtils.mkdir_p(profile_dir)
             end
 
             benchmark_log_path = Config.adapter_jsonl_path(adapter_name, run_id: run_id) unless jsonl_mode
@@ -672,9 +674,9 @@ module Liquid
               duration_per_spec = suite.default_iteration_seconds
 
               # Profile if requested
-              if profile_dir && !jsonl_mode
+              if profile_dir
                 prepared_specs = suite_specs.map { |s| prepare_benchmark_spec(s, config) }.compact
-                run_profiling(prepared_specs, profile_dir) if prepared_specs.any?
+                run_profiling(prepared_specs, profile_dir, quiet: jsonl_mode) if prepared_specs.any?
               end
 
               unless jsonl_mode
@@ -948,8 +950,8 @@ module Liquid
 
           # ── Profiling (StackProf) ──────────────────────────────────────
 
-          def run_profiling(prepared_specs, profile_dir)
-            puts "  Profiling to #{profile_dir}/ ..."
+          def run_profiling(prepared_specs, profile_dir, quiet: false)
+            puts "  Profiling to #{profile_dir}/ ..." unless quiet
             {
               "compile_cpu"    => [:cpu,    100, :compile],
               "compile_object" => [:object, 10,  :compile],
@@ -969,7 +971,7 @@ module Liquid
               end
               File.binwrite("#{profile_dir}/#{filename}.dump", Marshal.dump(profile))
             end
-            puts ""
+            puts "" unless quiet
           end
 
           def prepare_benchmark_spec(spec, _config)
