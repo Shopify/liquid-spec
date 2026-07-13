@@ -186,8 +186,18 @@ fn docs_root() -> Option<PathBuf> {
     {
         return absolute_path(&configured);
     }
+    checkout_docs_root()
+}
+
+#[cfg(debug_assertions)]
+fn checkout_docs_root() -> Option<PathBuf> {
     let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs");
     source.is_dir().then(|| absolute_path(&source)).flatten()
+}
+
+#[cfg(not(debug_assertions))]
+fn checkout_docs_root() -> Option<PathBuf> {
+    None
 }
 
 fn absolute_path(path: &Path) -> Option<PathBuf> {
@@ -221,11 +231,12 @@ fn read_topic(relative: &str) -> Result<String> {
                 .with_context(|| format!("read documentation {}", path.display()));
         }
     }
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs");
-    let path = root.join(relative);
-    if path.is_file() {
-        return fs::read_to_string(&path)
-            .with_context(|| format!("read documentation {}", path.display()));
+    if let Some(root) = checkout_docs_root() {
+        let path = root.join(relative);
+        if path.is_file() {
+            return fs::read_to_string(&path)
+                .with_context(|| format!("read documentation {}", path.display()));
+        }
     }
     embedded_topic(relative)
         .map(str::to_owned)

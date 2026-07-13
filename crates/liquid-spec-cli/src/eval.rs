@@ -35,14 +35,14 @@ pub fn run(
     candidate.shutdown()?;
 
     let reference_summary = if compare {
-        let reference_name = config
-            .reference_adapter
-            .as_deref()
-            .context("--compare requires reference_adapter in liquid-spec.toml")?;
-        let reference_command = config
-            .command(Some(reference_name))
-            .cloned()
-            .with_context(|| format!("reference adapter {reference_name:?} is not configured"))?;
+        let reference_name = config.reference_adapter_name();
+        let reference_command = crate::config::expand_command_tokens(
+            config
+                .command_with_builtin_reference(reference_name)
+                .with_context(|| {
+                    format!("reference adapter {reference_name:?} is not configured")
+                })?,
+        )?;
         let mut reference =
             Session::spawn(&reference_command, config.timeout(Some(reference_name)))?;
         let reference_info = reference.conformance()?;
@@ -108,13 +108,17 @@ fn resolve_command(
     adapter: Option<&str>,
     direct: Vec<String>,
 ) -> Result<Vec<String>> {
-    if !direct.is_empty() {
-        return Ok(direct);
-    }
-    config
-        .command(adapter)
-        .cloned()
-        .context("no adapter command: configure liquid-spec.toml or pass it after --")
+    let command = if !direct.is_empty() {
+        direct
+    } else {
+        let name = adapter.or(config.default_adapter.as_deref());
+        config
+            .command(adapter)
+            .cloned()
+            .or_else(|| name.and_then(|name| config.command_with_builtin_reference(name)))
+            .context("no adapter command: configure liquid-spec.toml or pass it after --")?
+    };
+    crate::config::expand_command_tokens(command)
 }
 
 fn summaries_match(candidate: &RunSummary, reference: &RunSummary) -> bool {

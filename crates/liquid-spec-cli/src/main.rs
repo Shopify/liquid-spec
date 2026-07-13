@@ -17,7 +17,6 @@ use std::ffi::OsString;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command as ProcessCommand;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Parser)]
@@ -284,7 +283,8 @@ fn execute() -> Result<()> {
                 name,
                 command,
             } => {
-                let specs = load_selected_specs(&builtin_spec_root(), &namespace, Some(&name))?;
+                let root = builtin_spec_root()?;
+                let specs = load_selected_specs(&root, &namespace, Some(&name))?;
                 if specs.is_empty() {
                     anyhow::bail!("no specs matched {name:?}");
                 }
@@ -342,63 +342,72 @@ fn execute() -> Result<()> {
                 limit,
                 json,
                 command,
-            } => adversarial::run(
-                adversarial::Mode::Mutate,
-                &config,
-                adapter.as_deref(),
-                command,
-                &builtin_spec_root(),
-                &namespace,
-                around.as_deref(),
-                limit,
-                1,
-                1,
-                1,
-                1,
-                json,
-            )?,
+            } => {
+                let root = builtin_spec_root()?;
+                adversarial::run(
+                    adversarial::Mode::Mutate,
+                    &config,
+                    adapter.as_deref(),
+                    command,
+                    &root,
+                    &namespace,
+                    around.as_deref(),
+                    limit,
+                    1,
+                    1,
+                    1,
+                    1,
+                    json,
+                )?
+            }
             ToolCommand::Fuzz {
                 adapter,
                 seed,
                 rounds,
                 json,
                 command,
-            } => adversarial::run(
-                adversarial::Mode::Fuzz,
-                &config,
-                adapter.as_deref(),
-                command,
-                &builtin_spec_root(),
-                "basics",
-                None,
-                rounds,
-                seed,
-                rounds,
-                1,
-                1,
-                json,
-            )?,
+            } => {
+                let root = builtin_spec_root()?;
+                adversarial::run(
+                    adversarial::Mode::Fuzz,
+                    &config,
+                    adapter.as_deref(),
+                    command,
+                    &root,
+                    "basics",
+                    None,
+                    rounds,
+                    seed,
+                    rounds,
+                    1,
+                    1,
+                    json,
+                )?
+            }
             ToolCommand::Stress {
                 adapter,
                 depth,
                 repetitions,
                 json,
                 command,
-            } => adversarial::run(
-                adversarial::Mode::Stress,
-                &config,
-                adapter.as_deref(),
-                command,
-                &builtin_spec_root(),
-                "basics",
-                None,
-                repetitions,
-                1,
-                1,
-                depth,
-                repetitions,
-                json,
-            )?,
+            } => {
+                let root = builtin_spec_root()?;
+                adversarial::run(
+                    adversarial::Mode::Stress,
+                    &config,
+                    adapter.as_deref(),
+                    command,
+                    &root,
+                    "basics",
+                    None,
+                    repetitions,
+                    1,
+                    1,
+                    depth,
+                    repetitions,
+                    json,
+                )?
+            }
         },
         Command::Check {
             adapter,
@@ -414,7 +423,7 @@ fn execute() -> Result<()> {
             compare,
             command,
         } => {
-            let root = builtin_spec_root();
+            let root = builtin_spec_root()?;
             let namespaces = discover_available_namespaces(&root)?;
             if list_namespaces {
                 for item in &namespaces {
@@ -522,14 +531,14 @@ fn execute() -> Result<()> {
             }
             session.shutdown()?;
             if compare {
-                let reference = config
-                    .reference_adapter
-                    .as_deref()
-                    .context("--compare requires reference_adapter in liquid-spec.toml")?;
-                let reference_command =
-                    config.command(Some(reference)).cloned().with_context(|| {
-                        format!("reference adapter {:?} is not configured", reference)
-                    })?;
+                let reference = config.reference_adapter_name();
+                let reference_command = config::expand_command_tokens(
+                    config
+                        .command_with_builtin_reference(reference)
+                        .with_context(|| {
+                            format!("reference adapter {:?} is not configured", reference)
+                        })?,
+                )?;
                 let mut reference_session =
                     Session::spawn(&reference_command, config.timeout(Some(reference)))?;
                 let reference_info = reference_session.conformance()?;
@@ -593,7 +602,7 @@ fn execute() -> Result<()> {
                 &config,
                 adapter.as_deref(),
                 command,
-                &builtin_spec_root(),
+                &builtin_spec_root()?,
                 &namespace,
                 name.as_deref(),
                 iterations,
@@ -731,7 +740,7 @@ fn default_command(config: &Config) -> Result<Command> {
 
 fn print_features() -> Result<()> {
     let mut counts = std::collections::BTreeMap::<String, usize>::new();
-    for namespace in discover_available_namespaces(&builtin_spec_root())? {
+    for namespace in discover_available_namespaces(&builtin_spec_root()?)? {
         for spec in load_namespace(&namespace)? {
             for feature in spec.features {
                 *counts.entry(feature).or_default() += 1;
@@ -746,9 +755,10 @@ fn print_features() -> Result<()> {
 }
 
 fn check_corpus() -> Result<()> {
+    let root = builtin_spec_root()?;
     let mut namespaces_count = 0;
     let mut specs_count = 0;
-    for namespace in discover_available_namespaces(&builtin_spec_root())? {
+    for namespace in discover_available_namespaces(&root)? {
         namespaces_count += 1;
         let specs = load_namespace(&namespace)?;
         for spec in &specs {
@@ -761,120 +771,11 @@ fn check_corpus() -> Result<()> {
         }
         specs_count += specs.len();
     }
-    println!("OK: loaded {specs_count} specs across {namespaces_count} namespaces");
-    run_ruby_verifiers()?;
+    println!(
+        "OK: loaded {specs_count} specs across {namespaces_count} namespaces from {}",
+        root.display()
+    );
     Ok(())
-}
-
-/// Run every repository verifier through the same contributor-facing entry
-/// point. Verifiers remain Ruby scripts because a few inspect Ruby reference
-/// behavior; the Rust CLI discovers and aggregates them.
-fn run_ruby_verifiers() -> Result<()> {
-    let Some(root) = verifier_root() else {
-        println!("SKIP: no scripts/verifiers directory found");
-        return Ok(());
-    };
-    let verifier_dir = root.join("scripts/verifiers");
-    let mut scripts: Vec<PathBuf> = std::fs::read_dir(&verifier_dir)
-        .with_context(|| format!("read verifier directory {}", verifier_dir.display()))?
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
-        .filter(|path| path.extension().is_some_and(|extension| extension == "rb"))
-        .collect();
-    scripts.sort();
-    if scripts.is_empty() {
-        println!(
-            "SKIP: no Ruby verifier scripts found in {}",
-            verifier_dir.display()
-        );
-        return Ok(());
-    }
-
-    println!("Running {} Ruby verifier(s)...", scripts.len());
-    let mut blocking_failures = Vec::new();
-    let mut advisory_failures = 0usize;
-    for script in scripts {
-        let relative = script
-            .strip_prefix(&root)
-            .unwrap_or(&script)
-            .display()
-            .to_string();
-        let source = std::fs::read_to_string(&script)
-            .with_context(|| format!("read verifier {relative}"))?;
-        let advisory = source.lines().take(40).any(|line| {
-            line.trim().eq_ignore_ascii_case("# advisory: true")
-                || line.trim().eq_ignore_ascii_case("# advisory:true")
-        });
-        let result = ProcessCommand::new("ruby")
-            .arg("-Ilib")
-            .arg(&script)
-            .current_dir(&root)
-            .output();
-        let (success, code, stdout, stderr) = match result {
-            Ok(output) => (
-                output.status.success(),
-                output.status.code(),
-                output.stdout,
-                output.stderr,
-            ),
-            Err(error) => {
-                let message = format!("could not start ruby: {error}");
-                if advisory {
-                    advisory_failures += 1;
-                    println!("ADVISORY {relative}: {message}");
-                } else {
-                    blocking_failures.push(format!("{relative}: {message}"));
-                    println!("FAIL {relative}: {message}");
-                }
-                continue;
-            }
-        };
-        if !stdout.is_empty() {
-            print!("{}", String::from_utf8_lossy(&stdout));
-        }
-        if !stderr.is_empty() {
-            eprint!("{}", String::from_utf8_lossy(&stderr));
-        }
-        if success {
-            println!("PASS {relative}");
-        } else if advisory {
-            advisory_failures += 1;
-            println!(
-                "ADVISORY {relative}: exited with status {}",
-                code.map_or_else(|| "unknown".to_owned(), |code| code.to_string())
-            );
-        } else {
-            let failure = format!(
-                "{relative}: exited with status {}",
-                code.map_or_else(|| "unknown".to_owned(), |code| code.to_string())
-            );
-            blocking_failures.push(failure.clone());
-            println!("FAIL {failure}");
-        }
-    }
-    if !blocking_failures.is_empty() {
-        anyhow::bail!(
-            "{} blocking verifier(s) failed: {}",
-            blocking_failures.len(),
-            blocking_failures.join("; ")
-        );
-    }
-    if advisory_failures > 0 {
-        println!("OK: all blocking verifiers passed ({advisory_failures} advisory finding(s))");
-    } else {
-        println!("OK: all verifiers passed");
-    }
-    Ok(())
-}
-
-fn verifier_root() -> Option<PathBuf> {
-    let mut candidates = Vec::new();
-    if let Ok(current) = std::env::current_dir() {
-        candidates.push(current);
-    }
-    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."));
-    candidates
-        .into_iter()
-        .find(|root| root.join("scripts/verifiers").is_dir() && root.join("specs").is_dir())
 }
 
 fn run_protocol(config: &Config, adapter: Option<String>, direct: Vec<String>) -> Result<()> {
@@ -930,7 +831,7 @@ fn run_matrix(
     json: bool,
 ) -> Result<()> {
     let adapter_names = matrix_adapter_names(config, requested, all)?;
-    let specs = load_selected_specs(&builtin_spec_root(), namespace, name)?;
+    let specs = load_selected_specs(&builtin_spec_root()?, namespace, name)?;
     if specs.is_empty() {
         anyhow::bail!("no specs matched the selected namespace/name")
     }
@@ -949,7 +850,11 @@ fn run_matrix(
                 report_path: None,
             },
             Some(command) => {
-                match run_matrix_adapter(command, config.timeout(Some(&adapter)), specs.clone()) {
+                match run_matrix_adapter(
+                    &config::expand_command_tokens(command.clone())?,
+                    config.timeout(Some(&adapter)),
+                    specs.clone(),
+                ) {
                     Ok(summary) => {
                         let results = summary
                             .result_entries
@@ -1474,13 +1379,17 @@ fn resolve_command(
     adapter: Option<&str>,
     direct: Vec<String>,
 ) -> Result<Vec<String>> {
-    if !direct.is_empty() {
-        return Ok(direct);
-    }
-    config
-        .command(adapter)
-        .map(ToOwned::to_owned)
-        .context("no adapter command: configure liquid-spec.toml or pass it after --")
+    let command = if !direct.is_empty() {
+        direct
+    } else {
+        let name = adapter.or(config.default_adapter.as_deref());
+        config
+            .command(adapter)
+            .cloned()
+            .or_else(|| name.and_then(|name| config.command_with_builtin_reference(name)))
+            .context("no adapter command: configure liquid-spec.toml or pass it after --")?
+    };
+    config::expand_command_tokens(command)
 }
 
 fn load_known_failures(
@@ -1625,24 +1534,69 @@ fn stable_path_hash(bytes: &[u8]) -> u64 {
     hash
 }
 
-fn builtin_spec_root() -> PathBuf {
+fn builtin_spec_root() -> Result<PathBuf> {
     if let Some(root) = std::env::var_os("LIQUID_SPEC_ROOT") {
-        return PathBuf::from(root);
+        let root = PathBuf::from(root);
+        if root.is_dir() {
+            return Ok(root);
+        }
+        anyhow::bail!(
+            "LIQUID_SPEC_ROOT points at {}, which is not a specs directory",
+            root.display()
+        );
     }
-    let candidates = [
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../specs"),
-        std::env::current_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join("specs"),
-        std::env::current_exe()
-            .ok()
-            .and_then(|path| path.parent().map(|parent| parent.join("specs")))
-            .unwrap_or_else(|| PathBuf::from("specs")),
-    ];
-    candidates
-        .into_iter()
-        .find(|candidate| candidate.is_dir())
-        .unwrap_or_else(|| PathBuf::from("specs"))
+
+    let mut candidates = Vec::new();
+
+    // Project-local override beside the working directory.
+    if let Ok(cwd) = std::env::current_dir() {
+        candidates.push(cwd.join("specs"));
+    }
+
+    // Specs colocated with the installed binary (release packages / zip distros).
+    if let Ok(exe) = std::env::current_exe()
+        && let Some(parent) = exe.parent()
+    {
+        candidates.push(parent.join("specs"));
+    }
+
+    // XDG / macOS / system data directories populated by `make install`.
+    for data_dir in installed_data_dirs() {
+        candidates.push(data_dir.join("specs"));
+    }
+
+    // Source checkout during `cargo run` / `cargo test` only. Release installs
+    // must not keep pointing at the machine that compiled them.
+    #[cfg(debug_assertions)]
+    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../specs"));
+
+    if let Some(root) = candidates.into_iter().find(|candidate| candidate.is_dir()) {
+        return Ok(root);
+    }
+
+    anyhow::bail!(
+        "could not find the liquid-spec corpus; run `make install` (installs under \
+         $XDG_DATA_HOME/liquid-spec/specs or ~/.local/share/liquid-spec/specs), \
+         set LIQUID_SPEC_ROOT, or run from a checkout that contains specs/"
+    )
+}
+
+/// Directories that may hold the installed data package (`specs/`, …).
+fn installed_data_dirs() -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+    if let Some(xdg) = std::env::var_os("XDG_DATA_HOME") {
+        dirs.push(PathBuf::from(xdg).join("liquid-spec"));
+    }
+    if let Some(home) = std::env::var_os("HOME") {
+        let home = PathBuf::from(home);
+        // Linux / FreeBSD default when XDG_DATA_HOME is unset.
+        dirs.push(home.join(".local/share/liquid-spec"));
+        // macOS Application Support layout for GUI-style installs.
+        dirs.push(home.join("Library/Application Support/liquid-spec"));
+    }
+    dirs.push(PathBuf::from("/usr/local/share/liquid-spec"));
+    dirs.push(PathBuf::from("/usr/share/liquid-spec"));
+    dirs
 }
 
 /// Built-in namespaces remain the default corpus, while a project-local

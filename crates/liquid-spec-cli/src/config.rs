@@ -46,6 +46,27 @@ impl Config {
         self.adapters.get(name).map(|adapter| &adapter.command)
     }
 
+    /// The bundled Shopify/liquid reference is available even when the caller
+    /// has no manifest. A manifest may override this command under the same
+    /// adapter name.
+    pub fn command_with_builtin_reference(&self, name: &str) -> Option<Vec<String>> {
+        self.adapters
+            .get(name)
+            .map(|adapter| adapter.command.clone())
+            .or_else(|| {
+                (name == "liquid-ruby").then(|| {
+                    vec![
+                        "ruby".into(),
+                        "@liquid-spec/examples/liquid_ruby_jsonrpc_v2.rb".into(),
+                    ]
+                })
+            })
+    }
+
+    pub fn reference_adapter_name(&self) -> &str {
+        self.reference_adapter.as_deref().unwrap_or("liquid-ruby")
+    }
+
     pub fn default_action(&self) -> &str {
         self.default_action.as_deref().unwrap_or("check")
     }
@@ -54,7 +75,14 @@ impl Config {
         let name = name.or(self.default_adapter.as_deref());
         Duration::from_millis(
             name.and_then(|name| self.adapters.get(name))
-                .map_or(default_timeout(), |a| a.timeout_ms),
+                .map(|adapter| adapter.timeout_ms)
+                .unwrap_or_else(|| {
+                    if name == Some("liquid-ruby") {
+                        60_000
+                    } else {
+                        default_timeout()
+                    }
+                }),
         )
     }
 
@@ -80,10 +108,11 @@ reference_adapter = "liquid-ruby"
 command = ["./adapter.ts"]
 timeout_ms = 2000
 
-# Optional Shopify/liquid reference adapter. It is only started by --compare.
+# Bundled Shopify/liquid reference (bundler/inline; no Gemfile required).
+# `@liquid-spec/...` resolves to the installed data package or checkout.
 [adapters.liquid-ruby]
-command = ["bundle", "exec", "ruby", "examples/liquid_ruby_jsonrpc_v2.rb"]
-timeout_ms = 5000
+command = ["ruby", "@liquid-spec/examples/liquid_ruby_jsonrpc_v2.rb"]
+timeout_ms = 15000
 "#
     }
 
@@ -97,6 +126,63 @@ timeout_ms = 5000
     }
 }
 
+/// Expand `@liquid-spec/...` path tokens against the installed data package or
+/// the source checkout. Keeps starter manifests portable across machines.
+pub fn expand_command_tokens(command: Vec<String>) -> Result<Vec<String>> {
+    command
+        .into_iter()
+        .map(|part| {
+            if let Some(relative) = part.strip_prefix("@liquid-spec/") {
+                let path = resolve_package_path(relative)?;
+                Ok(path.display().to_string())
+            } else {
+                Ok(part)
+            }
+        })
+        .collect()
+}
+
+fn resolve_package_path(relative: &str) -> Result<PathBuf> {
+    let mut candidates = Vec::new();
+    for data_dir in installed_data_dirs() {
+        candidates.push(data_dir.join(relative));
+    }
+    if let Ok(cwd) = std::env::current_dir() {
+        candidates.push(cwd.join(relative));
+    }
+    // Source checkout during development (`cargo run` / `cargo test`) only.
+    #[cfg(debug_assertions)]
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../")
+            .join(relative),
+    );
+    if let Some(path) = candidates
+        .into_iter()
+        .find(|path| path.is_file() || path.is_dir())
+    {
+        return Ok(path);
+    }
+    anyhow::bail!(
+        "could not resolve @liquid-spec/{relative}; run `make install` or set XDG_DATA_HOME"
+    )
+}
+
+fn installed_data_dirs() -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+    if let Some(xdg) = std::env::var_os("XDG_DATA_HOME") {
+        dirs.push(PathBuf::from(xdg).join("liquid-spec"));
+    }
+    if let Some(home) = std::env::var_os("HOME") {
+        let home = PathBuf::from(home);
+        dirs.push(home.join(".local/share/liquid-spec"));
+        dirs.push(home.join("Library/Application Support/liquid-spec"));
+    }
+    dirs.push(PathBuf::from("/usr/local/share/liquid-spec"));
+    dirs.push(PathBuf::from("/usr/share/liquid-spec"));
+    dirs
+}
+
 #[cfg(test)]
 mod tests {
     use super::Config;
@@ -106,6 +192,11 @@ mod tests {
         let config: Config = toml::from_str(Config::starter_manifest()).unwrap();
         assert_eq!(config.default_action(), "check");
         assert_eq!(config.default_adapter.as_deref(), Some("candidate"));
+        assert_eq!(config.reference_adapter.as_deref(), Some("liquid-ruby"));
         assert_eq!(config.adapters["candidate"].command, vec!["./adapter.ts"]);
+        assert_eq!(
+            config.adapters["liquid-ruby"].command,
+            vec!["ruby", "@liquid-spec/examples/liquid_ruby_jsonrpc_v2.rb"]
+        );
     }
 }

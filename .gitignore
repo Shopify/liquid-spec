@@ -1,15 +1,6 @@
 **/.DS_Store
 .DS_Store
 /note
-/.bundle/
-/.yardoc
-/_yardoc/
-/coverage/
-/doc/
-/pkg/
-/spec/reports/
 /tmp/
-/Gemfile.lock
 .claude
-/build/
 /target/

@@ -161,10 +161,9 @@ fn check_and_features_are_available_as_tool_commands() {
         .unwrap();
     assert!(check.status.success());
     let check_stdout = String::from_utf8_lossy(&check.stdout);
-    assert!(check_stdout.contains("7905 specs"));
-    assert!(check_stdout.contains("Running 12 Ruby verifier(s)"));
-    assert!(check_stdout.contains("PASS scripts/verifiers/spec_schema.rb"));
-
+    assert!(check_stdout.contains("OK: loaded"));
+    assert!(check_stdout.contains("specs across"));
+    assert!(check_stdout.contains("namespaces from"));
     let features = Command::new(binary())
         .args(["tools", "features"])
         .output()

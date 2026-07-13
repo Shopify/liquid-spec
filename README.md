@@ -1,20 +1,19 @@
 # liquid-spec
 
-> The Rust rewrite is the v2 implementation path. It drives every Liquid engine
-> through the JSON-RPC v2 adapter protocol; Ruby adapter DSLs and protocol-v1
-> callbacks are retained only in the legacy Ruby release. Build the new binary
-> with `cargo build -p liquid-spec-cli --bin liquid-spec` and run it as
-> `target/debug/liquid-spec`.
+> Rust CLI and acceptance corpus for Liquid. Every engine is driven through the
+> JSON-RPC v2 adapter protocol as an external process. Build with
+> `cargo build -p liquid-spec-cli --bin liquid-spec` and run
+> `target/debug/liquid-spec` from a checkout (or `make install` for a system
+> install that also ships the corpus).
 
-The Rust CLI keeps the acceptance curriculum and the familiar `init`, `docs`,
+The CLI keeps the acceptance curriculum and the familiar `init`, `docs`,
 `check`, `bench`, and `tools` commands. `run` remains a compatibility alias for
-`check`. `liquid-spec init` creates a
-`liquid-spec.toml` adapter manifest, an executable `adapter.ts` protocol demo, and
-`AGENTS.md`; adapters are launched as external newline-delimited JSON-RPC v2 processes.
-`--compare` uses a separately
-configured Ruby/liquid JSON-RPC server when reference behavior is needed.
+`check`. `liquid-spec init` creates a `liquid-spec.toml` adapter manifest, an
+executable `adapter.ts` protocol demo, and `AGENTS.md`. Adapters are launched as
+external newline-delimited JSON-RPC v2 processes. `--compare` uses a separately
+configured reference adapter when reference behavior is needed.
 
-[![CI](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml/badge.svg)](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml)
+[![CI](https://github.com/Shopify/liquid-spec/actions/workflows/rust.yml/badge.svg)](https://github.com/Shopify/liquid-spec/actions/workflows/rust.yml)
 
 **liquid-spec is both an acceptance corpus and an implementation system for
 [Liquid](https://github.com/Shopify/liquid).** It can verify an existing parser and
@@ -121,23 +120,40 @@ small enough that results describe the engine rather than the test integration.
 
 ## Installation
 
-Build the Rust binary:
-
 ```bash
 make install
 ```
 
-This builds the release binary and installs `liquid-spec` into Cargo's user bin
-directory (`~/.cargo/bin` by default, or `$CARGO_HOME/bin` when `CARGO_HOME` is
-set). If you only need a local build, use `cargo build --release -p
-liquid-spec-cli --bin liquid-spec`.
+This does two things:
 
-The binary reads the built-in `specs/` directory shipped beside a release package
-and embeds the high-signal documentation. During repository development, it reads
-the checkout; set `LIQUID_SPEC_ROOT` or `LIQUID_SPEC_DOCS` to use another corpus.
+1. Builds the release binary and installs `liquid-spec` into Cargo's user bin
+   directory (`~/.cargo/bin` by default, or `$CARGO_HOME/bin` when `CARGO_HOME`
+   is set).
+2. Copies the YAML corpus to
+   `$XDG_DATA_HOME/liquid-spec/specs` (defaulting to
+   `~/.local/share/liquid-spec/specs` when `XDG_DATA_HOME` is unset).
 
-The older Ruby gem remains available for protocol-v1 migration, but it is not needed
-by the Rust runner or by non-Ruby Liquid implementations.
+Without the data directory step, a bare `cargo install` produces a binary that
+cannot find any specs. Prefer `make install`, or set `LIQUID_SPEC_ROOT` to a
+checkout's `specs/` directory.
+
+Lookup order for the corpus:
+
+1. `LIQUID_SPEC_ROOT` (must be a directory)
+2. `./specs` relative to the current working directory
+3. `specs/` next to the installed binary
+4. `$XDG_DATA_HOME/liquid-spec/specs` or `~/.local/share/liquid-spec/specs`
+5. `~/Library/Application Support/liquid-spec/specs` (macOS)
+6. `/usr/local/share/liquid-spec/specs` and `/usr/share/liquid-spec/specs`
+7. Checkout path via `CARGO_MANIFEST_DIR` (debug builds only)
+development, set `LIQUID_SPEC_DOCS` to preview doc edits without rebuilding.
+
+Local-only builds:
+
+```bash
+cargo build --release -p liquid-spec-cli --bin liquid-spec
+# uses the checkout's specs/ automatically when run from the repo
+```
 
 ## Quick Start
 
@@ -221,63 +237,16 @@ directory and every bundled topic path (`.md`). `liquid-spec docs protocol` docu
 the wire contract; a case-insensitive substring such as `liquid-spec docs "pars"`
 also resolves a unique matching guide.
 
-## Archived Ruby adapter API (legacy gem only)
+## Adapter protocol
 
-The material in this section documents the previous Ruby gem and is retained only
-for migration. It is not accepted by the Rust binary. The rewrite has one adapter
-boundary: an external newline-delimited JSON-RPC v2 process. Ruby comparisons use
-`examples/liquid_ruby_jsonrpc_v2.rb` through that same process boundary, so the Rust
-runner never loads Liquid in-process and never invokes Ruby callbacks or drops.
-
-The following DSL is retained for users migrating from the Ruby gem. It is not
-accepted by the Rust binary; new implementations must expose the JSON-RPC v2
-methods documented above.
-
-An adapter is a small Ruby file that tells liquid-spec how to use your implementation:
-
-```ruby
-#!/usr/bin/env ruby
-require "liquid/spec/cli/adapter_dsl"
-
-# Load your implementation; ctx carries compiled state between callbacks.
-LiquidSpec.setup do |ctx|
-  require "my_liquid"
-end
-
-# Declare what your adapter can't handle (default: check every applicable spec)
-LiquidSpec.configure do |config|
-  config.missing_features = [:shopify_tags, :shopify_filters]
-end
-
-# Parse template source and retain the result in the adapter context.
-LiquidSpec.compile do |ctx, source, options|
-  # options includes: :line_numbers, :error_mode
-  ctx[:template] = MyLiquid::Template.parse(source, **options)
-end
-
-# Render the template stored by compile or load_artifact.
-LiquidSpec.render do |ctx, assigns, options|
-  # assigns = variables hash
-  # options includes: :registers, :strict_errors, :error_mode, :exception_renderer
-  ctx[:template].render(assigns, **options)
-end
-```
-
-The `options` hash in render includes:
-- `:registers` - Hash with `:file_system` and `:template_factory`
-- `:strict_errors` - If true, raise errors; if false, render them inline
-- `:exception_renderer` - Custom exception handler (optional)
-
-
-### JSON-RPC adapters
-
-All adapters use protocol v2 over newline-delimited JSON-RPC. The server implements
-`initialize`, `protocol.echo`, `template.compile`, `template.render`,
-`template.release`, and the `shutdown` notification. Server diagnostics go to stderr;
-stdout must contain only JSON-RPC messages. There are no callbacks or `_rpc_drop`
-markers: portable objects use the versioned standard fixture catalog, while Ruby-only
-objects are selected by the `ruby_compat` capability. Read
-`docs/json-rpc-protocol-v2.md` for the complete contract.
+There is one adapter boundary: an external newline-delimited JSON-RPC v2
+process. The server implements `initialize`, `protocol.echo`,
+`template.compile`, `template.render`, `template.release`, and the `shutdown`
+notification. Server diagnostics go to stderr; stdout must contain only
+JSON-RPC messages. Portable objects use the versioned standard fixture catalog;
+Ruby-only fixtures are selected by the `ruby_compat` capability. Read
+`docs/json-rpc-protocol-v2.md` (or `liquid-spec docs protocol`) for the complete
+contract.
 
 ```bash
 liquid-spec init
@@ -285,66 +254,14 @@ liquid-spec check -- ./my-liquid-server
 liquid-spec check --adapter candidate --json > results.json
 ```
 
-### Optional: compiled-artifact protocol
-
-Some Liquid implementations compile source once, store executable bytecode or
-an equivalent compiled representation in a shared cache, and load those bytes
-in application processes that never receive the source. `compile` and `render`
-alone cannot measure that important production path: parsing again is not an
-artifact-cache hit, while repeatedly rendering a resident template omits the
-load and first-use costs.
-
-If your implementation has such a persistent compiled format, declare both
-hooks:
-
-```ruby
-# Called immediately after LiquidSpec.compile, before the template is rendered.
-# Return the exact binary String you would put in memcache, a database, etc.
-LiquidSpec.dump_artifact do |ctx|
-  ctx[:template].to_artifact
-end
-
-# Called with the artifact bytes and no source recompilation.
-# Restore all adapter state expected by the regular LiquidSpec.render hook.
-LiquidSpec.load_artifact do |ctx, bytes, _options|
-  ctx[:template] = MyLiquid::Artifact.load(bytes)
-end
-```
-
-The contract is deliberately production-oriented:
-
-1. `dump_artifact` receives the state produced by `compile` and must return a
-   binary-safe `String`. It is invoked before any validation render, because
-   rendering is allowed to mutate template runtime state.
-2. The returned bytes must contain all immutable compile-time information needed
-   to load the template without its source. Do not capture assigns, observed
-   values, request objects, or render-time object shapes.
-3. `load_artifact` must leave `ctx` in the same renderable state that `compile`
-   would. The source is unavailable. Its third argument is the runtime options
-   Hash that the following `render` hook will receive; most loaders ignore it.
-4. Assigns, registers, and runtime filesystems are still supplied to the normal
-   `render` hook for every call; they are not part of the artifact.
-
-With both hooks, `liquid-spec bench` validates the dump → load → render roundtrip, reports
-raw artifact bytes and steady-state load diagnostics, and measures atomic source
-compile + first-render and artifact-load + first-render workflows with 10
-interleaved samples in the adapter process. Each sample invokes compile or load
-before its first render, but process-level runtime, JIT, and global caches remain
-warm. The harness intentionally does not include process startup or IPC.
-
-`liquid-spec bench` warns when either hook is missing because artifact size and
-load+first-render results will be omitted. Implementations without a persistent
-compiled format may leave the hooks absent; the warning documents that the
-benchmark is then limited to source compile and resident render paths.
-
 ### Optional: local namespaces
 
 Projects can ship their own spec/benchmark namespaces alongside their adapter:
 any `./specs/<name>/` directory in the invoking project is discovered next to the
 built-in namespaces and selected with `--namespace <name>` (or `-s <name>`).
-Mark benchmark namespaces with `timings: true` in their metadata to make them benchmarkable
-with `liquid-spec bench ADAPTER -s <name>`, and `default: false` to keep it
-out of regular checks.
+Mark benchmark namespaces with `timings: true` in their metadata to make them
+benchmarkable with `liquid-spec bench -s <name>`, and `default: false` to keep
+them out of regular checks.
 
 ## Spec Namespaces
 
@@ -478,113 +395,50 @@ A source-echo adapter should only pass raw-text specs before failing on first ob
 
 ### Matrix Command
 
-The `matrix` command runs specs across multiple adapters simultaneously and shows differences between implementations. This is useful for comparing behavior across different Liquid implementations or configurations.
+The `matrix` command runs selected specs across multiple configured adapters and
+shows observable differences between implementations.
 
 ```bash
-liquid-spec tools matrix [options]
+# Compare every adapter in liquid-spec.toml
+liquid-spec tools matrix --all
 
-Options:
-  --all                    Run all default adapters from examples/
-  --adapters=LIST          Comma-separated list of adapters
-  --reference=NAME         Reference adapter (default: liquid_ruby)
-  -n, --name PATTERN       Filter specs by name pattern
-  -s, --namespace NAME     Spec namespace to benchmark
-  -v, --verbose            Show detailed output
-
-Examples:
-  # Compare the default bundled adapters
-  liquid-spec tools matrix --all
-
-  # Compare specific adapters
-  liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax
-
-  # Compare adapters on specific tests
-  liquid-spec tools matrix --adapters=candidate,liquid-ruby -n truncate
+# Compare named adapters on a focused namespace/spec
+liquid-spec tools matrix --adapter candidate --adapter liquid-ruby \
+  -s basics -n truncate
 ```
+
+Adapters are configured in `liquid-spec.toml`; the bundled `liquid-ruby`
+reference can be selected by adding it to the manifest or by using
+`reference_adapter` with `check --compare`. Matrix output includes per-spec
+results and writes the full report to a deterministic temporary path.
 
 Output shows which adapters produce different results for each spec. The full
 observed output/error values are also written to a deterministic temporary
 report (`[all matrix differences in ...]`); `--json` includes each adapter's
 per-spec `results` and the same `report_path`.
 
-```
-Running 100 specs: ....F....F.. done
-
-======================================================================
-DIFFERENCES
-======================================================================
-----------------------------------------------------------------------
-1. TruncateTest#test_truncate_with_custom_ellipsis
-
-Template:
-  {{ text | truncate: 10, "..." }}
-
-Adapters: liquid_ruby
-Output:
-  "Hello w..."
-
-Adapters: my_adapter
-Output:
-  "Hello wo..."
-======================================================================
-```
-
 ### Benchmarking
 
-liquid-spec includes benchmark namespaces for measuring and comparing implementation performance. Benchmarks measure **compile** and **render** times separately, with statistical analysis including mean, standard deviation, and min/max ranges.
-
-#### Single Adapter Benchmarks
-
-Run benchmarks against a single adapter to measure its performance:
+Benchmark namespaces measure adapter-owned compile and render batches separately.
+A server that supports benchmarking advertises `benchmark: true` during
+`initialize`.
 
 ```bash
-liquid-spec bench --adapter liquid-ruby -n leaderboard
+liquid-spec bench --adapter candidate -s benchmarks -n bench_dynamic_partials \
+  --iterations 100
 ```
 
-Abbreviated output:
-```text
-liquid_ruby — Benchmarks
-Ruby 4.x (no-jit) │ 1 specs │ 5s/spec
-
-Benchmark 1/1: liquid_tag_leaderboard
-  Parse  (mean ± σ):  270µs ± 38µs   [893 allocs, 9.3k runs]
-  Render (mean ± σ):  564µs ± 116µs  [926 allocs, 4.4k runs]
-  Range  (min … max): 530µs … 3.79ms [4.4k runs]
-  Cold   (@1 / @10):  664µs / 618µs  (1.2x vs warm)
-
-1 passed
-```
-
-Benchmarks report parse/render distributions, allocation counts, cold-render behavior,
-and iteration totals. GC is disabled during timing to reduce measurement jitter.
-
-#### Multi-Adapter Performance Comparison
-
-Compare performance across different implementations using the core `bench` command:
+The benchmark command keeps transport overhead outside the server-owned timing
+and reports compile/render results. The bundled reference adapter is also
+benchmarkable:
 
 ```bash
-liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax
+liquid-spec bench --adapter liquid-ruby -s benchmarks
 ```
 
-Each benchmark runs against all adapters. The command prints their measurements together,
-then reports geometric-mean parse and render comparisons across common specs. When a
-all adapters are JSON-RPC processes, so server-owned timings remain comparable and
-transport overhead is kept outside compile/render measurements.
-
-```text
-Benchmark 1/10: storefront_product_page
-  liquid_ruby      Parse ...  Render ...
-  liquid_ruby_lax  Parse ...  Render ...
-  → liquid_ruby is 1.08x faster
-
-──────────────────────────────────────────────────────────────────────
-Comparison (10 common specs, reference: liquid_ruby)
-
-  Parse (geometric mean):
-    liquid_ruby is 1.05x faster than liquid_ruby_lax
-  Render (geometric mean):
-    liquid_ruby_lax ≈ liquid_ruby
-```
+The benchmark namespace contains realistic storefront, dynamic-partial,
+`{% liquid %}`, and Shopify-shaped templates. See `specs/benchmarks/` for the
+current corpus.
 
 #### Benchmark Specs
 
@@ -689,16 +543,23 @@ All checked specs passed.
 
 Use `-v` for preamble, per-namespace progress, and skipped-namespace details.
 
-## Example Adapters
+## Reference adapter
 
-See the `examples/` directory:
-
-- **`liquid_ruby_jsonrpc_v2.rb`** - JSON-RPC v2 reference adapter backed by Shopify/liquid
+The package ships `examples/liquid_ruby_jsonrpc_v2.rb` — a self-contained
+Shopify/liquid JSON-RPC v2 server that uses `bundler/inline` (no Gemfile).
+`liquid-spec init` wires it as `reference_adapter = "liquid-ruby"` with the
+portable path token `@liquid-spec/examples/liquid_ruby_jsonrpc_v2.rb`, which
+resolves against the installed data package or the source checkout.
 
 ```bash
-liquid-spec check --adapter liquid-ruby
+# Compare your candidate against Shopify/liquid
+liquid-spec check --adapter candidate --compare
+liquid-spec tools eval --compare -- ./adapter.ts <<'EOF'
+name: smoke
+template: "{{ 'hi' | upcase }}"
+expected: "HI"
+EOF
 ```
-
 ## Spec Format
 
 Specs are YAML files with this structure:
@@ -732,37 +593,25 @@ still testing lax behavior independently.
 ## Development
 
 ```bash
-# Clone
 git clone https://github.com/Shopify/liquid-spec.git
 cd liquid-spec
 
-# Install dependencies
-bundle install
+# Unit + integration tests for the Rust crates
+cargo test --workspace --locked
 
-# Run every verifier (the Rake task is equivalent)
-liquid-spec tools check
-rake check
+# Load every built-in namespace (corpus integrity check)
+cargo run -p liquid-spec-cli --locked -- tools check
 
-# Unit tests for liquid-spec itself
-rake test
+# Focused protocol gate against the built-in test server
+cargo run -p liquid-spec-cli --locked -- protocol -- \
+  target/debug/liquid-spec-test-server
 
-# Check focused specs against the Shopify/liquid JSON-RPC reference adapter
-cargo run -p liquid-spec-cli --bin liquid-spec -- check -- ruby examples/liquid_ruby_jsonrpc_v2.rb
-
-# Regenerate specs from Shopify/liquid source
-# (requires ../liquid directory with Shopify/liquid checked out)
-bundle exec rake generate
+# Install binary + corpus for use outside the checkout
+make install
 ```
 
-### Regenerating Specs
-
-The `rake generate` task:
-1. Clones Shopify/liquid at the current version tag
-2. Patches its test corpus to capture template/expected pairs
-3. Runs the tests and records every `assert_template_result` call
-4. Writes captured specs to `specs/liquid_ruby/`
-
-This ensures specs stay synchronized with the reference implementation.
+Corpus YAML lives under `specs/`. Implementer guides live under `docs/` and are
+embedded into the CLI at build time.
 
 ## License
 

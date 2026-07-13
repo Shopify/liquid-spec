@@ -1,0 +1,24 @@
+name: Rust
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+    - name: Build
+      run: cargo build --workspace --locked
+    - name: Test
+      run: cargo test --workspace --locked
+    - name: Corpus load check
+      run: cargo run -p liquid-spec-cli --locked -- tools check
