@@ -17,17 +17,19 @@ Every spec should have a `complexity` field indicating how difficult the behavio
 
 **Default complexity:** If no complexity is specified, the spec defaults to **1000** (undefined/unscored). The complexity ceiling is **1000**; do not assign scores above 1000.
 
-## Suite-Level Minimum Complexity
+## Namespace Defaults
 
-Suites can define a `minimum_complexity` in their `suite.yml` file. This value is applied to specs in that suite that do not have an explicit complexity:
+Each namespace can define a `minimum_complexity` metadata default. This value is applied
+to specs in that namespace that do not have an explicit complexity:
 
 ```yaml
-# suite.yml
-name: "My Suite"
+# namespace metadata
+name: "My Namespace"
 minimum_complexity: 1000
 ```
 
-This is useful for suites where most specs are edge cases, generated compatibility cases, or production recordings.
+This is useful for namespaces where most specs are edge cases, generated compatibility
+cases, or production recordings.
 
 ## Complexity Ranges
 

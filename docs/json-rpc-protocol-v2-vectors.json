@@ -1,0 +1,60 @@
+{
+  "protocol_version": "2",
+  "description": "Language-neutral conformance vectors. Each request is sent as one NDJSON line.",
+  "vectors": [
+    {
+      "name": "initialize",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "protocol_versions": ["2"],
+          "client": {"name": "liquid-spec", "version": "2.0.0", "language": "rust"}
+        }
+      },
+      "assert": ["result.protocol_version == '2'", "result.implementation.name is non-empty", "result.capabilities is object"]
+    },
+    {
+      "name": "echo-typed-values",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "protocol.echo",
+        "params": {
+          "values": [
+            {"$liquid-spec": {"type": "integer", "value": "9007199254740993"}},
+            {"$liquid-spec": {"type": "bytes", "base64": "AP8="}},
+            {"$liquid-spec": {"type": "symbol", "value": "draft"}},
+            {"$liquid-spec": {"type": "fixture", "set": "standard-drops", "version": 1, "name": "BooleanDrop", "params": {"value": false}}}
+          ]
+        }
+      },
+      "assert": ["result equals request.params"]
+    },
+    {
+      "name": "compile-render-release",
+      "requests": [
+        {"jsonrpc": "2.0", "id": 3, "method": "template.compile", "params": {"bundle": {"entry": "main", "sources": {"main": "Hello {{ name }}!"}}, "options": {"parse_mode": "strict2", "line_numbers": true}}},
+        {"jsonrpc": "2.0", "id": 4, "method": "template.render", "params": {"template_id": "$response(3).result.ok.template_id", "environment": {"name": "Ada"}, "options": {"error_policy": "raise", "now": "2024-01-01T00:00:00Z"}}},
+        {"jsonrpc": "2.0", "id": 5, "method": "template.release", "params": {"template_id": "$response(3).result.ok.template_id"}}
+      ],
+      "assert": ["response(4).result.ok.output == 'Hello Ada!'", "response(5).result.ok is object"]
+    },
+    {
+      "name": "released-handle-is-invalid",
+      "request": {"jsonrpc": "2.0", "id": 6, "method": "template.render", "params": {"template_id": "released", "environment": {}, "options": {}}},
+      "assert": ["error.code == -32602"]
+    },
+    {
+      "name": "unknown-method",
+      "request": {"jsonrpc": "2.0", "id": 7, "method": "liquid-spec.unknown", "params": {}},
+      "assert": ["error.code == -32601"]
+    },
+    {
+      "name": "shutdown-notification",
+      "request": {"jsonrpc": "2.0", "method": "shutdown", "params": {}},
+      "assert": ["no response is emitted"]
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+use std::io::Write;
+use std::process::{Command, Stdio};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+fn binary() -> &'static str {
+    env!("CARGO_BIN_EXE_liquid-spec")
+}
+
+fn server() -> &'static str {
+    env!("CARGO_BIN_EXE_liquid-spec-test-server")
+}
+
+#[test]
+fn init_generates_manifest_agents_and_executable_typescript_demo() {
+    let directory =
+        std::env::temp_dir().join(format!("liquid-spec-init-test-{}", std::process::id()));
+    std::fs::create_dir_all(&directory).expect("create init directory");
+    let output = Command::new(binary())
+        .args(["init", directory.to_str().unwrap()])
+        .output()
+        .expect("run init");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let manifest =
+        std::fs::read_to_string(directory.join("liquid-spec.toml")).expect("read starter manifest");
+    assert!(manifest.contains("default = \"check\""));
+    assert!(manifest.contains("command = [\"./adapter.ts\"]"));
+    assert!(directory.join("AGENTS.md").is_file());
+    let adapter =
+        std::fs::read_to_string(directory.join("adapter.ts")).expect("read TypeScript demo");
+    assert!(adapter.starts_with("#!/usr/bin/env -S node --experimental-strip-types\n"));
+    let _ = std::fs::remove_dir_all(directory);
+}
+
+#[test]
+fn protocol_gate_runs_before_acceptance_specs() {
+    let output = Command::new(binary())
+        .args(["protocol", "--", server()])
+        .output()
+        .expect("run protocol gate");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(String::from_utf8_lossy(&output.stdout).contains("Protocol v2: OK"));
+}
+
+#[test]
+fn run_executes_a_focused_spec_through_json_rpc() {
+    let output = Command::new(binary())
+        .args([
+            "run",
+            "-s",
+            "basics",
+            "-n",
+            "literal_passthrough",
+            "--",
+            server(),
+        ])
+        .output()
+        .expect("run focused spec");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(String::from_utf8_lossy(&output.stdout).contains("1 passes"));
+}
+
+#[test]
+fn check_is_observational_and_writes_all_results_report() {
+    let directory =
+        std::env::temp_dir().join(format!("liquid-spec-check-test-{}", std::process::id()));
+    std::fs::create_dir_all(&directory).expect("create check working directory");
+    let output = Command::new(binary())
+        .args([
+            "check",
+            "-s",
+            "basics",
+            "-n",
+            "object_string_literal",
+            "--",
+            server(),
+        ])
+        .current_dir(&directory)
+        .output()
+        .expect("run check");
+    assert!(
+        output.status.success(),
+        "check should not fail on spec mismatches"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let marker = "[all failures in ";
+    let start = stdout.find(marker).expect("report marker");
+    let path = stdout[start + marker.len()..]
+        .lines()
+        .next()
+        .expect("report path")
+        .trim_end_matches(']');
+    let report = std::fs::read_to_string(path).expect("read check report");
+    assert!(report.contains("FAIL [c="));
+    assert!(report.contains("object_string_literal"));
+    let _ = std::fs::remove_dir_all(directory);
+}
+
+#[test]
+fn check_and_features_are_available_as_tool_commands() {
+    let check = Command::new(binary())
+        .args(["tools", "check"])
+        .output()
+        .unwrap();
+    assert!(check.status.success());
+    assert!(String::from_utf8_lossy(&check.stdout).contains("7901 specs"));
+
+    let features = Command::new(binary())
+        .args(["tools", "features"])
+        .output()
+        .unwrap();
+    assert!(features.status.success());
+    assert!(String::from_utf8_lossy(&features.stdout).contains("core"));
+}
+
+#[test]
+fn bench_uses_server_owned_batches_and_precompiled_render() {
+    let output = Command::new(binary())
+        .args([
+            "bench",
+            "-n",
+            "bench_dynamic_partials",
+            "--iterations",
+            "2",
+            "--",
+            server(),
+        ])
+        .output()
+        .expect("run benchmark");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("compile"));
+    assert!(stdout.contains("render"));
+}
+
+#[test]
+fn eval_reads_yaml_from_stdin() {
+    let mut child = Command::new(binary())
+        .args(["tools", "eval", "--json", "--", server()])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("start eval");
+    child
+        .stdin
+        .take()
+        .expect("eval stdin")
+        .write_all(b"- name: eval_literal\n  template: hello\n  expected: hello\n  complexity: 1\n")
+        .expect("write eval YAML");
+    let output = child.wait_with_output().expect("wait for eval");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"passed\":1"));
+    assert!(stdout.contains("\"equivalent\":true"));
+}
+
+#[test]
+fn eval_compare_uses_the_configured_reference_adapter() {
+    let suffix = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let config_path = std::env::temp_dir().join(format!("liquid-spec-eval-{suffix}.toml"));
+    let config = format!(
+        "reference_adapter = \"reference\"\n\n[adapters.reference]\ncommand = [\"{}\"]\n",
+        server().replace('\\', "\\\\").replace('"', "\\\"")
+    );
+    std::fs::write(&config_path, config).expect("write eval config");
+    let mut child = Command::new(binary())
+        .args([
+            "--config",
+            config_path.to_str().unwrap(),
+            "tools",
+            "eval",
+            "--compare",
+            "--json",
+            "--",
+            server(),
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("start eval comparison");
+    child
+        .stdin
+        .take()
+        .expect("comparison stdin")
+        .write_all(b"- name: eval_compare\n  template: hello\n  expected: hello\n  complexity: 1\n")
+        .expect("write comparison YAML");
+    let output = child.wait_with_output().expect("wait for eval comparison");
+    let _ = std::fs::remove_file(&config_path);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"reference\""));
+    assert!(stdout.contains("\"equivalent\":true"));
+}

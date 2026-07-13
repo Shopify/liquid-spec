@@ -533,19 +533,19 @@ Use liquid-spec to verify:
 
 ```bash
 # Test output conversion
-liquid-spec run my_adapter.rb -n literal_
-liquid-spec run my_adapter.rb -n range
+liquid-spec check --adapter candidate -n literal_
+liquid-spec check --adapter candidate -n range
 
 # Test iteration
-liquid-spec run my_adapter.rb -n for_
+liquid-spec check --adapter candidate -n for_
 
 # Test empty/blank
-liquid-spec run my_adapter.rb -n empty
-liquid-spec run my_adapter.rb -n blank
+liquid-spec check --adapter candidate -n empty
+liquid-spec check --adapter candidate -n blank
 
 # Test scoping
-liquid-spec run my_adapter.rb -n scope
-liquid-spec run my_adapter.rb -n assign
+liquid-spec check --adapter candidate -n scope
+liquid-spec check --adapter candidate -n assign
 ```
 
 See also:

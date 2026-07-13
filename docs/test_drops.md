@@ -41,14 +41,11 @@ in their language. No bidirectional RPC is needed.
 
 ## The `drops` feature
 
-Adapters declare drop support via the `drops` feature (in the `:core` set):
+Adapters declare drop support by advertising the portable fixture set in their
+JSON-RPC `initialize` response:
 
-```ruby
-LiquidSpec.configure do |config|
-  # Empty missing_features = try everything, including drops.
-  # To skip drop specs while building incrementally:
-  # config.missing_features = [:drops]
-end
+```json
+{"fixture_sets":{"standard-drops":1},"features":["core","drops"]}
 ```
 
 All drop specs are scored at complexity 200+. Implement the standard library
@@ -230,17 +227,18 @@ Shorthand `n: [1, 100]` is also accepted but the explicit form is preferred.
 
 The adapter never sees `#{...}` — it receives a fully concrete spec. The
 `randomness` feature flag (on by default) controls whether specs with
-`generate:` are included. Adapters that want deterministic runs can opt out:
+`generate:` are included. Adapters that want deterministic runs can omit it:
 
-```ruby
-config.missing_features = [:randomness]
+```json
+{"features":["core","drops"]}
 ```
 
 ## Migration from Ruby-specific drops
 
 Existing specs use Ruby-specific drop classes (`ToSDrop`, `SecurityVictimDrop`,
-`BooleanDrop`, etc.) that require either Ruby runtime or bidirectional RPC
-callbacks. These are being migrated to the standard library:
+`BooleanDrop`, etc.). Portable behavior uses versioned `standard-drops` fixture
+values over JSON-RPC; there are no bidirectional RPC callbacks. Ruby-only security
+coverage remains behind the `ruby_compat` capability:
 
 | Old drop | New drop | What changes |
 |---|---|---|

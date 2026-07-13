@@ -7,7 +7,7 @@ optional: false
 
 # Liquid Implementation Curriculum
 
-liquid-spec is not just a compatibility test suite. It is also a curriculum for building
+liquid-spec is not just a compatibility corpus. It is also a curriculum for building
 a production-grade Liquid implementation incrementally.
 
 The runner orders specs by `complexity`. In the common case, the first failure is the
@@ -25,19 +25,18 @@ returning to the ordered ramp so earlier semantics stay solid.
   Bugs multiply when each tag/filter answers those independently.
 - **Keep parsing, rendering, and host integration separable.** The exact boundary is up
   to you, but clear seams make error handling, partials, drops, and JSON-RPC adapters easier.
-- **Declare error behavior deliberately.** Start with `config.error_modes = [:strict2]`
-  and `config.render_error_modes = [:raise]`; add strict, lax, or inline compatibility
-  only when implemented. Use `config.missing_features` for other capabilities.
+- **Use feature gates deliberately.** Capabilities reported by the adapter are not failure;
+  they keep the curriculum aligned with the kind of Liquid you are building right now.
 - **Prefer observable compatibility over implementation mimicry.** Reproduce Ruby internals
   only when your compatibility target requires them.
 
 ## The Loop
 
 ```bash
-liquid-spec run my_adapter.rb
+liquid-spec check --adapter candidate
 ```
 
-1. Run the suite.
+1. Check the corpus.
 2. Usually start with the first/lowest-complexity failure.
 3. Read the full spec: template, environment, filesystem, expected output, errors, and hint.
 4. If the rule is unclear, read the relevant guide below.
@@ -48,7 +47,7 @@ liquid-spec run my_adapter.rb
 For a one-off experiment, feed `eval` a YAML spec:
 
 ```bash
-cat <<'EOF' | liquid-spec tools eval my_adapter.rb --compare
+cat <<'EOF' | liquid-spec tools eval --adapter candidate --compare
 name: scratch_assign
 template: "{% assign x = 1 %}{{ x }}"
 expected: "1"
@@ -83,11 +82,9 @@ architecture. For example, all of these are reasonable choices:
 - Shopify-theme support early because your product needs it, even though the generic ramp
   treats it as optional later work.
 
-Use `config.error_modes` and `config.render_error_modes` to select the error contracts
-you implement, and `config.missing_features` to keep other suite capabilities focused.
-Unannotated specs exercise only the highest supported parse strictness. Explicit
-multi-mode specs exercise only their highest supported strict mode (`strict2`, then
-`strict`); explicitly declared `lax` remains a separate compatibility run.
+Advertise only capabilities your JSON-RPC server actually implements. Add capabilities
+as they become part of your implementation; the runner skips specs requiring a missing
+capability and reports the skipped count explicitly.
 
 ## What to Read First
 
@@ -110,8 +107,7 @@ Then let the failing spec choose the next guide. For example:
 
 Unless your project specifically needs them early, these are often worth deferring:
 
-- Strict and lax parser compatibility beyond the strict2-first path.
-- Inline error rendering beyond the default raised-error path.
+- Lax parsing and legacy `:raise` mode.
 - Shopify-specific `shopify_*` features.
 - Ruby-only compatibility (`ruby_types`, `ruby_drops`, `drop_class_output`) if you are
   not trying to reproduce Ruby internals.
@@ -125,20 +121,20 @@ Useful checkpoints:
 
 ```bash
 # See the current lesson/ramp position
-liquid-spec run my_adapter.rb
+liquid-spec check --adapter candidate
 
 # Audit accidental passes when building early behavior
-liquid-spec run my_adapter.rb --list-passed --json
+liquid-spec check --adapter candidate --list-passed --json
 
 # Search around recorded behavior after the ramp is green
-liquid-spec tools mutate my_adapter.rb --around=for_loops
-liquid-spec tools fuzz my_adapter.rb --seed=1234 --json
+liquid-spec tools mutate --adapter candidate --around=for_loops
+liquid-spec tools fuzz --adapter candidate --seed=1234 --json
 
 # Validate liquid-spec/spec changes when contributing to this repository
 liquid-spec tools check  # equivalent: rake check
 ```
 
 `liquid-spec tools check` / `rake check` are for liquid-spec contributors. Adapter authors usually want
-`liquid-spec run my_adapter.rb`; that is the real curriculum loop. Once the recorded
+`liquid-spec check --adapter candidate`; that is the real curriculum loop. Once the recorded
 ramp is green, read `liquid-spec docs adversarial` before promoting generated
 differential discoveries into permanent specs.

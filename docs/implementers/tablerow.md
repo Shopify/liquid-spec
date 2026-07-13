@@ -181,7 +181,7 @@ Example with `cols:3`:
 
 Run tablerow-specific specs:
 ```bash
-liquid-spec run your_adapter.rb -n tablerow
+liquid-spec check --adapter candidate -n tablerow
 ```
 
 Start with basic tablerow (complexity 180), then move to tablerowloop properties (250+).

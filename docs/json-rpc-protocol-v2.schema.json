@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shopify.github.io/liquid-spec/json-rpc-protocol-v2.schema.json",
+  "title": "liquid-spec JSON-RPC protocol v2",
+  "description": "Message and value shapes accepted by liquid-spec protocol v2.",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "required": ["jsonrpc", "id", "method"],
+      "properties": {
+        "jsonrpc": {"const": "2.0"},
+        "id": {"type": "integer", "minimum": 0},
+        "method": {"type": "string", "minLength": 1},
+        "params": {}
+      },
+      "additionalProperties": false
+    },
+    "notification": {
+      "type": "object",
+      "required": ["jsonrpc", "method"],
+      "properties": {
+        "jsonrpc": {"const": "2.0"},
+        "method": {"const": "shutdown"},
+        "params": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "rpcError": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {"type": "integer"},
+        "message": {"type": "string"},
+        "data": {}
+      },
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "required": ["jsonrpc", "id"],
+      "properties": {
+        "jsonrpc": {"const": "2.0"},
+        "id": {"type": "integer", "minimum": 0},
+        "result": {},
+        "error": {"$ref": "#/$defs/rpcError"}
+      },
+      "oneOf": [{"required": ["result"], "not": {"required": ["error"]}}, {"required": ["error"], "not": {"required": ["result"]}}],
+      "additionalProperties": false
+    },
+    "liquidError": {
+      "type": "object",
+      "required": ["phase", "code", "message"],
+      "properties": {
+        "phase": {"enum": ["parse", "render"]},
+        "code": {"type": "string", "minLength": 1},
+        "message": {"type": "string"},
+        "location": {"$ref": "#/$defs/location"},
+        "causes": {"type": "array", "items": {"$ref": "#/$defs/liquidError"}}
+      },
+      "additionalProperties": false
+    },
+    "location": {
+      "type": "object",
+      "required": ["template"],
+      "properties": {
+        "template": {"type": "string"},
+        "line": {"type": "integer", "minimum": 1},
+        "column": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "outcome": {
+      "oneOf": [
+        {"type": "object", "required": ["ok"], "properties": {"ok": {}}, "additionalProperties": false},
+        {"type": "object", "required": ["error"], "properties": {"error": {"$ref": "#/$defs/liquidError"}}, "additionalProperties": false}
+      ]
+    },
+    "wireValue": {
+      "description": "JSON primitive/array/object or a one-key $liquid-spec tagged envelope",
+      "oneOf": [
+        {"type": ["null", "boolean", "number", "string"]},
+        {"type": "array", "items": {"$ref": "#/$defs/wireValue"}},
+        {"type": "object", "not": {"required": ["$liquid-spec"]}, "additionalProperties": {"$ref": "#/$defs/wireValue"}},
+        {"$ref": "#/$defs/taggedValue"}
+      ]
+    },
+    "taggedValue": {
+      "type": "object",
+      "required": ["$liquid-spec"],
+      "properties": {
+        "$liquid-spec": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {"enum": ["object", "integer", "float", "bytes", "symbol", "date", "time", "datetime", "range", "map", "fixture"]}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/request"},
+    {"$ref": "#/$defs/notification"},
+    {"$ref": "#/$defs/response"}
+  ]
+}

@@ -254,13 +254,13 @@ Ranges have a size equal to their length.
 
 ```bash
 # Test integer size quirk
-liquid-spec run my_adapter.rb -n filter_int
+liquid-spec check --adapter candidate -n filter_int
 
 # Test hash first/last
-liquid-spec run my_adapter.rb -n filter_hash
+liquid-spec check --adapter candidate -n filter_hash
 
 # Test all type filters
-liquid-spec run my_adapter.rb -n filter_ -n variable_type
+liquid-spec check --adapter candidate -n filter_ -n variable_type
 ```
 
 See also:

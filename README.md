@@ -1,20 +1,34 @@
 # liquid-spec
 
+> The Rust rewrite is the v2 implementation path. It drives every Liquid engine
+> through the JSON-RPC v2 adapter protocol; Ruby adapter DSLs and protocol-v1
+> callbacks are retained only in the legacy Ruby release. Build the new binary
+> with `cargo build -p liquid-spec-cli --bin liquid-spec` and run it as
+> `target/debug/liquid-spec`.
+
+The Rust CLI keeps the acceptance curriculum and the familiar `init`, `docs`,
+`check`, `bench`, and `tools` commands. `run` remains a compatibility alias for
+`check`. `liquid-spec init` creates a
+`liquid-spec.toml` adapter manifest, an executable `adapter.ts` protocol demo, and
+`AGENTS.md`; adapters are launched as external newline-delimited JSON-RPC v2 processes.
+`--compare` uses a separately
+configured Ruby/liquid JSON-RPC server when reference behavior is needed.
+
 [![CI](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml/badge.svg)](https://github.com/Shopify/liquid-spec/actions/workflows/ruby.yml)
 
-**liquid-spec is both an acceptance suite and an implementation system for
+**liquid-spec is both an acceptance corpus and an implementation system for
 [Liquid](https://github.com/Shopify/liquid).** It can verify an existing parser and
 renderer, but it is also designed to guide a human or coding agent from an empty project
 to a production-ready Liquid implementation, one observable behavior at a time.
 
-The suite contains thousands of executable examples drawn from Shopify's reference
+The corpus contains thousands of executable examples drawn from Shopify's reference
 implementation, a curated beginner ramp, parser-error matrices, Dawn theme fixtures,
 and production recordings. The adapter boundary works with any implementation strategy
 and, over JSON-RPC, any programming language.
 
-## More Than a Conformance Suite
+## More Than a Conformance Corpus
 
-A conventional conformance suite answers **“is this implementation compatible?”**
+A conventional conformance corpus answers **“is this implementation compatible?”**
 liquid-spec also answers:
 
 - **What is the smallest useful behavior to implement next?**
@@ -29,10 +43,10 @@ partials, parser modes, compatibility quirks, and production recordings follow. 
 runner reports the lowest-complexity failures as **“Next best specs to work on”** and
 shows an implementation hint with each failure.
 
-That turns the suite into an executable curriculum:
+That turns the corpus into an executable curriculum:
 
 ```text
-run liquid-spec
+liquid-spec check
       │
       ▼
 read the first failure + hint ──► implement the general rule
@@ -69,14 +83,15 @@ normally lack:
 6. **Explicit scope.** Feature gates distinguish portable Liquid, legacy parser modes,
    Ruby-specific behavior, and Shopify extensions. Unsupported features are visible debt,
    not noise hidden among failures.
-7. **Machine-readable operation.** `--json`, name/suite filters, inspection, and focused
+7. **Machine-readable operation.** `--json`, name/namespace filters, inspection, and focused
    eval commands let an agent gather precise evidence and iterate without scraping an
    unstructured test log.
 
-`liquid-spec init` makes this workflow agent-ready. It generates disposable adapter
-shims plus an `AGENTS.md` that explains the loop, hard rules, architecture advice,
-protocol, feature gates, and documentation commands. Your Liquid package remains a
-standalone library; the adapter exists only to let liquid-spec exercise it.
+`liquid-spec init` makes this workflow agent-ready. It generates a documented
+source-echo `adapter.ts` protocol demo plus an `AGENTS.md` that explains the loop,
+hard rules, architecture advice, protocol, feature gates, and documentation commands.
+Your Liquid package remains a standalone library; the adapter exists only to let
+liquid-spec exercise it.
 
 ## How Acceptance Testing Works
 
@@ -91,9 +106,9 @@ YAML behavior specs
                            │
               ┌────────────┴────────────┐
               ▼                         ▼
-       direct Ruby adapter       JSON-RPC adapter
-                                  (TypeScript, Rust,
-                                   Go, Python, ...)
+       JSON-RPC adapter          JSON-RPC reference adapter
+       (TypeScript, Rust,         (Ruby/liquid or another
+        Go, Python, ...)          implementation)
               │                         │
               └────────────┬────────────┘
                            ▼
@@ -106,41 +121,55 @@ small enough that results describe the engine rather than the test integration.
 
 ## Installation
 
-Add to your Gemfile:
-
-```ruby
-gem "liquid-spec", git: "https://github.com/Shopify/liquid-spec"
-```
-
-Then run:
+Build the Rust binary:
 
 ```bash
-bundle install
+cargo build --release -p liquid-spec-cli --bin liquid-spec
+install target/release/liquid-spec ~/.local/bin/liquid-spec
 ```
 
-Or install directly from GitHub:
+The binary reads the built-in `specs/` directory shipped beside a release package
+and embeds the high-signal documentation. During repository development, it reads
+the checkout; set `LIQUID_SPEC_ROOT` or `LIQUID_SPEC_DOCS` to use another corpus.
 
-```bash
-gem install specific_install
-gem specific_install https://github.com/Shopify/liquid-spec
-```
+The older Ruby gem remains available for protocol-v1 migration, but it is not needed
+by the Rust runner or by non-Ruby Liquid implementations.
 
 ## Quick Start
 
 ```bash
-# Generate both adapter choices and an agent implementation guide.
+# Creates liquid-spec.toml, adapter.ts, and AGENTS.md.
 liquid-spec init
 
-# Read the curriculum, then run the adapter for your language.
+# With no subcommand, the manifest's `default = "check"` action runs the
+# generated candidate adapter. Check options can be supplied directly too.
+liquid-spec
+liquid-spec -n assign
+
+# Every implementation is an external JSON-RPC v2 process.
 liquid-spec docs curriculum
-liquid-spec run specs/adapter.rb                 # Ruby
-liquid-spec run specs/adapter-jsonrpc.rb \
-  --command="your-liquid-jsonrpc-server"           # any other language
+liquid-spec check -- ./my-liquid-server
+
+# Or name a repeatable command from liquid-spec.toml.
+liquid-spec check --adapter candidate
+liquid-spec tools protocol --adapter candidate
+liquid-spec bench --adapter candidate
 ```
 
-The first failure is the next lesson. Implement the behavior described by its hint and
-rerun the same command. Re-running `init` leaves identical generated files alone; when a
-target differs, it asks before overwriting and defaults to **No**.
+The runner performs the v2 protocol gate before loading Liquid specs. `check` evaluates
+the full selected corpus, and the first lowest-complexity failure is the next
+implementation lesson. Spec failures are observational: after the protocol gate
+succeeds, the command exits 0 even when specs fail. Each check overwrites a
+deterministically named report under `/tmp/liquid-spec-check-<hash>.txt`, containing
+all passes and failures; human output points to it with `[all failures in ...]`.
+`--compare` starts the separately configured Ruby/liquid JSON-RPC reference adapter;
+the Rust binary never embeds Liquid.
+
+The manifest and command line are equivalent configuration surfaces: explicit
+subcommands and flags override `default`/`default_adapter` from `liquid-spec.toml`,
+and `--config PATH` selects another manifest. The generated `adapter.ts` is a
+source-echo protocol demo; replace its compile/render implementation as your Liquid
+engine grows.
 
 ## Full CLI Example: Ask an Agent to Build Liquid in TypeScript
 
@@ -150,46 +179,49 @@ The complete bootstrap is intentionally small. Start in an empty directory:
 mkdir liquid-typescript
 cd liquid-typescript
 
-gem install specific_install
-gem specific_install https://github.com/Shopify/liquid-spec
-
-# Creates specs/adapter.rb, specs/adapter-jsonrpc.rb, and AGENTS.md.
-# The JSON-RPC adapter is the bridge the TypeScript implementation will use.
+# Creates liquid-spec.toml, adapter.ts, and AGENTS.md.
 liquid-spec init
 
 codex -p "/goal Implement a full production-ready Liquid implementation in TypeScript. \
-Read AGENTS.md first. Use specs/adapter-jsonrpc.rb only as the test bridge; build the \
+Read AGENTS.md first; implement the JSON-RPC v2 server as the only test bridge; build the \
 engine as a standalone TypeScript library. Ask liquid-spec for guidance on the next \
 steps, implement the general behavior behind each lowest-complexity failure, and rerun \
-the suite after every change. Do not special-case specs or hide required behavior with \
+the corpus after every change. Do not special-case specs or hide required behavior with \
 missing_features. Keep going until liquid-spec reports Complexity level cleared: \
-1000 of 1000 for every applicable suite."
+1000 of 1000 for every applicable namespace."
 ```
 
-That is enough context because `liquid-spec init` wrote the detailed operating manual
-into `AGENTS.md`. The agent can discover and use the whole feedback loop itself:
+`liquid-spec init` writes the detailed operating manual into `AGENTS.md` and a
+source-echo JSON-RPC v2 demo into `adapter.ts`:
 
 ```bash
-# After setting DEFAULT_COMMAND in specs/adapter-jsonrpc.rb to the TypeScript server:
-liquid-spec run specs/adapter-jsonrpc.rb
-liquid-spec tools inspect specs/adapter-jsonrpc.rb -n "the_failing_spec"
+# After setting adapters.candidate.command in liquid-spec.toml:
+liquid-spec check --adapter candidate
+liquid-spec tools inspect --adapter candidate -n "the_failing_spec"
 liquid-spec docs curriculum
 liquid-spec docs core-abstractions
-cat scratch.yml | liquid-spec tools eval specs/adapter-jsonrpc.rb --compare
-liquid-spec run specs/adapter-jsonrpc.rb --json
+liquid-spec check --adapter candidate --json
 ```
 
-The generated JSON-RPC adapter initially opts out of capabilities that cannot be carried
-portably or have not been wired yet, such as Ruby-only values, standard test drops, and
-Shopify extensions. Reaching `1000 of 1000` means every spec selected for the adapter
-passes; a production target also requires reviewing `missing_features` and removing each
-entry that belongs in that target. Use `liquid-spec tools features` to audit that scope.
+Capabilities are reported by the server. Standard drops use the versioned fixture
+catalog; Ruby-only fixture descriptors are tagged `ruby_compat` and are skipped by
+servers that do not advertise that capability.
 
-For a human-driven implementation, use exactly the same loop: run, read the first hint,
-implement, and rerun. `liquid-spec docs json-rpc-protocol` documents the four subprocess
-methods (`initialize`, `compile`, `render`, and `quit`).
+For a human-driven implementation, use exactly the same loop: check, read the first
+hint, implement, and check again. `liquid-spec docs json-rpc-protocol-v2` documents the
+wire contract.
 
-## Writing an Adapter
+## Archived Ruby adapter API (legacy gem only)
+
+The material in this section documents the previous Ruby gem and is retained only
+for migration. It is not accepted by the Rust binary. The rewrite has one adapter
+boundary: an external newline-delimited JSON-RPC v2 process. Ruby comparisons use
+`examples/liquid_ruby_jsonrpc_v2.rb` through that same process boundary, so the Rust
+runner never loads Liquid in-process and never invokes Ruby callbacks or drops.
+
+The following DSL is retained for users migrating from the Ruby gem. It is not
+accepted by the Rust binary; new implementations must expose the JSON-RPC v2
+methods documented above.
 
 An adapter is a small Ruby file that tells liquid-spec how to use your implementation:
 
@@ -202,12 +234,8 @@ LiquidSpec.setup do |ctx|
   require "my_liquid"
 end
 
-# Declare what your adapter can't handle (default: run everything)
+# Declare what your adapter can't handle (default: check every applicable spec)
 LiquidSpec.configure do |config|
-  # Parse modes this adapter implements. Highest strictness is the default.
-  config.error_modes = [:strict2]
-  # Raised render errors are the default; :inline is optional.
-  config.render_error_modes = [:raise]
   config.missing_features = [:shopify_tags, :shopify_filters]
 end
 
@@ -226,38 +254,25 @@ end
 ```
 
 The `options` hash in render includes:
-- `:registers` - Host context for filters/drops, including `:file_system`,
-  `:template_factory`, and `:current_time`; it is not template-visible like assigns
-
-Specs without `error_mode` run once using the adapter's highest supported parse
-mode (`strict2`, then `strict`, then `lax`). A spec declaring multiple modes runs
-at its highest supported strict mode; explicitly declaring `lax` adds one separate
-lax run. Inline-error specs run
-only when `render_error_modes` includes `:inline`; raised render errors are the
-normal path.
+- `:registers` - Hash with `:file_system` and `:template_factory`
 - `:strict_errors` - If true, raise errors; if false, render them inline
 - `:exception_renderer` - Custom exception handler (optional)
 
 
-### JSON-RPC adapters for non-Ruby implementations
+### JSON-RPC adapters
 
-Use `liquid-spec init --jsonrpc my_adapter.rb` when your Liquid engine is written in Rust, Go, Python, Node.js, or another language. The generated Ruby adapter launches your server as a subprocess and talks JSON-RPC over stdin/stdout.
-
-Key setup points:
-
-- Your server implements `initialize`, `compile`, `render`, and `quit`.
-- Server debug logs go to stderr; stdout must contain only newline-delimited JSON-RPC messages.
-- The adapter controls spec selection with `config.error_modes`,
-  `config.render_error_modes`, and `config.missing_features`; server-reported
-  `features` are informational.
-- Minimal JSON-RPC adapters should usually opt out of unsupported or non-portable features such as `:drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
-- Remove `:drops` when the engine supports the standard test-drop library. Bidirectional runtime objects can use the protocol's `drop_get`, `drop_call`, and `drop_iterate` callbacks.
-- Read `docs/json-rpc-protocol.md` for the exact message format and error-handling rules.
+All adapters use protocol v2 over newline-delimited JSON-RPC. The server implements
+`initialize`, `protocol.echo`, `template.compile`, `template.render`,
+`template.release`, and the `shutdown` notification. Server diagnostics go to stderr;
+stdout must contain only JSON-RPC messages. There are no callbacks or `_rpc_drop`
+markers: portable objects use the versioned standard fixture catalog, while Ruby-only
+objects are selected by the `ruby_compat` capability. Read
+`docs/json-rpc-protocol-v2.md` for the complete contract.
 
 ```bash
-liquid-spec init --jsonrpc my_adapter.rb
-liquid-spec run my_adapter.rb --command="./my-liquid-server"
-liquid-spec run my_adapter.rb --json --list-passed > results.json
+liquid-spec init
+liquid-spec check -- ./my-liquid-server
+liquid-spec check --adapter candidate --json > results.json
 ```
 
 ### Optional: compiled-artifact protocol
@@ -300,32 +315,32 @@ The contract is deliberately production-oriented:
 4. Assigns, registers, and runtime filesystems are still supplied to the normal
    `render` hook for every call; they are not part of the artifact.
 
-With both hooks, `--bench` validates the dump → load → render roundtrip, reports
+With both hooks, `liquid-spec bench` validates the dump → load → render roundtrip, reports
 raw artifact bytes and steady-state load diagnostics, and measures atomic source
 compile + first-render and artifact-load + first-render workflows with 10
 interleaved samples in the adapter process. Each sample invokes compile or load
 before its first render, but process-level runtime, JIT, and global caches remain
 warm. The harness intentionally does not include process startup or IPC.
 
-`--bench` warns when either hook is missing because artifact size and
+`liquid-spec bench` warns when either hook is missing because artifact size and
 load+first-render results will be omitted. Implementations without a persistent
 compiled format may leave the hooks absent; the warning documents that the
 benchmark is then limited to source compile and resident render paths.
 
-### Optional: local suites
+### Optional: local namespaces
 
-Projects can ship their own spec/benchmark suites alongside their adapter:
-any `./specs/<name>/suite.yml` directory in the invoking project is
-discovered next to the gem's builtin suites and selected the same way
-(`-s <name>`). Set `timings: true` in `suite.yml` to make it benchmarkable
+Projects can ship their own spec/benchmark namespaces alongside their adapter:
+any `./specs/<name>/` directory in the invoking project is discovered next to the
+built-in namespaces and selected with `--namespace <name>` (or `-s <name>`).
+Mark benchmark namespaces with `timings: true` in their metadata to make them benchmarkable
 with `liquid-spec bench ADAPTER -s <name>`, and `default: false` to keep it
-out of regular runs.
+out of regular checks.
 
-## Test Suites
+## Spec Namespaces
 
-| Suite | Tests | Description |
+| Namespace | Tests | Description |
 |-------|-------|-------------|
-| **basics** | 945 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
+| **basics** | 941 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
 | **liquid_ruby** | 2,097 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
 | **parser_errors** | 1,905 | Strict parser error compatibility and mutation matrices |
@@ -334,9 +349,9 @@ out of regular runs.
 | **shopify_production_recordings** | 2,260 | Recorded behavior from Shopify's production Liquid compiler |
 | **shopify_theme_dawn** | 26 | Real-world templates from [Shopify Dawn](https://github.com/Shopify/dawn) theme |
 
-### The Basics Suite
+### The Basics Namespace
 
-If you're building a new Liquid implementation, **start with the basics suite**. It runs first and covers all fundamental features from the [official Liquid documentation](https://shopify.github.io/liquid/).
+If you're building a new Liquid implementation, **start with the basics namespace**. It runs first and covers all fundamental features from the [official Liquid documentation](https://shopify.github.io/liquid/).
 
 Specs are ordered by complexity so you can implement features progressively. The goal is a smooth ramp: a toy renderer should pass only the trivial first specs, then fail on a small, actionable next behavior.
 
@@ -357,47 +372,34 @@ Each non-trivial spec includes a detailed `hint` explaining how the feature shou
 
 **Read `Complexity level cleared`, not just total passes.** A naive adapter that always returns `""` can accidentally pass many later specs whose expected output is empty, but its cleared complexity level should remain at 0. The complexity-level line tells you how far the implementation progressed through the ordered curriculum.
 
-### Feature-Based Suite Selection
+### Feature-Based Namespace Selection
 
-Suites marked as default run unless you select one explicitly with `-s`. Declare what
-your adapter cannot handle to skip specs that require those capabilities:
+Namespaces marked as default are checked unless you select one explicitly with `--namespace` (or `-s`). Advertise only
+implemented capabilities from the adapter's JSON-RPC `initialize` response; missing
+capabilities cause dependent specs to be skipped:
 
-```ruby
-LiquidSpec.configure do |config|
-  config.error_modes = [:strict2]
-  config.render_error_modes = [:raise]
-
-  # Run everything (default — empty denylist)
-  config.missing_features = []
-
-  # Skip Shopify-specific specs (for adapters without Shopify extensions)
-  config.missing_features = [:shopify_tags, :shopify_objects, :shopify_filters]
-end
+```json
+{"features":["core"],"fixture_sets":{"standard-drops":1}}
 ```
-
-Do not list parsing or inline-error tags manually in `missing_features`; they are
-derived from the two positive error-mode declarations.
 
 ## Generated Adversarial Coverage
 
-After the recorded ramp passes, generate nearby cases and compare them directly with
-Shopify/liquid:
+After the recorded ramp passes, optional bounded probes can exercise nearby cases:
 
 ```bash
-liquid-spec tools mutate adapter.rb --around=for_loops --limit=100
-liquid-spec tools fuzz adapter.rb --seed=1234 --rounds=500 --minimize
-liquid-spec tools stress adapter.rb --depth=64 --repetitions=100
+liquid-spec tools mutate --adapter candidate --around=for_loops --limit=100
+liquid-spec tools fuzz --adapter candidate --seed=1234 --rounds=500
+liquid-spec tools stress --adapter candidate --depth=64 --repetitions=100
 ```
 
-`mutate` deterministically changes existing specs; `fuzz` reproducibly chains random
-mutations; `stress` generates bounded valid nesting and repetition. Differences are saved
-as runnable YAML regression specs by default. These commands cover whitespace controls,
-literal boundaries, lookups, filters, conditionals, loop options, malformed block
-structure, opaque bodies, Unicode, and newlines.
+`mutate` deterministically changes existing specs; `fuzz` produces seeded literal probes;
+`stress` generates bounded valid nesting and repetition. These commands stay secondary to
+the protocol gate and acceptance ramp. Use `tools eval --compare` for a direct reference
+comparison and save any useful discovery as an ordinary YAML spec.
 
 This is differential corpus mutation, not native coverage-guided fuzzing. See
 `liquid-spec docs adversarial` for comparison semantics, seed selection, JSON output,
-minimization, and how to curate a generated discovery into the permanent suite.
+minimization, and how to curate a generated discovery into the permanent corpus.
 
 ## CLI Reference
 
@@ -405,16 +407,16 @@ minimization, and how to curate a generated discovery into the permanent suite.
 liquid-spec COMMAND [options]
 
 Core commands:
-  liquid-spec init [FILE]                 Generate adapters and AGENTS.md
+  liquid-spec [CHECK_OPTIONS]             Follow `default` from liquid-spec.toml
+  liquid-spec init [DIRECTORY]            Generate liquid-spec.toml, adapter.ts, and AGENTS.md
   liquid-spec docs [NAME]                 Read implementer documentation
-  liquid-spec run ADAPTER                 Run the acceptance ramp
-  liquid-spec bench [ADAPTER]             Benchmark implementations
+  liquid-spec check [-- ADAPTER_COMMAND]  Check the acceptance ramp
+  liquid-spec bench [-- ADAPTER_COMMAND]  Benchmark implementations
 
 Tool collection (`liquid-spec tools help`):
-  liquid-spec tools inspect ADAPTER       Inspect matching specs in detail
-  liquid-spec tools eval ADAPTER          Evaluate one YAML spec
-  liquid-spec tools matrix                Compare adapters side-by-side
-  liquid-spec tools test                  Exercise bundled example adapters
+  liquid-spec tools inspect               Inspect matching specs in detail
+  liquid-spec tools protocol              Validate adapter protocol conformance
+  liquid-spec tools docs                  Print implementation documentation
   liquid-spec tools features              Audit feature tags and scope
   liquid-spec tools report                Analyze benchmark results
   liquid-spec tools check                 Run every verifier
@@ -422,32 +424,28 @@ Tool collection (`liquid-spec tools help`):
   liquid-spec tools fuzz ADAPTER          Seeded differential fuzz-style testing
   liquid-spec tools stress ADAPTER        Bounded structural stress
 
-Run options:
-  -n, --name PATTERN       Only run specs matching PATTERN
-  -s, --suite SUITE        Run specific suite (liquid_ruby, benchmarks, etc.)
+Check options:
+  -n, --name PATTERN       Only check specs matching PATTERN
+  -s, --namespace NAME     Check a spec namespace by directory name
   -c, --compare            Compare output against reference liquid-ruby
   -v, --verbose            Show detailed output
   -l, --list               List available specs
-  --list-suites            List available test suites
-  --max-failures N         Stop after N failures (default: 5)
-  --no-max-failures        Run all specs without stopping
-  --list-passed           List specs that passed after the run (ramp/debug audits)
+  --list-namespaces        List available spec namespaces
+  --list-passed           List specs that passed after the check (ramp/debug audits)
+  --spec FILE             Add a standalone YAML spec (repeatable)
   --json                  Output a single JSON summary (for tools)
   --jsonl                 Output one JSON event per line (for benchmark streaming/tools)
   -h, --help               Show help
 
 Examples:
-  liquid-spec run my_adapter.rb                    # Run all applicable specs
-  liquid-spec run my_adapter.rb -n for_tag         # Run specs matching 'for_tag'
-  liquid-spec run my_adapter.rb -s liquid_ruby     # Run only liquid_ruby suite
-  liquid-spec run my_adapter.rb --compare          # Compare against reference
-  liquid-spec run my_adapter.rb --no-max-failures  # See all failures
-  liquid-spec bench my_adapter.rb -n storefront      # Benchmark adapter vs reference
-  liquid-spec tools check                            # Run every spec verifier
-  liquid-spec tools features                         # Audit supported feature scope
-  liquid-spec tools inspect my_adapter.rb -n "case"  # Debug specific specs
-  liquid-spec tools mutate my_adapter.rb --around=for_loops
-  liquid-spec tools fuzz my_adapter.rb --seed=1234 --json
+  liquid-spec check --adapter candidate                    # Check all applicable specs
+  liquid-spec check --adapter candidate -n for_tag         # Check matching specs
+  liquid-spec check --adapter candidate -n assign          # Check matching specs
+  liquid-spec check --adapter candidate --compare          # Compare with configured reference
+  liquid-spec bench --adapter candidate -n storefront    # Server-side benchmark
+  liquid-spec tools check                                # Validate the corpus
+  liquid-spec tools features                             # Audit feature scope
+  liquid-spec tools inspect --adapter candidate -n "case"
 ```
 
 
@@ -462,8 +460,8 @@ When changing complexity scores or adding early specs, test the harness with int
 Use `--list-passed` to see accidental passes and `--json` for machine-readable analysis:
 
 ```bash
-liquid-spec run /tmp/echo_adapter.rb --list-passed
-liquid-spec run /tmp/empty_adapter.rb --json --list-passed > empty-results.json
+liquid-spec check --adapter candidate --list-passed
+liquid-spec check --adapter candidate --json --list-passed > empty-results.json
 ```
 
 A source-echo adapter should only pass raw-text specs before failing on first object output. An always-empty adapter may pass many empty-output specs, so judge progress by `Complexity level cleared` (or JSON `max_complexity_reached`), not by total passes.
@@ -480,9 +478,7 @@ Options:
   --adapters=LIST          Comma-separated list of adapters
   --reference=NAME         Reference adapter (default: liquid_ruby)
   -n, --name PATTERN       Filter specs by name pattern
-  -s, --suite SUITE        Spec suite to run
-  --max-failures N         Stop after N differences (default: 10)
-  --no-max-failures        Show all differences
+  -s, --namespace NAME     Spec namespace to benchmark
   -v, --verbose            Show detailed output
 
 Examples:
@@ -493,7 +489,7 @@ Examples:
   liquid-spec tools matrix --adapters=liquid_ruby,liquid_ruby_lax
 
   # Compare adapters on specific tests
-  liquid-spec tools matrix --adapters=liquid_ruby,my_adapter.rb -n truncate
+  liquid-spec tools matrix --adapters=candidate,liquid-ruby -n truncate
 ```
 
 Output shows which adapters produce different results for each spec:
@@ -522,14 +518,14 @@ Output:
 
 ### Benchmarking
 
-liquid-spec includes a benchmark suite for measuring and comparing implementation performance. Benchmarks measure **compile** and **render** times separately, with statistical analysis including mean, standard deviation, and min/max ranges.
+liquid-spec includes benchmark namespaces for measuring and comparing implementation performance. Benchmarks measure **compile** and **render** times separately, with statistical analysis including mean, standard deviation, and min/max ranges.
 
 #### Single Adapter Benchmarks
 
 Run benchmarks against a single adapter to measure its performance:
 
 ```bash
-liquid-spec bench examples/liquid_ruby.rb -n leaderboard
+liquid-spec bench --adapter liquid-ruby -n leaderboard
 ```
 
 Abbreviated output:
@@ -559,8 +555,8 @@ liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax
 
 Each benchmark runs against all adapters. The command prints their measurements together,
 then reports geometric-mean parse and render comparisons across common specs. When a
-comparison mixes inline adapters with JSON-RPC adapters, `bench` warns that subprocess
-and protocol overhead make the timings non-equivalent.
+all adapters are JSON-RPC processes, so server-owned timings remain comparable and
+transport overhead is kept outside compile/render measurements.
 
 ```text
 Benchmark 1/10: storefront_product_page
@@ -579,7 +575,7 @@ Comparison (10 common specs, reference: liquid_ruby)
 
 #### Benchmark Specs
 
-The benchmark suite currently includes 10 realistic templates:
+The benchmark namespace currently includes 10 realistic templates:
 
 | Benchmark | Description |
 |-----------|-------------|
@@ -594,32 +590,14 @@ The benchmark suite currently includes 10 realistic templates:
 | `shopify_theme_full_page` | Shopify-shaped Dream theme layout using portable Liquid |
 | `shopify_theme_product_page` | Shopify-shaped Dream product page using portable Liquid |
 
-Selecting these specs through `liquid-spec run ADAPTER -s benchmarks` checks correctness
+Selecting these specs through `liquid-spec check --adapter candidate -n '^bench_'` checks correctness
 without collecting timings; use `liquid-spec bench` for performance measurements.
 
-#### Profiling with StackProf
+#### Profiling
 
-Use `liquid-spec bench --profile` to generate StackProf profiles for detailed performance analysis:
-
-```bash
-# Single adapter profiling
-liquid-spec bench examples/liquid_ruby.rb --profile
-
-# Multi-adapter profiling
-liquid-spec bench --adapters=liquid_ruby,liquid_ruby_lax --profile
-```
-
-A single-adapter profile directory contains four dumps:
-
-```text
-/tmp/liquid-spec-profile-20260710_155637/
-├── compile_cpu.dump
-├── compile_object.dump
-├── render_cpu.dump
-└── render_object.dump
-```
-
-Inspect one with `stackprof /tmp/liquid-spec-profile-20260710_155637/render_cpu.dump`.
+The Rust runner leaves profiling to the adapter process. Use the adapter language's
+profiler around `benchmark.run`; the protocol keeps compile and render timing separate
+and excludes JSON-RPC transport latency from the reported nanoseconds.
 
 In multi-adapter bench mode, each adapter gets a separate directory such as
 `/tmp/liquid-spec-profile-{timestamp}-liquid_ruby/`; the command prints every path.
@@ -635,7 +613,7 @@ on stdin or `--spec=FILE`; add `--compare` to compare with the reference liquid-
 implementation and fill omitted expectations:
 
 ```bash
-liquid-spec tools eval examples/liquid_ruby.rb --compare <<EOF
+liquid-spec tools eval --adapter candidate --compare <<EOF
 name: upcase-test
 complexity: 20
 template: "{{ x | upcase }}"
@@ -654,25 +632,26 @@ Test upcase filter on simple string variable
 Template: {{ x | upcase }}
 Complexity: 20
 
-✓ PASS (matches reference)
+✓ PASS (candidate and reference agree)
   "HI"
-
-Saved to: /tmp/liquid-spec-2026-01-02.yml
 ```
 
-When using `--compare`, the `expected` field can be omitted—it will be filled from the reference implementation. If your implementation differs from the reference, you'll see a prominent message encouraging you to contribute the spec.
+When using `--compare`, both adapters run the supplied expected spec and their
+failure sets/messages are compared. Keep `expected` (or `errors`) in the YAML so the
+evaluation remains reproducible and language-neutral.
 
-Specs are automatically saved to `/tmp/liquid-spec-{date}.yml` for easy contribution back to liquid-spec.
+The Rust runner does not write ad-hoc specs automatically; save useful YAML explicitly
+and add it with `liquid-spec check --spec FILE`.
 
 ## Example Output
 
-Default `run` output is intentionally concise: it shows the lowest-complexity failures
+Default `check` output is intentionally concise: it shows the lowest-complexity failures
 (the next specs to work on) and then one summary line.
 
-Failing run:
+Failing check:
 
 ```
-$ liquid-spec run my_adapter.rb --max-failures 1
+$ liquid-spec check --adapter candidate
 
 Next best specs to work on:
 
@@ -686,30 +665,25 @@ Next best specs to work on:
 Complexity level cleared: 1 of 5, 2 passes, 1 failures.
 ```
 
-Successful run (counts depend on selected suites/features):
+Successful check (counts depend on selected namespaces/features):
 
 ```
-$ liquid-spec run my_adapter.rb
+$ liquid-spec check --adapter candidate
 Complexity level cleared: 1000 of 1000, 1234 passes, 0 failures, 12 skipped.
 
-Congrats! All run specs passed.
+All checked specs passed.
 ```
 
-Use `-v` for preamble, per-suite progress, and skipped-suite details.
+Use `-v` for preamble, per-namespace progress, and skipped-namespace details.
 
 ## Example Adapters
 
 See the `examples/` directory:
 
-- **`liquid_ruby.rb`** - Standard [Shopify/liquid](https://github.com/Shopify/liquid) gem
-- **`liquid_ruby_lax.rb`** - Shopify/liquid configured for lax-mode compatibility specs
-- **`liquid_ruby_shopify.rb`** - Shopify-flavored Liquid behavior
-- **`json_rpc_ruby_liquid.rb`** - JSON-RPC adapter backed by Shopify/liquid
-- **`liquid_c.rb`** / **`liquid_c_strict.rb`** - Legacy, explicit opt-in liquid-c examples; excluded from default adapter runs
-- **`liquid_ruby_yjit.rb`** / **`liquid_ruby_zjit.rb`** - Ruby JIT benchmark variants
+- **`liquid_ruby_jsonrpc_v2.rb`** - JSON-RPC v2 reference adapter backed by Shopify/liquid
 
 ```bash
-liquid-spec run examples/liquid_ruby.rb
+liquid-spec check --adapter liquid-ruby
 ```
 
 ## Spec Format
@@ -753,8 +727,8 @@ rake check
 # Unit tests for liquid-spec itself
 rake test
 
-# Run specs against the Shopify/liquid reference adapter
-bundle exec rake run
+# Check focused specs against the Shopify/liquid JSON-RPC reference adapter
+cargo run -p liquid-spec-cli --bin liquid-spec -- check -- ruby examples/liquid_ruby_jsonrpc_v2.rb
 
 # Regenerate specs from Shopify/liquid source
 # (requires ../liquid directory with Shopify/liquid checked out)
@@ -765,7 +739,7 @@ bundle exec rake generate
 
 The `rake generate` task:
 1. Clones Shopify/liquid at the current version tag
-2. Patches its test suite to capture template/expected pairs  
+2. Patches its test corpus to capture template/expected pairs
 3. Runs the tests and records every `assert_template_result` call
 4. Writes captured specs to `specs/liquid_ruby/`
 

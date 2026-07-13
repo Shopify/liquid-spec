@@ -8,7 +8,7 @@ optional: true
 # Shopify Theme Filters
 
 The default benchmark templates are intentionally portable and do not require Shopify
-filters. Optional Shopify theme suites still exercise filters and tags that are not part
+filters. Optional Shopify theme namespaces still exercise filters and tags that are not part
 of core Liquid. This document provides a reference implementation in Ruby that can serve
 as pseudocode when an adapter deliberately targets that Shopify-specific surface.
 
@@ -20,7 +20,7 @@ These helpers apply to specs tagged `shopify_filters`; they are not required for
 ## Complete Reference Implementation
 
 The following Ruby module illustrates the filter behavior. Register equivalent helpers
-only when running Shopify-specific suites.
+only when running Shopify-specific namespaces.
 
 ```ruby
 # Reference implementation of Shopify theme filters.

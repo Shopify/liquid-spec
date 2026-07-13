@@ -1,7 +1,7 @@
 ---
 title: "Generated Adversarial Testing"
 position: 16
-description: "Use deterministic mutation, seeded differential fuzz-style runs, and bounded structural stress to find behavior missing from the recorded suite."
+description: "Use deterministic mutation, seeded differential fuzz-style runs, and bounded structural stress to find behavior missing from the recorded corpus."
 optional: true
 ---
 
@@ -11,27 +11,26 @@ The normal complexity ramp asks whether an implementation accepts the recorded L
 contract. Adversarial commands ask a second question: **what happens just outside the
 recorded examples?**
 
-liquid-spec uses existing specs as a seed corpus, changes their templates, and runs each
-generated case through both Shopify/liquid and your adapter. The reference result becomes
-the oracle. This preserves the seed's environment, filesystem, parse mode, and feature
-tags while exploring nearby syntax and values.
+The Rust rewrite keeps these commands deliberately small and deterministic. They run
+generated probes through the selected JSON-RPC adapter; use `tools eval --compare` or
+`tools matrix` when a reference oracle is needed. This keeps protocol and acceptance
+coverage ahead of optional fuzzing breadth.
 
 ## Commands
 
 ```bash
 # Deterministically enumerate mutations around matching seed specs.
-liquid-spec tools mutate specs/adapter-jsonrpc.rb --around=for_loops --limit=100
+liquid-spec tools mutate --adapter candidate --around=for_loops --limit=100
 
 # Randomly chain mutations. The printed seed reproduces the same generated corpus.
-liquid-spec tools fuzz specs/adapter-jsonrpc.rb --seed=1234 --rounds=500
+liquid-spec tools fuzz --adapter candidate --seed=1234 --rounds=500
 
 # Exercise bounded valid nesting and template repetition.
-liquid-spec tools stress specs/adapter-jsonrpc.rb --depth=64 --repetitions=100
+liquid-spec tools stress --adapter candidate --depth=64 --repetitions=100
 ```
 
-All three commands are differential by default. `--compare` is accepted for readability
-but is not required. JSON-RPC adapters can override their subprocess command with
-`--command=...`, as with `run`.
+All three commands are bounded probes, not coverage-guided fuzzers. JSON-RPC adapters
+can override their subprocess command by placing it after `--`, as with `check`.
 
 ## What Gets Mutated
 
@@ -48,90 +47,71 @@ The initial corpus mutators cover:
 - Missing and incorrect block end tags
 - Liquid-looking syntax inside `raw` and `comment` bodies
 
-These are scanner-based transformations over templates that already exist. liquid-spec
-does not invent a second Liquid grammar, and it does not assume a generated case should
-succeed. Both implementations rejecting malformed syntax with the same coarse error
-category is a match.
+These are bounded transformations over templates that already exist. liquid-spec does
+not invent a second Liquid grammar; generated cases are ordinary compile/render requests.
 
 ## Result Semantics
 
-A discrepancy is reported when:
+A generated probe is reported as a failure when:
 
-- Both implementations render, but outputs differ
-- Shopify/liquid renders and the subject errors, times out, or crashes
-- Shopify/liquid errors and the subject renders
-- Both error but in different known categories
+- The selected adapter output does not match the generated expectation
+- The selected adapter returns a protocol, compile, or render error
 
-Raw error wording is diagnostic. Error outcomes are compared using coarse categories
-such as syntax, render, unknown tag, unknown filter, timeout, and crash so host-language
-class names do not create noise. A reference timeout or crash is inconclusive and skipped.
+Raw error wording is diagnostic; use the stable protocol error phase/code when promoting
+a generated case into a permanent spec.
 
 Use `--json` for a stable summary suitable for an agent or CI:
 
 ```bash
-liquid-spec tools fuzz adapter.rb --seed=1234 --limit=200 --json
+liquid-spec tools fuzz --adapter candidate --seed=1234 --rounds=200 --json
 ```
 
-The summary includes the seed, parent spec, mutation chain, classification, both outcomes,
-and saved regression path.
+The summary includes generated names, complexity, and adapter failures.
 
 ## Reproduction and Regression Specs
 
-Discrepancies are saved under a timestamped `/tmp/liquid-spec-<mode>-...` directory by
-default. Override or disable this behavior with:
+Generated probes are not persisted automatically. Promote an interesting case by saving
+its YAML and evaluating it through the same adapter:
 
 ```bash
-liquid-spec tools mutate adapter.rb --save=tmp/adversarial
-liquid-spec tools mutate adapter.rb --no-save
+liquid-spec tools eval --adapter candidate --spec=tmp/adversarial.yml
 ```
 
-When the reference renders successfully, the generated YAML records its output as
-`expected`. When the reference raises, the YAML records a parse or render error pattern.
-The files are ordinary additional specs:
+The file is an ordinary spec and can be run directly:
 
 ```bash
-liquid-spec run adapter.rb --add-specs='tmp/adversarial/*.yml'
-```
-
-`--minimize` performs bounded, best-effort delta debugging before saving. It keeps only
-reductions that preserve the same discrepancy classification. The result is a smaller
-reproducer, not a promise of global minimality:
-
-```bash
-liquid-spec tools fuzz adapter.rb --seed=1234 --minimize --minimize-budget=60
+liquid-spec check --adapter candidate --name adversarial
 ```
 
 ## Selecting Seeds
 
-`--around` searches names, templates, paths, docs, hints, and feature tags. Underscores
-and punctuation are treated as spaces, so `--around=for_loops` finds loop-related seeds.
-Use `-n` for a name regexp or `--features` to require feature tags:
+`--around` searches names, templates, paths, docs, hints, and feature tags. Use it to
+select a small deterministic seed set:
 
 ```bash
-liquid-spec tools mutate adapter.rb --around=partials
-liquid-spec tools mutate adapter.rb -n 'offset.*continue'
-liquid-spec tools fuzz adapter.rb --features=drops --seed=99
+liquid-spec tools mutate --adapter candidate --around=partials
+liquid-spec tools mutate --adapter candidate --around='offset.*continue'
+liquid-spec tools fuzz --adapter candidate --seed=99
 ```
 
-Generated cases inherit feature tags. If the subject adapter honestly opts out of one of
-those features, the case is skipped rather than reported as an implementation failure.
+Generated cases inherit the selected probe's core feature tag and are subject to the
+adapter's advertised capabilities.
 
 ## Stress Is Bounded Differential Stress
 
-`stress` currently generates valid nested `if` wrappers and repeated templates. Every
-case has a per-adapter timeout and still compares observable output against the reference.
-It is useful for stack-depth, state leakage, and accidental quadratic behavior near
-ordinary semantics.
+`stress` currently generates bounded nested `if` wrappers and repeated templates. It is
+useful for stack-depth, state leakage, and accidental quadratic behavior near ordinary
+semantics.
 
 It is **not** a memory-leak soak test, native coverage-guided fuzzer, or resource-limit
-benchmark. Use the benchmark suites and platform-specific profilers for those jobs.
+benchmark. Use the benchmark namespaces and platform-specific profilers for those jobs.
 
 ## Turning a Discovery Into a Permanent Spec
 
 Generated files are candidates, not automatically curated lessons. Before contributing
 one:
 
-1. Reproduce it with its printed seed and saved YAML.
+1. Reproduce it with its printed seed and source template.
 2. Remove irrelevant environment, filesystem, and syntax.
 3. Confirm the behavior against Shopify/liquid with `liquid-spec tools eval --compare`.
 4. Give it a unique descriptive name, an actionable hint, and the correct complexity.
@@ -149,7 +129,7 @@ provided and always prints it. Supply that seed to regenerate the same case sele
 mutation chains:
 
 ```bash
-liquid-spec tools fuzz adapter.rb --seed=847293 --limit=100 --rounds=500
+liquid-spec tools fuzz --adapter candidate --seed=847293 --rounds=500
 ```
 
 This is generated differential fuzz-style testing—not coverage-guided fuzzing. The name
