@@ -64,6 +64,12 @@ fn docs_list_reports_absolute_root_and_markdown_files() {
     assert!(stdout.contains(&root.display().to_string()));
     assert!(stdout.contains("implementers/curriculum.md"));
     assert!(stdout.contains("Start with `liquid-spec docs curriculum`"));
+    assert!(stdout.lines().any(|line| line.starts_with("  protocol ")));
+    assert!(
+        !stdout
+            .lines()
+            .any(|line| line.starts_with("  json-rpc-protocol-v2 "))
+    );
 }
 
 #[test]

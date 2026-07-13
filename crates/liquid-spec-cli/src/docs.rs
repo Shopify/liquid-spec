@@ -10,18 +10,13 @@ use std::path::{Path, PathBuf};
 
 const TOPICS: &[(&str, &str, &str)] = &[
     (
-        "json-rpc-protocol-v2",
-        "JSON-RPC adapter protocol v2",
-        "json-rpc-protocol-v2.md",
-    ),
-    (
         "json-rpc-protocol",
         "JSON-RPC protocol compatibility overview",
         "json-rpc-protocol.md",
     ),
     (
         "protocol",
-        "JSON-RPC adapter protocol v2 (alias)",
+        "JSON-RPC adapter protocol v2",
         "json-rpc-protocol-v2.md",
     ),
     (
@@ -134,10 +129,9 @@ pub fn print(topic: Option<&str>) -> Result<()> {
 }
 
 /// Resolve an exact topic name first, then accept a case-insensitive substring
-/// of a topic name, its description, or its `.md` path. Exact aliases are
-/// intentionally retained (`protocol` is a short name for the v2 guide),
-/// while ambiguous substrings produce a useful list instead of silently
-/// selecting an arbitrary document.
+/// of a topic name, its description, or its `.md` path. The short `protocol`
+/// topic points at the versioned v2 guide, while ambiguous substrings produce a
+/// useful list instead of silently selecting an arbitrary document.
 fn resolve_topic(query: &str) -> Result<&'static str> {
     let query = query.trim();
     let exact = TOPICS.iter().find(|(name, _, relative)| {

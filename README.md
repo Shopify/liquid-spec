@@ -217,7 +217,7 @@ servers that do not advertise that capability.
 
 For a human-driven implementation, use exactly the same loop: check, read the first
 hint, implement, and check again. `liquid-spec docs list` prints the absolute docs
-directory and every bundled topic path (`.md`). `liquid-spec docs json-rpc-protocol-v2` documents
+directory and every bundled topic path (`.md`). `liquid-spec docs protocol` documents
 the wire contract; a case-insensitive substring such as `liquid-spec docs "pars"`
 also resolves a unique matching guide.
 
