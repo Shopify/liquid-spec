@@ -62,8 +62,8 @@ repeated full-suite runs, so it should not be checked into this repository.
 
 ## Recommended order of work
 
-1. Make supported parse modes an explicit adapter capability and execute only
-   those modes, ordered strict2, strict, lax.
+1. Make supported parse modes an explicit adapter capability and execute each
+   compatible spec at its highest strict level, plus an explicit lax variant.
 2. Annotate every mode-sensitive recording; do not let adapter defaults choose
    the semantics of a supposedly fixed expected result.
 3. Repair the three 240-plateau lessons with focused prerequisite specs and

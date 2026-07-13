@@ -373,6 +373,9 @@ Liquid has two orthogonal error axes that interact through the protocol:
 The Ruby adapter declares which of these the server implements. Ordinary specs
 run once in its highest supported mode (`strict2`, then `strict`, then `lax`).
 Explicit multi-mode specs run once per supported declared mode.
+When both `strict2` and `strict` are declared, only `strict2` runs; it already
+exercises the higher strict contract. An explicit `lax` declaration still adds a
+separate lax run.
 
 **Error rendering** (set at render time via `options.strict_errors`):
 - `true` (default) — render errors are raised as `result.error`

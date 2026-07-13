@@ -100,8 +100,9 @@ module Liquid
           # ERROR MODES
           # -----------
           # liquid-spec always supplies options[:error_mode]. Unannotated specs use
-          # the highest mode declared by config.error_modes; explicitly annotated
-          # multi-mode specs run once in every supported declared mode.
+          # the highest mode declared by config.error_modes. Explicit multi-mode
+          # specs use their highest supported strict mode; an explicit :lax mode
+          # still runs separately because it is a distinct compatibility contract.
           #
           # Legacy modes exist but are NOT recommended unless you need backwards
           # compatibility with older Liquid versions or Shopify production:
@@ -368,8 +369,8 @@ module Liquid
           # -----------
           # liquid-spec sends one of the modes declared in config.error_modes in the
           # compile request's options.error_mode field. Unannotated specs use the
-          # highest supported strictness; explicit multi-mode specs run in each
-          # supported declared mode.
+          # highest supported strictness. Explicit multi-mode specs use their
+          # highest supported strict mode; explicit :lax still runs separately.
           #
           # Legacy modes (:strict, :lax) exist for backwards compatibility
           # with older Liquid versions or Shopify production but are NOT recommended

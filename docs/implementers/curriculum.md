@@ -86,7 +86,8 @@ architecture. For example, all of these are reasonable choices:
 Use `config.error_modes` and `config.render_error_modes` to select the error contracts
 you implement, and `config.missing_features` to keep other suite capabilities focused.
 Unannotated specs exercise only the highest supported parse strictness. Explicit
-multi-mode specs exercise every supported declared mode in strict2, strict, lax order.
+multi-mode specs exercise only their highest supported strict mode (`strict2`, then
+`strict`); explicitly declared `lax` remains a separate compatibility run.
 
 ## What to Read First
 

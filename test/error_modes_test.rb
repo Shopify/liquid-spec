@@ -53,13 +53,13 @@ class ErrorModesTest < Minitest::Test
     assert_equal [:strict], variants.map(&:error_mode)
   end
 
-  def test_explicit_multi_mode_spec_runs_every_supported_mode_in_strictness_order
+  def test_explicit_multi_mode_spec_uses_highest_strict_mode_and_retains_lax
     LiquidSpec.config.error_modes = [:strict2, :strict, :lax]
-    spec = create_spec(name: "portable", error_mode: [:lax, :strict])
+    spec = create_spec(name: "portable", error_mode: [:lax, :strict2, :strict])
     variants = expand([spec])
 
-    assert_equal [:strict, :lax], variants.map(&:error_mode)
-    assert_equal ["portable [error_mode=strict]", "portable [error_mode=lax]"], variants.map(&:name)
+    assert_equal [:strict2, :lax], variants.map(&:error_mode)
+    assert_equal ["portable [error_mode=strict2]", "portable [error_mode=lax]"], variants.map(&:name)
   end
 
   def test_explicit_unsupported_mode_has_no_variant
@@ -90,10 +90,9 @@ class ErrorModesTest < Minitest::Test
 
     variants = Liquid::Spec::CLI::Matrix.send(:expand_error_mode_variants, [ordinary, portable], adapters)
 
-    assert_equal [:strict2, :strict2, :strict], variants.map(&:error_mode)
+    assert_equal [:strict2, :strict2], variants.map(&:error_mode)
     assert_equal "ordinary", variants.first.name
     assert_equal "portable [error_mode=strict2]", variants[1].name
-    assert_equal "portable [error_mode=strict]", variants[2].name
   end
 
   private

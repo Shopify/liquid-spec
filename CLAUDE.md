@@ -674,8 +674,9 @@ Suites can also be discovered from local project `./specs/<name>/suite.yml` dire
 
 Adapters declare parse and render error behavior positively, and other unsupported
 features through `missing_features`. Specs without `error_mode` run once at the
-highest supported strictness. Explicit multi-mode specs run in every supported
-declared mode, ordered strict2, strict, lax. Raised render errors are the default;
+highest supported strictness. Explicit multi-mode specs run only at their highest
+compatible strict mode (strict2, then strict).
+An explicitly declared lax mode runs separately. Raised render errors are the default;
 inline-error specs require `render_error_modes` to include `:inline`.
 
 ```ruby

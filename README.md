@@ -231,7 +231,8 @@ The `options` hash in render includes:
 
 Specs without `error_mode` run once using the adapter's highest supported parse
 mode (`strict2`, then `strict`, then `lax`). A spec declaring multiple modes runs
-once in every supported declared mode, in that same order. Inline-error specs run
+at its highest supported strict mode; explicitly declaring `lax` adds one separate
+lax run. Inline-error specs run
 only when `render_error_modes` includes `:inline`; raised render errors are the
 normal path.
 - `:strict_errors` - If true, raise errors; if false, render them inline

@@ -44,9 +44,9 @@ That does not demonstrate that a third-party adapter supports all modes it
 claims. The run could pass after changing its default without proving the same
 specs under every claimed mode.
 
-At execution time, expand each compatible-mode spec over the intersection with
-adapter-supported modes. Keep results attributable to `(spec, mode)` and order
-modes strict2, strict, lax.
+At execution time, choose each compatible-mode spec's highest compatible strict
+mode (`strict2`, then `strict`) and retain an explicitly declared `lax` variant.
+Keep results attributable to `(spec, mode)`.
 
 ## HAR-05: Complexity hides large progress within a blocked level
 
@@ -110,4 +110,3 @@ Liquid completion.
 
 Include the capability profile in machine and human success summaries and use
 phrasing such as “1000/1000 for declared features.”
-

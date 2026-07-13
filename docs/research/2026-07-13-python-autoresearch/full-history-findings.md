@@ -193,10 +193,10 @@ repeated the remaining strict2 bare-bracket conflict. Run 992 propagated mode
 through the parser and changed the adapter default to strict; the suite reached
 1000 immediately. Run 993 was the only useful confirmation.
 
-Action: adapters must explicitly declare supported modes. The runner must test
-the supported intersection in strict2, strict, lax order. Mode-sensitive
-recordings must declare compatible modes; an adapter default must never choose
-their semantics.
+Action: adapters must explicitly declare supported modes. The runner tests the
+highest compatible strict mode (strict2, then strict) and runs lax separately
+only when it is explicitly declared. Mode-sensitive recordings must declare
+compatible modes; an adapter default must never choose their semantics.
 
 ## Runs 994-1133: success was already established
 
@@ -221,4 +221,3 @@ The complete history supports these remaining workstreams:
 8. add first-blocking-level progress and spec-metadata comparison diagnostics;
 9. rotate/deduplicate result logs and stop repeated evaluations;
 10. improve abnormal-exit protocol context.
-

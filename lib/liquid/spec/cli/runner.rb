@@ -2159,8 +2159,11 @@ module Liquid
           end
 
           # Unannotated specs exercise the adapter's highest supported parse
-          # mode. Explicit multi-mode specs run once for every supported mode
-          # they declare, always in strict2 -> strict -> lax order.
+          # mode. For an explicit multi-mode spec, one passing high-strictness
+          # contract is sufficient: choose the highest compatible strict mode
+          # (strict2, then strict), rather than duplicating it at lower
+          # strictness. Lax remains an independent compatibility contract and
+          # runs when explicitly declared.
           def expand_error_mode_variants(specs)
             config = LiquidSpec.config
             supported = config.error_modes
@@ -2170,14 +2173,21 @@ module Liquid
               modes = if declared.nil? || declared.empty?
                 [supported.first]
               else
-                LiquidSpec::PARSE_ERROR_MODES.select do |mode|
-                  supported.include?(mode) && declared.map(&:to_sym).include?(mode)
-                end
+                compatible_error_modes(declared, supported)
               end
 
               label = declared && declared.length > 1
               modes.map { |mode| spec.with_error_mode(mode, label: label) }
             end
+          end
+
+          def compatible_error_modes(declared, supported)
+            declared = declared.map(&:to_sym)
+            highest_strict = [:strict2, :strict].find do |mode|
+              declared.include?(mode) && supported.include?(mode)
+            end
+
+            [highest_strict, (:lax if declared.include?(:lax) && supported.include?(:lax))].compact
           end
 
           # Older generated specs can carry a parse-mode feature tag without an

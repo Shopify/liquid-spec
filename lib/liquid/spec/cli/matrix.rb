@@ -302,10 +302,11 @@ module Liquid
             exit(1) if differences.any?
           end
 
-          # Matrix executes each explicit compatible parse mode independently.
-          # Ordinary specs use strict2, the harness-wide default, so adapters
-          # that only implement strict/lax are not compared against a different
-          # parser contract by accident.
+          # Matrix chooses the highest compatible strict contract per spec.
+          # It does not duplicate a strict2 pass at strict; explicit lax
+          # compatibility remains a separate variant. Ordinary specs use
+          # strict2, the harness-wide default, so adapters that only implement
+          # strict/lax are not compared against a different parser contract.
           def expand_error_mode_variants(specs, adapters)
             supported = LiquidSpec::PARSE_ERROR_MODES.select do |mode|
               feature = :"#{mode}_parsing"
@@ -317,11 +318,19 @@ module Liquid
               modes = if declared.empty?
                 supported.include?(:strict2) ? [:strict2] : [supported.first].compact
               else
-                LiquidSpec::PARSE_ERROR_MODES.select { |mode| declared.include?(mode) && supported.include?(mode) }
+                compatible_error_modes(declared, supported)
               end
 
               modes.map { |mode| spec.with_error_mode(mode, label: declared.length > 1) }
             end
+          end
+
+          def compatible_error_modes(declared, supported)
+            highest_strict = [:strict2, :strict].find do |mode|
+              declared.include?(mode) && supported.include?(mode)
+            end
+
+            [highest_strict, (:lax if declared.include?(:lax) && supported.include?(:lax))].compact
           end
 
           def declared_error_modes(spec)
