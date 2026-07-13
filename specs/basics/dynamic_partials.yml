@@ -40,7 +40,7 @@ specs:
 - name: dynamic_include_missing_partial_error
   complexity: 1000
   template: "{% include tpl %}"
-  error_mode: strict
+  error_mode: [strict2, strict]
   filesystem: {}
   environment:
     tpl: "missing"
@@ -51,7 +51,7 @@ specs:
 - name: dynamic_include_missing_partial_inline_error
   complexity: 1000
   template: "{% include tpl %}"
-  error_mode: strict
+  error_mode: [strict2, strict]
   filesystem: {}
   environment:
     tpl: "missing"
@@ -64,7 +64,7 @@ specs:
 - name: dynamic_include_illegal_name_error
   complexity: 1000
   template: "{% include tpl %}"
-  error_mode: strict
+  error_mode: [strict2, strict]
   filesystem:
     x: "X"
   environment:
@@ -76,7 +76,7 @@ specs:
 - name: dynamic_include_illegal_name_inline_error
   complexity: 1000
   template: "{% include tpl %}"
-  error_mode: strict
+  error_mode: [strict2, strict]
   filesystem:
     x: "X"
   environment:

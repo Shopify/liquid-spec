@@ -143,6 +143,7 @@ ruby -Ilib scripts/verifiers/spec_name_collisions.rb # advisory: no two specs sh
 ruby -Ilib scripts/verifiers/filesystem_extensions.rb # advisory: filesystem keys should have valid extensions
 ruby -Ilib scripts/verifiers/minimum_complexity.rb  # specs with advanced features sit above the beginner ramp
 ruby -Ilib scripts/verifiers/sequential_complexity.rb # opted-in curated files advance exactly one level per spec
+ruby -Ilib scripts/verifiers/strict_mode_compatibility.rb # strict/strict2-only specs must need their single-mode restriction
 ```
 
 **Blocking verifiers** (must be green before pushing):
@@ -165,6 +166,9 @@ ruby -Ilib scripts/verifiers/sequential_complexity.rb # opted-in curated files a
   `_metadata.sequential_complexity: true` must advance exactly one complexity
   level per spec. This prevents one-lesson ramps from collapsing back into
   round-number buckets.
+- `strict_mode_compatibility` — a strict- or strict2-only spec must actually
+  differ in the other mode; otherwise it declares `[strict2, strict]` and runs
+  for adapters supporting either strictness.
 - `jsonrpc_portability` — specs must not send non-primitive Ruby types
   (non-string keys, symbols, unregistered objects) over JSON-RPC, which would
   trigger `_rpc_drop` markers. Time/Date/DateTime are whitelisted (sent as

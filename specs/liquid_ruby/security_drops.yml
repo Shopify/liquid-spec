@@ -996,7 +996,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 220
-  error_mode: strict
+  error_mode: [strict2, strict]
   hint: |
     A plain (non-Drop) object is not treated as a drop. Even though `name` is a
     public method, Liquid does not invoke it; property access raises a
@@ -1013,7 +1013,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 220
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 - name: sec_wide_open_object_system_call_raises_no_to_liquid
   features: [ruby_types]
@@ -1026,7 +1026,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 220
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 - name: sec_wide_open_object_class_raises_no_to_liquid
   features: [ruby_types]
@@ -1039,7 +1039,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 220
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 - name: sec_wide_open_object_send_raises_no_to_liquid
   features: [ruby_types]
@@ -1052,7 +1052,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 220
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 - name: sec_unsafe_hash_like_name_raises_no_to_liquid
   features: [ruby_types]
@@ -1065,7 +1065,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 230
-  error_mode: strict
+  error_mode: [strict2, strict]
   hint: "A non-drop object whose [] delegates to send is still not treated as a drop; property access raises a NoMethodError on to_liquid."
 
 - name: sec_unsafe_hash_like_secret_raises_no_to_liquid
@@ -1079,7 +1079,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 230
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 - name: sec_unsafe_hash_like_class_raises_no_to_liquid
   features: [ruby_types]
@@ -1092,7 +1092,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 230
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 - name: sec_unsafe_hash_like_send_raises_no_to_liquid
   features: [ruby_types]
@@ -1105,7 +1105,7 @@ specs:
     - NoMethodError
     - to_liquid
   complexity: 230
-  error_mode: strict
+  error_mode: [strict2, strict]
 
 # =============================================================================
 # 9. to_liquid protocol - only the returned value is exposed

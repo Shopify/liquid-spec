@@ -7,7 +7,7 @@
     - shopify_error_handling
     - inline_errors
   render_errors: true
-  error_mode: strict
+  error_mode: [strict2, strict]
   errors:
     output:
       - "Liquid error (line 2): internal"

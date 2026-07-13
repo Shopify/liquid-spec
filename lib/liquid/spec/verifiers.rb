@@ -23,6 +23,7 @@ module Liquid
         "sequential_complexity" => "SequentialComplexityVerifier",
         "spec_name_collisions" => "SpecNameCollisionVerifier",
         "spec_schema" => "SpecSchemaVerifier",
+        "strict_mode_compatibility" => "StrictModeCompatibilityVerifier",
       }.freeze
 
       Result = Struct.new(:name, :exit_code, :advisory, keyword_init: true)

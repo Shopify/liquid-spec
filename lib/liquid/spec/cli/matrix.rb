@@ -211,15 +211,16 @@ module Liquid
             matched = 0
             skipped = 0
             checked = 0
+            variants = expand_error_mode_variants(specs, adapters)
 
             max_failures = options[:max_failures]
             verbose = options[:verbose]
 
-            print("Running #{specs.size} specs: ")
+            print("Running #{variants.size} specs: ")
             $stdout.flush
 
             TimeFreezer.freeze_spec_time do
-              specs.each do |spec|
+              variants.each do |spec|
                 # Run on ALL adapters that can run this spec
                 outputs = {}
                 adapters.each do |name, adapter|
@@ -296,9 +297,39 @@ module Liquid
 
             # Print results (limited by max_failures for display only)
             print_results_v2(differences, adapters, options, max_failures)
-            print_summary(matched, differences.size, skipped, checked, specs.size, adapters)
+            print_summary(matched, differences.size, skipped, checked, variants.size, adapters)
 
             exit(1) if differences.any?
+          end
+
+          # Matrix executes each explicit compatible parse mode independently.
+          # Ordinary specs use strict2, the harness-wide default, so adapters
+          # that only implement strict/lax are not compared against a different
+          # parser contract by accident.
+          def expand_error_mode_variants(specs, adapters)
+            supported = LiquidSpec::PARSE_ERROR_MODES.select do |mode|
+              feature = :"#{mode}_parsing"
+              adapters.values.any? { |adapter| !adapter.missing_features.include?(feature) }
+            end
+
+            specs.flat_map do |spec|
+              declared = declared_error_modes(spec)
+              modes = if declared.empty?
+                supported.include?(:strict2) ? [:strict2] : [supported.first].compact
+              else
+                LiquidSpec::PARSE_ERROR_MODES.select { |mode| declared.include?(mode) && supported.include?(mode) }
+              end
+
+              modes.map { |mode| spec.with_error_mode(mode, label: declared.length > 1) }
+            end
+          end
+
+          def declared_error_modes(spec)
+            return spec.error_modes unless spec.error_modes.empty?
+
+            LiquidSpec::PARSE_ERROR_MODES.select do |mode|
+              spec.features.include?(:"#{mode}_parsing")
+            end
           end
 
 

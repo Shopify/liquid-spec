@@ -191,7 +191,7 @@
     output:
       - "cannot sort"
   complexity: 100
-  error_mode: strict
+  error_mode: [strict2, strict]
   hint: |
     Sorting arrays with mixed types (numbers, strings, booleans) raises
     an error because comparison between different types is undefined.

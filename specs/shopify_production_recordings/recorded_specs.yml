@@ -22101,6 +22101,7 @@
   filesystem: {}
 - name: RecordedTest#test_indirect_variable_lookup_d3896568e
   expected: '123'
+  error_mode: lax
   template: |
     {%- assign vars = "a,b,c" | split: "," -%}
     {%- for var in vars -%}
@@ -23906,7 +23907,7 @@
           active: false
           current: false
           links: []
-  error_mode: :strict
+  error_mode: [strict2, strict]
 ...
 
 - name: RecordedTest#test_case_michael_case_else_nightmare_4355fa66
@@ -30468,4 +30469,3 @@
     \ \n  \n  \n  \n  \n  \n  \n  \n  \n  \n  \n  \n  y1\n\n  \n  \n  \n  \n  \n  \n
     \ \n  \n  \n  \n  \n  \n  z1\n\n"
   template_name: unknown_filter_loop_test.liquid
-

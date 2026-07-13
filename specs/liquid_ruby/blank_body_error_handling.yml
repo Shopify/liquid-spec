@@ -161,7 +161,7 @@ specs:
 
 - name: blank_if_body_suppresses_error_text_strict
   template: "{% if 5 > \"x\" %}{% endif %}"
-  error_mode: :strict
+  error_mode: [strict2, strict]
   render_errors: true
   expected: ""
   complexity: 750
@@ -173,7 +173,7 @@ specs:
 
 - name: blank_unless_body_suppresses_error_text_strict
   template: "{% unless 5 > \"x\" %} {% endunless %}"
-  error_mode: :strict
+  error_mode: [strict2, strict]
   render_errors: true
   expected: ""
   complexity: 750
@@ -185,7 +185,7 @@ specs:
   template: "{% for i in (1..3) offset: xs %}{% endfor %}"
   environment:
     xs: "bad"
-  error_mode: :strict
+  error_mode: [strict2, strict]
   render_errors: true
   expected: ""
   complexity: 750
@@ -198,7 +198,7 @@ specs:
 
 - name: blank_if_body_shows_error_text_strict2
   template: "{% if 5 > \"x\" %}{% endif %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): comparison of Integer with String failed"
@@ -210,7 +210,7 @@ specs:
 
 - name: whitespace_if_body_shows_error_text_strict2
   template: "{% if 5 > \"x\" %}   {% endif %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): comparison of Integer with String failed"
@@ -221,7 +221,7 @@ specs:
 
 - name: assign_if_body_shows_error_text_strict2
   template: "{% if 5 > \"x\" %}{% assign a = 1 %}{% endif %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): comparison of Integer with String failed"
@@ -233,7 +233,7 @@ specs:
 
 - name: comment_if_body_shows_error_text_strict2
   template: "{% if 5 > \"x\" %}{% comment %}c{% endcomment %}{% endif %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): comparison of Integer with String failed"
@@ -244,7 +244,7 @@ specs:
 
 - name: capture_if_body_shows_error_text_strict2
   template: "{% if 5 > \"x\" %}{% capture c %}text{% endcapture %}{% endif %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): comparison of Integer with String failed"
@@ -256,7 +256,7 @@ specs:
 
 - name: blank_unless_body_shows_error_text_strict2
   template: "{% unless 5 > \"x\" %} {% endunless %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): comparison of Integer with String failed"
@@ -269,7 +269,7 @@ specs:
   template: "{% for i in (1..3) offset: xs %}{% endfor %}"
   environment:
     xs: "bad"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: true
   features: [strict2_blank_body_errors]
   expected: "Liquid error (line 1): invalid integer"
@@ -293,7 +293,7 @@ specs:
 
 - name: blank_if_body_raises_error_strict
   template: "{% if 5 > \"x\" %}{% endif %}"
-  error_mode: :strict
+  error_mode: [strict2, strict]
   errors:
     render_error:
       - comparison of Integer with String failed
@@ -304,7 +304,7 @@ specs:
 
 - name: blank_if_body_raises_error_strict2
   template: "{% if 5 > \"x\" %}{% endif %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   errors:
     render_error:
       - comparison of Integer with String failed
@@ -331,7 +331,7 @@ specs:
   template: "{% for i in (1..3) offset: xs %}{% endfor %}"
   environment:
     xs: "bad"
-  error_mode: :strict
+  error_mode: [strict2, strict]
   errors:
     render_error:
       - invalid integer
@@ -344,7 +344,7 @@ specs:
   template: "{% for i in (1..3) offset: xs %}{% endfor %}"
   environment:
     xs: "bad"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   errors:
     render_error:
       - invalid integer

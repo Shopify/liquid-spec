@@ -289,7 +289,7 @@ specs:
     {%- endcase -%}
   environment:
     x: {}
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 140
   expected: 2 or empty
@@ -305,7 +305,7 @@ specs:
   environment:
     x:
     - a
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 140
   expected: not 2 or empty
@@ -334,7 +334,7 @@ specs:
     {%- endcase -%}
   environment:
     x: 2
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 140
   expected: 2 or empty
@@ -379,7 +379,7 @@ specs:
   environment:
     x:
       a: b
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 140
   expected: not 2 or empty
@@ -424,7 +424,7 @@ specs:
     {%- endcase -%}
   environment:
     x: 4
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 140
   expected: not 2 or empty
@@ -469,7 +469,7 @@ specs:
     {%- endcase -%}
   environment:
     x: []
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 140
   expected: 2 or empty
@@ -582,7 +582,7 @@ specs:
       {%- else -%}
         two
     {%- endcase -%}
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 120
   expected: one
@@ -639,7 +639,7 @@ specs:
       {%- else -%}
         two
     {%- endcase -%}
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 120
   expected: one
@@ -4824,6 +4824,7 @@ specs:
   render_errors: false
   complexity: 190
   expected: "-1-2-1"
+  error_mode: lax
   filesystem:
     decr: "{% decrement %}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L183
@@ -4855,6 +4856,7 @@ specs:
   render_errors: false
   complexity: 190
   expected: '010'
+  error_mode: lax
   filesystem:
     incr: "{% increment %}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L175
@@ -7626,7 +7628,7 @@ specs:
       numbers:
       - 10
       - 20
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7635,7 +7637,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L382
 - name: TableRowTest#test_tablerow_with_cols_attribute_in_strict2_mode_4c29d627
   template: "{% tablerow i in (1..6) cols: 3 %}{{ i }}{% endtablerow %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7652,7 +7654,7 @@ specs:
       - 2
       - 3
       - 4
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7664,7 +7666,7 @@ specs:
   template: "{% tablerow i in empty_array cols: 2 %}{{ i }}{% endtablerow %}"
   environment:
     empty_array: []
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7709,7 +7711,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L460
 - name: TableRowTest#test_tablerow_with_limit_attribute_in_strict2_mode_3f633ad1
   template: "{% tablerow i in (1..10) limit: 3 %}{{ i }}{% endtablerow %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7719,7 +7721,7 @@ specs:
 - name: TableRowTest#test_tablerow_with_multiple_attributes_in_strict2_mode_b5fe6898
   template: "{% tablerow i in (1..10) cols: 2, limit: 4, offset: 1 %}{{ i }}{% endtablerow
     %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7729,7 +7731,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L335
 - name: TableRowTest#test_tablerow_with_offset_attribute_in_strict2_mode_a25a1a7d
   template: "{% tablerow i in (1..5) offset: 2 %}{{ i }}{% endtablerow %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7738,7 +7740,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L304
 - name: TableRowTest#test_tablerow_with_range_attribute_in_strict2_mode_b8f2d7fd
   template: "{% tablerow i in (1..3) range: (1..10) %}{{ i }}{% endtablerow %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7753,7 +7755,7 @@ specs:
     - 2
     - 3
     - 4
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -7763,7 +7765,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/table_row_test.rb#L351
 - name: TableRowTest#test_tablerow_without_attributes_in_strict2_mode_19bc249f
   template: "{% tablerow i in (1..3) %}{{ i }}{% endtablerow %}"
-  error_mode: strict2
+  error_mode: [strict2, strict]
   render_errors: false
   complexity: 180
   expected: |
@@ -8436,7 +8438,7 @@ specs:
       b: result
   render_errors: false
   complexity: 300
-  error_mode: strict
+  error_mode: [strict2, strict]
   expected: result
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L57
 - name: VariableTest#test_expression_with_whitespace_in_square_brackets_6f8ef4f8

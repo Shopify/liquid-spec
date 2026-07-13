@@ -3,6 +3,7 @@
 require_relative "test_helper"
 require "liquid/spec/cli/adapter_dsl"
 require "liquid/spec/cli/runner"
+require "liquid/spec/cli/matrix"
 
 class ErrorModesTest < Minitest::Test
   include Liquid::Spec::TestHelpers
@@ -67,12 +68,32 @@ class ErrorModesTest < Minitest::Test
     assert_empty expand([create_spec(error_mode: :lax)])
   end
 
+  def test_legacy_parse_feature_selects_its_declared_mode
+    LiquidSpec.config.error_modes = [:strict2, :strict, :lax]
+    spec = create_spec(features: [:lax_parsing])
+
+    assert_equal [:lax], expand([spec]).map(&:error_mode)
+  end
+
   def test_inline_error_specs_require_inline_render_support
     spec = create_spec(render_errors: true)
 
     assert_empty filter([spec])
     LiquidSpec.config.render_error_modes = [:raise, :inline]
     assert_equal 1, filter([spec]).size
+  end
+
+  def test_matrix_expands_explicit_modes_and_uses_strict2_for_ordinary_specs
+    adapters = { "all" => Struct.new(:missing_features).new(Set.new) }
+    ordinary = create_spec(name: "ordinary")
+    portable = create_spec(name: "portable", error_mode: [:strict2, :strict])
+
+    variants = Liquid::Spec::CLI::Matrix.send(:expand_error_mode_variants, [ordinary, portable], adapters)
+
+    assert_equal [:strict2, :strict2, :strict], variants.map(&:error_mode)
+    assert_equal "ordinary", variants.first.name
+    assert_equal "portable [error_mode=strict2]", variants[1].name
+    assert_equal "portable [error_mode=strict]", variants[2].name
   end
 
   private

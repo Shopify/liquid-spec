@@ -351,7 +351,7 @@ specs:
     render_error:
       - ErrorDrop
   complexity: 200
-  error_mode: strict
+  error_mode: [strict2, strict]
   hint: |
     ErrorDrop raises on any property access. The error should propagate
     as a render error.

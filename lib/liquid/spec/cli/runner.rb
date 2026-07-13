@@ -2166,7 +2166,7 @@ module Liquid
             supported = config.error_modes
 
             specs.flat_map do |spec|
-              declared = spec.respond_to?(:error_modes) ? spec.error_modes : []
+              declared = declared_error_modes(spec)
               modes = if declared.nil? || declared.empty?
                 [supported.first]
               else
@@ -2177,6 +2177,19 @@ module Liquid
 
               label = declared && declared.length > 1
               modes.map { |mode| spec.with_error_mode(mode, label: label) }
+            end
+          end
+
+          # Older generated specs can carry a parse-mode feature tag without an
+          # explicit error_mode field. Treat that tag as the declaration while
+          # migrating the corpus; otherwise expansion would silently replace a
+          # lax requirement with the strict2 default.
+          def declared_error_modes(spec)
+            declared = spec.respond_to?(:error_modes) ? spec.error_modes : []
+            return declared unless declared.nil? || declared.empty?
+
+            LiquidSpec::PARSE_ERROR_MODES.select do |mode|
+              spec.features.include?(:"#{mode}_parsing")
             end
           end
 
