@@ -123,15 +123,17 @@ module Liquid
             LiquidSpec.running_from_cli!
 
             # Pass CLI options to adapter (for JSON-RPC --command flag, etc.)
+            adapter_path = File.expand_path(adapter_file)
             LiquidSpec.cli_options = {
               command: options[:command],
               timeout: options[:timeout],
               adapter_timeout: options[:adapter_timeout],
+              adapter_file: adapter_path,
             }.compact
 
             apply_adapter_timeout_option!(options[:adapter_timeout]) if options.key?(:adapter_timeout)
 
-            load(File.expand_path(adapter_file))
+            load(adapter_path)
 
             # Set adapter name from filename
             LiquidSpec.adapter_name = File.basename(adapter_file, ".rb")
@@ -225,7 +227,7 @@ module Liquid
 
           def list_suites(config)
             # Load spec components
-            LiquidSpec.run_setup!
+            run_adapter_setup!
             require "liquid/spec"
 
             puts "Available suites:"
@@ -245,7 +247,7 @@ module Liquid
           end
 
           def list_specs(config)
-            LiquidSpec.run_setup!
+            run_adapter_setup!
             require "liquid/spec"
 
             specs = load_specs(config)
@@ -286,7 +288,7 @@ module Liquid
 
           def run_specs_frozen(config, options, run_id)
             # Run adapter setup first (loads the liquid gem)
-            LiquidSpec.run_setup!
+            run_adapter_setup!
             # Track the current spec so we can report it on abnormal exit
             at_exit do
               if @current_spec && $! # $! is the current exception
@@ -549,7 +551,7 @@ module Liquid
           end
 
           def run_specs_compare(config, options)
-            LiquidSpec.run_setup!
+            run_adapter_setup!
             require "liquid/spec"
             require "liquid/spec/deps/liquid_ruby"
 
@@ -2092,7 +2094,7 @@ module Liquid
           end
 
           def load_specs(config)
-            LiquidSpec.run_setup!
+            run_adapter_setup!
             require "liquid/spec"
 
             suite_id = config.suite
@@ -2289,6 +2291,15 @@ module Liquid
               status.to_s,
             ]
             log_file.puts(JSON.generate(entry))
+          end
+
+          def run_adapter_setup!
+            LiquidSpec.run_setup!
+          rescue ::StandardError => error
+            warn "Error: adapter setup failed"
+            warn ""
+            warn error.message
+            exit(1)
           end
 
           def apply_adapter_timeout_option!(value)

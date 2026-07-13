@@ -95,6 +95,19 @@ class RunnerDiagnosticsTest < Minitest::Test
     assert_includes stdout, "Complexity level cleared: 0"
   end
 
+  def test_unconfigured_json_rpc_adapter_prints_actionable_error_without_backtrace
+    stdout, stderr, status = run_liquid_spec("unconfigured_json_rpc_adapter.rb")
+
+    assert_equal 1, status
+    assert_equal "", stdout
+    assert_includes stderr, "Error: adapter setup failed"
+    assert_includes stderr, "JSON-RPC server command is not configured"
+    assert_includes stderr, "DEFAULT_COMMAND = \"python3 server.py\""
+    assert_includes stderr, "--command=\"python3 server.py\""
+    refute_includes stderr, "subprocess.rb:"
+    refute_includes stderr, "from "
+  end
+
   def test_plain_output_starts_with_complexity_level_summary_and_omits_suite_preamble
     stdout, _stderr, status = run_liquid_spec(
       "source_echo_adapter.rb",

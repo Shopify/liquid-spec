@@ -33,12 +33,8 @@ module Liquid
 
           begin
             @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(@command)
-          rescue Errno::ENOENT => e
-            raise SubprocessError, <<~ERROR
-              Command not found: #{@command}
-
-              #{protocol_doc_reference}
-            ERROR
+          rescue Errno::ENOENT
+            raise SubprocessError, command_not_found_message
           end
 
           # Set streams to non-blocking where possible
@@ -298,6 +294,37 @@ module Liquid
           @initialized = false
         end
 
+        def command_not_found_message
+          adapter_file = if defined?(LiquidSpec) && LiquidSpec.respond_to?(:cli_options)
+            LiquidSpec.cli_options[:adapter_file]
+          end
+          adapter_label = adapter_file || "your JSON-RPC adapter"
+          invocation = adapter_file || "specs/adapter-jsonrpc.rb"
+
+          if @command == "path/to/your/liquid-server"
+            <<~ERROR
+              JSON-RPC server command is not configured.
+
+              Edit #{adapter_label} and replace the placeholder:
+                DEFAULT_COMMAND = "python3 server.py"
+
+              Or provide the command when running liquid-spec:
+                liquid-spec run #{invocation} --command="python3 server.py"
+
+              #{protocol_doc_reference}
+            ERROR
+          else
+            <<~ERROR
+              JSON-RPC server command not found: #{@command}
+
+              Edit DEFAULT_COMMAND in #{adapter_label}, or pass a valid command:
+                liquid-spec run #{invocation} --command="path/to/your/server"
+
+              #{protocol_doc_reference}
+            ERROR
+          end
+        end
+
         def protocol_doc_reference
           gem_root = File.expand_path("../../../../..", __FILE__)
           doc_path = File.join(gem_root, "docs", "json-rpc-protocol.md")
@@ -311,7 +338,7 @@ module Liquid
       end
 
       # Error from subprocess communication
-      class SubprocessError < StandardError; end
+      class SubprocessError < ::StandardError; end
     end
   end
 end
