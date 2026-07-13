@@ -111,6 +111,22 @@ module Liquid
         features.any? { |f| missing_set.include?(f) }
       end
 
+      # Return an isolated execution variant for one concrete parse mode.
+      # Multi-mode declarations are expanded by the runner in strictness order.
+      def with_error_mode(mode, label: false)
+        mode = mode.to_sym
+        copy = dup
+        copy.instance_variable_set(:@error_mode, mode)
+        copy.instance_variable_set(:@error_modes, [mode])
+
+        parse_features = [:strict2_parsing, :strict_parsing, :lax_parsing]
+        features = @features.reject { |feature| parse_features.include?(feature) }
+        features << :"#{mode}_parsing"
+        copy.instance_variable_set(:@features, features)
+        copy.instance_variable_set(:@name, "#{@name} [error_mode=#{mode}]") if label
+        copy
+      end
+
       # Check if this spec expects a parse error
       def expects_parse_error?
         errors.key?("parse_error") || errors.key?(:parse_error)

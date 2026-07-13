@@ -6,6 +6,7 @@ require_relative "bench"
 require_relative "benchmark"
 require_relative "config"
 require_relative "runs"
+require_relative "../time_freezer"
 
 module Liquid
   module Spec
@@ -217,68 +218,76 @@ module Liquid
             print("Running #{specs.size} specs: ")
             $stdout.flush
 
-            specs.each do |spec|
-              # Run on ALL adapters that can run this spec
-              outputs = {}
-              adapters.each do |name, adapter|
-                begin
-                  result = adapter.run_single(spec)
-                rescue SystemExit, Interrupt, SignalException
-                  raise
-                rescue Exception => e
-                  result = Liquid::Spec::SpecResult.new(
-                    spec: spec,
-                    status: :error,
-                    output: "#{e.class}: #{e.message}",
-                  )
+            TimeFreezer.freeze_spec_time do
+              specs.each do |spec|
+                # Run on ALL adapters that can run this spec
+                outputs = {}
+                adapters.each do |name, adapter|
+                  begin
+                    result = adapter.run_single(spec)
+                  rescue SystemExit, Interrupt, SignalException
+                    raise
+                  rescue Exception => e
+                    result = Liquid::Spec::SpecResult.new(
+                      spec: spec,
+                      status: :error,
+                      output: "#{e.class}: #{e.message}",
+                    )
+                  end
+
+                  outputs[name] = if result.skipped?
+                    { skipped: true }
+                  else
+                    { output: normalize_output(result) }
+                  end
                 end
 
-                outputs[name] = if result.skipped?
-                  { skipped: true }
+                # Check if any adapter actually ran this spec
+                ran_outputs = outputs.reject { |_, v| v[:skipped] }
+                if ran_outputs.empty?
+                  skipped += 1
+                  print("s") if verbose
+                  next
+                end
+
+                checked += 1
+
+                # Check if all outputs match each other AND match expected (if specified)
+                comparison_output = ran_outputs.values.first[:output]
+                adapters_match = ran_outputs.values.all? do |value|
+                  outputs_match?(comparison_output, value[:output])
+                end
+
+                # Check against spec.expected if it exists
+                expected_match = true
+                if spec.expected
+                  reference_output = ran_outputs.values.first[:output]
+                  expected_match = if reference_output.start_with?("ERROR:")
+                    outputs_match?(reference_output, "ERROR:#{spec.expected.downcase}")
+                  else
+                    reference_output == spec.expected
+                  end
+                end
+
+                if adapters_match && expected_match
+                  matched += 1
+                  print(".") if verbose
                 else
-                  { output: normalize_output(result) }
+                  # Build diff info - group adapters by their output
+                  first_output = ran_outputs.values.first[:output]
+                  diff_info = {
+                    spec: spec,
+                    outputs: outputs,
+                    first_output: first_output,
+                  }
+                  # Add expected mismatch info if relevant
+                  if spec.expected && !expected_match
+                    diff_info[:expected_mismatch] = true
+                    diff_info[:expected] = spec.expected
+                  end
+                  differences << diff_info
+                  print("F") if verbose
                 end
-              end
-
-              # Check if any adapter actually ran this spec
-              ran_outputs = outputs.reject { |_, v| v[:skipped] }
-              if ran_outputs.empty?
-                skipped += 1
-                print("s") if verbose
-                next
-              end
-
-              checked += 1
-
-              # Check if all outputs match each other AND match expected (if specified)
-              unique_outputs = ran_outputs.values.map { |v| v[:output] }.uniq
-              adapters_match = unique_outputs.size == 1
-
-              # Check against spec.expected if it exists
-              expected_match = true
-              if spec.expected
-                reference_output = ran_outputs.values.first[:output]
-                expected_match = reference_output == spec.expected
-              end
-
-              if adapters_match && expected_match
-                matched += 1
-                print(".") if verbose
-              else
-                # Build diff info - group adapters by their output
-                first_output = ran_outputs.values.first[:output]
-                diff_info = {
-                  spec: spec,
-                  outputs: outputs,
-                  first_output: first_output,
-                }
-                # Add expected mismatch info if relevant
-                if spec.expected && !expected_match
-                  diff_info[:expected_mismatch] = true
-                  diff_info[:expected] = spec.expected
-                end
-                differences << diff_info
-                print("F") if verbose
               end
             end
 
@@ -315,7 +324,7 @@ module Liquid
             compile_options[:error_mode] = spec.error_mode if spec.error_mode
             compile_options[:file_system] = filesystem if filesystem
 
-            registers = {}
+            registers = { current_time: TimeFreezer.current_time }
             registers[:file_system] = filesystem if filesystem
             registers[:template_factory] = template_factory if template_factory
 
@@ -421,9 +430,16 @@ module Liquid
           end
 
           def normalize_output(result)
-            if result.errored? || result.failed?
+            error_output = result.output.to_s.match?(%r{\A(?:Liquid error|[A-Za-z_]\w*::)*(?:Error|Exception|[A-Za-z_]\w+(?:Error|Exception)):}) ||
+              result.output.to_s.start_with?("Liquid error:")
+            if result.errored? || result.failed? || error_output
               # Normalize error output
               output = result.output.to_s
+              # The JSON-RPC adapter necessarily wraps a remote Liquid exception
+              # in a transport class. Matrix compares Liquid behavior, not the
+              # local exception wrapper; error-pattern specs still assert classes.
+              output = output.sub(/\A(?:[A-Za-z_]\w*::)*(?:Error|Exception|[A-Za-z_]\w+(?:Error|Exception)):\s*/, "")
+              output = output.sub(/\ALiquid error:\s*/i, "")
               # Remove line numbers for comparison
               output = output.gsub(/\(line \d+\)/, "(line N)")
               # Remove trailing context
@@ -439,13 +455,20 @@ module Liquid
 
             # Flexible error comparison
             if output1.start_with?("ERROR:") && output2.start_with?("ERROR:")
-              msg1 = output1.sub(/\AERROR:/, "")
-              msg2 = output2.sub(/\AERROR:/, "")
+              msg1 = canonical_error_message(output1)
+              msg2 = canonical_error_message(output2)
               return true if msg1 == msg2
               return true if msg1.include?(msg2) || msg2.include?(msg1)
             end
 
             false
+          end
+
+          def canonical_error_message(output)
+            output.sub(/\AERROR:/, "")
+              .sub(/\Aliquid error:\s*/i, "")
+              .gsub(/\([^)]*\bline (?:N|\d+)\):?\s*/i, "")
+              .strip
           end
 
           def print_results_v2(differences, adapters, options, max_failures = nil)

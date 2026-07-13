@@ -15,6 +15,7 @@ class LocalSuiteTest < Minitest::Test
         name: "My Partials"
         default: false
         timings: true
+        features: [custom_partials]
       YML
       File.write(File.join(suite_dir, "specs.yml"), <<~YML)
         specs:
@@ -47,6 +48,7 @@ class LocalSuiteTest < Minitest::Test
       suite = Liquid::Spec::Suite.find(:my_partials)
       specs = Liquid::Spec::SpecLoader.load_suite(suite)
       assert_equal ["bench_local_example"], specs.map(&:name)
+      assert_includes specs.first.features, :custom_partials
     end
   end
 

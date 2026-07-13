@@ -1,6 +1,6 @@
 ---
 # =============================================================================
-# COMPLEXITY 250-350: Tablerow Tag
+# COMPLEXITY 241-265: Advanced Tablerow Tag
 # =============================================================================
 #
 # The tablerow tag generates HTML table rows automatically. It's similar to
@@ -9,16 +9,14 @@
 # Basic usage is covered in specs.yml at complexity 180. These specs cover
 # advanced tablerow features.
 #
-# Complexity levels:
-#   250: tablerowloop object, limit/offset
-#   280: cols with uneven items, empty collections
-#   310: nested tablerow, tablerow with other tags
-#   340: tablerowloop properties in complex scenarios
+# Each new observable behavior occupies its own level. This deliberately uses
+# the available number space so an implementer sees one lesson at a time.
 #
 # =============================================================================
 
 _metadata:
   doc: implementers/tablerow.md
+  sequential_complexity: true
   hint: |
     Tablerow generates HTML table rows. It's NOT just a for loop - it outputs
     <tr> and <td> tags with specific whitespace and class names.
@@ -27,7 +25,7 @@ _metadata:
 
 specs:
 # =============================================================================
-# tablerowloop Object (Complexity 250)
+# tablerowloop Object (Complexity 241-248)
 # =============================================================================
 
 - name: tablerowloop_index
@@ -37,7 +35,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>
-  complexity: 250
+  complexity: 241
   hint: |
     tablerowloop.index is the 1-based iteration index, like forloop.index.
 
@@ -48,7 +46,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">0</td><td class="col2">1</td><td class="col3">2</td></tr>
-  complexity: 250
+  complexity: 242
   hint: |
     tablerowloop.index0 is the 0-based iteration index.
 
@@ -59,7 +57,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">Fa</td><td class="col2">b</td><td class="col3">cL</td></tr>
-  complexity: 250
+  complexity: 243
   hint: |
     tablerowloop.first and .last work like forloop.first and .last.
 
@@ -70,7 +68,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">4</td><td class="col2">4</td><td class="col3">4</td><td class="col4">4</td></tr>
-  complexity: 250
+  complexity: 244
   hint: |
     tablerowloop.length is the total number of items.
 
@@ -82,7 +80,7 @@ specs:
     <tr class="row1">
     <td class="col1">c1</td><td class="col2">c2</td></tr>
     <tr class="row2"><td class="col1">c1</td><td class="col2">c2</td></tr>
-  complexity: 250
+  complexity: 245
   hint: |
     tablerowloop.col is the current column (1-based), resets each row.
 
@@ -94,7 +92,7 @@ specs:
     <tr class="row1">
     <td class="col1">c0</td><td class="col2">c1</td></tr>
     <tr class="row2"><td class="col1">c0</td><td class="col2">c1</td></tr>
-  complexity: 250
+  complexity: 246
   hint: |
     tablerowloop.col0 is 0-based column index.
 
@@ -107,7 +105,7 @@ specs:
     <td class="col1">r1</td><td class="col2">r1</td></tr>
     <tr class="row2"><td class="col1">r2</td><td class="col2">r2</td></tr>
     <tr class="row3"><td class="col1">r3</td></tr>
-  complexity: 250
+  complexity: 247
   hint: |
     tablerowloop.row is the current row number (1-based).
 
@@ -120,14 +118,14 @@ specs:
     <td class="col1">[a</td><td class="col2">b]</td></tr>
     <tr class="row2"><td class="col1">[c</td><td class="col2">d]</td></tr>
     <tr class="row3"><td class="col1">[e</td></tr>
-  complexity: 250
+  complexity: 248
   hint: |
     tablerowloop.col_first is true at the first column of each row.
     tablerowloop.col_last is true at the final column position (cols:2 means col 2).
     Single item 'e' in last row is at col 1, so col_last is false.
 
 # =============================================================================
-# Limit/Offset (Complexity 260)
+# Limit/Offset (Complexity 249-252)
 # =============================================================================
 
 - name: tablerow_limit
@@ -137,7 +135,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">a</td><td class="col2">b</td></tr>
-  complexity: 260
+  complexity: 249
   hint: |
     limit restricts how many items to process.
 
@@ -148,7 +146,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">c</td><td class="col2">d</td><td class="col3">e</td></tr>
-  complexity: 260
+  complexity: 250
   hint: |
     offset skips the first N items.
 
@@ -159,7 +157,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">b</td><td class="col2">c</td></tr>
-  complexity: 260
+  complexity: 251
   hint: |
     limit and offset work together.
 
@@ -171,12 +169,12 @@ specs:
     <tr class="row1">
     <td class="col1">a</td><td class="col2">b</td></tr>
     <tr class="row2"><td class="col1">c</td></tr>
-  complexity: 260
+  complexity: 252
   hint: |
     cols and limit work together. Only 3 items, split into 2 rows.
 
 # =============================================================================
-# Edge Cases (Complexity 280)
+# Edge Cases (Complexity 253-257)
 # =============================================================================
 
 - name: tablerow_empty_collection
@@ -186,7 +184,7 @@ specs:
   expected: |
     <tr class="row1">
     </tr>
-  complexity: 280
+  complexity: 253
   hint: |
     QUIRK: Empty collection still produces tr tags with no td content.
     This is surprising but matches liquid-ruby behavior.
@@ -198,7 +196,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">only</td></tr>
-  complexity: 280
+  complexity: 254
   hint: |
     Single item still produces full tr/td structure.
 
@@ -210,7 +208,7 @@ specs:
     <tr class="row1">
     <td class="col1">a</td><td class="col2">b</td><td class="col3">c</td></tr>
     <tr class="row2"><td class="col1">d</td><td class="col2">e</td></tr>
-  complexity: 280
+  complexity: 255
   hint: |
     When items don't divide evenly, last row has fewer columns.
 
@@ -223,7 +221,7 @@ specs:
     <td class="col1">a</td></tr>
     <tr class="row2"><td class="col1">b</td></tr>
     <tr class="row3"><td class="col1">c</td></tr>
-  complexity: 280
+  complexity: 256
   hint: |
     cols:1 creates one row per item.
 
@@ -232,12 +230,12 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">1</td><td class="col2">2</td><td class="col3">3</td><td class="col4">4</td></tr>
-  complexity: 280
+  complexity: 257
   hint: |
     tablerow works with ranges, not just arrays.
 
 # =============================================================================
-# Complex Scenarios (Complexity 310)
+# Complex Scenarios (Complexity 258-261)
 # =============================================================================
 
 - name: tablerow_with_conditional
@@ -247,7 +245,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">small</td><td class="col2">small</td><td class="col3">big</td><td class="col4">big</td></tr>
-  complexity: 310
+  complexity: 258
   hint: |
     Conditionals work normally inside tablerow.
 
@@ -258,7 +256,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">A</td><td class="col2">B</td><td class="col3">C</td></tr>
-  complexity: 310
+  complexity: 259
   hint: |
     Filters work on the item variable.
 
@@ -274,7 +272,7 @@ specs:
     <tr class="row2"><td class="col1">c</td></tr>
     Group 2:<tr class="row1">
     <td class="col1">x</td><td class="col2">y</td></tr>
-  complexity: 310
+  complexity: 260
   hint: |
     tablerow can be nested inside for loops. Each tablerow starts fresh.
 
@@ -285,12 +283,12 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">2</td><td class="col2">4</td><td class="col3">6</td></tr>
-  complexity: 310
+  complexity: 261
   hint: |
     assign works inside tablerow, creating/updating variables.
 
 # =============================================================================
-# tablerowloop in Complex Scenarios (Complexity 340)
+# tablerowloop in Complex Scenarios (Complexity 262-265)
 # =============================================================================
 
 - name: tablerowloop_length_with_limit
@@ -300,7 +298,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">3</td><td class="col2">3</td><td class="col3">3</td></tr>
-  complexity: 340
+  complexity: 262
   hint: |
     tablerowloop.length reflects the segment size (after limit/offset).
 
@@ -311,7 +309,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">3</td><td class="col2">2</td><td class="col3">1</td></tr>
-  complexity: 340
+  complexity: 263
   hint: |
     tablerowloop.rindex is the reverse index (items remaining including current).
 
@@ -322,7 +320,7 @@ specs:
   expected: |
     <tr class="row1">
     <td class="col1">2</td><td class="col2">1</td><td class="col3">0</td></tr>
-  complexity: 340
+  complexity: 264
   hint: |
     tablerowloop.rindex0 is 0-based reverse index.
 
@@ -335,6 +333,6 @@ specs:
     <td class="col1">1.1F</td><td class="col2">1.2</td></tr>
     <tr class="row2"><td class="col1">2.1</td><td class="col2">2.2</td></tr>
     <tr class="row3"><td class="col1">3.1L</td></tr>
-  complexity: 340
+  complexity: 265
   hint: |
     Combining multiple tablerowloop properties. row.col with first/last markers.

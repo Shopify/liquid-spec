@@ -142,6 +142,7 @@ ruby -Ilib scripts/verifiers/parse_mode_annotation.rb # specs without error_mode
 ruby -Ilib scripts/verifiers/spec_name_collisions.rb # advisory: no two specs share the same name
 ruby -Ilib scripts/verifiers/filesystem_extensions.rb # advisory: filesystem keys should have valid extensions
 ruby -Ilib scripts/verifiers/minimum_complexity.rb  # specs with advanced features sit above the beginner ramp
+ruby -Ilib scripts/verifiers/sequential_complexity.rb # opted-in curated files advance exactly one level per spec
 ```
 
 **Blocking verifiers** (must be green before pushing):
@@ -160,6 +161,10 @@ ruby -Ilib scripts/verifiers/minimum_complexity.rb  # specs with advanced featur
   `instantiate:` drops ≥ 100; `drops` ≥ 200; `template_factory` and
   Shopify-specific features ≥ 200; `render_errors: true` and
   `error_mode: strict2` ≥ 100.
+- `sequential_complexity` — curated files with
+  `_metadata.sequential_complexity: true` must advance exactly one complexity
+  level per spec. This prevents one-lesson ramps from collapsing back into
+  round-number buckets.
 - `jsonrpc_portability` — specs must not send non-primitive Ruby types
   (non-string keys, symbols, unregistered objects) over JSON-RPC, which would
   trigger `_rpc_drop` markers. Time/Date/DateTime are whitelisted (sent as
@@ -220,6 +225,14 @@ liquid-spec run /tmp/raise_render_adapter.rb
 
 Use `--list-passed` to inspect accidental passes and `--json` for tooling. Prefer `Complexity level cleared` (or JSON `max_complexity_reached`) over raw pass count when judging partial or deliberately naive adapters.
 
+### Deterministic date/time specs
+
+Every spec execution surface places the clock `2024-01-01 00:01:58 UTC` in the
+render register `current_time`. Registers are passed beside assigns but are only
+for filters and drops, never direct template lookup. Specs using `now` or `today`
+must assert output for that exact instant. Never make a matrix test pass merely
+because adapters agree on the host's current date.
+
 ### Result Logging
 
 Each test run appends results to `/tmp/liquid-spec-results.jsonl` with the format:
@@ -256,6 +269,13 @@ end
 
 LiquidSpec.configure do |config|
   config.suite = :liquid_ruby  # or :all, :basics, :liquid_ruby_lax, :partials, :parser_errors, :benchmarks, :shopify_theme_dawn, ...
+
+  # Parse modes implemented by this adapter. The highest supported strictness
+  # is used for ordinary specs: strict2, then strict, then lax.
+  config.error_modes = [:strict2]
+
+  # Render errors raise by default. Add :inline only when supported.
+  config.render_error_modes = [:raise]
 
   # Declare what your adapter cannot support yet. Specs requiring these
   # features are skipped so you can build incrementally.
@@ -423,6 +443,7 @@ YAML files can include a `_metadata` section for settings that apply to all spec
 
 - **`hint`**: A global hint displayed when any spec in this file fails
 - **`required_options`**: Options that are automatically applied to all specs (e.g., `error_mode: :lax`)
+- **`sequential_complexity`**: Opts a curated file into the verifier requiring each spec to use the next integer complexity
 
 Spec-level settings override source-level settings. For example, a spec with its own `error_mode` will use that instead of the `required_options.error_mode`.
 
@@ -458,7 +479,7 @@ letting source-echo, always-empty, or special-cased implementations advance fals
 
 ### Ramp discipline
 
-- First-contact specs for a feature must be tiny, gentle, and hinted. If needed, score the first spec one point lower than follow-up specs so it appears first.
+- Treat complexity as an ordinal curriculum position, not a bucket. First-contact specs for a feature must be tiny, gentle, hinted, and placed on their own level. Give each subsequent independently failable behavior the next free integer (`N`, `N+1`, `N+2`) before combinations and edge cases. Specs may share a level only when they are true breadth variants requiring the same implementation step; do not pile different lessons onto round scores such as 180, 250, or 300.
 - Keep the 0-50 band boring: passthrough, literals, missing variables, simple variable lookup, a few simple filters, and assign.
 - Keep whitespace control (`{{-`, `-}}`, `{%-`, `-%}`), drop/to_liquid boundaries, generated filter matrices, parser recovery, date/time quirks, and filesystem/security quirks out of the beginner band.
 - Generated specs should not flood the early ramp. Prefer curated beginner specs early; generated compatibility breadth generally starts at 120+ or much later.
@@ -647,10 +668,16 @@ Suites can also be discovered from local project `./specs/<name>/suite.yml` dire
 
 ### Features
 
-Adapters declare which features they do **not** support yet. Suites and individual specs can require capabilities; any required capability listed in `missing_features` is skipped so implementations can grow incrementally:
+Adapters declare parse and render error behavior positively, and other unsupported
+features through `missing_features`. Specs without `error_mode` run once at the
+highest supported strictness. Explicit multi-mode specs run in every supported
+declared mode, ordered strict2, strict, lax. Raised render errors are the default;
+inline-error specs require `render_error_modes` to include `:inline`.
 
 ```ruby
 LiquidSpec.configure do |config|
+  config.error_modes = [:strict2]
+  config.render_error_modes = [:raise]
   # Empty means "try every spec". Add unsupported capabilities here.
   config.missing_features = [:shopify_tags]
 end
@@ -662,9 +689,8 @@ Feature selection is denylist-based. Leave `missing_features` empty to try every
 
 **Common features to list in `missing_features`:**
 - `:drops` - Adapter cannot support the standard test drop library yet (see docs/test_drops.md)
-- `:inline_errors` - Adapter cannot render errors inline yet
-- `:lax_parsing` - Adapter does not support `error_mode: :lax`
-- `:strict_parsing` / `:strict2_parsing` - Adapter does not support strict / strict2 parsing modes
+- Parse-mode and inline-error feature tags are derived from `error_modes` and
+  `render_error_modes`; do not maintain them manually in `missing_features`.
 - `:self_environment_shadowing` - Adapter does not implement the compatibility behavior where an environment variable named `self` shadows the synthetic SelfDrop
 - `:ruby_types` / `:ruby_drops` / `:drop_class_output` / `:binary_data` - Adapter cannot consume or reproduce Ruby-specific values/output
 - `:template_factory` - Adapter cannot support template factory/artifact callbacks

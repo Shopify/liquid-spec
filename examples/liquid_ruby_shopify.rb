@@ -184,7 +184,11 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.missing_features = [:drop_class_output, :lax_parsing]
+  config.error_modes = [:strict]
+  config.render_error_modes = [:raise, :inline]
+  # This adapter is a benchmark fixture with a few local theme filters, not a
+  # full Shopify runtime. Keep production/theme suites out of its matrix row.
+  config.missing_features = [:drop_class_output, :shopify_tags, :shopify_objects, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :shopify_resource_limits]
   config.suites = [:benchmarks]
   config.filter = "shopify_"
 end
@@ -198,7 +202,7 @@ LiquidSpec.compile do |ctx, source, parse_options|
     end
   end
   ctx[:template] = Liquid::Template.parse(
-    source, **parse_options, error_mode: :strict, environment: ctx[:shopify_env],
+    source, **parse_options, environment: ctx[:shopify_env],
   )
 end
 

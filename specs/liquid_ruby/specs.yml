@@ -747,7 +747,7 @@ specs:
       {% if true %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L35
 - name: CommentTagUnitTest#test_child_comment_tags_need_to_be_closed_6563bb7a
@@ -758,7 +758,7 @@ specs:
       {% endcomment %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L76
 - name: CommentTagUnitTest#test_child_raw_tags_need_to_be_closed_3efcf502
@@ -769,7 +769,7 @@ specs:
       {% endraw %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L96
 - name: CommentTagUnitTest#test_comment_inside_liquid_tag_a204725f
@@ -783,7 +783,7 @@ specs:
       endif
     %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L7
 - name: CommentTagUnitTest#test_comment_tag_delimiter_with_extra_strings_bbcd005e
@@ -795,19 +795,19 @@ specs:
       {% endif %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L132
 - name: CommentTagUnitTest#test_delimiter_can_have_extra_strings_5414d4f8
   template: "{% comment %}123{% endcomment xyz %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L173
 - name: CommentTagUnitTest#test_delimiter_can_have_extra_strings_a5bd2c12
   template: "{%comment}{% assign a = 1 %}{%endcomment}{% endif %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L177
 - name: CommentTagUnitTest#test_delimiter_can_have_extra_strings_a6438a36
@@ -815,13 +815,13 @@ specs:
     {% comment %}123{% endcomment
     xyz %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L175
 - name: CommentTagUnitTest#test_delimiter_can_have_extra_strings_b64b1fc0
   template: "{% comment %}123{% endcomment\txyz %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L174
 - name: CommentTagUnitTest#test_delimiter_can_have_extra_strings_ebee30d2
@@ -829,7 +829,7 @@ specs:
     {% comment %}123{% endcomment
        xyz  endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L176
 - name: CommentTagUnitTest#test_does_not_parse_nodes_inside_a_comment_147f91cb
@@ -845,7 +845,7 @@ specs:
       {% endcase %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L20
 - name: CommentTagUnitTest#test_dont_override_liquid_tag_whitespace_control_28537628
@@ -858,7 +858,7 @@ specs:
     -%}
     World!
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: Hello!World!
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L192
 - name: CommentTagUnitTest#test_ignores_delimiter_with_extra_strings_15598c4b
@@ -869,7 +869,7 @@ specs:
       {% endcomment %}
     {% endif %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L160
 - name: CommentTagUnitTest#test_nested_comment_tag_with_extra_strings_c7177c54
@@ -881,7 +881,7 @@ specs:
       {% assign foo = 1 %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L146
 - name: CommentTagUnitTest#test_open_tags_in_comment_62298e16
@@ -890,19 +890,19 @@ specs:
       {% assign a = 123 {% comment %}
     {% endcomment %}
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L43
 - name: CommentTagUnitTest#test_with_whitespace_control_764651e9
   template: "      {%- comment -%}123{%- endcomment -%}     Hello!"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: Hello!
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L183
 - name: CommentTagUnitTest#test_with_whitespace_control_78f061e9
   template: "      {%- comment -%}123{%- endcomment -%}Hello!"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: Hello!
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L181
 - name: CommentTagUnitTest#test_with_whitespace_control_9b601511
@@ -910,13 +910,13 @@ specs:
     {%- comment %}Whitespace control!{% endcomment -%}
     Hello!
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: Hello!
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L185
 - name: CommentTagUnitTest#test_with_whitespace_control_c7df8255
   template: "{%- comment -%}123{%- endcomment -%}     Hello!"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: Hello!
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/unit/tags/comment_tag_unit_test.rb#L182
 - name: ContextTest#test_access_hashes_with_hash_access_variables_1351b2a4
@@ -4203,6 +4203,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L384
   features:
   - drops
+  - template_factory
 - name: IncludeTagTest#test_render_tag_renders_error_with_template_name_from_template_factory_8842ca42
   template: "{% include 'foo' with errors %}"
   environment:
@@ -4218,6 +4219,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/include_tag_test.rb#L394
   features:
   - drops
+  - template_factory
 - name: IncludeTagTest#test_strict2_parsing_errors_574c8b26
   template: '{% include "snippet" !!! arg1: "value1" ~~~ arg2: "value2" %}'
   error_mode: lax
@@ -4720,85 +4722,85 @@ specs:
 - name: RawTagTest#test_open_tag_in_raw_03444a59
   template: "{% raw %} Foobar {% foo {% bar %}{% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar {% foo {% bar %}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L31
 - name: RawTagTest#test_open_tag_in_raw_0522f4a1
   template: "{% raw %} Foobar {{ invalid {% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar {{ invalid "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L25
 - name: RawTagTest#test_open_tag_in_raw_21bf763b
   template: "{% raw %} Foobar invalid %} {% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar invalid %} "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L24
 - name: RawTagTest#test_open_tag_in_raw_24c01426
   template: "{% raw %} Foobar invalid }} {% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar invalid }} "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L26
 - name: RawTagTest#test_open_tag_in_raw_30d0993f
   template: "{% raw %} Foobar {% invalid {% {% endraw {% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar {% invalid {% {% endraw "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L27
 - name: RawTagTest#test_open_tag_in_raw_84841428
   template: "{% raw %} Foobar {% invalid {% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar {% invalid "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L23
 - name: RawTagTest#test_open_tag_in_raw_a65a93ff
   template: "{% raw %} Foobar {{ invalid {% endraw %}{{ 1 }}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar {{ invalid 1"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L30
 - name: RawTagTest#test_open_tag_in_raw_dfc86ab4
   template: "{% raw %} Foobar {% {% {% {% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " Foobar {% {% {% "
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L28
 - name: RawTagTest#test_open_tag_in_raw_ec7747d7
   template: "{% raw %} test {% raw %} {% {% endraw %}endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: " test {% raw %} {% endraw %}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L29
 - name: RawTagTest#test_output_in_raw_95ef0006
   template: "> {%- raw -%}{{ test }}{%- endraw -%} <"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ">{{ test }}<"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L16
 - name: RawTagTest#test_output_in_raw_e21a3106
   template: "> {%- raw -%} inner {%- endraw -%} <"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: "> inner <"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L18
 - name: RawTagTest#test_output_in_raw_e5ebda0b
   template: "> {%- raw -%} inner {%- endraw %} <"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: "> inner  <"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L17
 - name: RawTagTest#test_output_in_raw_f904fdc4
   template: "{% raw %}{{% endraw %}Hello{% raw %}}{% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: "{Hello}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L19
 - name: RawTagTest#test_tag_in_raw_b698e01a
   template: "{% raw %}{% comment %} test {% endcomment %}{% endraw %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: "{% comment %} test {% endcomment %}"
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/raw_tag_test.rb#L9
 - name: RenderTagTest#test_break_through_render_2dbd61ba
@@ -5029,6 +5031,7 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/render_tag_test.rb#L308
   features:
   - drops
+  - template_factory
 - name: RenderTagTest#test_render_tag_with_39fadbdf
   template: "{% render 'product' with products[0] %}"
   environment:
@@ -6836,135 +6839,135 @@ specs:
 - name: StandardTagTest#test_has_a_block_which_does_nothing_11352083
   template: "{%comment%}{%endcomment%}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L30
 - name: StandardTagTest#test_has_a_block_which_does_nothing_1607dca8
   template: "{% comment %}{% endwhatever %}{% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L41
 - name: StandardTagTest#test_has_a_block_which_does_nothing_165f8c96
   template: "{% comment %}{% raw %} {{%%%%}}  }} { {% endcomment %} {% comment {%
     endraw %} {% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L42
 - name: StandardTagTest#test_has_a_block_which_does_nothing_1f0a1d36
   template: "{% comment %} 1 {% comment %} 2 {% endcomment %} 3 {% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L36
 - name: StandardTagTest#test_has_a_block_which_does_nothing_2f7aa5f0
   template: "{% comment %}{%%}{% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L44
 - name: StandardTagTest#test_has_a_block_which_does_nothing_3ed31346
   template: foo {%comment%}comment{%endcomment%} bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foo  bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L52
 - name: StandardTagTest#test_has_a_block_which_does_nothing_4af70994
   template: "{%comment%}{% endif %}{%endcomment%}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L40
 - name: StandardTagTest#test_has_a_block_which_does_nothing_4d615056
   template: "{% comment %}{% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L33
 - name: StandardTagTest#test_has_a_block_which_does_nothing_5130c195
   template: foo{%comment%} comment {%endcomment%}bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L48
 - name: StandardTagTest#test_has_a_block_which_does_nothing_63a1f064
   template: '{% comment %}{% " %}{% endcomment %}'
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L43
 - name: StandardTagTest#test_has_a_block_which_does_nothing_63a81c06
   template: "{%comment%}{% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L31
 - name: StandardTagTest#test_has_a_block_which_does_nothing_72f466f3
   template: foo{% comment %} comment {% endcomment %}bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L49
 - name: StandardTagTest#test_has_a_block_which_does_nothing_75033452
   template: the comment block should be removed {%comment%} be gone.. {%endcomment%}
     .. right?
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: the comment block should be removed  .. right?
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L25
 - name: StandardTagTest#test_has_a_block_which_does_nothing_7bb3db58
   template: foo{%comment%}comment{%endcomment%}bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L46
 - name: StandardTagTest#test_has_a_block_which_does_nothing_7d3e3972
   template: foo {%comment%} {%endcomment%} bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foo  bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L51
 - name: StandardTagTest#test_has_a_block_which_does_nothing_88372eca
   template: foo{% comment %}comment{% endcomment %}bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L47
 - name: StandardTagTest#test_has_a_block_which_does_nothing_a8d69a8b
   template: "{% comment %}comment{% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L35
 - name: StandardTagTest#test_has_a_block_which_does_nothing_ab86c8ab
   template: "{%comment%}comment{%endcomment%}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L34
 - name: StandardTagTest#test_has_a_block_which_does_nothing_bdc332e1
   template: "{%comment%}{%blabla%}{%endcomment%}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L38
 - name: StandardTagTest#test_has_a_block_which_does_nothing_d2713e33
   template: foo {%comment%} comment {%endcomment%} bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foo  bar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L53
 - name: StandardTagTest#test_has_a_block_which_does_nothing_f366c42d
   template: "{% comment %}{%endcomment%}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L32
 - name: StandardTagTest#test_has_a_block_which_does_nothing_fda69dfc
   template: "{% comment %}{% blabla %}{% endcomment %}"
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: ''
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L39
 - name: StandardTagTest#test_has_a_block_which_does_nothing_ff13ba7c
@@ -6972,7 +6975,7 @@ specs:
     foo{%comment%}
                                          {%endcomment%}bar
   render_errors: false
-  complexity: 110
+  complexity: 500
   expected: foobar
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L55
 - name: StandardTagTest#test_hyphenated_assign_4cc32fb4

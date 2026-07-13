@@ -302,6 +302,31 @@ class JsonRpcDropProxyTest < Minitest::Test
   end
 end
 
+class JsonRpcAdapterOptionsTest < Minitest::Test
+  def setup
+    @adapter = Liquid::Spec::JsonRpc::Adapter.allocate
+  end
+
+  def test_serialize_render_options_preserves_false_with_symbol_key
+    assert_equal({ "strict_errors" => false },
+      @adapter.send(:serialize_render_options, { strict_errors: false }))
+  end
+
+  def test_serialize_render_options_preserves_false_with_string_key
+    assert_equal({ "strict_errors" => false },
+      @adapter.send(:serialize_render_options, { "strict_errors" => false }))
+  end
+
+  def test_serialize_render_options_sends_current_time_as_a_register
+    time = Time.utc(2031, 7, 19, 14, 15, 16)
+
+    assert_equal(
+      { "registers" => { "current_time" => "2031-07-19T14:15:16Z" } },
+      @adapter.send(:serialize_render_options, { registers: { current_time: time } }),
+    )
+  end
+end
+
 class JsonRpcMockServerTest < Minitest::Test
   MOCK_SERVER_PATH = File.expand_path("fixtures/mock_liquid_server.rb", __dir__)
 

@@ -204,6 +204,10 @@ end
 
 # Declare what your adapter can't handle (default: run everything)
 LiquidSpec.configure do |config|
+  # Parse modes this adapter implements. Highest strictness is the default.
+  config.error_modes = [:strict2]
+  # Raised render errors are the default; :inline is optional.
+  config.render_error_modes = [:raise]
   config.missing_features = [:shopify_tags, :shopify_filters]
 end
 
@@ -222,7 +226,14 @@ end
 ```
 
 The `options` hash in render includes:
-- `:registers` - Hash with `:file_system` and `:template_factory`
+- `:registers` - Host context for filters/drops, including `:file_system`,
+  `:template_factory`, and `:current_time`; it is not template-visible like assigns
+
+Specs without `error_mode` run once using the adapter's highest supported parse
+mode (`strict2`, then `strict`, then `lax`). A spec declaring multiple modes runs
+once in every supported declared mode, in that same order. Inline-error specs run
+only when `render_error_modes` includes `:inline`; raised render errors are the
+normal path.
 - `:strict_errors` - If true, raise errors; if false, render them inline
 - `:exception_renderer` - Custom exception handler (optional)
 
@@ -235,7 +246,9 @@ Key setup points:
 
 - Your server implements `initialize`, `compile`, `render`, and `quit`.
 - Server debug logs go to stderr; stdout must contain only newline-delimited JSON-RPC messages.
-- The adapter controls spec selection with `config.missing_features`; server-reported `features` are informational.
+- The adapter controls spec selection with `config.error_modes`,
+  `config.render_error_modes`, and `config.missing_features`; server-reported
+  `features` are informational.
 - Minimal JSON-RPC adapters should usually opt out of unsupported or non-portable features such as `:drops`, `:ruby_types`, `:ruby_drops`, `:drop_class_output`, `:self_environment_shadowing`, `:binary_data`, and `:template_factory`, plus Shopify-specific features.
 - Remove `:drops` when the engine supports the standard test-drop library. Bidirectional runtime objects can use the protocol's `drop_get`, `drop_call`, and `drop_iterate` callbacks.
 - Read `docs/json-rpc-protocol.md` for the exact message format and error-handling rules.
@@ -311,7 +324,7 @@ out of regular runs.
 
 | Suite | Tests | Description |
 |-------|-------|-------------|
-| **basics** | 941 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
+| **basics** | 945 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
 | **liquid_ruby** | 2,097 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
 | **parser_errors** | 1,905 | Strict parser error compatibility and mutation matrices |
@@ -350,6 +363,9 @@ your adapter cannot handle to skip specs that require those capabilities:
 
 ```ruby
 LiquidSpec.configure do |config|
+  config.error_modes = [:strict2]
+  config.render_error_modes = [:raise]
+
   # Run everything (default — empty denylist)
   config.missing_features = []
 
@@ -357,6 +373,9 @@ LiquidSpec.configure do |config|
   config.missing_features = [:shopify_tags, :shopify_objects, :shopify_filters]
 end
 ```
+
+Do not list parsing or inline-error tags manually in `missing_features`; they are
+derived from the two positive error-mode declarations.
 
 ## Generated Adversarial Coverage
 

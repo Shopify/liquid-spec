@@ -165,7 +165,33 @@ Do not assign scores above 1000.
 
 ## Edge Cases Within a Feature
 
-When a feature has both a happy path and edge cases, the first spec for that feature should be gentle and one point lower than nearby follow-up specs when useful. The first spec should include a hint that names the feature and points to the relevant implementer doc.
+Complexity is an ordinal curriculum position, not a bucket. There are 1,001
+available positions; use them. When a feature has both a happy path and edge
+cases, give the simplest observable use its own level. Put each newly introduced
+behavior on the next available integer before combining behaviors or adding
+edge cases.
+
+Do not place a family of different lessons at one round-number score such as
+`180`, `250`, or `300`. Sharing a score is appropriate only when specs are true
+equivalents or breadth variants that require exactly the same implementation
+step. If one spec can fail after another passes, they normally need different
+levels.
+
+For a curated file whose specs form one uninterrupted sequence, declare the
+invariant so contributor checks preserve it:
+
+```yaml
+_metadata:
+  sequential_complexity: true
+specs:
+- name: first_lesson
+  complexity: 241
+- name: next_lesson
+  complexity: 242
+```
+
+The first spec should include a hint that names the feature and points to the
+relevant implementer doc.
 
 **Example: filesystem partials**
 
@@ -173,8 +199,9 @@ When a feature has both a happy path and edge cases, the first spec for that fea
 |------------|------|
 | 189 | First gentle filesystem render/include spec with hint and doc pointer |
 | 190 | Basic `.liquid` extension lookup |
-| 240 | Subpath lookup |
-| 300 | Not-found errors |
+| 191 | Static subpath lookup |
+| 192 | Dynamic subpath lookup |
+| 193 | Basic not-found error |
 | 600 | Recursion/nesting-too-deep |
 | 700 | Literal `..` lookup compatibility quirk |
 
@@ -183,8 +210,8 @@ When a feature has both a happy path and edge cases, the first spec for that fea
 1. **Preserve the ramp:** A dumb adapter should pass only the truly trivial first specs, then fail with an actionable message.
 2. **Start every feature gently:** The first spec for a major feature should be minimal and well-hinted.
 3. **Curate before generated matrices:** Put handcrafted basics early; generated reference matrices generally belong at 120+ or much later.
-4. **Edge cases add +10 to +50:** The stranger the behavior, the farther it moves from the first-contact score.
-5. **Combinations are higher:** When two features interact, use the higher feature's score plus 10-50.
+4. **Advance one lesson at a time:** Prefer `N`, `N+1`, `N+2` for a feature's happy path, first variant, and first edge case. Do not jump by 10 merely to reach a round number.
+5. **Combinations come after prerequisites:** Put an interaction on the next free level after both features' standalone lessons. Reserve large jumps for a genuinely later maturity band, not ordinary composition.
 6. **Quirks go late:** Ruby-specific, drop-protocol, date/time, parser recovery, and production/platform behavior usually belongs at 500-1000.
 7. **Document unusual scores:** Use `hint` to explain why a spec is early or late.
 8. **Stay within the ceiling:** Complexity must be between 0 and 1000.
@@ -202,3 +229,23 @@ When building a new Liquid implementation, work through specs in complexity orde
 7. **Phase 6 (1000):** Production recordings and unscored mature-compatibility checks.
 
 Fix failures in the order they appear. If the first failure is surprising, the spec probably needs a better hint or a higher complexity score.
+
+### Example: one level per tablerow lesson
+
+The advanced tablerow curriculum starts after the existing complexity-240
+prerequisites and deliberately progresses one level at a time:
+
+| Complexity | New behavior |
+|------------|--------------|
+| 241 | `tablerowloop.index` |
+| 242 | `tablerowloop.index0` |
+| 243 | `first` and `last` |
+| 244 | `length` |
+| 245 | `col` |
+| 246 | `col0` |
+| 247 | `row` |
+| 248 | `col_first`/`col_last`, including explicit `cols:` semantics |
+
+This ordering matters: an implementation can now clear seven small milestones
+before encountering the `col_last` rule instead of remaining stuck at 240 and
+then jumping hundreds of points after one fix.

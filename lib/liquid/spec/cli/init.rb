@@ -69,6 +69,16 @@ module Liquid
             # :partials, :parser_errors, :benchmarks, :shopify_theme_dawn, ...
             config.suite = :liquid_ruby
 
+            # Declare parse modes this implementation supports. Specs without an
+            # explicit mode run once in the highest supported mode, in this order:
+            # strict2, strict, lax. Start with strict2 and add compatibility modes
+            # only after implementing them.
+            config.error_modes = [:strict2]
+
+            # Rendering raises errors by default. Add :inline only when the
+            # implementation can render errors into template output.
+            config.render_error_modes = [:raise]
+
             # Optional: filter specs by name pattern
             # config.filter = /assign/
             # Specs that need Ruby-specific behavior (Hash#inspect output format
@@ -89,10 +99,9 @@ module Liquid
           #
           # ERROR MODES
           # -----------
-          # options[:error_mode] is set by the spec when a spec targets a specific mode.
-          # When no mode is requested, default to :strict2 (the modern Liquid 5.12+
-          # parser with relaxed trailing comma/colon syntax). This is the recommended
-          # default for new implementations.
+          # liquid-spec always supplies options[:error_mode]. Unannotated specs use
+          # the highest mode declared by config.error_modes; explicitly annotated
+          # multi-mode specs run once in every supported declared mode.
           #
           # Legacy modes exist but are NOT recommended unless you need backwards
           # compatibility with older Liquid versions or Shopify production:
@@ -102,17 +111,10 @@ module Liquid
           #   :lax    - Lenient parsing that silently ignores syntax errors and renders
           #             broken tags as text. Legacy compatibility only; new
           #             implementations should NOT support lax mode.
-          #   :raise  - Alias for :lax parsing with errors raised at render time instead
-          #             of rendered inline. Legacy behavior preserved for backwards
-          #             compatibility; new implementations should NOT support it.
-          #
           # Unless you have a specific backwards-compatibility requirement, implement
-          # only :strict2 and let specs targeting :strict, :lax, or :raise be skipped.
+          # only :strict2 and let specs targeting :strict or :lax be skipped.
           #
           LiquidSpec.compile do |ctx, source, options|
-            # Default to strict2 when the spec doesn't request a specific error mode
-            options[:error_mode] ||= :strict2
-
             # Example for Shopify/liquid:
             #   ctx[:template] = Liquid::Template.parse(source, options)
             #
@@ -127,6 +129,8 @@ module Liquid
           # @param ctx [Hash] Adapter context (from setup block)
           # @param assigns [Hash] Variables available as {{ var }}
           # @param options [Hash] Render options (:registers, :strict_errors, :error_mode)
+          # options[:registers][:current_time] is the host clock for filters and
+          # drops. It is deliberately separate from assigns/template lookup.
           # @return [String] The rendered output
           #
           # RENDER ERROR HANDLING
@@ -209,7 +213,7 @@ module Liquid
           #     "params": {
           #       "template": "{{ x | upcase }}",
           #       "options": {
-          #         "error_mode": "strict2", // "strict2" (default), "strict", "lax", "raise", or null
+          #         "error_mode": "strict2", // "strict2", "strict", "lax", or null
           #         "line_numbers": true
           #       },
           #       "filesystem": {             // templates for {% include %} / {% render %}
@@ -322,6 +326,9 @@ module Liquid
           end
 
           LiquidSpec.configure do |config|
+            config.error_modes = [:strict2]
+            config.render_error_modes = [:raise]
+
             # Opt out of specs your implementation doesn't support yet.
             # List features here that should be SKIPPED (the adapter is "missing" them).
             #
@@ -332,7 +339,6 @@ module Liquid
             # Common opt-out features:
             #   :drops                       - Standard test drop library (see docs/test_drops.md)
             #   :randomness                  - Specs using generated random values
-            #   :lax_parsing                 - error_mode: :lax (lenient parsing)
             #   :ruby_types                  - Ruby-specific types (symbols, ranges, etc.)
             #   :ruby_drops                  - Ruby-specific drop objects (security tests, etc.)
             #   :drop_class_output           - Ruby-specific Drop class-name string output
@@ -360,16 +366,16 @@ module Liquid
 
           # ERROR MODES
           # -----------
-          # Default to :strict2 (the modern Liquid 5.12+ parser) when the spec
-          # doesn't request a specific mode. This default is sent to your subprocess
-          # in the compile request's options.error_mode field.
+          # liquid-spec sends one of the modes declared in config.error_modes in the
+          # compile request's options.error_mode field. Unannotated specs use the
+          # highest supported strictness; explicit multi-mode specs run in each
+          # supported declared mode.
           #
-          # Legacy modes (:strict, :lax, :raise) exist for backwards compatibility
+          # Legacy modes (:strict, :lax) exist for backwards compatibility
           # with older Liquid versions or Shopify production but are NOT recommended
           # for new implementations unless you need that compatibility. Let specs
           # targeting those modes be skipped.
           LiquidSpec.compile do |ctx, source, options|
-            options[:error_mode] ||= :strict2
             ctx[:adapter].spec_context = ctx
             ctx[:template_id] = ctx[:adapter].compile(source, options)
           end
@@ -670,11 +676,10 @@ module Liquid
             ```ruby
             LiquidSpec.compile do |ctx, source, options|
               # options may include:
-              #   :error_mode - :strict2 (default), :strict, :lax, or :raise
+              #   :error_mode - :strict2, :strict, or :lax
               #   :line_numbers - true/false
               #   :file_system - for include/render tags
-              options[:error_mode] ||= :strict2
-              ctx[:template] = MyLiquid::Template.parse(source, environment: ctx[:environment])
+              ctx[:template] = MyLiquid::Template.parse(source, **options, environment: ctx[:environment])
             end
             ```
 
@@ -686,7 +691,8 @@ module Liquid
             LiquidSpec.render do |ctx, assigns, options|
               # assigns: Hash of variables available as {{ var }}
               # options may include:
-              #   :registers - internal state (file_system, etc.)
+              #   :registers - host state for filters/drops (file_system,
+              #                current_time, etc.), never template variables
               #   :strict_errors - whether to raise or capture errors
               ctx[:template].render(assigns)
             end
@@ -894,18 +900,14 @@ module Liquid
 
           LiquidSpec.configure do |config|
             config.suite = :liquid_ruby
+            config.error_modes = [:strict2, :strict, :lax]
+            config.render_error_modes = [:raise, :inline]
           end
 
           # ERROR MODES
           # -----------
-          # Default to :strict2 (the modern Liquid 5.12+ parser) when the spec
-          # doesn't request a specific mode.
-          #
-          # Legacy modes (:strict, :lax, :raise) exist for backwards compatibility
-          # with older Liquid versions or Shopify production but are NOT recommended
-          # for new implementations unless you need that compatibility.
+          # liquid-spec supplies the concrete mode selected for this execution.
           LiquidSpec.compile do |ctx, source, options|
-            options[:error_mode] ||= :strict2
             ctx[:template] = Liquid::Template.parse(source, **options)
           end
 

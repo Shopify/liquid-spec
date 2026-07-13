@@ -14,7 +14,7 @@ module Liquid
       # - Liquid errors are NOT protocol errors (they're part of render output)
       # - Compile returns {template_id, error} - error is nil on success
       # - Render returns {output, errors} - always succeeds, errors are informational
-      # - Time freezing is supported via frozen_time parameter
+      # - Host render context, including current_time, is passed via registers
       #
       # See docs/json-rpc-protocol.md for the full specification.
     class Adapter
@@ -84,12 +84,6 @@ module Liquid
             "options" => serialize_render_options(options),
           }
 
-          # Pass frozen time if set (for deterministic date/time tests)
-          frozen_time = TimeFreezer.frozen_time rescue nil
-          if frozen_time
-            params["frozen_time"] = frozen_time.iso8601
-          end
-
           response = @subprocess.send_request("render", params)
 
           # Handle protocol-level errors (invalid params, unknown template_id, etc.)
@@ -99,7 +93,7 @@ module Liquid
             # may send render errors as protocol errors instead of rendering
             # them inline — we handle that here by formatting the error message
             # the same way liquid-ruby would render it inline.
-            strict_errors = options[:strict_errors] || options["strict_errors"]
+            strict_errors = option_value(options, :strict_errors)
             error = Protocol.extract_error(response)
             error_type = error[:data].is_a?(Hash) ? error[:data]["type"] : nil
             code = error[:code]
@@ -177,14 +171,37 @@ module Liquid
         def serialize_render_options(options)
           result = {}
 
-          strict_errors = options[:strict_errors] || options["strict_errors"]
+          strict_errors = option_value(options, :strict_errors)
           result["strict_errors"] = !!strict_errors if strict_errors != nil
 
           # Forward resource limits so the subprocess can enforce them
           resource_limits = options[:resource_limits] || options["resource_limits"]
           result["resource_limits"] = resource_limits if resource_limits
 
+          registers = options[:registers] || options["registers"]
+          result["registers"] = serialize_registers(registers) if registers
+
           result
+        end
+
+        # Registers are host-owned render context, separate from template assigns.
+        # Only transport values that JSON can represent; filesystem and factory
+        # objects remain adapter-local protocol concerns.
+        def serialize_registers(registers)
+          registers.each_with_object({}) do |(key, value), result|
+            next if [:file_system, :template_factory, "file_system", "template_factory"].include?(key)
+
+            result[key.to_s] = value.is_a?(Time) ? value.iso8601 : value
+          end
+        end
+
+        # Fetch an option without treating an explicit false value as missing.
+        # Render options arrive with either symbol or string keys depending on
+        # the adapter path.
+        def option_value(options, key)
+          return options[key] if options.key?(key)
+
+          options[key.to_s]
         end
 
         # Raise error for compile failures (parse errors)

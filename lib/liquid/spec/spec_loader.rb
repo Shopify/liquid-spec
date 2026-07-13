@@ -56,7 +56,7 @@ module Liquid
     module SpecLoader
       # Valid keys at each level - unknown keys raise errors
       VALID_FILE_KEYS = %w[_metadata specs].freeze
-      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity features data_files].freeze
+      VALID_METADATA_KEYS = %w[hint doc required_options render_errors minimum_complexity complexity features data_files sequential_complexity].freeze
       VALID_SPEC_KEYS = %w[
         name template expected expected_pattern environment filesystem complexity hint doc
         error_mode render_errors features errors template_name resource_limits
@@ -203,7 +203,10 @@ module Liquid
           source_doc = metadata["doc"]
           source_required_options = (metadata["required_options"] || {}).transform_keys(&:to_sym)
           minimum_complexity = suite&.minimum_complexity || metadata["minimum_complexity"] || metadata["complexity"] || 1000
-          source_features = (metadata["features"] || []).map(&:to_s)
+          # Suite capabilities apply to every spec, including YAML-backed specs.
+          # Without this, matrix (and local YAML suites) can run a Shopify-only
+          # case against an adapter that explicitly opted out of Shopify support.
+          source_features = ((suite&.features || []) + (metadata["features"] || [])).map(&:to_s).uniq
 
           # Suite defaults
           suite_defaults = suite&.defaults || {}

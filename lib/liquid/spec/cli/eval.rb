@@ -218,7 +218,7 @@ module Liquid
                 puts ""
               end
 
-              registers = {}
+              registers = { current_time: TimeFreezer.current_time }
               registers[:file_system] = filesystem if filesystem
               render_options = { registers: registers, strict_errors: false }
               actual = LiquidSpec.do_render(assigns, render_options, adapter_context)
@@ -439,7 +439,7 @@ module Liquid
                 compile_options = { line_numbers: true }
                 compile_options[:file_system] = filesystem if filesystem
                 LiquidSpec.do_compile(template_source, compile_options, reference_context)
-                registers = {}
+                registers = { current_time: TimeFreezer.current_time }
                 registers[:file_system] = filesystem if filesystem
                 render_options = { registers: registers, strict_errors: false }
                 output = LiquidSpec.do_render(assigns, render_options, reference_context)

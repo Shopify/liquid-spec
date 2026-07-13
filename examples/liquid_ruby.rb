@@ -20,12 +20,12 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.missing_features = [:self_environment_shadowing, :drop_class_output, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :lax_parsing, :strict2_blank_body_errors]
+  config.error_modes = [:strict2, :strict]
+  config.render_error_modes = [:raise, :inline]
+  config.missing_features = [:self_environment_shadowing, :drop_class_output, :shopify_tags, :shopify_objects, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :strict2_blank_body_errors]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
-  # Use spec's error_mode if provided, default to :strict
-  parse_options[:error_mode] ||= :strict
   ctx[:template] = Liquid::Template.parse(source, **parse_options)
 end
 

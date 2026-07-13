@@ -7,7 +7,7 @@ specs:
   filesystem:
     snippet: hello from snippet
   expected: hello from snippet
-  complexity: 200
+  complexity: 189
   hint: |
     The render tag includes a partial template. The partial name must be a
     string literal (not a variable). This is the recommended way to include
@@ -17,7 +17,7 @@ specs:
   filesystem:
     greeting: Hello {{ name }}!
   expected: Hello World!
-  complexity: 200
+  complexity: 190
   hint: |
     Parameters are passed to the partial as local variables. The partial
     can access 'name' but nothing else from the outer scope.
@@ -26,7 +26,7 @@ specs:
   filesystem:
     card: "{{ title }}: ${{ price }} ({{ active }})"
   expected: 'Product: $99 (true)'
-  complexity: 200
+  complexity: 191
   hint: 'Multiple parameters can be passed, separated by commas.
 
     '
@@ -40,7 +40,7 @@ specs:
   filesystem:
     show: 'Count: {{ value }}'
   expected: 'Count: 3'
-  complexity: 200
+  complexity: 192
   hint: |
     Parameter values can be variable expressions. Use assign first if you need
     to apply filters, then pass the result. Direct filter expressions in render
@@ -50,7 +50,7 @@ specs:
   filesystem:
     snippet: "[{{ outer }}]"
   expected: "[]"
-  complexity: 200
+  complexity: 193
   hint: |
     Variables assigned outside are NOT visible inside a rendered partial.
     This is the key difference from include - render creates an isolated scope.
@@ -60,7 +60,7 @@ specs:
   filesystem:
     snippet: "{% assign inner = 'leaked' %}"
   expected: "[]"
-  complexity: 100
+  complexity: 194
   hint: |
     Variables assigned inside a rendered partial are NOT visible outside.
     The partial's scope is completely isolated - assignments don't leak.
@@ -69,7 +69,7 @@ specs:
   filesystem:
     show: 'Item: {{ item }}'
   expected: 'Item: Widget'
-  complexity: 200
+  complexity: 195
   hint: |
     To pass data to a rendered partial, you must explicitly pass it as a
     parameter. Here 'product' is passed as 'item' to the partial.
@@ -80,7 +80,7 @@ specs:
   filesystem:
     product: 'Product: {{ product }}'
   expected: 'Product: Widget'
-  complexity: 200
+  complexity: 196
   hint: |
     The 'with' variant binds a value to a variable named after the partial.
     {% render 'product' with x %} makes 'product' available inside the partial.
@@ -91,7 +91,7 @@ specs:
   filesystem:
     card: 'Card: {{ item }}'
   expected: 'Card: Widget'
-  complexity: 200
+  complexity: 197
   hint: |
     The 'as' keyword provides an alias - the value is bound to 'item'
     instead of the partial name.
@@ -102,7 +102,7 @@ specs:
   filesystem:
     card: "{{ item }}: ${{ price }}"
   expected: 'Widget: $99'
-  complexity: 200
+  complexity: 198
   hint: "'with' can be combined with additional parameters.\n"
 - name: render_for_iterates
   template: "{% render 'item' for items %}"
@@ -114,7 +114,7 @@ specs:
   filesystem:
     item: "[{{ item }}]"
   expected: "[a][b][c]"
-  complexity: 200
+  complexity: 199
   hint: |
     The 'for' variant iterates over a collection, rendering the partial
     once per element. Each element is bound to a variable named after the partial.
@@ -141,7 +141,7 @@ specs:
   filesystem:
     item: "{{ forloop.index }}"
   expected: '123'
-  complexity: 200
+  complexity: 201
   hint: |
     IMPORTANT: render with 'for' provides a forloop object inside the partial.
     This is different from include, which does NOT provide forloop.
@@ -156,7 +156,7 @@ specs:
     item: "{% if forloop.first %}[{% endif %}{{ item }}{% if forloop.last %}]{% endif
       %}"
   expected: "[abc]"
-  complexity: 200
+  complexity: 202
   hint: 'forloop.first and forloop.last work as expected in render for.
 
     '
@@ -170,7 +170,7 @@ specs:
   filesystem:
     item: "{{ forloop.index0 }}"
   expected: '012'
-  complexity: 200
+  complexity: 203
   hint: 'forloop.index0 provides 0-based index in render for.
 
     '
@@ -184,7 +184,7 @@ specs:
   filesystem:
     item: "{{ forloop.length }}"
   expected: '333'
-  complexity: 200
+  complexity: 204
   hint: 'forloop.length is available and constant throughout iteration.
 
     '
@@ -198,7 +198,7 @@ specs:
   filesystem:
     item: "{{ forloop.rindex }}"
   expected: '321'
-  complexity: 200
+  complexity: 205
   hint: 'forloop.rindex counts down from the end (1-based).
 
     '
@@ -211,7 +211,7 @@ specs:
   filesystem:
     item: "{{ prefix }}{{ item }}"
   expected: ">a>b"
-  complexity: 200
+  complexity: 206
   hint: 'Additional parameters can be passed alongside ''for'' iteration.
 
     '
@@ -222,7 +222,7 @@ specs:
   filesystem:
     item: "{{ item }}"
   expected: "[]"
-  complexity: 200
+  complexity: 207
   hint: 'When iterating over an empty array, the partial is never rendered.
 
     '
@@ -236,7 +236,7 @@ specs:
   filesystem:
     counter: "{% assign x = counter %}{{ x }}"
   expected: abc
-  complexity: 200
+  complexity: 208
   hint: |
     Each iteration of render for gets a fresh isolated scope.
     Variables assigned in one iteration don't persist to the next.
@@ -247,7 +247,7 @@ specs:
   filesystem:
     break_partial: "{% break %}"
   expected: '112233'
-  complexity: 210
+  complexity: 209
   hint: |
     CRITICAL: A break inside a rendered partial does NOT affect the outer loop.
     The break is contained within the partial's isolated context. All three
@@ -268,7 +268,7 @@ specs:
     loop: "{% for i in (1..5) %}{% if i == 3 %}{% break %}{% endif %}{{ i }}{% endfor
       %}"
   expected: '12'
-  complexity: 210
+  complexity: 211
   hint: |
     break works normally WITHIN a for loop inside the partial itself.
     It just doesn't escape the partial boundary.
@@ -277,7 +277,7 @@ specs:
   filesystem:
     incr: "{% increment x %}"
   expected: '0102'
-  complexity: 210
+  complexity: 212
   hint: |
     increment/decrement counters are isolated in render. The outer context
     has its own counter (0, 1, 2) and the partial has its own (starts at 0).
@@ -286,7 +286,7 @@ specs:
   filesystem:
     decr: "{% decrement x %}"
   expected: "-1-2-1-3"
-  complexity: 210
+  complexity: 213
   hint: 'decrement counters are also isolated. The partial''s counter is independent.
 
     '
@@ -295,7 +295,7 @@ specs:
   filesystem:
     incr: "{% increment x %}"
   expected: '000'
-  complexity: 210
+  complexity: 214
   hint: |
     Each render call gets a fresh counter state. The counter doesn't persist
     between render calls.
@@ -304,7 +304,7 @@ specs:
   filesystem:
     snippet: hello from snippet
   expected: hello from snippet
-  complexity: 200
+  complexity: 215
   hint: |
     The include tag is the older, deprecated way to include partials.
     Basic usage looks similar to render.
@@ -313,7 +313,7 @@ specs:
   filesystem:
     greeting: Hello {{ name }}!
   expected: Hello World!
-  complexity: 200
+  complexity: 216
   hint: 'Parameters work similarly to render.
 
     '
@@ -322,7 +322,7 @@ specs:
   filesystem:
     t: "{{ a }}-{{ b }}"
   expected: 1-1
-  complexity: 200
+  complexity: 217
   hint: |
     Param evaluation order for include: params are evaluated against a temp
     scope that ACCUMULATES earlier params. So `b: a` sees `a: 1` — b resolves
@@ -334,7 +334,7 @@ specs:
   filesystem:
     t: "{{ a }}-{{ b }}"
   expected: 1-
-  complexity: 220
+  complexity: 218
   hint: |
     Param evaluation order for render: params are evaluated INDEPENDENTLY
     against the outer scope, NOT against each other. So `b: a` looks up `a`
@@ -349,7 +349,7 @@ specs:
   filesystem:
     snippet: "[{{ outer }}]"
   expected: "[visible]"
-  complexity: 200
+  complexity: 219
   hint: |
     CRITICAL DIFFERENCE: Variables assigned outside ARE visible inside an
     included partial. This is the "leaky" behavior that makes include problematic.
@@ -358,7 +358,7 @@ specs:
   filesystem:
     snippet: "{% assign inner = 'leaked' %}"
   expected: "[leaked]"
-  complexity: 200
+  complexity: 220
   hint: |
     Variables assigned inside an included partial ARE visible outside.
     This side-effect behavior is why include is deprecated.
@@ -367,7 +367,7 @@ specs:
   filesystem:
     product: 'Product: {{ product }}'
   expected: 'Product: Widget'
-  complexity: 200
+  complexity: 221
   hint: |
     include has automatic variable binding: if a variable exists with the
     same name as the partial, it's automatically bound. This is implicit
@@ -377,7 +377,7 @@ specs:
   filesystem:
     snippet: "{% assign x = 'inner' %}"
   expected: inner
-  complexity: 200
+  complexity: 222
   hint: |
     Because scope is shared, assignments in partials can overwrite outer
     variables. This is a dangerous side effect of include.
@@ -386,7 +386,7 @@ specs:
   filesystem:
     greeting: Hello!
   expected: Hello!
-  complexity: 200
+  complexity: 223
   hint: |
     include allows dynamic template names via variables. This is powerful
     but makes static analysis impossible - you can't know at parse time
@@ -399,7 +399,7 @@ specs:
   filesystem:
     card: Card content
   expected: Card content
-  complexity: 200
+  complexity: 224
   hint: 'The template name can come from an object property.
 
     '
@@ -410,7 +410,7 @@ specs:
   filesystem:
     product: 'Product: {{ product }}'
   expected: 'Product: Widget'
-  complexity: 200
+  complexity: 225
   hint: |
     The 'with' variant works similarly to render, binding the value to
     a variable named after the partial.
@@ -421,7 +421,7 @@ specs:
   filesystem:
     card: 'Card: {{ item }}'
   expected: 'Card: Widget'
-  complexity: 200
+  complexity: 226
   hint: 'The ''as'' keyword provides an alias in include as well.
 
     '
@@ -435,7 +435,7 @@ specs:
   filesystem:
     item: "[{{ item }}]"
   expected: "[a][b][c]"
-  complexity: 200
+  complexity: 227
   hint: 'The ''for'' variant iterates over a collection in include.
 
     '
@@ -449,7 +449,7 @@ specs:
   filesystem:
     item: "[{{ forloop.index }}]"
   expected: "[][][]"
-  complexity: 200
+  complexity: 228
   hint: |
     IMPORTANT DIFFERENCE: include with 'for' does NOT provide a forloop object.
     forloop.index is nil (outputs empty). This is different from render.
@@ -463,7 +463,7 @@ specs:
   filesystem:
     counter: "{% assign count = count | default: 0 | plus: 1 %}"
   expected: '3'
-  complexity: 200
+  complexity: 229
   hint: |
     include for shares scope across iterations. Variables persist and
     accumulate, unlike render for which resets each iteration.
@@ -473,7 +473,7 @@ specs:
   filesystem:
     break_partial: "{% break %}"
   expected: '1'
-  complexity: 210
+  complexity: 230
   hint: |
     CRITICAL DIFFERENCE: A break inside an included partial DOES affect
     the outer loop. The break propagates up, exiting the caller's loop.
@@ -484,7 +484,7 @@ specs:
   filesystem:
     continue_partial: "{% continue %}"
   expected: '123'
-  complexity: 210
+  complexity: 231
   hint: |
     continue also propagates, skipping the rest of each outer iteration.
     The second {{ i }} is never reached in any iteration.
@@ -494,7 +494,7 @@ specs:
   filesystem:
     breaker: "{% if j == 2 %}{% break %}{% endif %}"
   expected: '112131'
-  complexity: 210
+  complexity: 232
   hint: |
     break from include exits the INNERMOST for loop of the caller.
     For each i (1,2,3), the inner j loop breaks when j==2, outputting only j==1.
@@ -503,7 +503,7 @@ specs:
   filesystem:
     incr: "{% increment x %}"
   expected: '012'
-  complexity: 210
+  complexity: 233
   hint: |
     increment/decrement counters are SHARED with include. The partial
     continues the counter from 2, outputting 2.
@@ -512,7 +512,7 @@ specs:
   filesystem:
     decr: "{% decrement x %}"
   expected: "-1-2-3"
-  complexity: 210
+  complexity: 234
   hint: 'decrement counters are also shared. The partial continues from -3.
 
     '
@@ -524,7 +524,7 @@ specs:
   errors:
     render_error:
     - include usage is not allowed in this context
-  complexity: 220
+  complexity: 235
   error_mode: strict
   hint: |
     Using include inside a rendered partial is an ERROR. This prevents
@@ -540,7 +540,7 @@ specs:
     - include usage is not allowed in this context
   render_errors: true
   features: [inline_errors]
-  complexity: 220
+  complexity: 236
   error_mode: strict
   hint: |
     Same as render_prohibits_include but with inline error rendering.
@@ -554,7 +554,7 @@ specs:
   errors:
     render_error:
     - include usage is not allowed in this context
-  complexity: 220
+  complexity: 237
   error_mode: strict
   hint: |
     The include prohibition applies transitively. Even deeply nested
@@ -570,7 +570,7 @@ specs:
     - include usage is not allowed in this context
   render_errors: true
   features: [inline_errors]
-  complexity: 220
+  complexity: 238
   error_mode: strict
   hint: |
     Same as render_prohibits_include_nested but with inline error rendering.
@@ -580,7 +580,7 @@ specs:
     outer: "{% render 'inner' %}"
     inner: nested render works
   expected: nested render works
-  complexity: 220
+  complexity: 239
   hint: 'render CAN nest other render calls - only include is prohibited.
 
     '
@@ -589,7 +589,7 @@ specs:
   filesystem:
     show: "{% assign x = 'inner' %}{{ value }}"
   expected: outer
-  complexity: 300
+  complexity: 240
   hint: |
     Parameter expressions are evaluated in the OUTER context before the
     partial runs. Even though the partial reassigns x, the parameter
@@ -599,7 +599,7 @@ specs:
   filesystem:
     product: "[{{ product }}]"
   expected: "[]"
-  complexity: 300
+  complexity: 266
   hint: 'When ''with'' passes nil/undefined, the variable is nil inside the partial.
 
     '
@@ -609,7 +609,7 @@ specs:
     outer: "{% assign x = 2 %}{% include 'inner' %}"
     inner: "{% assign x = 3 %}"
   expected: '3'
-  complexity: 300
+  complexity: 267
   hint: |
     Nested includes all share the same scope. Each can see and modify
     the same variables.
@@ -624,7 +624,7 @@ specs:
   filesystem:
     card: "{{ product.name }}:${{ product.price }} "
   expected: 'Widget:$10 Gadget:$20 '
-  complexity: 300
+  complexity: 268
   hint: 'render for works with arrays of objects. Property access works as expected.
 
     '
@@ -636,7 +636,7 @@ specs:
   filesystem:
     modifier: "{% assign user = nil %}"
   expected: ''
-  complexity: 300
+  complexity: 269
   hint: |
     include can even overwrite environment variables due to shared scope.
     This demonstrates why include is dangerous.
@@ -648,7 +648,7 @@ specs:
   filesystem:
     modifier: "{% assign user = nil %}"
   expected: Alice
-  complexity: 100
+  complexity: 270
   hint: 'render cannot affect the outer environment - isolation is complete.
 
     '
@@ -661,7 +661,7 @@ specs:
     parse_error:
     - syntax error
     - string
-  complexity: 300
+  complexity: 271
   error_mode: strict
   hint: |
     render requires a STRING LITERAL for the partial name. Using a variable
@@ -671,7 +671,7 @@ specs:
   filesystem:
     item: "{{ item }}"
   expected: "[]"
-  complexity: 100
+  complexity: 272
   hint: 'When the collection is nil/undefined, no iterations occur.
 
     '
@@ -686,7 +686,7 @@ specs:
   filesystem:
     iterator: "{% if item == 'b' %}{% break %}{% endif %}{{ item }}"
   expected: a
-  complexity: 300
+  complexity: 273
   hint: |
     break inside include for propagates to the OUTER for loop, not just
     the include's implicit loop. This is consistent with include's
@@ -698,7 +698,7 @@ specs:
   errors:
     render_error:
     - nesting too deep
-  complexity: 300
+  complexity: 600
   error_mode: strict
   hint: |
     A template that renders itself infinitely must be caught and raise
@@ -713,7 +713,7 @@ specs:
   errors:
     output:
     - nesting too deep
-  complexity: 300
+  complexity: 601
   error_mode: strict
   hint: |
     Same as render_infinite_recursion but with inline error rendering.
@@ -724,7 +724,7 @@ specs:
   errors:
     render_error:
     - nesting too deep
-  complexity: 300
+  complexity: 602
   error_mode: strict
   hint: |
     A template that includes itself infinitely must be caught and raise
@@ -738,7 +738,7 @@ specs:
   errors:
     output:
     - nesting too deep
-  complexity: 300
+  complexity: 603
   error_mode: strict
   hint: |
     Same as include_infinite_recursion but with inline error rendering.
@@ -750,7 +750,7 @@ specs:
   errors:
     render_error:
     - nesting too deep
-  complexity: 300
+  complexity: 604
   error_mode: strict
   hint: |
     Mutual recursion (a renders b, b renders a) must also be caught.
@@ -765,7 +765,7 @@ specs:
   errors:
     output:
     - nesting too deep
-  complexity: 300
+  complexity: 605
   error_mode: strict
   hint: |
     Same as render_mutual_recursion but with inline error rendering.

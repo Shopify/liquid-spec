@@ -14,8 +14,8 @@ module Liquid
     module CLI
       module Runner
         # Time used for all spec runs (matches liquid test suite)
-        TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
-        TEST_TZ = "UTC"
+        TEST_TIME = TimeFreezer::SPEC_TIME
+        TEST_TZ = TimeFreezer::SPEC_TIMEZONE
         MAX_FAILURES_DEFAULT = 5
         RESULTS_LOG_DIR = "/tmp"
         # Root of the liquid-spec gem (specs/, docs/, lib/ live here). Used to
@@ -304,6 +304,10 @@ module Liquid
             missing_features = config.missing_features
             json_mode = options[:json]
             puts "Missing features: #{missing_features.join(", ")}" if config.verbose && !json_mode
+            if config.verbose && !json_mode
+              puts "Parse error modes: #{config.error_modes.join(", ")}"
+              puts "Render error modes: #{config.render_error_modes.join(", ")}"
+            end
 
             # Count available specs from all sources
             has_prioritized = options[:add_specs] && !options[:add_specs].empty?
@@ -312,17 +316,17 @@ module Liquid
             skipped_features = Set.new
             prioritized_specs = filter_specs(prioritized_specs, config.filter) if config.filter && prioritized_specs.any?
             if prioritized_specs.any?
-              total_skipped += prioritized_specs.size
+              source_specs = prioritized_specs
               prioritized_specs = filter_by_missing(prioritized_specs, missing_features, skipped_features: skipped_features)
-              total_skipped -= prioritized_specs.size
+              total_skipped += count_unrunnable_specs(source_specs, missing_features)
             end
 
             # Auto-discover local specs from ./specs/*.yml
             local_specs = discover_local_specs
             local_specs = filter_specs(local_specs, config.filter) if config.filter && local_specs.any?
-            total_skipped += local_specs.size
+            source_local_specs = local_specs
             local_specs = filter_by_missing(local_specs, missing_features, skipped_features: skipped_features)
-            total_skipped -= local_specs.size
+            total_skipped += count_unrunnable_specs(source_local_specs, missing_features)
             if local_specs.any? && config.verbose && !json_mode
               puts "Auto-including: #{local_specs.size} specs from ./specs/*.yml"
             end
@@ -400,9 +404,9 @@ module Liquid
               end
 
               suite_specs = filter_specs(suite_specs, config.filter) if config.filter
-              total_skipped += suite_specs.size
+              source_suite_specs = suite_specs
               suite_specs = filter_by_missing(suite_specs, missing_features, skipped_features: skipped_features)
-              total_skipped -= suite_specs.size
+              total_skipped += count_unrunnable_specs(source_suite_specs, missing_features)
               suite_specs = sort_by_complexity(suite_specs)
 
               next if suite_specs.empty?
@@ -2066,7 +2070,7 @@ module Liquid
           end
 
           def build_registers(spec, filesystem = nil)
-            registers = {}
+            registers = { current_time: TimeFreezer.current_time }
             filesystem ||= spec.instantiate_filesystem
             registers[:file_system] = filesystem if filesystem
             template_factory = spec.instantiate_template_factory
@@ -2145,12 +2149,42 @@ module Liquid
 
           def filter_by_missing(specs, missing_features, skipped_features: nil)
             missing_set = Set.new(missing_features.map(&:to_sym))
-            specs.reject do |s|
+            expand_error_mode_variants(specs).reject do |s|
               skipped = s.skipped_by?(missing_set)
               if skipped && skipped_features
                 (s.features & missing_set.to_a).each { |f| skipped_features << f }
               end
               skipped
+            end
+          end
+
+          # Unannotated specs exercise the adapter's highest supported parse
+          # mode. Explicit multi-mode specs run once for every supported mode
+          # they declare, always in strict2 -> strict -> lax order.
+          def expand_error_mode_variants(specs)
+            config = LiquidSpec.config
+            supported = config.error_modes
+
+            specs.flat_map do |spec|
+              declared = spec.respond_to?(:error_modes) ? spec.error_modes : []
+              modes = if declared.nil? || declared.empty?
+                [supported.first]
+              else
+                LiquidSpec::PARSE_ERROR_MODES.select do |mode|
+                  supported.include?(mode) && declared.map(&:to_sym).include?(mode)
+                end
+              end
+
+              label = declared && declared.length > 1
+              modes.map { |mode| spec.with_error_mode(mode, label: label) }
+            end
+          end
+
+          def count_unrunnable_specs(specs, missing_features)
+            missing_set = Set.new(missing_features.map(&:to_sym))
+            specs.count do |spec|
+              variants = expand_error_mode_variants([spec])
+              variants.empty? || variants.all? { |variant| variant.skipped_by?(missing_set) }
             end
           end
 

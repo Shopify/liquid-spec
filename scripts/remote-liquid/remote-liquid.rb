@@ -337,13 +337,12 @@ module RemoteLiquid
       template = @templates[template_id]
       environment = params["environment"] || {}
       options = params["options"] || {}
-      frozen_time = params["frozen_time"]
 
       # Unwrap RPC drops
       unwrapped_env = unwrap_environment(environment)
 
       # Build registers
-      registers = {}
+      registers = deserialize_registers(options["registers"] || {})
       registers[:file_system] = @filesystems[template_id]
 
       # Build context — rethrow errors when strict_errors is true
@@ -366,9 +365,11 @@ module RemoteLiquid
         resource_limits: resource_limits,
       )
 
-      # Handle time freezing
-      output = if frozen_time
-        freeze_time(frozen_time) { template.render(context) }
+      # The harness delivers current_time as a render register. This reference
+      # server freezes Time.now only to make liquid-ruby's built-in date filter
+      # honor that same public adapter contract.
+      output = if (current_time = registers[:current_time])
+        freeze_time(current_time.iso8601) { template.render(context) }
       else
         template.render(context)
       end
@@ -417,6 +418,12 @@ module RemoteLiquid
       yield
     ensure
       Time.define_singleton_method(:now, original_now) if original_now
+    end
+
+    def deserialize_registers(serialized)
+      serialized.each_with_object({}) do |(key, value), registers|
+        registers[key.to_sym] = key == "current_time" && value ? Time.iso8601(value) : value
+      end
     end
 
     def unwrap_environment(env)

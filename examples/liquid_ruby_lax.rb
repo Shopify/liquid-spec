@@ -20,12 +20,13 @@ LiquidSpec.setup do |ctx|
 end
 
 LiquidSpec.configure do |config|
-  config.missing_features = [:drop_class_output, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access]
+  config.error_modes = [:lax]
+  config.render_error_modes = [:raise, :inline]
+  config.missing_features = [:drop_class_output, :shopify_tags, :shopify_objects, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|
-  # Force lax mode regardless of spec (override comes after splat)
-  ctx[:template] = Liquid::Template.parse(source, **parse_options, error_mode: :lax)
+  ctx[:template] = Liquid::Template.parse(source, **parse_options)
 end
 
 LiquidSpec.render do |ctx, assigns, render_options|

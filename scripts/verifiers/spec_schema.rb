@@ -100,6 +100,7 @@ METADATA_FIELDS = {
   "required_options"  => Hash,
   "complexity"        => Integer,
   "data_files"        => Array,
+  "sequential_complexity" => TrueClass,
 }.freeze
 
 SPEC_ROOT ||= File.expand_path("../../specs", __dir__)

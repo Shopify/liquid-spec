@@ -7,10 +7,10 @@ module Liquid
   module Spec
     # Runs specs against a loaded adapter
     class AdapterRunner
-      TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
-      TEST_TZ = "America/New_York"
+      TEST_TIME = TimeFreezer::SPEC_TIME
+      TEST_TZ = TimeFreezer::SPEC_TIMEZONE
 
-      attr_reader :name, :missing_features, :ctx
+      attr_reader :name, :missing_features, :ctx, :suites
 
       def initialize(name: nil)
         @name = name
@@ -20,6 +20,7 @@ module Liquid
         @render_block = nil
         @setup_done = false
         @ctx = {}
+        @suites = nil
       end
 
       # Load adapter DSL from a file
@@ -46,6 +47,7 @@ module Liquid
         if config&.respond_to?(:missing_features)
           set_missing_features(config.missing_features)
         end
+        @suites = config.suites if config&.respond_to?(:suites) && config.suites&.any?
 
         # Validate block signatures
         validate_blocks!
@@ -152,6 +154,8 @@ module Liquid
 
       # Check if adapter can run a spec
       def can_run?(spec)
+        return false if @suites && !@suites.include?(suite_for(spec))
+
         !spec.skipped_by?(@missing_features)
       end
 
@@ -210,7 +214,7 @@ module Liquid
           @compile_block.call(@ctx, spec.template, compile_options)
 
           # Render
-          registers = {}
+          registers = { current_time: TimeFreezer.current_time }
           registers[:file_system] = filesystem if filesystem
           registers[:template_factory] = template_factory if template_factory
 
@@ -235,6 +239,12 @@ module Liquid
       end
 
       private
+
+      def suite_for(spec)
+        return nil unless spec.source_file
+
+        File.basename(File.dirname(spec.source_file)).to_sym
+      end
 
       def block_signature_info(block, name)
         return { defined: false } unless block

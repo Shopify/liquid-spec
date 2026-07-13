@@ -20,6 +20,7 @@ module Liquid
         "minimum_complexity" => "MinimumComplexityVerifier",
         "parse_mode_annotation" => "ParseModeAnnotationVerifier",
         "ruby_type_tags" => "RubyTypeTagVerifier",
+        "sequential_complexity" => "SequentialComplexityVerifier",
         "spec_name_collisions" => "SpecNameCollisionVerifier",
         "spec_schema" => "SpecSchemaVerifier",
       }.freeze

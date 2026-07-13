@@ -106,6 +106,18 @@ class LazySpecTest < Minitest::Test
     assert_includes spec.features, :strict_parsing
   end
 
+  def test_with_error_mode_creates_isolated_labeled_variant
+    original = create_spec(error_mode: [:lax, :strict])
+    variant = original.with_error_mode(:strict, label: true)
+
+    assert_equal [:lax, :strict], original.error_modes
+    assert_equal :strict, variant.error_mode
+    assert_equal [:strict], variant.error_modes
+    assert_equal "test_spec [error_mode=strict]", variant.name
+    assert_includes variant.features, :strict_parsing
+    refute_includes variant.features, :lax_parsing
+  end
+
   def test_skipped_by_missing_features
     spec = create_spec(features: [:core, :shopify_tags])
 

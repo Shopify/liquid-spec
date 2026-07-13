@@ -12,6 +12,8 @@ class InitTest < Minitest::Test
     assert_includes source, "LiquidSpec.compile do |ctx, source, options|"
     assert_includes source, "LiquidSpec.render do |ctx, assigns, options|"
     assert_includes source, "ctx[:template].render(assigns"
+    assert_includes source, "config.error_modes = [:strict2]"
+    assert_includes source, "config.render_error_modes = [:raise]"
     refute_includes source, "LiquidSpec.render do |ctx, template, assigns, options|"
     assert_valid_ruby(source)
   end
@@ -22,6 +24,8 @@ class InitTest < Minitest::Test
     assert_includes source, "ctx[:template_id] = ctx[:adapter].compile(source, options)"
     assert_includes source, "LiquidSpec.render do |ctx, assigns, options|"
     assert_includes source, "ctx[:adapter].render(ctx[:template_id], assigns, options)"
+    assert_includes source, "config.error_modes = [:strict2]"
+    assert_includes source, "config.render_error_modes = [:raise]"
     refute_includes source, "LiquidSpec.render do |ctx, template_id, assigns, options|"
     assert_valid_ruby(source)
   end
@@ -32,6 +36,8 @@ class InitTest < Minitest::Test
     assert_includes source, "ctx[:template] = Liquid::Template.parse(source, **options)"
     assert_includes source, "LiquidSpec.render do |ctx, assigns, options|"
     assert_includes source, "ctx[:template].render(context)"
+    assert_includes source, "config.error_modes = [:strict2, :strict, :lax]"
+    assert_includes source, "config.render_error_modes = [:raise, :inline]"
     refute_includes source, "LiquidSpec.render do |ctx, template, assigns, options|"
     assert_valid_ruby(source)
   end

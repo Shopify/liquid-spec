@@ -1,6 +1,6 @@
 ---
 # =============================================================================
-# COMPLEXITY 300-400: Filter Chains
+# COMPLEXITY 336-359: Filter Chains
 # =============================================================================
 #
 # These specs test complex filter chains - multiple filters applied in
@@ -10,20 +10,17 @@
 # Basic filter usage is covered throughout other files. These specs focus on
 # the interaction between multiple filters.
 #
-# Complexity levels:
-#   300: Basic chains (2-3 filters)
-#   330: Longer chains (4+ filters)
-#   360: Chains with nil/empty handling
-#   390: Complex chains with conditionals
+# Each independently failable chain advances one level.
 #
 # =============================================================================
 
 _metadata:
   doc: implementers/filter-chains.md
+  sequential_complexity: true
 
 specs:
 # =============================================================================
-# Basic Filter Chains (Complexity 300)
+# Basic Filter Chains (Complexity 336-341)
 # =============================================================================
 
 - name: chain_string_transforms
@@ -31,7 +28,7 @@ specs:
   environment:
     text: "HELLO WORLD"
   expected: "Hello world"
-  complexity: 300
+  complexity: 336
   hint: |
     downcase converts to "hello world", then capitalize uppercases first letter.
 
@@ -40,7 +37,7 @@ specs:
   environment:
     items: [3, 1, 4, 1, 5]
   expected: "5, 4, 3, 1, 1"
-  complexity: 300
+  complexity: 337
   hint: |
     sort -> reverse -> join. Order matters.
 
@@ -49,7 +46,7 @@ specs:
   environment:
     text: "cherry apple banana"
   expected: "apple-banana-cherry"
-  complexity: 300
+  complexity: 338
   hint: |
     split creates array, sort orders it, join combines back to string.
 
@@ -58,7 +55,7 @@ specs:
   environment:
     num: 10
   expected: "27"
-  complexity: 300
+  complexity: 339
   hint: |
     Math filters chain left to right: (10 + 5) * 2 - 3 = 27.
 
@@ -67,7 +64,7 @@ specs:
   environment:
     text: "hello world and more"
   expected: "HELLO W..."
-  complexity: 300
+  complexity: 340
   hint: |
     truncate first (to 10 chars including ...), then upcase.
 
@@ -76,13 +73,13 @@ specs:
   environment:
     text: "abracadabra"
   expected: "XbrXcXdXbrX"
-  complexity: 300
+  complexity: 341
   hint: |
     First replace all 'a' with 'X', then replace all 'e' with 'Y'.
     No 'e' in input so second replace has no effect.
 
 # =============================================================================
-# Longer Chains (Complexity 330)
+# Longer Chains (Complexity 342-347)
 # =============================================================================
 
 - name: chain_four_string_filters
@@ -90,7 +87,7 @@ specs:
   environment:
     text: "  HELLO WORLD  "
   expected: "hello"
-  complexity: 330
+  complexity: 342
   hint: |
     strip -> downcase -> split -> first. Progressively transforms string.
 
@@ -99,7 +96,7 @@ specs:
   environment:
     items: [3, null, 1, 3, null, 2, 1]
   expected: "3"
-  complexity: 330
+  complexity: 343
   hint: |
     compact removes nils, uniq removes duplicates, sort orders,
     size counts. Result: 3 unique non-nil items.
@@ -109,7 +106,7 @@ specs:
   environment:
     text: "  Hello World  "
   expected: "slug-hello-world"
-  complexity: 330
+  complexity: 344
   hint: |
     Common pattern for creating URL slugs.
 
@@ -124,7 +121,7 @@ specs:
       - name: "Gizmo"
         price: 15
   expected: "50"
-  complexity: 330
+  complexity: 345
   hint: |
     Extract prices, sort ascending, reverse to descending, take first (max).
 
@@ -139,7 +136,7 @@ specs:
       - name: "Carol"
         active: true
   expected: "Alice, Carol"
-  complexity: 330
+  complexity: 346
   hint: |
     Filter to active items, extract names, join with comma.
 
@@ -148,12 +145,12 @@ specs:
   environment:
     text: "a,b,c,d,e,f"
   expected: "b-c-d"
-  complexity: 330
+  complexity: 347
   hint: |
     Split by comma, take 3 items starting at index 1, join with dash.
 
 # =============================================================================
-# Chains with Nil/Empty (Complexity 360)
+# Chains with Nil/Empty (Complexity 348-353)
 # =============================================================================
 
 - name: chain_default_in_middle
@@ -161,7 +158,7 @@ specs:
   environment:
     val: null
   expected: "FALLBACK"
-  complexity: 360
+  complexity: 348
   hint: |
     default provides fallback for nil, then upcase transforms it.
 
@@ -174,7 +171,7 @@ specs:
       - name: "Alpha"
       - null
   expected: "Alpha"
-  complexity: 360
+  complexity: 349
   hint: |
     compact removes nulls first, then map/sort/first works on clean array.
 
@@ -187,7 +184,7 @@ specs:
       - name: "Bob"
         active: false
   expected: "NONE"
-  complexity: 360
+  complexity: 350
   hint: |
     where returns empty array, map returns empty, default activates, upcase applies.
 
@@ -196,7 +193,7 @@ specs:
   environment:
     items: null
   expected: "0"
-  complexity: 360
+  complexity: 351
   hint: |
     nil | compact may return nil or empty. size of nil is often empty string.
     default: 0 ensures numeric output.
@@ -206,7 +203,7 @@ specs:
   environment:
     items: []
   expected: "empty"
-  complexity: 360
+  complexity: 352
   hint: |
     first of empty array is nil, default provides fallback.
 
@@ -215,12 +212,12 @@ specs:
   environment:
     items: [1, null, 2, null, 1, null]
   expected: "1,2"
-  complexity: 360
+  complexity: 353
   hint: |
     uniq keeps one null, compact removes it, join combines remaining.
 
 # =============================================================================
-# Complex Chains with Mixed Types (Complexity 390)
+# Complex Chains with Mixed Types (Complexity 354-359)
 # =============================================================================
 
 - name: chain_math_with_coercion
@@ -230,7 +227,7 @@ specs:
     quantity: 3
     shipping: "5.50"
   expected: "65.47"
-  complexity: 390
+  complexity: 354
   hint: |
     String prices coerced to numbers for math operations.
     19.99 * 3 + 5.50 = 65.47
@@ -243,7 +240,7 @@ specs:
       - amount: 20
       - amount: 30
   expected: "20"
-  complexity: 390
+  complexity: 355
   hint: |
     Map amounts, sum them, divide by count for average.
     60 / 3 = 20 (integer division). sum filter may not exist in all implementations.
@@ -259,7 +256,7 @@ specs:
       - name: "Alpha"
         stock: true
   expected: "Alpha"
-  complexity: 390
+  complexity: 356
   hint: |
     where filters by stock=true, then processes the result chain.
 
@@ -273,7 +270,7 @@ specs:
       - items:
           - price: 30
   expected: "60"
-  complexity: 390
+  complexity: 357
   hint: |
     Flatten nested arrays before aggregating. Total: 10 + 20 + 30 = 60.
     flatten filter required.
@@ -283,7 +280,7 @@ specs:
   environment:
     text: "hello"
   expected: "olleh"
-  complexity: 390
+  complexity: 358
   hint: |
     Split into characters, reverse array, join back. String reversal pattern.
 
@@ -301,7 +298,7 @@ specs:
         price: 5
         available: false
   expected: "Cheap is cheapest"
-  complexity: 390
+  complexity: 359
   hint: |
     Filter available, sort by price, get first name, append message.
     Full transformation pipeline.

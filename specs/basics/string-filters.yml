@@ -1,26 +1,22 @@
 ---
 # =============================================================================
-# COMPLEXITY 225-290: String Filter Edge Cases
+# COMPLEXITY 274-318: String Filter Edge Cases
 # =============================================================================
 #
 # These specs cover edge cases and advanced usage of string filters.
 # Basic string filter usage is covered in specs.yml at lower complexity.
 #
-# Complexity levels:
-#   225: strip variants (lstrip, rstrip)
-#   240: truncate edge cases
-#   255: split/join edge cases
-#   270: replace edge cases
-#   285: slice edge cases
+# Each independently failable behavior advances one level.
 #
 # =============================================================================
 
 _metadata:
   doc: implementers/string-filters.md
+  sequential_complexity: true
 
 specs:
 # =============================================================================
-# Strip Variants (Complexity 225)
+# Strip Variants (Complexity 274-279)
 # =============================================================================
 
 - name: lstrip_leading_spaces
@@ -28,7 +24,7 @@ specs:
   environment:
     text: "   hello   "
   expected: "'hello   '"
-  complexity: 225
+  complexity: 274
   hint: |
     lstrip removes leading whitespace only.
 
@@ -37,7 +33,7 @@ specs:
   environment:
     text: "   hello   "
   expected: "'   hello'"
-  complexity: 225
+  complexity: 275
   hint: |
     rstrip removes trailing whitespace only.
 
@@ -46,7 +42,7 @@ specs:
   environment:
     text: "hello\nworld\n"
   expected: "'helloworld'"
-  complexity: 225
+  complexity: 276
   hint: |
     strip_newlines removes all newlines (not just leading/trailing).
 
@@ -55,7 +51,7 @@ specs:
   environment:
     text: "<p>Hello <b>World</b></p>"
   expected: "Hello World"
-  complexity: 225
+  complexity: 277
   hint: |
     strip_html removes all HTML tags.
 
@@ -64,7 +60,7 @@ specs:
   environment:
     text: "<a href='test' class='link'>Click</a>"
   expected: "Click"
-  complexity: 225
+  complexity: 278
   hint: |
     strip_html removes tags with attributes too.
 
@@ -73,12 +69,12 @@ specs:
   environment:
     text: "   "
   expected: "''"
-  complexity: 225
+  complexity: 279
   hint: |
     strip on whitespace-only returns empty string.
 
 # =============================================================================
-# Truncate Edge Cases (Complexity 240)
+# Truncate Edge Cases (Complexity 280-287)
 # =============================================================================
 
 - name: truncate_exact_length
@@ -86,7 +82,7 @@ specs:
   environment:
     text: "hello"
   expected: "hello"
-  complexity: 240
+  complexity: 280
   hint: |
     When text equals truncate length, no ellipsis added.
 
@@ -95,7 +91,7 @@ specs:
   environment:
     text: "hello"
   expected: "hello"
-  complexity: 240
+  complexity: 281
   hint: |
     Shorter text is returned unchanged.
 
@@ -104,7 +100,7 @@ specs:
   environment:
     text: "hello world and more"
   expected: "hello w---"
-  complexity: 240
+  complexity: 282
   hint: |
     Custom ellipsis replaces default "...".
 
@@ -113,7 +109,7 @@ specs:
   environment:
     text: "hello world"
   expected: "hello wo"
-  complexity: 240
+  complexity: 283
   hint: |
     Empty ellipsis means just cut off at limit.
 
@@ -122,7 +118,7 @@ specs:
   environment:
     text: "hello"
   expected: "..."
-  complexity: 240
+  complexity: 284
   hint: |
     When limit is shorter than ellipsis, return just ellipsis.
 
@@ -131,7 +127,7 @@ specs:
   environment:
     text: "one two three four five"
   expected: "one two three..."
-  complexity: 240
+  complexity: 285
   hint: |
     truncatewords limits by word count.
 
@@ -140,7 +136,7 @@ specs:
   environment:
     text: "one two three"
   expected: "one two three"
-  complexity: 240
+  complexity: 286
   hint: |
     Exact word count - no ellipsis.
 
@@ -149,12 +145,12 @@ specs:
   environment:
     text: "one two three four"
   expected: "one two [more]"
-  complexity: 240
+  complexity: 287
   hint: |
     Custom ellipsis for truncatewords.
 
 # =============================================================================
-# Split/Join Edge Cases (Complexity 255)
+# Split/Join Edge Cases (Complexity 288-295)
 # =============================================================================
 
 - name: split_empty_delimiter
@@ -162,7 +158,7 @@ specs:
   environment:
     text: "abc"
   expected: "a-b-c"
-  complexity: 255
+  complexity: 288
   hint: |
     Empty delimiter splits into characters.
 
@@ -171,7 +167,7 @@ specs:
   environment:
     text: "hello"
   expected: "1"
-  complexity: 255
+  complexity: 289
   hint: |
     Delimiter not found returns array with original string.
 
@@ -180,7 +176,7 @@ specs:
   environment:
     text: "abc"
   expected: "-bc"
-  complexity: 255
+  complexity: 290
   hint: |
     Split at start creates empty first element.
 
@@ -189,7 +185,7 @@ specs:
   environment:
     text: "abc"
   expected: "ab"
-  complexity: 255
+  complexity: 291
   hint: |
     Split at end - trailing empty strings are stripped by Ruby's split.
 
@@ -198,7 +194,7 @@ specs:
   environment:
     text: "banana"
   expected: "3"
-  complexity: 255
+  complexity: 292
   hint: |
     "banana" split on 'a' gives ["b", "n", "n"] - trailing empty string
     is stripped by Ruby's split behavior.
@@ -208,7 +204,7 @@ specs:
   environment:
     items: []
   expected: "''"
-  complexity: 255
+  complexity: 293
   hint: |
     Joining empty array returns empty string.
 
@@ -217,7 +213,7 @@ specs:
   environment:
     items: [only]
   expected: "only"
-  complexity: 255
+  complexity: 294
   hint: |
     Single item - no delimiter in output.
 
@@ -226,12 +222,12 @@ specs:
   environment:
     items: [a, b, c]
   expected: "abc"
-  complexity: 255
+  complexity: 295
   hint: |
     Empty delimiter concatenates directly.
 
 # =============================================================================
-# Replace Edge Cases (Complexity 270)
+# Replace Edge Cases (Complexity 296-303)
 # =============================================================================
 
 - name: replace_all_occurrences
@@ -239,7 +235,7 @@ specs:
   environment:
     text: "banana"
   expected: "bXnXnX"
-  complexity: 270
+  complexity: 296
   hint: |
     replace replaces ALL occurrences, not just first.
 
@@ -248,7 +244,7 @@ specs:
   environment:
     text: "banana"
   expected: "bXnana"
-  complexity: 270
+  complexity: 297
   hint: |
     replace_first only replaces first occurrence.
 
@@ -257,7 +253,7 @@ specs:
   environment:
     text: "hello"
   expected: "hello"
-  complexity: 270
+  complexity: 298
   hint: |
     No match returns original unchanged.
 
@@ -266,7 +262,7 @@ specs:
   environment:
     text: "hello"
   expected: "heo"
-  complexity: 270
+  complexity: 299
   hint: |
     Replace with empty string removes occurrences.
 
@@ -275,7 +271,7 @@ specs:
   environment:
     text: "aaaa"
   expected: "XX"
-  complexity: 270
+  complexity: 300
   hint: |
     Overlapping matches - each match is replaced once.
     "aaaa" has two non-overlapping "aa".
@@ -285,7 +281,7 @@ specs:
   environment:
     text: "aAaA"
   expected: "aXaX"
-  complexity: 270
+  complexity: 301
   hint: |
     replace is case-sensitive.
 
@@ -294,7 +290,7 @@ specs:
   environment:
     text: "hello"
   expected: "heo"
-  complexity: 270
+  complexity: 302
   hint: |
     remove is shorthand for replace with empty string.
 
@@ -303,12 +299,12 @@ specs:
   environment:
     text: "hello"
   expected: "helo"
-  complexity: 270
+  complexity: 303
   hint: |
     remove_first removes only first occurrence.
 
 # =============================================================================
-# Slice Edge Cases (Complexity 285)
+# Slice Edge Cases (Complexity 304-311)
 # =============================================================================
 
 - name: slice_single_char
@@ -316,7 +312,7 @@ specs:
   environment:
     text: "hello"
   expected: "h"
-  complexity: 285
+  complexity: 304
   hint: |
     slice with single argument returns one character.
 
@@ -325,7 +321,7 @@ specs:
   environment:
     text: "hello"
   expected: "o"
-  complexity: 285
+  complexity: 305
   hint: |
     Negative index counts from end.
 
@@ -334,7 +330,7 @@ specs:
   environment:
     text: "hello"
   expected: "ell"
-  complexity: 285
+  complexity: 306
   hint: |
     slice(start, length) returns substring.
 
@@ -343,7 +339,7 @@ specs:
   environment:
     text: "hello"
   expected: "ll"
-  complexity: 285
+  complexity: 307
   hint: |
     Negative start with length.
 
@@ -352,7 +348,7 @@ specs:
   environment:
     text: "hello"
   expected: "lo"
-  complexity: 285
+  complexity: 308
   hint: |
     Length extending past end returns available characters.
 
@@ -361,7 +357,7 @@ specs:
   environment:
     text: "hello"
   expected: "''"
-  complexity: 285
+  complexity: 309
   hint: |
     Index out of bounds returns nil/empty.
 
@@ -370,7 +366,7 @@ specs:
   environment:
     text: "hello"
   expected: "''"
-  complexity: 285
+  complexity: 310
   hint: |
     Zero length returns empty string.
 
@@ -379,12 +375,12 @@ specs:
   environment:
     items: [a, b, c, d, e]
   expected: "b-c"
-  complexity: 285
+  complexity: 311
   hint: |
     slice also works on arrays.
 
 # =============================================================================
-# Escape Filters (Complexity 290)
+# Escape Filters (Complexity 312-318)
 # =============================================================================
 
 - name: escape_html_entities
@@ -392,7 +388,7 @@ specs:
   environment:
     text: "<script>alert('xss')</script>"
   expected: "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;"
-  complexity: 290
+  complexity: 312
   hint: |
     escape converts <, >, &, ', " to HTML entities.
 
@@ -401,7 +397,7 @@ specs:
   environment:
     text: "&lt;already&gt;"
   expected: "&amp;lt;already&amp;gt;"
-  complexity: 290
+  complexity: 313
   hint: |
     escape escapes existing entities (double-escape).
 
@@ -410,7 +406,7 @@ specs:
   environment:
     text: "&lt;already&gt; and <new>"
   expected: "&lt;already&gt; and &lt;new&gt;"
-  complexity: 290
+  complexity: 314
   hint: |
     escape_once escapes new entities but not already-escaped ones.
 
@@ -419,7 +415,7 @@ specs:
   environment:
     text: "hello world"
   expected: "hello+world"
-  complexity: 290
+  complexity: 315
   hint: |
     url_encode converts spaces to + (application/x-www-form-urlencoded format).
 
@@ -428,7 +424,7 @@ specs:
   environment:
     text: "a=b&c=d"
   expected: "a%3Db%26c%3Dd"
-  complexity: 290
+  complexity: 316
   hint: |
     url_encode escapes = and &.
 
@@ -437,7 +433,7 @@ specs:
   environment:
     text: "hello%20world"
   expected: "hello world"
-  complexity: 290
+  complexity: 317
   hint: |
     url_decode reverses url_encode.
 
@@ -446,6 +442,6 @@ specs:
   environment:
     text: "line1\nline2"
   expected: "line1<br />\nline2"
-  complexity: 290
+  complexity: 318
   hint: |
     newline_to_br inserts <br /> before each newline.

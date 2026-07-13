@@ -25,8 +25,9 @@ returning to the ordered ramp so earlier semantics stay solid.
   Bugs multiply when each tag/filter answers those independently.
 - **Keep parsing, rendering, and host integration separable.** The exact boundary is up
   to you, but clear seams make error handling, partials, drops, and JSON-RPC adapters easier.
-- **Use feature gates deliberately.** `config.missing_features` is not failure; it is a way
-  to keep the curriculum aligned with the kind of Liquid you are building right now.
+- **Declare error behavior deliberately.** Start with `config.error_modes = [:strict2]`
+  and `config.render_error_modes = [:raise]`; add strict, lax, or inline compatibility
+  only when implemented. Use `config.missing_features` for other capabilities.
 - **Prefer observable compatibility over implementation mimicry.** Reproduce Ruby internals
   only when your compatibility target requires them.
 
@@ -82,8 +83,10 @@ architecture. For example, all of these are reasonable choices:
 - Shopify-theme support early because your product needs it, even though the generic ramp
   treats it as optional later work.
 
-Use `config.missing_features` to keep the suite focused on the route you have chosen.
-Remove missing-feature entries as those capabilities become part of your implementation.
+Use `config.error_modes` and `config.render_error_modes` to select the error contracts
+you implement, and `config.missing_features` to keep other suite capabilities focused.
+Unannotated specs exercise only the highest supported parse strictness. Explicit
+multi-mode specs exercise every supported declared mode in strict2, strict, lax order.
 
 ## What to Read First
 
@@ -106,7 +109,8 @@ Then let the failing spec choose the next guide. For example:
 
 Unless your project specifically needs them early, these are often worth deferring:
 
-- Lax parsing and legacy `:raise` mode.
+- Strict and lax parser compatibility beyond the strict2-first path.
+- Inline error rendering beyond the default raised-error path.
 - Shopify-specific `shopify_*` features.
 - Ruby-only compatibility (`ruby_types`, `ruby_drops`, `drop_class_output`) if you are
   not trying to reproduce Ruby internals.

@@ -270,6 +270,24 @@ The `date` filter accepts:
 - The special value `"now"` for current time
 - Time objects from the environment
 
+### Deterministic current time
+
+All liquid-spec execution surfaces—including normal runs, inspect, matrix, and
+JSON-RPC—execute date specs against exactly `2024-01-01 00:01:58 UTC`. An
+adapter must obtain `now`/`today` from the supplied `registers[:current_time]`,
+not cache or read the host wall clock outside the render operation. Registers
+are host context: unlike assigns, templates cannot resolve them directly, but
+filters and drops can read them from their render context.
+
+These specs assert the formatted value for that exact instant. Agreement between
+adapters is insufficient if they all return the real current date.
+
+The override is scoped to a spec execution. Outside that scope liquid-spec does
+not set a timezone or substitute `Time.now`; the clock must again track the host
+machine's realtime clock. Harness tests cover dates before and after the canonical
+instant, positive and negative UTC offsets, and unfrozen execution without an
+explicit timezone so clock or timezone state cannot leak between runs.
+
 ```liquid
 {{ "2024-01-15" | date: "%Y-%m-%d" }}  → 2024-01-15
 {{ "now" | date: "%Y" }}                → (current year)

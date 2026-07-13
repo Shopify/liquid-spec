@@ -61,7 +61,8 @@ specs:
   complexity: 260
   hint: |
     The string 'now' is a special keyword meaning current time.
-    During spec runs, time is frozen to 2024-01-01 00:01:58 UTC.
+    This spec is executed at exactly 2024-01-01 00:01:58 UTC on every
+    runner surface, including matrix and JSON-RPC. Do not use wall time.
     Detect the literal string 'now' and use Time.now instead of parsing.
 
 - name: date_today_keyword
@@ -70,7 +71,8 @@ specs:
   complexity: 260
   hint: |
     The string 'today' is a special keyword meaning current date.
-    During spec runs, time is frozen to 2024-01-01 00:01:58 UTC.
+    This spec is executed at exactly 2024-01-01 00:01:58 UTC on every
+    runner surface, including matrix and JSON-RPC. Do not use wall time.
     Detect the literal 'today' and use Time.now for the date.
 
 - name: date_Today_capitalized
@@ -79,7 +81,8 @@ specs:
   complexity: 260
   hint: |
     'Today' (capitalized) should work the same as 'today'.
-    Case-insensitive check for the today keyword.
+    Case-insensitive check for the today keyword. The test clock is exactly
+    2024-01-01 00:01:58 UTC, so the result must be 2024-01-01.
 
 # =============================================================================
 # Year Format Directives (complexity 105-110)
@@ -613,8 +616,9 @@ specs:
   expected: "January 01, 2024"
   complexity: 420
   hint: |
-    'now' with complex formatting. Time is frozen to 2024-01-01 00:01:58 UTC.
-    Output uses the frozen UTC time.
+    'now' with complex formatting. The test is executed at exactly
+    2024-01-01 00:01:58 UTC on every runner surface. The output must use
+    that frozen UTC instant, never the host wall clock.
 
 - name: date_format_only_literals
   template: "{{ '2020-06-15' | date: 'Date: ' }}"

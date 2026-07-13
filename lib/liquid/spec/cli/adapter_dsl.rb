@@ -26,6 +26,8 @@ require "timeout"
 
 module LiquidSpec
   DEFAULT_ADAPTER_TIMEOUT = 3
+  PARSE_ERROR_MODES = [:strict2, :strict, :lax].freeze
+  RENDER_ERROR_MODES = [:raise, :inline].freeze
 
   # Raised when an adapter compile/render call exceeds the timeout budget
   class AdapterTimeoutError < StandardError
@@ -82,7 +84,7 @@ module LiquidSpec
   }.freeze
   class Configuration
     attr_accessor :suite, :filter, :verbose, :strict_only
-    attr_reader :missing_features, :known_failures, :suites
+    attr_reader :known_failures, :suites, :error_modes, :render_error_modes
 
     def initialize
       @suite = :all
@@ -92,6 +94,8 @@ module LiquidSpec
       @strict_only = false
       @missing_features = []
       @known_failures = []
+      @error_modes = [:strict2]
+      @render_error_modes = [:raise]
     end
 
     # Set multiple suites to run (overrides suite)
@@ -103,12 +107,43 @@ module LiquidSpec
       @missing_features = Array(list).map(&:to_sym)
     end
 
+    # Parse modes the adapter deliberately supports. Runs always prefer the
+    # highest strictness: strict2, then strict, then lax.
+    def error_modes=(list)
+      modes = Array(list).map(&:to_sym)
+      unknown = modes - PARSE_ERROR_MODES
+      raise ArgumentError, "Unknown error mode(s): #{unknown.join(", ")}" unless unknown.empty?
+      raise ArgumentError, "At least one error mode is required" if modes.empty?
+
+      @error_modes = PARSE_ERROR_MODES.select { |mode| modes.include?(mode) }
+    end
+
+    # Raised render errors are the default contract. Inline errors are an
+    # optional second rendering mode used only by specs that request them.
+    def render_error_modes=(list)
+      modes = Array(list).map(&:to_sym)
+      unknown = modes - RENDER_ERROR_MODES
+      raise ArgumentError, "Unknown render error mode(s): #{unknown.join(", ")}" unless unknown.empty?
+      raise ArgumentError, "At least one render error mode is required" if modes.empty?
+
+      @render_error_modes = RENDER_ERROR_MODES.select { |mode| modes.include?(mode) }
+    end
+
+    def missing_features
+      features = @missing_features.dup
+      features << :strict2_parsing unless @error_modes.include?(:strict2)
+      features << :strict_parsing unless @error_modes.include?(:strict)
+      features << :lax_parsing unless @error_modes.include?(:lax)
+      features << :inline_errors unless @render_error_modes.include?(:inline)
+      features.uniq
+    end
+
     def known_failures=(list)
       @known_failures = Array(list).map(&:to_s)
     end
 
     def missing_feature?(name)
-      @missing_features.include?(name.to_sym)
+      missing_features.include?(name.to_sym)
     end
   end
 
@@ -133,7 +168,7 @@ module LiquidSpec
     end
 
     def missing_features
-      @config&.instance_variable_get(:@missing_features) || []
+      @config&.missing_features || Configuration.new.missing_features
     end
 
     # Declare Ruby flags this adapter needs (e.g. "--yjit").

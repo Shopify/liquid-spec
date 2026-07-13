@@ -1214,7 +1214,7 @@ specs:
 - name: comment_block
   template: before{% comment %}hidden{% endcomment %}after
   expected: beforeafter
-  complexity: 120
+  complexity: 106
   hint: |
     Everything between {% comment %} and {% endcomment %} is completely
     ignored. It produces no output. Use for documentation or temporarily
@@ -1222,14 +1222,14 @@ specs:
 - name: comment_with_liquid_code
   template: "{% comment %}{% if true %}ignored{% endif %}{% endcomment %}shown"
   expected: shown
-  complexity: 120
+  complexity: 107
   hint: |
     Liquid code inside comments is NOT executed. The parser should skip
     everything until {% endcomment %}.
 - name: comment_inline
   template: 'before{% # this is ignored %}after'
   expected: beforeafter
-  complexity: 120
+  complexity: 110
   hint: |
     Inline comments use {% # ... %}. Everything from # to %} is ignored.
     This is more concise than block comments for single lines.
@@ -1240,21 +1240,21 @@ specs:
       # line 2
     %}after
   expected: beforeafter
-  complexity: 120
+  complexity: 111
   hint: 'Multi-line inline comments: each line inside the tag must start with #.
 
     '
 - name: comment_inline_trimmed
   template: 'before{%- # inline comment with trim -%}after'
   expected: beforeafter
-  complexity: 120
+  complexity: 112
   hint: 'Inline comments can use trim markers. The comment itself produces no output.
 
     '
 - name: raw_basic
   template: "{% raw %}{{ not_processed }}{% endraw %}"
   expected: "{{ not_processed }}"
-  complexity: 120
+  complexity: 108
   hint: |
     The raw tag outputs its contents WITHOUT processing Liquid syntax.
     {{ }} and {% %} are output literally. Use for showing Liquid code
@@ -1262,7 +1262,7 @@ specs:
 - name: raw_with_tags
   template: "{% raw %}{% if true %}shown{% endif %}{% endraw %}"
   expected: "{% if true %}shown{% endif %}"
-  complexity: 120
+  complexity: 109
   hint: 'Tag syntax is also preserved literally inside raw blocks.
 
     '
@@ -1549,7 +1549,7 @@ specs:
   environment:
     x: real
   expected: real
-  complexity: 120
+  complexity: 113
   hint: |
     Inline comments ignore their contents entirely — even valid Liquid code.
     The assign inside the comment is never executed, so x retains its
@@ -1558,7 +1558,7 @@ specs:
 - name: comment_inline_between_tags
   template: "{%- assign a = 1 -%}{%- # separator comment -%}{%- assign b = 2 -%}{{ a }}{{ b }}"
   expected: "12"
-  complexity: 120
+  complexity: 114
   hint: |
     Inline comments can appear between any tags. With trim markers they
     produce no whitespace in the output.

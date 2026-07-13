@@ -1,0 +1,37 @@
+---
+- name: boolean_chain_and_then_or_continues_after_true_left
+  template: "{% if true and false or true %}true{% else %}false{% endif %}"
+  expected: "true"
+  complexity: 136
+  hint: |
+    Evaluate Liquid boolean chains as Liquid expressions, not with the host
+    language's operator precedence. This chain reaches `or true` after
+    `true and false`, so the final result is true.
+
+- name: boolean_chain_false_and_short_circuits_remaining_chain
+  template: "{% if false and true or true %}true{% else %}false{% endif %}"
+  expected: "false"
+  complexity: 137
+  hint: |
+    Liquid short-circuiting applies to the remaining condition chain. Once
+    `and` sees a false left side, the later `or true` is not evaluated. Do not
+    delegate this expression to the host language, where it commonly becomes
+    `(false and true) or true` and incorrectly returns true.
+
+- name: boolean_chain_true_or_short_circuits_remaining_chain
+  template: "{% if true or false and false %}true{% else %}false{% endif %}"
+  expected: "true"
+  complexity: 138
+  hint: |
+    Once `or` sees a true left side, Liquid does not evaluate the rest of the
+    chain. Represent short-circuiting in the Liquid expression evaluator rather
+    than relying on the host language's precedence rules.
+
+- name: boolean_chain_false_or_evaluates_remaining_and
+  template: "{% if false or true and false %}true{% else %}false{% endif %}"
+  expected: "false"
+  complexity: 139
+  hint: |
+    A false left side does not short-circuit `or`, so evaluation continues into
+    `true and false`. This completes the four smallest chain shapes before the
+    generated truth-table breadth at complexity 140.

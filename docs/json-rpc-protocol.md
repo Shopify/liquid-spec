@@ -44,13 +44,21 @@ Called once when the connection starts.
 
 **Features:**
 
-`features` is informational metadata reported by the subprocess. The Ruby adapter file still controls which specs run via `config.missing_features` because spec selection happens in liquid-spec, not inside the subprocess.
+`features` is informational metadata reported by the subprocess. Spec selection
+happens in the Ruby adapter: use `config.error_modes` for parse modes,
+`config.render_error_modes` for raised/inline render behavior, and
+`config.missing_features` for other capabilities.
 
 Common feature names:
 - `drops` - Supports Liquid drop objects. Portable standard test drops are documented in `docs/test_drops.md`; the callback protocol below supports host-owned runtime drops.
-- `lax_parsing` - Supports `error_mode: lax`
 
-For a minimal JSON-RPC server, start with `features: []` and set the adapter's `config.missing_features` to skip unsupported capabilities such as `:drops`, `:lax_parsing`, `:ruby_types`, `:ruby_drops`, `:binary_data`, and Shopify-specific features.
+Parse-mode support is declared by the Ruby adapter's `config.error_modes`, not
+the subprocess feature list.
+
+For a minimal JSON-RPC server, start with `features: []`, declare
+`config.error_modes = [:strict2]` and `config.render_error_modes = [:raise]`,
+then use `config.missing_features` for unsupported capabilities such as drops,
+Ruby types, binary data, and Shopify-specific features.
 
 ### `compile`
 
@@ -79,7 +87,7 @@ Parse a Liquid template and store it for later rendering.
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `template` | string | yes | The Liquid template source |
-| `options.error_mode` | string | no | `"strict2"` (recommended default), `"strict"`, `"lax"`, `"raise"`, or omitted/null |
+| `options.error_mode` | string | no | `"strict2"`, `"strict"`, `"lax"`, or omitted/null |
 | `options.line_numbers` | boolean | no | Track line numbers for errors |
 | `filesystem` | object | no | Map of filename → content for includes/renders |
 
@@ -129,9 +137,11 @@ Render a compiled template with environment variables.
       "items": [1, 2, 3]
     },
     "options": {
-      "strict_errors": true
-    },
-    "frozen_time": "2024-01-01T00:01:58Z"
+      "strict_errors": true,
+      "registers": {
+        "current_time": "2024-01-01T00:01:58Z"
+      }
+    }
   }
 }
 ```
@@ -143,7 +153,8 @@ Render a compiled template with environment variables.
 | `environment` | object | no | Variables available to the template |
 | `options.strict_errors` | boolean | no | If true, render errors should be reported as errors; if false, render them inline in `output` when possible |
 | `options.resource_limits` | object | no | Resource limits: `render_score_limit` (int), `cumulative_render_score_limit` (int) |
-| `frozen_time` | string | no | ISO 8601 timestamp for `now` keyword |
+| `options.registers` | object | no | Host render context, separate from template variables; primitive values only |
+| `options.registers.current_time` | string | no | ISO 8601 clock for date/time filters and drops |
 
 **Response (always success for valid template_id):**
 ```json
@@ -359,6 +370,10 @@ Liquid has two orthogonal error axes that interact through the protocol:
 - `strict2` — like strict but with relaxed trailing comma/colon syntax (default)
 - `lax` — recover from syntax errors, render what parsed
 
+The Ruby adapter declares which of these the server implements. Ordinary specs
+run once in its highest supported mode (`strict2`, then `strict`, then `lax`).
+Explicit multi-mode specs run once per supported declared mode.
+
 **Error rendering** (set at render time via `options.strict_errors`):
 - `true` (default) — render errors are raised as `result.error`
 - `false` — render errors are rendered inline as `Liquid error: ...` text in `output`
@@ -391,17 +406,32 @@ leave liquid-spec blocked while writing to a full stdin pipe.
 **Resource limits** — forwarded as `options.resource_limits` with
 `render_score_limit` and `cumulative_render_score_limit` (integers).
 The server should enforce these and raise a render error when exceeded.
-### Time Handling
+### Registers and time handling
 
-The `frozen_time` parameter allows deterministic testing of date/time filters:
+Registers are host-owned render context. They are passed alongside assigns but
+are not template variables: `{{ current_time }}` must not resolve from this
+value. Filters and drops receive the render context and can use
+`registers.current_time` instead.
+
+liquid-spec supplies `options.registers.current_time` for deterministic date/time filters:
 
 ```liquid
 {{ 'now' | date: '%Y-%m-%d' }}
 ```
 
-When `frozen_time: "2024-01-01T00:01:58Z"` is passed:
+When `options.registers.current_time: "2024-01-01T00:01:58Z"` is passed:
 - `now` keyword should return this timestamp
 - All date operations use this as "current time"
+- `now` and `today` must resolve from this exact instant, never server wall time
+- The requirement applies equally to normal, inspect, and matrix runs
+
+Servers should scope any internal clock override to the render request and
+restore their normal clock afterward. The date specs validate the expected
+calendar values at this instant; merely returning the same wall-clock value as
+another adapter does not pass.
+
+When `current_time` is omitted, the protocol does not imply a timezone or frozen
+date. The server should use its ordinary machine clock and timezone behavior.
 
 ### Type Coercion
 

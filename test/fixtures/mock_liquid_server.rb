@@ -140,7 +140,7 @@ class MockLiquidServer
     unwrapped_env = unwrap_environment(environment)
 
     # Build context
-    registers = {}
+    registers = deserialize_registers(options["registers"] || {})
     registers[:file_system] = @filesystems[template_id] if @filesystems[template_id]
 
     context = Liquid::Context.build(
@@ -167,6 +167,10 @@ class MockLiquidServer
     else
       env
     end
+  end
+
+  def deserialize_registers(serialized)
+    serialized.transform_keys(&:to_sym)
   end
 
   def success_response(id, result)

@@ -158,7 +158,7 @@ class LiquidJsonRpcServer
     unwrapped_env = unwrap_environment(environment)
 
     # Build registers
-    registers = {}
+    registers = deserialize_registers(options["registers"] || {})
     registers[:file_system] = @filesystems[template_id] if @filesystems[template_id]
 
     # Determine error handling
@@ -189,6 +189,10 @@ class LiquidJsonRpcServer
     else
       env
     end
+  end
+
+  def deserialize_registers(serialized)
+    serialized.transform_keys(&:to_sym)
   end
 
   def unwrap_value(value)

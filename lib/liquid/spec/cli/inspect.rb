@@ -9,7 +9,7 @@ module Liquid
     module CLI
       # Inspect command - shows detailed info about a specific test
       module Inspect
-        TEST_TIME = Time.utc(2024, 1, 1, 0, 1, 58).freeze
+        TEST_TIME = TimeFreezer::SPEC_TIME
 
         HELP = <<~HELP
           Usage: liquid-spec tools inspect ADAPTER -n PATTERN [options]
@@ -487,7 +487,7 @@ module Liquid
           end
 
           def build_registers(spec, filesystem = nil)
-            registers = {}
+            registers = { current_time: TimeFreezer.current_time }
             filesystem ||= spec.instantiate_filesystem
             registers[:file_system] = filesystem if filesystem
             template_factory = spec.instantiate_template_factory
