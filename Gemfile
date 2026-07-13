@@ -23,6 +23,4 @@ group :development do
   gem "activesupport", require: false
 end
 
-gem "base64", "~> 0.3.0"
-
 gem "bigdecimal", "~> 4.0"

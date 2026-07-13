@@ -26,7 +26,8 @@ Gem::Specification.new do |spec|
   spec.bindir = "bin"
   spec.executables = ["liquid-spec"]
 
-  # No runtime dependencies on liquid - the adapter provides it
+  spec.add_dependency("base64", "~> 0.3.0")
+  spec.add_dependency("liquid", "~> 5.13")
   spec.add_dependency("super_diff", "~> 0.18")
 
   spec.require_paths = ["lib"]
