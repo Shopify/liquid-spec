@@ -761,7 +761,8 @@ module Liquid
             protocol (which uses stdout). Write to stderr liberally during development.
 
             **Important:** The default timeout is 2 seconds per request. If your server doesn't
-            respond within 2 seconds, liquid-spec will fail with a timeout error.
+            respond within 2 seconds, liquid-spec fails that spec with a timeout, kills the wedged
+            subprocess, and starts a fresh server for the next spec.
 
             ### Example: Minimal Server (Node.js)
 

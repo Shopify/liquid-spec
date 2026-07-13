@@ -380,9 +380,13 @@ Liquid has two orthogonal error axes that interact through the protocol:
    tolerated for backwards compatibility; liquid-spec converts them
    to the appropriate inline output or raised error.
 
-**Subprocess crashes** — if the subprocess exits unexpectedly or times
-out, liquid-spec raises a `SubprocessError` that includes the spec name
-and source file for correlation: `[spec 'test_foo' at specs/basics/x.yml:42] Subprocess closed stdout unexpectedly`.
+**Subprocess crashes and stalls** — if the subprocess exits unexpectedly or a
+request makes no progress before the timeout, liquid-spec raises a
+`SubprocessError` that includes the spec name and source file for correlation:
+`[spec 'test_foo' at specs/basics/x.yml:42] Subprocess closed stdout unexpectedly`.
+A timed-out subprocess is killed immediately. The next spec starts a fresh server,
+so one infinite loop cannot turn every remaining request into another timeout or
+leave liquid-spec blocked while writing to a full stdin pipe.
 
 **Resource limits** — forwarded as `options.resource_limits` with
 `render_score_limit` and `cumulative_render_score_limit` (integers).

@@ -117,8 +117,19 @@ module Liquid
           id = next_id
           msg = Protocol.request(id: id, method: method, params: params)
 
-          write_message(msg)
-          read_response_for(id)
+          Timeout.timeout(@timeout) do
+            # Include both sides of the exchange in the deadline. A wedged
+            # server can stop reading stdin, so the write itself may block once
+            # the pipe fills; timing only the response read is not sufficient.
+            write_message(msg)
+            read_response_for(id)
+          end
+        rescue Timeout::Error
+          # A timed-out server may still be spinning on the previous request.
+          # Kill it now so the next spec starts a fresh subprocess instead of
+          # paying the same timeout repeatedly until stdin eventually blocks.
+          abort_timed_out_process
+          raise SubprocessError, "#{executable_name} didn't respond in timeout #{@timeout} seconds"
         end
 
         # Shutdown the subprocess
@@ -157,27 +168,23 @@ module Liquid
         end
 
         def read_response_for(expected_id)
-          Timeout.timeout(@timeout) do
-            loop do
-              line = @stdout.gets
-              raise SubprocessError, "Subprocess closed stdout unexpectedly" if line.nil?
+          loop do
+            line = @stdout.gets
+            raise SubprocessError, "Subprocess closed stdout unexpectedly" if line.nil?
 
-              msg = Protocol.decode(line.chomp)
+            msg = Protocol.decode(line.chomp)
 
-              if Protocol.request?(msg)
-                # This is a callback from subprocess (drop access)
-                handle_callback(msg)
-              elsif msg["id"] == expected_id
-                # This is the response we're waiting for
-                return msg
-              else
-                # Unexpected message - log and continue
-                warn "Unexpected message with id #{msg["id"]}, expected #{expected_id}"
-              end
+            if Protocol.request?(msg)
+              # This is a callback from subprocess (drop access)
+              handle_callback(msg)
+            elsif msg["id"] == expected_id
+              # This is the response we're waiting for
+              return msg
+            else
+              # Unexpected message - log and continue
+              warn "Unexpected message with id #{msg["id"]}, expected #{expected_id}"
             end
           end
-        rescue Timeout::Error
-          raise SubprocessError, "#{executable_name} didn't respond in timeout #{@timeout} seconds"
         rescue IOError => e
           raise SubprocessError, "Failed to read from subprocess: #{e.message}"
         end
@@ -264,6 +271,11 @@ module Liquid
           rescue => e
             { "error" => { "code" => Protocol::ErrorCode::DROP_ERROR, "message" => e.message } }
           end
+        end
+
+        def abort_timed_out_process
+          Process.kill("KILL", @wait_thr.pid) rescue nil if @wait_thr
+          cleanup
         end
 
         def cleanup

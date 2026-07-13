@@ -95,6 +95,34 @@ class JsonRpcProtocolTest < Minitest::Test
   end
 end
 
+class JsonRpcSubprocessTest < Minitest::Test
+  STALLING_SERVER_PATH = File.expand_path("fixtures/stalling_json_rpc_server.rb", __dir__)
+
+  def test_timeout_kills_wedged_server_and_next_request_restarts_cleanly
+    subprocess = Liquid::Spec::JsonRpc::Subprocess.new(
+      "ruby #{STALLING_SERVER_PATH}",
+      timeout: 0.1,
+    )
+    subprocess.initialize!
+    first_pid = subprocess.instance_variable_get(:@wait_thr).pid
+
+    error = assert_raises(Liquid::Spec::JsonRpc::SubprocessError) do
+      subprocess.send_request("stall", {})
+    end
+
+    assert_includes error.message, "didn't respond in timeout"
+    refute subprocess.running?
+
+    subprocess.initialize!
+    second_pid = subprocess.instance_variable_get(:@wait_thr).pid
+    refute_equal first_pid, second_pid
+    response = subprocess.send_request("ping", {})
+    assert_equal "pong", response.dig("result", "value")
+  ensure
+    subprocess&.shutdown
+  end
+end
+
 class JsonRpcDropProxyTest < Minitest::Test
   DropProxy = Liquid::Spec::JsonRpc::DropProxy
   DropRegistry = Liquid::Spec::JsonRpc::DropRegistry
