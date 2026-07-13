@@ -46,6 +46,22 @@ mod corpus_tests {
     }
 
     #[test]
+    fn multi_mode_error_annotations_are_preserved_for_runner_expansion() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../specs");
+        let namespace = discover_namespaces(&root)
+            .unwrap()
+            .into_iter()
+            .find(|namespace| namespace.id == "liquid_ruby")
+            .unwrap();
+        let specs = load_namespace(&namespace).unwrap();
+        let spec = specs
+            .iter()
+            .find(|spec| spec.error_modes.len() > 1)
+            .expect("corpus should contain a multi-mode annotation");
+        assert_eq!(spec.error_modes, vec!["lax", "strict"]);
+    }
+
+    #[test]
     fn ruby_only_fixture_descriptors_are_gated() {
         let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../specs");
         let namespace = discover_namespaces(&root)

@@ -959,6 +959,10 @@ reference adapters. Add a command as an array so arguments are never shell-parse
 The adapter must complete `initialize`, `protocol.echo`, `template.compile`,
 `template.render`, and `template.release`; send diagnostics to stderr and JSON-RPC
 responses only to stdout. Advertise only capabilities that are actually implemented.
+Advertise parse modes in `capabilities.parse_modes` and render error contracts in
+`capabilities.render_error_modes`: `raise` is the default typed-error result, while
+`inline` is optional and must only be advertised when `render.options.error_policy`
+supports it.
 Standard fixture drops are language-neutral and selected through typed fixture values;
 Ruby callback drops are intentionally not part of protocol v2.
 
@@ -1067,6 +1071,9 @@ function initialize(id: number): JsonRpcResponse {
     capabilities: {
       // Add parse modes only after your parser implements their semantics.
       parse_modes: ["strict2"],
+      // Render failures are returned as typed { error: LiquidError } outcomes.
+      // Add "inline" only after implementing options.error_policy === "inline".
+      render_error_modes: ["raise"],
       features: ["core"],
       fixture_sets: {},
       artifacts: false,

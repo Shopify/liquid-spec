@@ -39,6 +39,7 @@ The result selects exactly one protocol version and identifies the implementatio
   "implementation":{"name":"my-liquid","version":"1.4.0","language":"go"},
   "capabilities":{
     "parse_modes":["strict2"],
+    "render_error_modes":["raise"],
     "features":["core","standard-drops"],
     "fixture_sets":{"standard-drops":1},
     "artifacts":false,
@@ -47,10 +48,23 @@ The result selects exactly one protocol version and identifies the implementatio
 }}
 ```
 
-`parse_modes` and `features` are positive claims. The runner skips a spec only when
-the adapter does not advertise a feature required by that spec. `fixture_sets` maps
-fixture-set names to supported versions. `artifacts` and `benchmark` advertise the
-optional artifact and timing extensions.
+`parse_modes`, `render_error_modes`, and `features` are positive claims. `parse_modes`
+lists the values accepted by `template.compile.options.parse_mode`; ordinary specs
+run once using the highest mode the adapter advertises (`strict2`, then `strict`, then
+`lax`). `render_error_modes` lists the values accepted by
+`template.render.options.error_policy`: `raise` returns a typed Liquid error result,
+while the optional `inline` mode keeps the error in the rendered output and reports
+it in `diagnostics`. The runner skips specs that require a mode the adapter does not
+advertise, and runs a spec explicitly annotated with multiple parse modes once per
+supported mode (in strictness order). The runner skips a spec only when the adapter
+does not advertise a feature required by that spec. `fixture_sets` maps fixture-set
+names to supported versions. `artifacts` and `benchmark` advertise the optional
+artifact and timing extensions.
+
+For compatibility with older adapters, an omitted `parse_modes` field falls back to
+legacy parse feature tags and then to `strict2`; an omitted `render_error_modes` field
+means `raise` (plus `inline` when the legacy `inline_errors` feature is advertised).
+New adapters should always send both lists explicitly.
 
 The built-in standard drop catalog is advertised as `fixture_sets:
 {"standard-drops":1}` and satisfies specs tagged `drops`. Ruby-only fixture

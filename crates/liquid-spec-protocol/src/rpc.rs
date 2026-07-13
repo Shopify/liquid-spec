@@ -73,6 +73,10 @@ pub struct Implementation {
 pub struct Capabilities {
     #[serde(default)]
     pub parse_modes: Vec<String>,
+    /// Render error contracts the adapter can execute. `raise` is the normal
+    /// contract; `inline` is optional and corresponds to `error_policy:inline`.
+    #[serde(default)]
+    pub render_error_modes: Vec<String>,
     #[serde(default)]
     pub features: Vec<String>,
     #[serde(default)]

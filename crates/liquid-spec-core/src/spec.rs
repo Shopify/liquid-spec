@@ -67,9 +67,31 @@ pub struct Spec {
     pub hint: Option<String>,
     pub doc: Option<String>,
     pub features: BTreeSet<String>,
+    /// Parse modes explicitly declared by the source spec. An empty list means
+    /// the adapter's highest supported mode should be selected at execution.
+    pub error_modes: Vec<String>,
     pub compile_options: CompileOptions,
     pub render_options: RenderOptions,
     pub source_file: PathBuf,
+}
+
+impl Spec {
+    /// Create an isolated execution variant for one concrete parse mode.
+    /// Multi-mode declarations are expanded by the runner in strictness order.
+    pub fn with_error_mode(&self, mode: &str, label: bool) -> Self {
+        let mut variant = self.clone();
+        variant.error_modes = vec![mode.to_owned()];
+        variant.compile_options.parse_mode = Some(mode.to_owned());
+        let parse_features = ["strict2_parsing", "strict_parsing", "lax_parsing"];
+        variant
+            .features
+            .retain(|feature| !parse_features.contains(&feature.as_str()));
+        variant.features.insert(format!("{mode}_parsing"));
+        if label {
+            variant.name = format!("{} [error_mode={mode}]", self.name);
+        }
+        variant
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -376,15 +398,19 @@ fn build_spec(
     if environment.values().any(contains_binary_data) {
         features.insert("binary_data".into());
     }
-    let error_mode = get("error_mode")
-        .and_then(primary_string)
+    let error_modes = get("error_mode")
+        .map(mode_strings)
+        .filter(|modes| !modes.is_empty())
         .or_else(|| {
             metadata
                 .required_options
                 .get("error_mode")
-                .and_then(primary_string)
+                .map(mode_strings)
+                .filter(|modes| !modes.is_empty())
         })
-        .or_else(|| namespace.defaults.error_mode.clone());
+        .or_else(|| namespace.defaults.error_mode.clone().map(|mode| vec![mode]))
+        .unwrap_or_default();
+    let error_mode = error_modes.first().cloned();
     if let Some(mode) = &error_mode {
         features.insert(format!("{mode}_parsing"));
     }
@@ -413,6 +439,7 @@ fn build_spec(
             .map(ToOwned::to_owned)
             .or_else(|| metadata.doc.clone()),
         features,
+        error_modes,
         compile_options: CompileOptions {
             parse_mode: error_mode,
             line_numbers: true,
@@ -431,6 +458,16 @@ fn primary_string(value: &serde_yaml::Value) -> Option<String> {
         .as_str()
         .map(normalize_mode)
         .or_else(|| value.as_sequence()?.first()?.as_str().map(normalize_mode))
+}
+
+fn mode_strings(value: &serde_yaml::Value) -> Vec<String> {
+    match value {
+        serde_yaml::Value::Sequence(values) => values
+            .iter()
+            .filter_map(|value| value.as_str().map(normalize_mode))
+            .collect(),
+        _ => primary_string(value).into_iter().collect(),
+    }
 }
 
 fn normalize_mode(value: &str) -> String {
@@ -687,6 +724,7 @@ fn load_directory_spec(path: &Path, namespace: &Namespace) -> Result<Spec> {
         hint: None,
         doc: None,
         features: namespace.features.clone(),
+        error_modes: namespace.defaults.error_mode.clone().into_iter().collect(),
         compile_options: CompileOptions {
             parse_mode: namespace.defaults.error_mode.clone(),
             line_numbers: true,

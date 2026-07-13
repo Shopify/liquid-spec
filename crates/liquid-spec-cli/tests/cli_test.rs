@@ -114,7 +114,7 @@ fn check_and_features_are_available_as_tool_commands() {
         .output()
         .unwrap();
     assert!(check.status.success());
-    assert!(String::from_utf8_lossy(&check.stdout).contains("7901 specs"));
+    assert!(String::from_utf8_lossy(&check.stdout).contains("7905 specs"));
 
     let features = Command::new(binary())
         .args(["tools", "features"])

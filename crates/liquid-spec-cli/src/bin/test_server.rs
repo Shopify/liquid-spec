@@ -36,6 +36,7 @@ fn main() {
                 },
                 capabilities: Capabilities {
                     parse_modes: vec!["strict2".into()],
+                    render_error_modes: vec!["raise".into()],
                     features: vec!["core".into()],
                     benchmark: true,
                     ..Default::default()

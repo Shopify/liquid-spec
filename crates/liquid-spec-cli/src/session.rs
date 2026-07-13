@@ -354,29 +354,38 @@ impl Session {
             capabilities.features.iter().map(String::as_str).collect();
         let mut summary = RunSummary::default();
         for spec in specs {
-            if spec.features.iter().any(|feature| {
-                feature != "core" && !feature_supported(feature, &supported, capabilities)
-            }) {
-                summary.skipped += 1;
-                continue;
+            let variants = expand_error_mode_variants(&spec, capabilities);
+            let mut ran = false;
+            for variant in variants {
+                if variant.features.iter().any(|feature| {
+                    feature != "core" && !feature_supported(feature, &supported, capabilities)
+                }) {
+                    continue;
+                }
+                ran = true;
+                match self.run_spec(&variant) {
+                    Ok(()) => {
+                        summary.passed += 1;
+                        summary.passed_complexities.push(variant.complexity);
+                        summary.passed_names.push(variant.name.clone());
+                        summary
+                            .passed_entries
+                            .push((variant.name, variant.complexity));
+                    }
+                    Err(error) if error.downcast_ref::<ProtocolFailure>().is_some() => {
+                        return Err(error);
+                    }
+                    Err(error) => summary.failures.push(Failure {
+                        name: variant.name,
+                        complexity: variant.complexity,
+                        source: variant.source_file,
+                        message: error.to_string(),
+                        hint: variant.hint,
+                    }),
+                }
             }
-            match self.run_spec(&spec) {
-                Ok(()) => {
-                    summary.passed += 1;
-                    summary.passed_complexities.push(spec.complexity);
-                    summary.passed_names.push(spec.name.clone());
-                    summary.passed_entries.push((spec.name, spec.complexity));
-                }
-                Err(error) if error.downcast_ref::<ProtocolFailure>().is_some() => {
-                    return Err(error);
-                }
-                Err(error) => summary.failures.push(Failure {
-                    name: spec.name,
-                    complexity: spec.complexity,
-                    source: spec.source_file,
-                    message: error.to_string(),
-                    hint: spec.hint,
-                }),
+            if !ran {
+                summary.skipped += 1;
             }
         }
         // Namespace discovery is deterministic, but concatenating several
@@ -484,22 +493,114 @@ fn feature_supported(
     advertised: &std::collections::BTreeSet<&str>,
     capabilities: &Capabilities,
 ) -> bool {
-    if advertised.contains(feature) {
-        return true;
-    }
     match feature {
         "drops" => capabilities
             .fixture_sets
             .get("standard-drops")
             .is_some_and(|version| *version >= 1),
-        "strict2_parsing" => capabilities
-            .parse_modes
-            .iter()
-            .any(|mode| mode == "strict2"),
-        "strict_parsing" => capabilities.parse_modes.iter().any(|mode| mode == "strict"),
-        "lax_parsing" => capabilities.parse_modes.iter().any(|mode| mode == "lax"),
-        _ => false,
+        "strict2_parsing" => supported_parse_modes(capabilities).contains(&"strict2"),
+        "strict_parsing" => supported_parse_modes(capabilities).contains(&"strict"),
+        "lax_parsing" => supported_parse_modes(capabilities).contains(&"lax"),
+        "inline_errors" => supported_render_error_modes(capabilities).contains(&"inline"),
+        _ => advertised.contains(feature),
     }
+}
+
+const PARSE_MODE_ORDER: [&str; 3] = ["strict2", "strict", "lax"];
+const RENDER_ERROR_MODE_ORDER: [&str; 2] = ["raise", "inline"];
+
+/// Return parse modes in the runner's canonical strictness order. Older
+/// adapters predate the `parse_modes` capability; for those, feature tags are
+/// consulted and a final strict2 default preserves the original protocol
+/// behavior.
+fn supported_parse_modes(capabilities: &Capabilities) -> Vec<&'static str> {
+    if !capabilities.parse_modes.is_empty() {
+        return PARSE_MODE_ORDER
+            .into_iter()
+            .filter(|mode| capabilities.parse_modes.iter().any(|value| value == mode))
+            .collect();
+    }
+    let modes: Vec<_> = PARSE_MODE_ORDER
+        .into_iter()
+        .filter(|mode| {
+            capabilities
+                .features
+                .iter()
+                .any(|feature| feature == &format!("{mode}_parsing"))
+        })
+        .collect();
+    if modes.is_empty() {
+        vec!["strict2"]
+    } else {
+        modes
+    }
+}
+
+/// Return render error contracts in canonical order. `raise` is the required
+/// default for pre-capability adapters; inline rendering is only enabled when
+/// explicitly advertised (or by the legacy `inline_errors` feature tag).
+fn supported_render_error_modes(capabilities: &Capabilities) -> Vec<&'static str> {
+    if !capabilities.render_error_modes.is_empty() {
+        return RENDER_ERROR_MODE_ORDER
+            .into_iter()
+            .filter(|mode| {
+                capabilities
+                    .render_error_modes
+                    .iter()
+                    .any(|value| value == mode)
+            })
+            .collect();
+    }
+    let mut modes = vec!["raise"];
+    if capabilities
+        .features
+        .iter()
+        .any(|feature| feature == "inline_errors")
+    {
+        modes.push("inline");
+    }
+    modes
+}
+
+/// Expand one source spec into the concrete parse-mode requests the adapter
+/// can execute. Explicit mode arrays run once per supported declaration;
+/// unannotated specs run once in the highest supported mode. Legacy parse
+/// feature tags are treated as declarations for compatibility with older
+/// corpora.
+fn expand_error_mode_variants(spec: &Spec, capabilities: &Capabilities) -> Vec<Spec> {
+    let supported = supported_parse_modes(capabilities);
+    let declared: Vec<String> = if !spec.error_modes.is_empty() {
+        spec.error_modes.clone()
+    } else {
+        PARSE_MODE_ORDER
+            .into_iter()
+            .filter(|mode| spec.features.contains(&format!("{mode}_parsing")))
+            .map(ToOwned::to_owned)
+            .collect()
+    };
+    let modes: Vec<_> = if declared.is_empty() {
+        supported.first().copied().into_iter().collect()
+    } else {
+        compatible_error_modes(&declared, &supported)
+    };
+    let label = declared.len() > 1;
+    modes
+        .into_iter()
+        .map(|mode| spec.with_error_mode(mode, label))
+        .collect()
+}
+
+/// Strict2 and strict describe the same compatibility contract at different
+/// parser strictness levels, so an explicit declaration needs only its highest
+/// supported one. Lax remains an independent legacy contract and is retained
+/// when explicitly declared and supported.
+fn compatible_error_modes<'a>(declared: &[String], supported: &[&'a str]) -> Vec<&'a str> {
+    let highest_strict = ["strict2", "strict"]
+        .into_iter()
+        .find(|mode| declared.iter().any(|value| value == mode) && supported.contains(mode));
+    let lax = (declared.iter().any(|value| value == "lax") && supported.contains(&"lax"))
+        .then_some("lax");
+    [highest_strict, lax].into_iter().flatten().collect()
 }
 
 impl Drop for Session {
@@ -654,4 +755,133 @@ pub struct Failure {
     pub source: std::path::PathBuf,
     pub message: String,
     pub hint: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use liquid_spec_protocol::{CompileOptions, RenderOptions, TemplateBundle};
+    use std::collections::BTreeMap;
+    use std::path::PathBuf;
+
+    fn spec(error_modes: Vec<&str>, features: &[&str], render_errors: bool) -> Spec {
+        Spec {
+            name: "example".into(),
+            bundle: TemplateBundle {
+                entry: "main".into(),
+                sources: BTreeMap::from([("main".into(), "hello".into())]),
+            },
+            environment: BTreeMap::new(),
+            expected: Expected::Output(b"hello".to_vec()),
+            complexity: 1,
+            hint: None,
+            doc: None,
+            features: features.iter().map(|value| (*value).into()).collect(),
+            error_modes: error_modes.into_iter().map(Into::into).collect(),
+            compile_options: CompileOptions::default(),
+            render_options: RenderOptions {
+                error_policy: if render_errors { "inline" } else { "raise" }.into(),
+                ..Default::default()
+            },
+            source_file: PathBuf::from("example.yml"),
+        }
+    }
+
+    fn capabilities(parse_modes: &[&str], render_error_modes: &[&str]) -> Capabilities {
+        Capabilities {
+            parse_modes: parse_modes.iter().map(|value| (*value).into()).collect(),
+            render_error_modes: render_error_modes
+                .iter()
+                .map(|value| (*value).into())
+                .collect(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn unannotated_specs_use_the_highest_supported_parse_mode() {
+        let variants = expand_error_mode_variants(
+            &spec(Vec::new(), &[], false),
+            &capabilities(&["lax", "strict", "strict2"], &["raise"]),
+        );
+        assert_eq!(variants.len(), 1);
+        assert_eq!(
+            variants[0].compile_options.parse_mode.as_deref(),
+            Some("strict2")
+        );
+        assert_eq!(variants[0].name, "example");
+    }
+
+    #[test]
+    fn explicit_mode_arrays_run_in_canonical_order_and_are_labeled() {
+        let variants = expand_error_mode_variants(
+            &spec(vec!["lax", "strict"], &[], false),
+            &capabilities(&["strict2", "strict", "lax"], &["raise"]),
+        );
+        assert_eq!(
+            variants
+                .iter()
+                .map(|variant| variant.compile_options.parse_mode.as_deref())
+                .collect::<Vec<_>>(),
+            vec![Some("strict"), Some("lax")]
+        );
+        assert_eq!(variants[0].name, "example [error_mode=strict]");
+        assert_eq!(variants[1].name, "example [error_mode=lax]");
+    }
+
+    #[test]
+    fn explicit_strict_modes_do_not_duplicate_the_highest_contract() {
+        let variants = expand_error_mode_variants(
+            &spec(vec!["lax", "strict", "strict2"], &[], false),
+            &capabilities(&["strict2", "strict", "lax"], &["raise"]),
+        );
+        assert_eq!(
+            variants
+                .iter()
+                .map(|variant| variant.compile_options.parse_mode.as_deref())
+                .collect::<Vec<_>>(),
+            vec![Some("strict2"), Some("lax")]
+        );
+    }
+
+    #[test]
+    fn unsupported_explicit_modes_have_no_variants() {
+        let variants = expand_error_mode_variants(
+            &spec(vec!["lax"], &[], false),
+            &capabilities(&["strict2"], &["raise"]),
+        );
+        assert!(variants.is_empty());
+    }
+
+    #[test]
+    fn legacy_parse_features_declare_compatible_modes() {
+        let variants = expand_error_mode_variants(
+            &spec(Vec::new(), &["strict_parsing", "lax_parsing"], false),
+            &capabilities(&["strict", "lax"], &["raise"]),
+        );
+        assert_eq!(variants.len(), 2);
+        assert_eq!(
+            variants[0].compile_options.parse_mode.as_deref(),
+            Some("strict")
+        );
+        assert_eq!(
+            variants[1].compile_options.parse_mode.as_deref(),
+            Some("lax")
+        );
+    }
+
+    #[test]
+    fn inline_errors_use_the_render_contract_capability() {
+        let inline = spec(Vec::new(), &["inline_errors"], true);
+        let advertised = capabilities(&["strict2"], &["raise"]);
+        let supported = std::collections::BTreeSet::new();
+        assert!(!inline.features.iter().all(
+            |feature| feature == "core" || feature_supported(feature, &supported, &advertised)
+        ));
+        let legacy_capabilities = Capabilities {
+            features: vec!["inline_errors".into()],
+            ..Default::default()
+        };
+        assert!(supported_render_error_modes(&legacy_capabilities).contains(&"inline"));
+    }
 }

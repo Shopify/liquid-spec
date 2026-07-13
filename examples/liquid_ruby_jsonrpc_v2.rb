@@ -7,6 +7,7 @@
 
 require "base64"
 require "json"
+require "time"
 require "liquid"
 
 class LiquidSpecRubyV2
@@ -63,6 +64,7 @@ class LiquidSpecRubyV2
         "implementation" => { "name" => "liquid-ruby", "version" => Liquid::VERSION, "language" => "ruby" },
         "capabilities" => {
           "parse_modes" => %w[strict strict2 lax],
+          "render_error_modes" => %w[raise inline],
           "features" => %w[core drops ruby_compat inline_errors],
           "fixture_sets" => { "standard-drops" => 1 },
           "artifacts" => false,
@@ -115,13 +117,34 @@ class LiquidSpecRubyV2
     environment = decode(params.fetch("environment", {}))
     options = params.fetch("options", {})
     registers = { file_system: HashFileSystem.new(state[:files], state[:templates], state[:deferred]) }
+    # `now` is the protocol-level render clock. Keep it in the host-owned
+    # registers (so templates cannot resolve it as an assign), and freeze
+    # Ruby's wall clock for the duration of this render so Liquid's built-in
+    # date filter observes the same deterministic instant.
+    current_time = options["now"] && Time.iso8601(options["now"])
+    registers[:current_time] = current_time if current_time
     context = Liquid::Context.build(
       static_environments: environment,
       registers: Liquid::Registers.new(registers),
       rethrow_errors: options.fetch("error_policy", "raise") != "inline",
     )
-    output = state[:templates].fetch(state[:entry]).render(context)
+    output = if current_time
+      with_frozen_time(current_time) { state[:templates].fetch(state[:entry]).render(context) }
+    else
+      state[:templates].fetch(state[:entry]).render(context)
+    end
     { "ok" => { "output" => output, "diagnostics" => [] } }
+  end
+
+  # Liquid's date filter resolves the special `now` value through Time.now.
+  # Keep the override scoped to one request so concurrent/future renders do
+  # not leak a previous spec's deterministic clock into unrelated work.
+  def with_frozen_time(time)
+    original_now = Time.method(:now)
+    Time.define_singleton_method(:now) { time }
+    yield
+  ensure
+    Time.define_singleton_method(:now, original_now) if original_now
   end
 
   def release(params)
