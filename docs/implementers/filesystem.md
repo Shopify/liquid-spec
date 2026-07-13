@@ -1,154 +1,91 @@
 ---
 title: "Filesystem: include and render template lookup"
 position: 9
-description: "Read when partial lookup fails. Covers filename normalization, extensions, case sensitivity, subpaths, traversal, and missing templates."
+description: "Read when partial lookup fails. Covers source bundles, name normalization, missing templates, recursion, and path-safety decisions without prescribing a host filesystem API."
 optional: false
 ---
 
 # Filesystem: `include` and `render` template lookup
 
-When a template uses `{% include "snippet" %}` or `{% render "snippet" %}`,
-Liquid calls the file system to look up the partial template by name.
-This document explains how that lookup works.
+Partials are supplied to a JSON-RPC v2 adapter as entries in the
+`template.compile` bundle. The runner does not call a Ruby filesystem object or
+ask the adapter to call back into the runner. Your implementation can keep the
+sources in a map, use a virtual filesystem, compile them into an artifact, or
+use another representation; the observable lookup and error behavior is the
+contract.
 
-## How the File System Works
+## Source names and lookup
 
-The file system is an object passed to the template via `registers[:file_system]`.
-It must respond to `read_template_file(template_path)` and return the template
-source string, or raise `Liquid::FileSystemError` if the template is not found.
+Each spec's `filesystem` mapping becomes an additional `bundle.sources` entry.
+The entry named by `bundle.entry` is the top-level template. Partial names are
+resolved against that source map using the normalization rules exercised by the
+selected specs:
 
-### Name Normalization
+- A missing `.liquid` extension may be added when the lookup syntax omits it.
+- Subpaths use `/` and remain part of the key.
+- Case handling, extension handling, and legacy keys are compatibility behavior;
+  follow the focused filesystem specs rather than the behavior of the host disk.
+- A lookup must not escape the source bundle merely because the name contains `..`.
+  Follow the exact traversal behavior recorded by the focused security fixtures;
+  do not delegate this decision to host-disk path normalization.
 
-Both the **keys** (when building the file system from a hash) and the **lookup
-path** are normalized:
+Normalize names at one boundary (for example, when building the source index) and
+use the same function for lookup. Preserve the original requested name for errors
+so a user can identify the missing partial.
 
-1. **Lowercased** — all template names are compared case-insensitively
-2. **`.liquid` appended** — if the name doesn't already end with `.liquid`,
-   the extension is added automatically
+## Compile/render boundary
 
-So `{% include "foo" %}` looks for `foo.liquid`, and a file system key `"Foo"`
-is stored as `foo.liquid`. This means:
+`template.compile` receives the complete bundle and parse options and must parse or
+prepare every supplied source before returning. It may retain a parse failure for
+an unused source, but the failure is already determined during compile. `template.render`
+receives only a compiled handle, the environment, and render options; it must not
+read source text from the request or re-parse the bundle. This boundary is required
+for independent compile/render timing in `liquid-spec bench`.
 
-```liquid
-{% include "MySnippet" %}
-```
+If a syntax error occurs in an unused partial, report it according to the protocol
+and the fixture's expected phase. Do not turn a JSON-RPC transport error into a
+Liquid parse error, and do not hide a parse error merely because a partial was not
+selected in one render.
 
-matches a key `"mysnippet.liquid"` or `"MySnippet"` or `"MYSNIPPET.liquid"`.
+## `include` and `render`
 
-### Case Sensitivity
+The two tags share lookup but differ in context semantics. The exact details are
+covered by [Partials](partials.md); the high-level invariants are:
 
-**Template lookup is case-insensitive.** The path is lowercased, and matching
-uses case-insensitive comparison. This is a deliberate choice — Shopify themes
-run on case-insensitive filesystems in production.
+| Feature | `include` | `render` |
+| --- | --- | --- |
+| Template name | May be dynamic where the syntax allows | Quoted literal in the recorded contract |
+| Scope | Can read caller values and uses a local assignment scope | Isolated render context with explicit arguments |
+| Counters/register-like state | Shared according to the fixture | Isolated according to the fixture |
+| Interrupts | May propagate to the caller's loop | Contained by the render boundary |
+| Missing source | Typed Liquid error or inline output according to `error_policy` | Same error contract |
 
-```liquid
-{% include "HEADER" %}        ← matches "header.liquid"
-{% render "Header" %}         ← matches "header.liquid"
-```
+Do not infer a scope rule from the host language's call stack. Model the context
+boundary explicitly and test nested includes/renders, argument aliases, loop
+variants, and assignments that should or should not escape.
 
-### Extension Handling
+## Missing templates and recursion
 
-In liquid-spec fixtures, **always write filesystem keys with the `.liquid` extension**
-(e.g. `foo.liquid`, `snippets/card.liquid`). This keeps specs clear about
-what is a file name versus what is a template lookup string.
+A missing source is a normal Liquid outcome. Return a typed `LiquidError` with a
+stable code, message substring, and source location when the fixture requests
+raised errors (`render.options.error_policy = "raise"`). Inline error output is a
+separate advertised render mode; do not silently use it as a fallback.
 
-Reference liquid still normalizes both sides of lookup for backwards
-compatibility: the `.liquid` extension is optional in the template tag, and
-legacy file-system keys without the extension are normalized by the test
-harness. If omitted, `.liquid` is appended automatically:
+Track partial nesting or active handles so a recursive include/render terminates
+with the recorded error instead of exhausting the process stack. Keep any limit
+deterministic and report it through the Liquid error contract.
 
-| Template tag              | File system key       | Match? |
-|---------------------------|-----------------------|--------|
-| `{% include "foo" %}`     | `"foo.liquid"`        | ✅ Yes |
-| `{% include "foo" %}`     | `"foo"`               | ✅ Yes |
-| `{% include "foo.liquid" %}` | `"foo.liquid"`     | ✅ Yes |
-| `{% include "foo.liquid" %}` | `"foo"`            | ✅ Yes |
+## Test and rollout checklist
 
-### Subpaths
+1. Start with one source and one literal include.
+2. Add extension and subpath normalization, then missing-source errors.
+3. Exercise dynamic include names, render argument isolation, and loop variants.
+4. Add traversal and recursion cases only after the basic source index is stable.
+5. Run the focused namespace and compare with an external reference adapter. The
+   Rust runner itself never embeds a Liquid implementation.
 
-Forward-slash subpaths are supported and preserved during lookup:
+See also:
 
-```liquid
-{% include "snippets/header" %}
-```
-
-This looks for `snippets/header.liquid` (after normalization). The file system
-key must match the full path including the subdirectory.
-
-### Path Traversal (`..`)
-
-**No path normalization or sanitization is performed.** The path is passed
-as-is to the file system (after lowercasing and extension appending). This
-means:
-
-| Template tag              | Looks for (normalized)    | Notes |
-|---------------------------|----------------------------|-------|
-| `{% include "../secret" }`| `../secret.liquid`         | Literal `..` preserved |
-| `{% include "foo/../bar" }`| `foo/../bar.liquid`      | NOT normalized to `bar.liquid` |
-
-The file system implementation is responsible for any security checks.
-The reference `SimpleFileSystem` does **not** block `..` — it looks up the
-literal path. Production file systems (like Shopify's) should sanitize paths.
-
-### Not Found Behavior
-
-When a template is not found, the file system raises `Liquid::FileSystemError`
-with the message `"Liquid error: Could not find asset <name>"`.
-
-- With **strict errors** (`rethrow_errors: true`): the exception propagates
-- With **inline errors** (`rethrow_errors: false`): the error is rendered
-  inline as `"Liquid error: Could not find asset <name>"`
-
-### `include` vs `render` Differences
-
-| Feature               | `include`              | `render`                     |
-|-----------------------|------------------------|------------------------------|
-| Template name         | Variable or string     | **String literal only**      |
-| Not found error       | Inline or raised       | Inline or raised             |
-| File system lookup    | Same normalization     | Same normalization           |
-| Nested partials       | Allowed (any depth)    | **Cannot nest `render`**     |
-| Recursion limit       | "Nesting too deep"     | "Nesting too deep"           |
-
-`{% render %}` requires a quoted string literal for the template name.
-Using a variable is a **syntax error**:
-
-```liquid
-{% assign s = "foo" %}
-{% include s %}        ← OK (include allows variables)
-{% render s %}         ← SyntaxError: Template name must be a quoted string
-```
-
-### Recursion
-
-Self-referencing partials are caught at render time with a "Nesting too deep"
-error (rendered inline or raised depending on error mode). There is no
-infinite loop — Liquid tracks nesting depth and aborts.
-
-## Implementing a File System
-
-A minimal file system implementation:
-
-```ruby
-class MyFileSystem
-  def read_template_file(template_path)
-    path = template_path.to_s.downcase
-    path = "#{path}.liquid" unless path.end_with?(".liquid")
-    
-    content = @templates[path]
-    raise Liquid::FileSystemError, "Could not find asset #{template_path}" unless content
-    content
-  end
-end
-```
-
-Key points:
-1. Lowercase the path
-2. Append `.liquid` if missing
-3. Case-insensitive comparison
-4. Raise `FileSystemError` (not a generic error) when not found
-5. The error message uses the **original** path, not the normalized one
-
-## See Also
-
-- `liquid-spec docs partials` — Differences between `include` and `render`
-- `liquid-spec docs scopes` — Variable scoping in partials
+- [Partials](partials.md) for scope and interrupt propagation.
+- [Filesystem-related filters](filters.md) for value coercion at filter boundaries.
+- [JSON-RPC protocol v2](../json-rpc-protocol-v2.md) for bundle and render shapes.

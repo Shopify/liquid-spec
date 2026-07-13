@@ -75,7 +75,7 @@ The first dynamic templates.
 | 40 | Very simple filters | `{{ 'x' | upcase }}`, `{{ x | size }}`, one filter argument |
 | 50 | Basic assign and comments-as-no-output | `{% assign x = 'foo' %}{{ x }}` |
 
-Do **not** put drop protocol behavior, `to_liquid`, dynamic bracket lookup, parser recovery, or generated filter matrices here. A local LLM-created implementation should be able to get through this range with a small lexer/parser, a variable environment, and a handful of straightforward filters.
+Do **not** put drop protocol behavior, `to_liquid`, dynamic bracket lookup, parser recovery, or generated filter matrices here. A new implementation should be able to get through this range with a small lexer/parser, a variable environment, and a handful of straightforward filters.
 
 ### 55-65: Basic Control Flow
 

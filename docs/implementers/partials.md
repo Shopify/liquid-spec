@@ -7,7 +7,11 @@ optional: false
 
 # Partials: `include` vs `render`
 
-This document explains the differences between Liquid's two partial rendering tags and provides implementation guidance for new Liquid implementations.
+This document explains the differences between Liquid's two partial rendering tags and provides implementation guidance for new Liquid implementations. The
+state structures and pseudocode below are internal examples, not JSON-RPC fields or
+required class names. Protocol v2 supplies an environment, a compiled handle, and
+render options; choose whatever internal context model keeps the observable scopes
+and state boundaries consistent.
 
 ## Quick Reference
 
@@ -376,7 +380,10 @@ This applies transitively through nested `render` calls.
 | Performance is critical | N/A |
 | Want static analysis | Need dynamic template names |
 
-**The `include` tag is deprecated.** New code should always use `render`.
+`include` is retained for compatibility and has different scope semantics. New
+templates can prefer `render` when the target environment supports it, but an
+implementation claiming core compatibility still needs to keep the two behaviors
+distinct.
 
 See also:
 - [Scopes](scopes.md)

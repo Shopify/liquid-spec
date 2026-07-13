@@ -9,12 +9,12 @@ optional: true
 
 The normal complexity ramp asks whether an implementation accepts the recorded Liquid
 contract. Adversarial commands ask a second question: **what happens just outside the
-recorded examples?**
+recorded examples?** They are diagnostic probes, not a replacement for curated specs.
 
 The Rust rewrite keeps these commands deliberately small and deterministic. They run
-generated probes through the selected JSON-RPC adapter; use `tools eval --compare` or
-`tools matrix` when a reference oracle is needed. This keeps protocol and acceptance
-coverage ahead of optional fuzzing breadth.
+generated probes through the selected JSON-RPC adapter. `tools eval --compare` requires
+a separately configured external reference adapter; the Rust runner never embeds a
+Ruby oracle. Use `tools matrix` for comparisons between configured adapters.
 
 ## Commands
 
@@ -113,11 +113,14 @@ one:
 
 1. Reproduce it with its printed seed and source template.
 2. Remove irrelevant environment, filesystem, and syntax.
-3. Confirm the behavior against Shopify/liquid with `liquid-spec tools eval --compare`.
+3. If a reference adapter is configured, confirm the behavior with
+   `liquid-spec tools eval --compare`; otherwise record why the implementation's
+   contract is authoritative.
 4. Give it a unique descriptive name, an actionable hint, and the correct complexity.
 5. Place it after its prerequisites rather than at the parent seed's score by reflex.
 6. Add a verifier if the discovery exposes a recurring spec-quality rule.
-7. Run `rake prepush`.
+7. Run the repository's Rust checks (`cargo test --workspace`, Clippy, and
+   `liquid-spec tools check`) before submitting the spec.
 
 The goal is not to accumulate random cases. It is to turn each useful difference into a
 small, teachable, permanent regression boundary.

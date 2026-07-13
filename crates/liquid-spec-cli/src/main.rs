@@ -50,7 +50,7 @@ enum Command {
     },
     /// Print implementation guides bundled with liquid-spec.
     Docs {
-        /// Topic name (omit, or use `list`, to list topics).
+        /// Topic name or case-insensitive substring (omit, or use `list`, to list topics).
         topic: Option<String>,
     },
     /// Run protocol checks (kept as a short top-level alias).
@@ -127,7 +127,7 @@ enum ToolCommand {
         #[arg(last = true)]
         command: Vec<String>,
     },
-    /// List or print built-in implementation documentation.
+    /// List or print built-in implementation documentation (topic substrings accepted).
     Docs { topic: Option<String> },
     /// List feature tags present in the built-in corpus.
     Features,
@@ -1247,6 +1247,8 @@ Use `--namespace NAME` (or `-s NAME`) for a directory under `specs/`; there is n
 separate grouping concept in the Rust runner.
 
 Read a guide with `liquid-spec docs curriculum` or `liquid-spec docs json-rpc-protocol-v2`.
+`liquid-spec docs list` prints the absolute docs directory and bundled `.md` topic paths;
+topic names, filenames, and descriptions also accept case-insensitive substrings.
 The manifest in `liquid-spec.toml` names the candidate and optional Shopify/liquid
 reference adapters. Add a command as an array so arguments are never shell-parsed.
 

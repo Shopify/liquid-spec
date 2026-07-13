@@ -204,6 +204,8 @@ liquid-spec check --adapter candidate
 liquid-spec tools inspect --adapter candidate -n "the_failing_spec"
 liquid-spec docs curriculum
 liquid-spec docs core-abstractions
+# Topic names, filenames, and descriptions accept case-insensitive substrings.
+liquid-spec docs "pars"
 liquid-spec check --adapter candidate --json
 ```
 
@@ -212,8 +214,10 @@ catalog; Ruby-only fixture descriptors are tagged `ruby_compat` and are skipped 
 servers that do not advertise that capability.
 
 For a human-driven implementation, use exactly the same loop: check, read the first
-hint, implement, and check again. `liquid-spec docs json-rpc-protocol-v2` documents the
-wire contract.
+hint, implement, and check again. `liquid-spec docs list` prints the absolute docs
+directory and every bundled topic path (`.md`). `liquid-spec docs json-rpc-protocol-v2` documents
+the wire contract; a case-insensitive substring such as `liquid-spec docs "pars"`
+also resolves a unique matching guide.
 
 ## Archived Ruby adapter API (legacy gem only)
 
@@ -413,7 +417,7 @@ liquid-spec COMMAND [options]
 Core commands:
   liquid-spec [CHECK_OPTIONS]             Follow `default` from liquid-spec.toml
   liquid-spec init [DIRECTORY]            Generate liquid-spec.toml, adapter.ts, and AGENTS.md
-  liquid-spec docs [NAME]                 Read implementer documentation
+  liquid-spec docs [TOPIC]               Read implementer documentation (substring matching)
   liquid-spec check [-- ADAPTER_COMMAND]  Check the acceptance ramp
   liquid-spec bench [-- ADAPTER_COMMAND]  Benchmark implementations
 
@@ -496,7 +500,10 @@ Examples:
   liquid-spec tools matrix --adapters=candidate,liquid-ruby -n truncate
 ```
 
-Output shows which adapters produce different results for each spec:
+Output shows which adapters produce different results for each spec. The full
+observed output/error values are also written to a deterministic temporary
+report (`[all matrix differences in ...]`); `--json` includes each adapter's
+per-spec `results` and the same `report_path`.
 
 ```
 Running 100 specs: ....F....F.. done

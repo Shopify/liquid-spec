@@ -15,6 +15,11 @@ const TOPICS: &[(&str, &str, &str)] = &[
         "json-rpc-protocol-v2.md",
     ),
     (
+        "json-rpc-protocol",
+        "JSON-RPC protocol compatibility overview",
+        "json-rpc-protocol.md",
+    ),
+    (
         "protocol",
         "JSON-RPC adapter protocol v2 (alias)",
         "json-rpc-protocol-v2.md",
@@ -101,10 +106,13 @@ const TOPICS: &[(&str, &str, &str)] = &[
 
 pub fn list() {
     println!("Available documentation topics:\n");
-    for (topic, description, _) in TOPICS {
-        println!("  {topic:<22} {description}");
+    println!("Docs directory: {}\n", docs_root_display());
+    for (topic, description, relative) in TOPICS {
+        println!("  {topic:<28} {:<46} {description}", topic_path(relative));
     }
-    println!("\nUse `liquid-spec docs TOPIC` to print a topic.");
+    println!(
+        "\nUse `liquid-spec docs TOPIC` to print a topic. TOPIC may be a case-insensitive\nsubstring of the topic name, description, or .md filename."
+    );
 }
 
 pub fn print(topic: Option<&str>) -> Result<()> {
@@ -116,16 +124,99 @@ pub fn print(topic: Option<&str>) -> Result<()> {
         list();
         return Ok(());
     }
-    let (_, _, relative) = TOPICS
-        .iter()
-        .find(|(name, _, _)| *name == topic)
-        .with_context(|| format!("unknown docs topic {topic:?}; run `liquid-spec docs list`"))?;
+    let relative = resolve_topic(topic)?;
     let content = read_topic(relative)?;
     print!("{content}");
     if !content.ends_with('\n') {
         println!();
     }
     Ok(())
+}
+
+/// Resolve an exact topic name first, then accept a case-insensitive substring
+/// of a topic name, its description, or its `.md` path. Exact aliases are
+/// intentionally retained (`protocol` is a short name for the v2 guide),
+/// while ambiguous substrings produce a useful list instead of silently
+/// selecting an arbitrary document.
+fn resolve_topic(query: &str) -> Result<&'static str> {
+    let query = query.trim();
+    let exact = TOPICS.iter().find(|(name, _, relative)| {
+        name.eq_ignore_ascii_case(query)
+            || relative.eq_ignore_ascii_case(query)
+            || topic_path(relative).eq_ignore_ascii_case(query)
+    });
+    if let Some((_, _, relative)) = exact {
+        return Ok(relative);
+    }
+
+    let needle = normalize(query);
+    let mut matches = Vec::new();
+    for (name, description, relative) in TOPICS {
+        if (normalize(name).contains(&needle)
+            || normalize(description).contains(&needle)
+            || normalize(relative).contains(&needle)
+            || normalize(&topic_path(relative)).contains(&needle))
+            && !matches.contains(relative)
+        {
+            matches.push(relative);
+        }
+    }
+    match matches.as_slice() {
+        [relative] => Ok(relative),
+        [] => Err(anyhow::anyhow!(
+            "unknown docs topic {query:?}; run `liquid-spec docs list`"
+        )),
+        _ => {
+            let choices = matches
+                .iter()
+                .map(|relative| format!("  {}", topic_path(relative)))
+                .collect::<Vec<_>>()
+                .join("\n");
+            Err(anyhow::anyhow!(
+                "docs topic {query:?} is ambiguous; matching files:\n{choices}"
+            ))
+        }
+    }
+}
+
+fn normalize(value: &str) -> String {
+    value
+        .trim()
+        .to_ascii_lowercase()
+        .replace(['\\', '_', ' '], "-")
+}
+
+fn docs_root() -> Option<PathBuf> {
+    if let Some(configured) = std::env::var_os("LIQUID_SPEC_DOCS").map(PathBuf::from)
+        && configured.is_dir()
+    {
+        return absolute_path(&configured);
+    }
+    let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs");
+    source.is_dir().then(|| absolute_path(&source)).flatten()
+}
+
+fn absolute_path(path: &Path) -> Option<PathBuf> {
+    if let Ok(path) = fs::canonicalize(path) {
+        return Some(path);
+    }
+    if path.is_absolute() {
+        Some(path.to_path_buf())
+    } else {
+        std::env::current_dir().ok().map(|cwd| cwd.join(path))
+    }
+}
+
+fn docs_root_display() -> String {
+    docs_root()
+        .map(|path| path.display().to_string())
+        .unwrap_or_else(|| "<embedded docs; source directory unavailable>".to_owned())
+}
+
+fn topic_path(relative: &str) -> String {
+    docs_root()
+        .map(|root| root.join(relative).display().to_string())
+        .unwrap_or_else(|| format!("<embedded docs>/{relative}"))
 }
 
 fn read_topic(relative: &str) -> Result<String> {
@@ -152,6 +243,7 @@ fn read_topic(relative: &str) -> Result<String> {
 fn embedded_topic(relative: &str) -> Option<&'static str> {
     Some(match relative {
         "json-rpc-protocol-v2.md" => include_str!("../../../docs/json-rpc-protocol-v2.md"),
+        "json-rpc-protocol.md" => include_str!("../../../docs/json-rpc-protocol.md"),
         "implementers/curriculum.md" => include_str!("../../../docs/implementers/curriculum.md"),
         "implementers/core-abstractions.md" => {
             include_str!("../../../docs/implementers/core-abstractions.md")

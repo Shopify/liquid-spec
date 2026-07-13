@@ -7,7 +7,7 @@ optional: false
 
 # The `cycle` Tag
 
-The `cycle` tag rotates through a list of values. The tricky part is understanding **when two cycle tags share a counter** vs **when they get independent counters**.
+The `cycle` tag rotates through a list of values. The tricky part is understanding **when two cycle tags share a counter** vs **when they get independent counters**. The counter tables and `registers` references below describe observable state, not a required JSON-RPC or host-language data structure.
 
 ## Surface Syntax
 
@@ -52,18 +52,18 @@ Is there a group name (colon syntax)?
                                   Independent counters per tag
 ```
 
-### Why Unnamed Cycles with Variables Get Independent Counters
+### Why unnamed cycles with variables are independent
 
-This is the most confusing part of cycle behavior. Here's why it happens:
+The observable rule is that an unnamed cycle containing a variable lookup has an
+independent counter for each tag instance. This prevents a runtime value from
+accidentally merging unrelated cycle sites. The rule is intentionally phrased in
+terms of syntax and tag identity; it must not depend on host object addresses,
+debug strings, hash iteration, or memory layout.
 
-The Ruby reference implementation computes the group key for unnamed cycles by stringifying the expression list. When expressions contain `VariableLookup` objects, Ruby's default `#to_s` includes an object ID like `#<Liquid::VariableLookup:0x00007f8b1c0a2e80>`.
-
-**The key insight**: The implementation detects whether the stringified key contains object-ID-like patterns (matching `/\w+:0x\h{8}/`). If it does, the cycle is treated as having an unstable key, and each tag instance effectively gets its own counter.
-
-**For implementers**: You can achieve equivalent behavior by either:
-1. Cloning variable lookup nodes during parsing so each tag has distinct object identities
-2. Detecting at parse time whether any values are variable lookups and marking the cycle as "independent"
-3. Using a unique tag instance ID as the key when variables are present
+An implementation can record the distinction during parsing, assign each tag a
+stable instance identifier, or carry equivalent metadata into its evaluator. Do
+not reproduce a Ruby object-id string or parse an address-shaped substring to get
+the behavior.
 
 ## Examples That Clarify the Rules
 

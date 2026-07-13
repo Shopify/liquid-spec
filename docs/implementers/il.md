@@ -5,16 +5,20 @@ description: "Read when optimizing or compiling. Sketches a bytecode-like IL, lo
 optional: true
 ---
 
-# Liquid IL and AST Flattening (Strict Mode)
+# Liquid IL and AST Flattening (Optional)
 
-This document describes a clean, strict-mode pipeline that flattens parsing directly into an efficient Liquid IL. It is based on the liquid-c parser structure and AST-flattening ideas, but stays language-agnostic.
+This document sketches one possible compiled representation for an implementation
+that needs an intermediate language. It is deliberately optional: a tree-walking
+interpreter, bytecode compiler, staged evaluator, or another design can satisfy the
+same specs. Preserve the semantic and timing boundaries first; adopt an IL only if
+it improves clarity or performance for your implementation.
 
 ## Goals
 
-- Single-pass strict parsing with immediate errors.
+- A parser that reports strict errors at compile time.
 - Linear IL stream with explicit control flow.
 - Explicit constant opcodes to avoid variable lookups.
-- Low allocation: no deep AST required.
+- A representation whose allocation and ownership costs are understood.
 
 ## Pipeline Overview
 
@@ -23,9 +27,10 @@ This document describes a clean, strict-mode pipeline that flattens parsing dire
 3. **IL linker**: resolves labels to jump targets.
 4. **IL runtime**: executes IL with a value stack, scope stack, and register store.
 
-## Constant Opcodes (No Lookup)
+## Constants (not a required opcode set)
 
-To avoid variable lookup for literals, emit explicit constant opcodes:
+Many compilers represent literals explicitly so they do not enter the variable
+lookup path. For example:
 
 - `CONST_NIL`
 - `CONST_BOOL true|false`
@@ -35,12 +40,13 @@ To avoid variable lookup for literals, emit explicit constant opcodes:
 
 This keeps literals out of the variable path and reduces runtime overhead.
 
-## Variable and Property Access Opcodes
+## Variable and Property Access (conceptual operations)
 
 - `FIND_VAR <name>`: root lookup by name.
 - `LOOKUP_KEY`: dynamic key lookup (pops key).
 - `LOOKUP_CONST_KEY <name>`: constant property key.
-- `LOOKUP_COMMAND <name>`: optimized property lookup for well-known commands (e.g., `size`, `first`, `last`).
+- A property lookup operation for both static and dynamic keys. Specializing
+  frequently used names is an optional optimization, never a semantic rule.
 
 ## Output Opcodes
 

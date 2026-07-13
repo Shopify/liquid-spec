@@ -50,6 +50,45 @@ fn protocol_gate_runs_before_acceptance_specs() {
 }
 
 #[test]
+fn docs_list_reports_absolute_root_and_markdown_files() {
+    let output = Command::new(binary())
+        .args(["docs", "list"])
+        .output()
+        .expect("list docs");
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let root =
+        std::fs::canonicalize(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs"))
+            .expect("canonical docs root");
+    assert!(stdout.contains("Docs directory: "));
+    assert!(stdout.contains(&root.display().to_string()));
+    assert!(stdout.contains("implementers/curriculum.md"));
+}
+
+#[test]
+fn docs_accept_case_insensitive_filename_substrings() {
+    let output = Command::new(binary())
+        .args(["docs", "CURRICULUM.MD"])
+        .output()
+        .expect("read curriculum docs");
+    assert!(output.status.success());
+    assert!(String::from_utf8_lossy(&output.stdout).contains("# Liquid Implementation Curriculum"));
+}
+
+#[test]
+fn docs_reports_ambiguous_substrings_with_candidates() {
+    let output = Command::new(binary())
+        .args(["docs", "filter"])
+        .output()
+        .expect("resolve ambiguous docs topic");
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("ambiguous"));
+    assert!(stderr.contains("implementers/filters.md"));
+    assert!(stderr.contains("filter_matrix_quirks.md"));
+}
+
+#[test]
 fn run_executes_a_focused_spec_through_json_rpc() {
     let output = Command::new(binary())
         .args([

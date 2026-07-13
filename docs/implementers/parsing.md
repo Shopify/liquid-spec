@@ -7,11 +7,15 @@ optional: true
 
 # Parsing in Strict Mode
 
-This document summarizes how the liquid-c codebase parses Liquid in strict mode, and turns it into a practical guide for writing a correct, fast parser. The focus here is only strict mode behavior (no lax recovery).
+This guide describes the observable parsing contract exercised by the strict and
+strict2 specs. It uses a tokenizer and expression parser as a useful mental model,
+but it does not require an AST, a particular parser generator, or the structure of
+any existing Liquid implementation. The goal is a parser that reports the same
+accepted language, error boundaries, and source locations as the reference.
 
 ## Overview: Two-Stage Parse
 
-Strict parsing in liquid-c is split into two stages:
+Most implementations benefit from separating parsing into two conceptual stages:
 
 1. **Template tokenization**: scan the template source into raw text, tag, and variable tokens.
 2. **Expression parsing**: inside tag/variable markup, run a strict expression lexer and parser.
@@ -60,7 +64,7 @@ Inside tag/variable markup, strict mode uses a small lexer that emits tokens suc
 - punctuation (`.`, `..`, `:`, `,`, `[`, `]`, `(`, `)`, `|`)
 - end-of-string
 
-Important lexer rules observed in liquid-c:
+Important lexer rules covered by the corpus include:
 
 - Whitespace is skipped between tokens.
 - Strings must be properly closed; otherwise this is a syntax error.
@@ -117,13 +121,15 @@ Variable lookup supports:
 - Chained properties via dots (e.g., `product.title`)
 - Chained bracket lookups (e.g., `product[handle]`)
 
-liquid-c includes a micro-optimization: when the lookup key is a known command (`size`, `first`, `last`), it emits a specialized lookup instruction. This is optional but can be useful for performance.
+Lookup keys such as `size`, `first`, and `last` are ordinary property/filter
+names in the language contract. A compiler may specialize them for performance,
+but correctness must not depend on a list of special names in the parser.
 
 ## Ranges
 
 Strict mode expects range syntax to be fully parenthesized: `(start..end)`.
 
-liquid-c attempts to parse **constant ranges** first:
+An implementation may parse **constant ranges** first:
 
 - If both sides are constant expressions and can be converted to integers, precompute the range.
 - Otherwise, fall back to dynamic evaluation with strict syntax checks.
@@ -144,7 +150,8 @@ Rules:
 - Arguments are comma-separated expressions.
 - A keyword argument is detected as `identifier ":" expression`.
 - Keyword args are collected into a map, and passed as a single trailing argument.
-- liquid-c enforces a hard limit on the number of keyword args (255) to avoid unbounded growth.
+- If the implementation imposes resource limits, report them through the advertised
+  protocol/resource-limit contract rather than silently truncating arguments.
 
 At the end of parsing, strict mode must see **end-of-string**. Any remaining token is a syntax error.
 
@@ -156,13 +163,30 @@ Strict mode aims to fail fast and precisely:
 - Include a snippet of the offending token when possible.
 - Attach line numbers from the template tokenizer to the error.
 
-## Implementation Tips From liquid-c
+## Architecture-neutral implementation choices
 
-- Keep the lexer tiny and deterministic; avoid backtracking.
-- Use two-token lookahead to keep the parser single-pass.
-- Separate template tokenization from expression parsing.
-- Consider compiling expressions directly to a simple instruction stream instead of building a full AST.
-- Enforce end-of-string after every strict parse to catch trailing garbage.
+- Keep lexing deterministic and make token boundaries visible in diagnostics.
+- Separate template tokenization from expression parsing, whether the boundary is
+  represented by modules, parser states, or compiler passes.
+- Use as much lookahead as needed to distinguish literals, lookups, and keyword
+  arguments; two-token lookahead is one option, not a requirement.
+- Build an AST, bytecode, or an evaluated intermediate form according to the rest
+  of the engine. Preserve enough source information for errors either way.
+- Require the complete expression to be consumed in strict mode. Do not accept
+  trailing garbage merely because a prefix parsed successfully.
+
+## Strict, strict2, and lax are separate contracts
+
+The runner selects a parse mode from the adapter's advertised capabilities. Strict
+and strict2 generally reject malformed syntax, while lax mode may recover from
+some constructs. Do not make one parser silently choose a mode based on an adapter
+default: mode-sensitive specs declare their compatible modes explicitly.
+
+For each mode, test both successful output and the error shape. A syntax error is a
+valid Liquid outcome; it is not a JSON-RPC transport failure. Parsing should happen
+in `template.compile`, and rendering should receive only a compiled handle. Keeping
+that boundary makes timing measurements meaningful and prevents a render path from
+re-parsing source accidentally.
 
 ## See also
 

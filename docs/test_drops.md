@@ -73,9 +73,15 @@ primitive Liquid value (boolean, integer, string).
 **YAML format:**
 ```yaml
 environment:
-  flag: "instantiate:BooleanDrop: {value: false}"
-  count: "instantiate:NumberDrop: {value: 42}"
-  name:  "instantiate:StringDrop: {value: hello}"
+  flag:
+    instantiate:BooleanDrop:
+      value: false
+  count:
+    instantiate:NumberDrop:
+      value: 42
+  name:
+    instantiate:StringDrop:
+      value: hello
 ```
 
 **Behavior:**
@@ -99,7 +105,8 @@ an integer argument; the drop parses it and returns the result as a string.
 **YAML format:**
 ```yaml
 environment:
-  drop: "instantiate:MethodDrop"
+  drop:
+    instantiate:MethodDrop: {}
 ```
 
 **Behavior:**
@@ -125,7 +132,8 @@ Tests `[int]` and `['string']` access on drops.
 **YAML format:**
 ```yaml
 environment:
-  drop: "instantiate:IndexDrop"
+  drop:
+    instantiate:IndexDrop: {}
 ```
 
 **Behavior:**
@@ -146,7 +154,8 @@ Tests `for` loop iteration. Yields three fixed strings.
 **YAML format:**
 ```yaml
 environment:
-  items: "instantiate:SequenceDrop"
+  items:
+    instantiate:SequenceDrop: {}
 ```
 
 **Behavior:**
@@ -162,7 +171,8 @@ Tests `to_liquid` → nil. The drop materializes to nothing.
 **YAML format:**
 ```yaml
 environment:
-  drop: "instantiate:NilDrop"
+  drop:
+    instantiate:NilDrop: {}
 ```
 
 **Behavior:**
@@ -176,7 +186,8 @@ Tests that drops without `to_liquid_value` are truthy and render via `to_s`.
 **YAML format:**
 ```yaml
 environment:
-  drop: "instantiate:OpaqueDrop"
+  drop:
+    instantiate:OpaqueDrop: {}
 ```
 
 **Behavior:**
@@ -190,48 +201,21 @@ Tests error handling. Any access raises a `RuntimeError`.
 **YAML format:**
 ```yaml
 environment:
-  drop: "instantiate:ErrorDrop"
+  drop:
+    instantiate:ErrorDrop: {}
 ```
 
 **Behavior:**
 - `{{ drop.foo }}` → raises an error
 - Use with `errors: render_error:` to test error propagation.
 
-## The `generate:` feature
+## Deterministic fixtures, not generated values
 
-Specs can include random values that are substituted into both template and
-expected **before** the spec is sent to the adapter. This increases test
-coverage without requiring the adapter to support randomness.
-
-```yaml
-- name: test_square_drop_random
-  template: "{{ drop.square_#{n} }}"
-  expected: "#{n * n}"
-  generate:
-    n:
-      type: numeric
-      min: 1
-      max: 100
-  features: [drops, randomness]
-  complexity: 220
-```
-
-**How it works:**
-1. The spec loader sees `generate: { n: { type: numeric, min: 1, max: 100 } }`
-2. Generates a random integer `n` (e.g., 7)
-3. Substitutes `#{n}` in template → `{{ drop.square_7 }}`
-4. Evaluates `#{n * n}` in expected → `"49"`
-5. Sends the final concrete spec to the adapter
-
-Shorthand `n: [1, 100]` is also accepted but the explicit form is preferred.
-
-The adapter never sees `#{...}` — it receives a fully concrete spec. The
-`randomness` feature flag (on by default) controls whether specs with
-`generate:` are included. Adapters that want deterministic runs can omit it:
-
-```json
-{"features":["core","drops"]}
-```
+The Rust loader sends the values recorded in each spec exactly as written. It does
+not currently expand a `generate:` field or advertise a `randomness` capability.
+Keep standard-drop fixtures deterministic and add several explicit cases when a
+property needs breadth. If generated cases are introduced in the future, they must
+be seeded and included in the result log so a failing run can be reproduced.
 
 ## Migration from Ruby-specific drops
 
@@ -254,7 +238,7 @@ coverage remains behind the `ruby_compat` capability:
 
 Specs that test Ruby-specific security boundaries (SecurityVictimDrop,
 WideOpenObject, UnsafeHashLikeObject, etc.) remain tagged `ruby_drops` and
-are skipped by non-Ruby adapters.
+are skipped by adapters that do not advertise the Ruby-compatibility capability.
 
 ## Implementation notes
 
@@ -276,7 +260,8 @@ reflection or hash lookups where possible.
 
 ## Implementer checklist
 
-To support the `drops` feature, implement these classes natively:
+To support the `drops` feature, provide these fixture behaviors natively (the
+names below are protocol identifiers, not required class names):
 
 - [ ] `BooleanDrop(value)` — `to_liquid_value` returns the boolean
 - [ ] `NumberDrop(value)` — `to_liquid_value` returns the integer
@@ -288,8 +273,13 @@ To support the `drops` feature, implement these classes natively:
 - [ ] `OpaqueDrop` — truthy, `to_s` returns "opaque"
 - [ ] `ErrorDrop` — raises on any access
 
-Each drop must follow Liquid's drop protocol:
-- `to_liquid_value` (or `to_liquid`) materializes the drop to a primitive
-- `to_s` provides the string representation for `{{ drop }}` output
-- `[]` or method access for property lookup
-- `each` for enumerable drops
+Each fixture must expose the corresponding observable operations:
+- materialization to a primitive for truthiness and filter compatibility
+- string conversion for `{{ drop }}` output
+- property or bracket lookup where the fixture defines it
+- enumerable iteration for sequence fixtures
+
+The adapter can represent these operations with objects, maps, closures, tagged
+values, or another native mechanism. The typed fixture envelope is the stable
+boundary; host-language method names such as `to_liquid_value`, `to_s`, `[]`, and
+`each` are explanatory labels only.

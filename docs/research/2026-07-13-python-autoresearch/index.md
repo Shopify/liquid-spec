@@ -1,5 +1,9 @@
 # Python autoresearch run audit (2026-07-13)
 
+> Historical research. This report records an earlier Python experiment and is
+> non-normative; current protocol, namespace, and CLI behavior are documented in
+> the guides under `docs/implementers/` and `docs/json-rpc-protocol-v2.md`.
+
 This directory records the issues exposed while a small local model built a
 substantive Liquid implementation in Python against liquid-spec 2.0.0.
 

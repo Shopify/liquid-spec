@@ -1,380 +1,96 @@
 ---
-title: "Shopify Theme Filters Reference"
+title: "Shopify Theme Filters"
 position: 40
-description: "Read when targeting Shopify themes. Provides reference-style implementations for Shopify-specific filters and paginate behavior."
+description: "Read when targeting Shopify themes. Describes the extension boundary, observable filter contracts, and pagination state without prescribing a language or class layout."
 optional: true
 ---
 
 # Shopify Theme Filters
 
-The default benchmark templates are intentionally portable and do not require Shopify
-filters. Optional Shopify theme namespaces still exercise filters and tags that are not part
-of core Liquid. This document provides a reference implementation in Ruby that can serve
-as pseudocode when an adapter deliberately targets that Shopify-specific surface.
+Shopify theme behavior is an optional extension of Liquid. The core corpus and the
+default benchmark do not require it. Enable the Shopify namespaces only after the
+core parser, value model, scopes, filters, and partials are reliable.
 
-These helpers apply to specs tagged `shopify_filters`; they are not required for
-`liquid-spec bench`.
+This page is a contract guide, not a drop-in implementation. The JSON-RPC adapter
+may expose filters through a registry, a compiler table, a VM instruction, or any
+other design. What matters is the behavior recorded by the tagged specs and the
+way your implementation handles values at the extension boundary.
 
----
+## Find the contract first
 
-## Complete Reference Implementation
+The Shopify examples are recordings rather than a general Shopify API. Before
+implementing a filter:
 
-The following Ruby module illustrates the filter behavior. Register equivalent helpers
-only when running Shopify-specific namespaces.
+1. Locate the specs tagged `shopify_filters`, `shopify_tags`, or the relevant
+   Shopify feature.
+2. Read the complete fixture: template, environment, filesystem, expected output,
+   and error mode. Several filters depend on the shape of the supplied object.
+3. Implement the smallest general rule that explains all nearby examples.
+4. Run the focused namespace and then a matrix comparison against the configured
+   reference adapter. Keep the reference process outside your adapter; protocol v2
+   has no callbacks for asking the runner to resolve Ruby objects.
 
-```ruby
-# Reference implementation of Shopify theme filters.
-# Register with: Liquid::Template.register_filter(ShopifyThemeFilters)
+Do not infer a production URL, currency, shop identifier, or HTML policy from an
+isolated example. If the recording contains a placeholder or fixture-specific value,
+preserve it as data and avoid hard-coding it into filter dispatch.
 
-require "cgi"
+## Filter families
 
-module ShopifyThemeFilters
-  # ============================================================
-  # Money Filters
-  # ============================================================
+The current recordings cover several families. They exercise coercion and output
+formatting as much as the filter names themselves:
 
-  # Formats cents as dollars: 19900 → "$199.00"
-  # Input: integer (cents) or nil
-  # Output: formatted string with $ prefix and 2 decimal places
-  def money(cents)
-    return "" if cents.nil?
-    format("$%.2f", cents.to_i / 100.0)
-  end
+| Family | Questions to settle in the value model |
+| --- | --- |
+| Money and weight | Which numeric units are accepted? How are nil, fractions, rounding, and signs represented? |
+| Image and asset URLs | Which input shapes expose a source URL? How are size variants, missing values, and path components handled? |
+| HTML helpers | Which attributes are escaped, and is the output intentionally marked as HTML or just a string? |
+| Handles and pluralization | What normalization is applied to Unicode, punctuation, and count values? |
+| Pagination helpers | Which fields are optional, how are links and current pages represented, and how is HTML escaped? |
 
-  # Like money but appends currency: 19900 → "$199.00 USD"
-  def money_with_currency(cents)
-    return "" if cents.nil?
-    format("$%.2f USD", cents.to_i / 100.0)
-  end
+Treat each family as ordinary filter semantics layered on top of your existing
+argument evaluation and stringification rules. In particular:
 
-  # ============================================================
-  # Weight Filters
-  # ============================================================
+- Evaluate arguments before dispatching the filter, including property lookups and
+  drops/fixtures.
+- Apply the same nil, boolean, numeric, and string coercion rules used by core
+  filters unless the spec explicitly records an extension-specific difference.
+- Escape untrusted values at the point where the extension creates HTML. Do not
+  escape a value twice merely because it passed through another filter.
+- Keep URL construction deterministic. A test process must not depend on a live
+  Shopify endpoint, wall clock, random number, or machine-specific path.
+- Return a normal Liquid error for invalid arguments when the fixture expects an
+  error; do not turn a malformed value into a plausible URL or empty page silently.
 
-  # Converts grams to kg: 1500 → "1.50 kg"
-  def weight_with_unit(grams)
-    return "" if grams.nil?
-    format("%.2f kg", grams.to_i / 1000.0)
-  end
+## Pagination is state, not only formatting
 
-  # ============================================================
-  # Image URL Filters
-  # ============================================================
+The `{% paginate ... by N %}` tag combines collection slicing with a scoped
+`paginate` value. An implementation needs to define these observable steps:
 
-  # Generates product image URLs with size variants.
-  #
-  # Input: image path string (e.g., "products/arbor_draft.jpg")
-  #        OR a hash/object with a "src" key
-  # Size:  one of: original, grande, large, medium, compact, small, thumb, icon
-  #
-  # Output for size "original":
-  #   "/files/shops/random_number/products/{filename}.{ext}"
-  # Output for other sizes:
-  #   "/files/shops/random_number/products/{filename}_{size}.{ext}"
-  def product_img_url(input, size = "small")
-    return "/assets/no-image-#{size}.jpg" if input.nil? || input.to_s.empty?
+1. Resolve the collection using normal Liquid lookup and determine its size.
+2. Read the current page from the render context (or the recorded default).
+3. Compute the offset and the page slice without mutating the caller's collection.
+4. Expose the page metadata only inside the block's scope.
+5. Render the block with the sliced collection, then restore the previous scope.
+6. Build `previous`, `next`, and page parts according to the recorded fixtures,
+   including gaps and the current-page marker.
 
-    # Handle hash/object input with "src" key
-    url = if input.respond_to?(:key?) && input.key?("src")
-      input["src"]
-    else
-      input.to_s
-    end
+The `default_pagination` filter consumes that metadata and produces HTML. Keep the
+metadata model separate from the HTML formatter so a theme can provide another
+formatter without changing pagination arithmetic. Verify boundary cases explicitly:
+empty collections, one page, first/middle/last pages, a page beyond the end, and
+missing optional URLs.
 
-    # Extract filename and extension from the path
-    basename = File.basename(url)
-    if basename =~ /\A([\w\-]+)\.(\w{2,4})\z/
-      filename = $1
-      ext = $2
-    else
-      filename = basename.gsub(/[^\w\-]/, "")
-      ext = "jpg"
-    end
+## Capability and rollout
 
-    if size.to_s == "original"
-      "/files/shops/random_number/products/#{filename}.#{ext}"
-    else
-      "/files/shops/random_number/products/#{filename}_#{size}.#{ext}"
-    end
-  end
+Advertise Shopify capabilities only when the adapter implements their semantics.
+An adapter can advertise core protocol support while omitting `shopify_filters` and
+`shopify_tags`; the runner will skip those specs and still provide useful progress.
+When adding a new extension, add a focused first-contact spec, a useful hint, and a
+feature tag before adding broad recordings. This keeps the implementation ramp
+diagnostic rather than rewarding a special case for one theme.
 
-  # Generic image URL filter (for articles, blogs, etc.)
-  #
-  # Input: image path string OR hash with "src" key
-  # Size:  same options as product_img_url
-  #
-  # Output for "original": "/assets/{filename}.{ext}"
-  # Output for other sizes: "/assets/{filename}_{size}.{ext}"
-  def img_url(input, size = "medium")
-    return "/assets/no-image-#{size}.jpg" if input.nil? || input.to_s.empty?
+See also:
 
-    url = if input.respond_to?(:key?) && input.key?("src")
-      input["src"]
-    else
-      input.to_s
-    end
-
-    basename = File.basename(url)
-    if basename =~ /\A([\w\-]+)\.(\w{2,4})\z/
-      filename = $1
-      ext = $2
-    else
-      filename = basename.gsub(/[^\w\-]/, "")
-      ext = "jpg"
-    end
-
-    if size.to_s == "original"
-      "/assets/#{filename}.#{ext}"
-    else
-      "/assets/#{filename}_#{size}.#{ext}"
-    end
-  end
-
-  # ============================================================
-  # Asset Filters
-  # ============================================================
-
-  # Generates an asset URL path.
-  # Input: filename string (e.g., "theme.css")
-  # Output: "/files/1/[shop_id]/[shop_id]/assets/{filename}"
-  def asset_url(input)
-    "/files/1/[shop_id]/[shop_id]/assets/#{input}"
-  end
-
-  # ============================================================
-  # HTML Tag Filters
-  # ============================================================
-
-  # Wraps a URL in a <script> tag.
-  def script_tag(url)
-    %(<script src="#{CGI.escapeHTML(url.to_s)}" type="text/javascript"></script>)
-  end
-
-  # Wraps a URL in a <link> stylesheet tag.
-  def stylesheet_tag(url, media = "all")
-    %(<link href="#{CGI.escapeHTML(url.to_s)}" rel="stylesheet" type="text/css"  media="#{CGI.escapeHTML(media.to_s)}"  />)
-  end
-
-  # ============================================================
-  # String Filters
-  # ============================================================
-
-  # Converts a string to a URL-safe handle.
-  #
-  # Algorithm:
-  #   1. Downcase
-  #   2. Remove: ' " ( ) [ ]
-  #   3. Replace non-word characters (\W+) with hyphens
-  #   4. Strip leading/trailing hyphens
-  #
-  # "Season 2005" → "season-2005"
-  # "Arbor Draft"  → "arbor-draft"
-  # "It's a Test"  → "its-a-test"
-  def handle(str)
-    return "" if str.nil?
-    result = str.to_s.dup
-    result.downcase!
-    result.delete!("'\"()[]")
-    result.gsub!(/\W+/, "-")
-    result.gsub!(/\A-+|-+\z/, "")
-    result
-  end
-
-  # Returns singular or plural form based on count.
-  # {{ 1 | pluralize: "item", "items" }} → "item"
-  # {{ 5 | pluralize: "item", "items" }} → "items"
-  def pluralize(count, singular, plural)
-    count.to_i == 1 ? singular : plural
-  end
-
-  # ============================================================
-  # Pagination Filter
-  # ============================================================
-
-  # Renders pagination HTML from a paginate object.
-  #
-  # Input: paginate hash with keys:
-  #   current_page, pages, previous, next, parts
-  #
-  # Each "part" has: title, url (optional), is_link (boolean)
-  # "previous"/"next" have: title, url, is_link
-  #
-  # Output: HTML spans joined with spaces:
-  #   <span class="prev"><a href="..." title="...">...</a></span>
-  #   <span class="page"><a href="..." title="...">...</a></span>
-  #   <span class="page current">1</span>
-  #   <span class="deco">&hellip;</span>
-  #   <span class="next"><a href="..." title="...">...</a></span>
-  def default_pagination(paginate)
-    return "" unless paginate.is_a?(Hash) && paginate["parts"].is_a?(Array)
-
-    html = []
-
-    if paginate["previous"] && paginate["previous"]["url"]
-      prev_title = CGI.escapeHTML(paginate["previous"]["title"].to_s)
-      html << %(<span class="prev"><a href="#{paginate["previous"]["url"]}" title="#{prev_title}">#{prev_title}</a></span>)
-    end
-
-    paginate["parts"].each do |part|
-      title = CGI.escapeHTML(part["title"].to_s)
-      if part["is_link"] && part["url"]
-        html << %(<span class="page"><a href="#{part["url"]}" title="#{title}">#{title}</a></span>)
-      elsif part["title"].to_s == paginate["current_page"].to_s
-        html << %(<span class="page current">#{title}</span>)
-      else
-        html << %(<span class="deco">#{title}</span>)
-      end
-    end
-
-    if paginate["next"] && paginate["next"]["url"]
-      next_title = CGI.escapeHTML(paginate["next"]["title"].to_s)
-      html << %(<span class="next"><a href="#{paginate["next"]["url"]}" title="#{next_title}">#{next_title}</a></span>)
-    end
-
-    html.join(" ")
-  end
-end
-```
-
----
-
-## Paginate Block Tag
-
-The `{% paginate %}` tag is a block tag that slices a collection for the current page
-and provides pagination metadata. This is more complex than a filter — it requires
-custom tag parsing and context management.
-
-### Syntax
-
-```liquid
-{% paginate collection.products by 12 %}
-  {% for product in collection.products %}
-    {{ product.title }}
-  {% endfor %}
-  {{ paginate | default_pagination }}
-{% endpaginate %}
-```
-
-### Implementation
-
-```ruby
-# Register with: Liquid::Template.register_tag("paginate", PaginateTag)
-
-class PaginateTag < Liquid::Block
-  SYNTAX = /(#{Liquid::QuotedFragment})\s+by\s+(\d+)/
-
-  def initialize(tag_name, markup, options)
-    super
-    if markup =~ SYNTAX
-      @collection_name = Regexp.last_match(1)
-      @page_size = Regexp.last_match(2).to_i
-    else
-      raise SyntaxError, "Valid syntax: paginate [collection] by [number]"
-    end
-  end
-
-  def render_to_output_buffer(context, output)
-    collection = context[@collection_name]
-    return super unless collection.respond_to?(:size)
-
-    page_size = @page_size
-    current_page = (context["current_page"] || 1).to_i
-    current_page = 1 if current_page < 1
-
-    total_items = collection.size
-    total_pages = (total_items.to_f / page_size).ceil
-    total_pages = 1 if total_pages == 0 && total_items > 0
-
-    # Build pagination metadata
-    paginate = {
-      "page_size"    => page_size,
-      "current_page" => current_page,
-      "current_offset" => (current_page - 1) * page_size,
-      "items"        => total_items,
-      "pages"        => total_pages,
-      "previous"     => nil,
-      "next"         => nil,
-      "parts"        => [],
-    }
-
-    if current_page > 1
-      paginate["previous"] = {
-        "title"   => "&laquo; Previous",
-        "url"     => "?page=#{current_page - 1}",
-        "is_link" => true,
-      }
-    end
-
-    if current_page < total_pages
-      paginate["next"] = {
-        "title"   => "Next &raquo;",
-        "url"     => "?page=#{current_page + 1}",
-        "is_link" => true,
-      }
-    end
-
-    # Build page number parts with ellipsis for large page counts
-    window_size = 3
-    hellip_break = false
-    1.upto(total_pages) do |page|
-      is_current    = current_page == page
-      is_first_last = page == 1 || page == total_pages
-      is_in_window  = page >= current_page - window_size &&
-                      page <= current_page + window_size
-
-      if is_current
-        paginate["parts"] << { "title" => page.to_s, "is_link" => false }
-        hellip_break = false
-      elsif is_first_last || is_in_window
-        paginate["parts"] << {
-          "title"   => page.to_s,
-          "url"     => "?page=#{page}",
-          "is_link" => true,
-        }
-        hellip_break = false
-      elsif !hellip_break
-        paginate["parts"] << { "title" => "&hellip;", "is_link" => false }
-        hellip_break = true
-      end
-    end
-
-    # Slice collection for current page and render block
-    offset = (current_page - 1) * page_size
-    sliced = collection.drop(offset).take(page_size)
-
-    context.stack do
-      context[@collection_name] = sliced
-      context["paginate"] = paginate
-      super
-    end
-  end
-end
-```
-
-### Key behaviors
-
-| Aspect | Behavior |
-|--------|----------|
-| Page source | Reads `current_page` from context (default: 1) |
-| Collection slicing | `drop(offset).take(page_size)` on the original array |
-| Page parts | Window of 3 pages around current, ellipsis for gaps |
-| Previous/Next | Only present when there is a preceding/following page |
-| Context scope | `paginate` variable and sliced collection are scoped to the block |
-
----
-
-## Filter Summary
-
-| Filter | Input | Output | Example |
-|--------|-------|--------|---------|
-| `money` | cents (int) | `"$X.XX"` | `19900 → "$199.00"` |
-| `money_with_currency` | cents (int) | `"$X.XX USD"` | `19900 → "$199.00 USD"` |
-| `weight_with_unit` | grams (int) | `"X.XX kg"` | `1500 → "1.50 kg"` |
-| `product_img_url` | path (str), size | URL string | `"foo.jpg", "small" → ".../foo_small.jpg"` |
-| `img_url` | path/hash, size | URL string | `"bar.jpg", "medium" → "/assets/bar_medium.jpg"` |
-| `asset_url` | filename (str) | URL string | `"theme.css" → "/files/1/.../assets/theme.css"` |
-| `script_tag` | URL (str) | `<script>` HTML | wraps in script tag |
-| `stylesheet_tag` | URL (str) | `<link>` HTML | wraps in link tag |
-| `handle` | string | handle string | `"Season 2005" → "season-2005"` |
-| `pluralize` | count, singular, plural | string | `1, "item", "items" → "item"` |
-| `default_pagination` | paginate hash | HTML string | renders page links |
+- [Filters](filters.md) for shared coercion and dispatch rules.
+- [Partials](partials.md) for scope and filesystem behavior used by themes.
+- [JSON-RPC protocol v2](../json-rpc-protocol-v2.md) for adapter capabilities.

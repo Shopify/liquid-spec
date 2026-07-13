@@ -94,9 +94,14 @@ function to_output(value):
     return value.to_string()
 ```
 
-### Critical: Hash Formatting (Ruby 2.x vs 3.x)
+### Host-language formatting is a compatibility boundary
 
-Liquid specs expect Ruby 2.x style hash output (`{:foo=>"bar"}`) rather than Ruby 3.x style (`{foo: "bar"}`). If you are implementing in Ruby 3+, you may need to customize `hash.to_s` or `inspect` to match the expected format for passing tests.
+Do not let the host language choose a representation accidentally. The corpus has
+both portable JSON-like values and Ruby-compatibility recordings (for example,
+symbol keys and `Hash#inspect` output). A JSON-RPC adapter should classify those
+fixtures through their feature tags and typed transport values, then implement the
+recorded output deliberately. See [Ruby hash formatting](../ruby_hash_inspect_format.md)
+for the compatibility-only rules; do not apply them to ordinary JSON objects.
 
 ---
 
@@ -335,7 +340,9 @@ Output: `foobar` (concatenation of key and value)
 
 ## 6. Truthiness vs "Default" Truthiness
 
-Liquid generally follows Ruby truthiness (only `nil` and `false` are falsy), with one major exception: the `default` filter.
+Liquid truthiness makes only `nil` and `false` falsy; this happens to match Ruby's
+basic falsy set but is a Liquid rule. The `default` filter has its own emptiness
+and `allow_false` options.
 
 ### Standard Truthiness (`if`, `unless`, `case`)
 

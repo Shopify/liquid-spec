@@ -7,7 +7,10 @@ optional: false
 
 # Interrupts: `break` and `continue`
 
-This document explains how Liquid's `break` and `continue` tags work and provides implementation guidance for new Liquid implementations.
+This document explains how Liquid's `break` and `continue` tags work and provides implementation guidance for new Liquid implementations. The stack-shaped
+pseudocode is one internal model; an evaluator may use a structured return value,
+an internal control-flow exception, or another mechanism as long as interrupts are
+consumed at the correct loop boundary and never leak as protocol errors.
 
 ## Quick Reference
 

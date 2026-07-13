@@ -1,14 +1,11 @@
 # Ruby `Hash#inspect` / `Hash#to_s` format
 
-Several specs render a hash (or array of hashes) through `{{ var }}` and expect
-Ruby's `Hash#inspect` output — **not** JSON. In Ruby, `Hash#to_s` is an alias
-for `Hash#inspect`, so `{{ my_hash }}` (which calls `to_s` on the resolved
-value) produces the format below. A non-Ruby Liquid implementation must
-reproduce it exactly to pass these specs.
-
-This is a cross-language correctness bar: Liquid defers object rendering to the
-host language's `to_s`, and the reference implementation is Ruby, so the
-expected strings are Ruby's `inspect` output.
+Several compatibility specs render a hash (or array of hashes) through `{{ var }}`
+and expect the reference's Ruby-style `Hash#inspect` output — **not** JSON. This
+is an opt-in compatibility contract, not a requirement for ordinary JSON objects
+or for adapters that have not advertised the Ruby feature set. If an adapter opts
+in, it must reproduce the recorded format deliberately instead of delegating to
+whatever debug representation its host language happens to provide.
 
 ## Grammar
 
@@ -74,7 +71,11 @@ via `inspect`, **then** the filter runs on that string. Examples:
 So the inspect format is the *substrate* every string filter operates on when the
 input is a hash.
 
-## Pseudocode for a non-Ruby implementation
+## One possible compatibility algorithm
+
+The following is an architecture-neutral outline. A renderer may use a visitor,
+formatter object, serializer, or another design; the important parts are insertion
+order, recursive formatting, and cycle detection.
 
 ```text
 function rubyInspect(value, seen = new Set()):
@@ -99,15 +100,15 @@ function rubyInspect(value, seen = new Set()):
 ```
 
 `rubyStringInspect(s)` wraps `s` in `"..."`, escaping `\\` and `"` and control
-chars as above. `floatInspect` must always include a decimal point (`1.0`, not
-`1`; `0.2`, not `0.2` rendered as a bare fraction — match Ruby's `Float#inspect`,
-which uses the shortest representation that round-trips).
+characters as above. `floatInspect` follows the reference's shortest
+round-trippable representation while retaining a decimal marker where the
+reference does.
 
 ## When you need this
 
 These specs are gated behind the **Ruby/reference-quirk** complexity band
 (~220+) and most are tagged `features: [ruby_types]`. JSON-RPC adapters skip
-`ruby_types` by default. If you opt in (remove `:ruby_types` from
-`missing_features`), the JSON-RPC transport delivers non-string hash keys to you
-as their Ruby `inspect` string, and your engine is expected to render hashes and
-those keys per the rules above.
+`ruby_types` by default. If you opt in (advertise the capability and remove
+`:ruby_types` from the adapter's missing features), typed JSON-RPC values preserve
+the key/value types; apply this formatter at Liquid output boundaries rather than
+stringifying keys during transport.

@@ -7,7 +7,10 @@ optional: false
 
 # Scopes and Variable Resolution
 
-This document explains Liquid's variable resolution hierarchy and provides implementation guidance.
+This document explains Liquid's variable resolution hierarchy and provides implementation guidance. The `scopes`, `environments`, and `registers` names in
+the examples describe one internal model; they are not JSON-RPC objects that an
+adapter must expose. Map the wire environment and render options into your own
+context representation.
 
 ## Quick Reference
 

@@ -47,7 +47,8 @@ liquid-spec check --adapter candidate
 For a one-off experiment, feed `eval` a YAML spec:
 
 ```bash
-cat <<'EOF' | liquid-spec tools eval --adapter candidate --compare
+# Add --compare when liquid-spec.toml names an external reference adapter.
+cat <<'EOF' | liquid-spec tools eval --adapter candidate
 name: scratch_assign
 template: "{% assign x = 1 %}{{ x }}"
 expected: "1"
@@ -111,7 +112,9 @@ Then let the failing spec choose the next guide. For example:
 
 Unless your project specifically needs them early, these are often worth deferring:
 
-- Lax parsing and legacy `:raise` mode.
+- Lax parsing and compatibility-only error contracts when your adapter does not
+  advertise them. The render error policy is `raise` or `inline`; parse modes are
+  `strict2`, `strict`, and `lax`.
 - Shopify-specific `shopify_*` features.
 - Ruby-only compatibility (`ruby_types`, `ruby_drops`, `drop_class_output`) if you are
   not trying to reproduce Ruby internals.
@@ -134,11 +137,11 @@ liquid-spec check --adapter candidate --list-passed --json
 liquid-spec tools mutate --adapter candidate --around=for_loops
 liquid-spec tools fuzz --adapter candidate --seed=1234 --json
 
-# Validate liquid-spec/spec changes when contributing to this repository
-liquid-spec tools check  # equivalent: rake check
+# Validate the Rust corpus and verifier scripts when contributing to this repository
+liquid-spec tools check
 ```
 
-`liquid-spec tools check` / `rake check` are for liquid-spec contributors. Adapter authors usually want
+`liquid-spec tools check` is for liquid-spec contributors. Adapter authors usually want
 `liquid-spec check --adapter candidate`; that is the real curriculum loop. Once the recorded
 ramp is green, read `liquid-spec docs adversarial` before promoting generated
 differential discoveries into permanent specs.

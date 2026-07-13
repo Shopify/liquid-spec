@@ -9,7 +9,8 @@ behavior.
 
 **Only `false` and `nil` are falsy. Everything else is truthy.**
 
-This matches Ruby semantics, not JavaScript or Python.
+This is Liquid's rule. Ruby happens to use the same falsy set, while JavaScript and
+Python differ for values such as `0` and the empty string.
 
 | Value        | Truthy? | Notes                                  |
 |--------------|---------|----------------------------------------|

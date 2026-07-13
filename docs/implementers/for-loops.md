@@ -7,7 +7,10 @@ optional: false
 
 # The `for` Loop
 
-This document explains Liquid's `for` loop, including `offset: continue`, `forloop` object, and `parentloop` tracking.
+This document explains Liquid's `for` loop, including `offset: continue`, `forloop` object, and `parentloop` tracking. The register and stack names in the
+examples are explanatory pseudocode, not a required runtime architecture or wire
+API. Preserve the observable iteration order and metadata while choosing your own
+state representation.
 
 ## Quick Reference
 

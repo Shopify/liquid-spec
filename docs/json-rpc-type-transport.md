@@ -41,5 +41,5 @@ supported sets and versions in `initialize.capabilities.fixture_sets`.
 Specs that only observed a drop's portable behavior should use a standard fixture.
 Specs that asserted Ruby exception classes, `Hash#inspect`, `SafeBuffer`, symbols,
 or other runtime details belong to the optional `ruby_compat` feature and may be
-skipped by non-Ruby adapters. Do not invent a marker that asks the runner to create
+skipped by adapters that do not advertise that capability. Do not invent a marker that asks the runner to create
 an object or call back into the adapter.

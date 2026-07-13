@@ -273,11 +273,11 @@ The `date` filter accepts:
 ### Deterministic current time
 
 All liquid-spec execution surfaces—including normal runs, inspect, matrix, and
-JSON-RPC—execute date specs against exactly `2024-01-01 00:01:58 UTC`. An
-adapter must obtain `now`/`today` from the supplied `registers[:current_time]`,
-not cache or read the host wall clock outside the render operation. Registers
-are host context: unlike assigns, templates cannot resolve them directly, but
-filters and drops can read them from their render context.
+JSON-RPC—execute date specs against exactly `2024-01-01 00:01:58 UTC`. The runner
+passes that frozen instant as `template.render.options.now`; an adapter must use
+that option for `now`/`today`, not cache or read the host wall clock outside the
+render operation. Internal context/register objects are an implementation detail,
+not a JSON-RPC requirement.
 
 These specs assert the formatted value for that exact instant. Agreement between
 adapters is insufficient if they all return the real current date.
@@ -290,7 +290,7 @@ explicit timezone so clock or timezone state cannot leak between runs.
 
 ```liquid
 {{ "2024-01-15" | date: "%Y-%m-%d" }}  → 2024-01-15
-{{ "now" | date: "%Y" }}                → (current year)
+{{ "now" | date: "%Y" }}                → 2024
 {{ article.created_at | date: "%B %d" }} → January 15
 ```
 

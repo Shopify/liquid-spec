@@ -40,7 +40,7 @@ The result selects exactly one protocol version and identifies the implementatio
   "capabilities":{
     "parse_modes":["strict2"],
     "render_error_modes":["raise"],
-    "features":["core","standard-drops"],
+    "features":["core","drops"],
     "fixture_sets":{"standard-drops":1},
     "artifacts":false,
     "benchmark":false
@@ -93,9 +93,10 @@ The runner uses this method during conformance checks. The server must return th
 ```
 
 `bundle.sources` contains the entry and all filesystem/partial sources. The server
-must parse/prepare every supplied source before returning. A syntax error in an
-unused partial is retained as a deferred compiled failure and is reported when
-that partial is rendered; it must not cause parsing work during render timing.
+must parse/prepare every supplied source before returning. If an unused partial has
+a syntax error, retain that already-determined parse failure and report it when the
+partial is rendered if that is the reference behavior; do not parse source during
+render timing.
 
 Success returns an opaque handle:
 
@@ -117,7 +118,7 @@ Liquid parse failures are valid Liquid outcomes, not JSON-RPC failures:
 ```json
 {"jsonrpc":"2.0","id":4,"method":"template.render","params":{
   "template_id":"t1","environment":{"name":"Ada"},
-  "options":{"error_policy":"raise","now":"2024-01-01T00:00:00Z"}
+  "options":{"error_policy":"raise","now":"2024-01-01T00:01:58Z"}
 }}
 ```
 

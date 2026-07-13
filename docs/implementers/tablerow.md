@@ -7,7 +7,7 @@ optional: false
 
 # Tablerow Tag Implementation
 
-The `{% tablerow %}` tag generates HTML table rows from a collection. It looks like a for loop but **it is not** - it's an HTML generator with specific output format requirements.
+The `{% tablerow %}` tag generates HTML table rows from a collection. It looks like a for loop but **it is not** - it is an HTML generator with specific output format requirements. The HTML is the compatibility contract; the state machine or helper functions used to produce it are up to the implementation.
 
 ## Why Tablerow is Complex
 

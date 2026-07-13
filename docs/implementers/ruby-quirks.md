@@ -2,12 +2,15 @@
 title: "Ruby Quirks"
 position: 12
 description: "Read when output looks Ruby-specific. Catalogs size, first/last, hash rendering, ranges, and other Ruby compatibility behavior."
-optional: false
+optional: true
 ---
 
-# Ruby Quirks
+# Ruby Compatibility Behaviors
 
-Liquid was originally implemented in Ruby, and some Ruby-specific behaviors leaked into the language semantics. These aren't bugs—they're documented behaviors that implementations must match for compatibility.
+Liquid was originally implemented in Ruby, and some Ruby-specific behaviors leaked
+into the reference semantics. These are compatibility recordings, not prerequisites
+for a portable core implementation. An adapter should opt into the corresponding
+feature tags only when it intentionally supports these host-language details.
 
 This document provides exact input/output tables for each quirk.
 
@@ -45,7 +48,10 @@ Liquid doesn't override this—it just calls Ruby's method directly.
 
 ### Implementation Guidance
 
-If your language doesn't have this concept, return `8` for all integers to match Ruby behavior. Alternatively, document the difference and accept that some specs will fail.
+If your language does not have this concept, implement the recorded compatibility
+rule only when opting into the Ruby feature set. Otherwise leave the feature
+disabled and let the runner skip these specs rather than baking a Ruby constant into
+portable numeric semantics.
 
 ---
 
@@ -166,7 +172,9 @@ When a hash is rendered directly (not via a filter), it uses Ruby's inspect form
 | `{a: 1}` | `{"a"=>1}` |
 | `{foo: "bar"}` | `{"foo"=>"bar"}` |
 
-Note: The exact format may vary between Ruby versions. Ruby 2.x uses `{:foo=>"bar"}` while Ruby 3.x may use `{foo: "bar"}`.
+The corpus records both string-key and symbol-key forms. Do not select a format
+from the host runtime's version; preserve the key type carried by the fixture and
+match the expected compatibility output.
 
 ---
 
@@ -241,9 +249,9 @@ Ranges have a size equal to their length.
 
 ## Implementation Checklist
 
-1. **Integer size = 8**: Always return 8 for integer size
-2. **Float size = 0**: Return 0 for float size filter, empty for property
-3. **Hash first = key+value**: Concatenate first pair as string
+1. **Integer size = 8**: Return the recorded byte-size value for integer filters
+2. **Float size = 0**: Return `0` for the filter and empty for property access
+3. **Hash first = key+value**: Concatenate the first pair as a string
 4. **Hash last = empty**: Return empty/nil
 5. **String first/last = char**: Return single characters
 6. **Non-collection first/last = empty**: Return empty for int/float/bool/nil
@@ -260,7 +268,7 @@ liquid-spec check --adapter candidate -n filter_int
 liquid-spec check --adapter candidate -n filter_hash
 
 # Test all type filters
-liquid-spec check --adapter candidate -n filter_ -n variable_type
+liquid-spec check --adapter candidate -n 'filter_|variable_type'
 ```
 
 See also:
