@@ -56,7 +56,8 @@ run once using the highest mode the adapter advertises (`strict2`, then `strict`
 while the optional `inline` mode keeps the error in the rendered output and reports
 it in `diagnostics`. The runner skips specs that require a mode the adapter does not
 advertise, and runs a spec explicitly annotated with multiple parse modes once per
-supported mode (in strictness order). The runner skips a spec only when the adapter
+supported strict contract (strict2, then strict); an explicitly declared `lax` mode
+is an additional compatibility run. The runner skips a spec only when the adapter
 does not advertise a feature required by that spec. `fixture_sets` maps fixture-set
 names to supported versions. `artifacts` and `benchmark` advertise the optional
 artifact and timing extensions.

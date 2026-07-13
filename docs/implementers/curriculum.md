@@ -86,6 +86,10 @@ Advertise only capabilities your JSON-RPC server actually implements. Add capabi
 as they become part of your implementation; the runner skips specs requiring a missing
 capability and reports the skipped count explicitly.
 
+Unannotated specs use the highest advertised parse strictness. Explicit multi-mode
+specs use their highest supported strict mode (`strict2`, then `strict`); an explicit
+`lax` declaration remains a separate compatibility run.
+
 ## What to Read First
 
 A useful starting set is:

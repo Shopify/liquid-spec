@@ -7,4 +7,6 @@ versioned standard fixture values described in the v2 document instead.
 
 See the [v2 schema](json-rpc-protocol-v2.schema.json) and
 [conformance vectors](json-rpc-protocol-v2-vectors.json) when implementing an
-adapter.
+adapter. Unannotated specs use the highest advertised parse strictness; explicit
+multi-mode specs use the highest supported strict mode, with an explicitly declared
+lax mode tested separately.

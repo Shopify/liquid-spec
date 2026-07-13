@@ -710,6 +710,12 @@ Each spec defines:
 - **error_mode** - Optional: `lax`, `strict`, `strict2`, or an array of compatible modes
 - **filesystem** - Optional: mock files for include/render tags
 
+Specs without `error_mode` run once in the adapter's highest supported parse mode
+(`strict2`, then `strict`, then `lax`). For an explicit mode array, the highest
+supported strict mode is sufficient; an explicitly declared `lax` mode adds a
+separate compatibility run. This avoids duplicate strict/strict2 executions while
+still testing lax behavior independently.
+
 ## Development
 
 ```bash
