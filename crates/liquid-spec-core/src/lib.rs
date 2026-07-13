@@ -56,8 +56,8 @@ mod corpus_tests {
         let specs = load_namespace(&namespace).unwrap();
         let spec = specs
             .iter()
-            .find(|spec| spec.error_modes.len() > 1)
-            .expect("corpus should contain a multi-mode annotation");
+            .find(|spec| spec.error_modes == ["lax", "strict"])
+            .expect("corpus should contain a lax/strict multi-mode annotation");
         assert_eq!(spec.error_modes, vec!["lax", "strict"]);
     }
 
