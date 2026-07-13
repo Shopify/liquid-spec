@@ -151,6 +151,7 @@ liquid-spec
 liquid-spec -n assign
 
 # Every implementation is an external JSON-RPC v2 process.
+# Start with the curriculum before choosing a focused guide.
 liquid-spec docs curriculum
 liquid-spec check -- ./my-liquid-server
 
@@ -202,6 +203,7 @@ source-echo JSON-RPC v2 demo into `adapter.ts`:
 # After setting adapters.candidate.command in liquid-spec.toml:
 liquid-spec check --adapter candidate
 liquid-spec tools inspect --adapter candidate -n "the_failing_spec"
+# Start here: the curriculum explains the implementation loop and guide order.
 liquid-spec docs curriculum
 liquid-spec docs core-abstractions
 # Topic names, filenames, and descriptions accept case-insensitive substrings.

@@ -1246,7 +1246,8 @@ retained only as a compatibility alias.
 Use `--namespace NAME` (or `-s NAME`) for a directory under `specs/`; there is no
 separate grouping concept in the Rust runner.
 
-Read a guide with `liquid-spec docs curriculum` or `liquid-spec docs json-rpc-protocol-v2`.
+Start with `liquid-spec docs curriculum`, then read the focused guide or
+`liquid-spec docs json-rpc-protocol-v2` as needed.
 `liquid-spec docs list` prints the absolute docs directory and bundled `.md` topic paths;
 topic names, filenames, and descriptions also accept case-insensitive substrings.
 The manifest in `liquid-spec.toml` names the candidate and optional Shopify/liquid

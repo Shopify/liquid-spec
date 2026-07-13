@@ -63,6 +63,7 @@ fn docs_list_reports_absolute_root_and_markdown_files() {
     assert!(stdout.contains("Docs directory: "));
     assert!(stdout.contains(&root.display().to_string()));
     assert!(stdout.contains("implementers/curriculum.md"));
+    assert!(stdout.contains("Start with `liquid-spec docs curriculum`"));
 }
 
 #[test]

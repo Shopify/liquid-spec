@@ -111,7 +111,7 @@ pub fn list() {
         println!("  {topic:<28} {:<46} {description}", topic_path(relative));
     }
     println!(
-        "\nUse `liquid-spec docs TOPIC` to print a topic. TOPIC may be a case-insensitive\nsubstring of the topic name, description, or .md filename."
+        "\nStart with `liquid-spec docs curriculum`. Use `liquid-spec docs TOPIC` to print\na topic; TOPIC may be a case-insensitive substring of the topic name, description,\nor .md filename."
     );
 }
 
