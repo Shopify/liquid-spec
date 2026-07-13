@@ -124,9 +124,13 @@ small enough that results describe the engine rather than the test integration.
 Build the Rust binary:
 
 ```bash
-cargo build --release -p liquid-spec-cli --bin liquid-spec
-install target/release/liquid-spec ~/.local/bin/liquid-spec
+make install
 ```
+
+This builds the release binary and installs `liquid-spec` into Cargo's user bin
+directory (`~/.cargo/bin` by default, or `$CARGO_HOME/bin` when `CARGO_HOME` is
+set). If you only need a local build, use `cargo build --release -p
+liquid-spec-cli --bin liquid-spec`.
 
 The binary reads the built-in `specs/` directory shipped beside a release package
 and embeds the high-signal documentation. During repository development, it reads
@@ -158,10 +162,10 @@ liquid-spec bench --adapter candidate
 
 The runner performs the v2 protocol gate before loading Liquid specs. `check` evaluates
 the full selected corpus, and the first lowest-complexity failure is the next
-implementation lesson. Spec failures are observational: after the protocol gate
-succeeds, the command exits 0 even when specs fail. Each check overwrites a
-deterministically named report under `/tmp/liquid-spec-check-<hash>.txt`, containing
-all passes and failures; human output points to it with `[all failures in ...]`.
+implementation lesson. A semantic spec failure exits nonzero after the protocol gate,
+so CI can enforce correctness; protocol or adapter-process failures also exit nonzero.
+Each check overwrites a deterministically named report under the system temp path,
+containing all passes and failures; human output points to it with `[all failures in ...]`.
 `--compare` starts the separately configured Ruby/liquid JSON-RPC reference adapter;
 the Rust binary never embeds Liquid.
 

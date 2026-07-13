@@ -14,7 +14,11 @@ use liquid_spec_core::{
 };
 use session::Session;
 use std::ffi::OsString;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::PathBuf;
+use std::process::Command as ProcessCommand;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Parser)]
 #[command(
@@ -320,7 +324,10 @@ fn execute() -> Result<()> {
                     std::process::exit(1);
                 }
             }
-            ToolCommand::Report { input, json } => report::run(input.as_deref(), json)?,
+            ToolCommand::Report { input, json } => {
+                let input = input.unwrap_or_else(|| config.results_log_path());
+                report::run(Some(&input), json)?;
+            }
             ToolCommand::Test {
                 namespace,
                 name,
@@ -459,6 +466,7 @@ fn execute() -> Result<()> {
             let info = session.conformance()?;
             let compare_specs = specs.clone();
             let mut summary = session.run_specs(specs, &info.capabilities)?;
+            append_results_log(&config, &summary)?;
             let report_path = write_check_report(&summary)?;
             summary.all_failures_path = Some(report_path.clone());
             let candidate_failures: std::collections::BTreeMap<_, _> = summary
@@ -565,6 +573,12 @@ fn execute() -> Result<()> {
                         );
                     }
                 }
+            }
+            // A successful protocol handshake only establishes that the
+            // adapter speaks v2. A semantic mismatch is still a failed check,
+            // so make the process status useful to CI and shell scripts.
+            if summary.failed > 0 {
+                std::process::exit(1);
             }
         }
         Command::Bench {
@@ -748,7 +762,119 @@ fn check_corpus() -> Result<()> {
         specs_count += specs.len();
     }
     println!("OK: loaded {specs_count} specs across {namespaces_count} namespaces");
+    run_ruby_verifiers()?;
     Ok(())
+}
+
+/// Run every repository verifier through the same contributor-facing entry
+/// point. Verifiers remain Ruby scripts because a few inspect Ruby reference
+/// behavior; the Rust CLI discovers and aggregates them.
+fn run_ruby_verifiers() -> Result<()> {
+    let Some(root) = verifier_root() else {
+        println!("SKIP: no scripts/verifiers directory found");
+        return Ok(());
+    };
+    let verifier_dir = root.join("scripts/verifiers");
+    let mut scripts: Vec<PathBuf> = std::fs::read_dir(&verifier_dir)
+        .with_context(|| format!("read verifier directory {}", verifier_dir.display()))?
+        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .filter(|path| path.extension().is_some_and(|extension| extension == "rb"))
+        .collect();
+    scripts.sort();
+    if scripts.is_empty() {
+        println!(
+            "SKIP: no Ruby verifier scripts found in {}",
+            verifier_dir.display()
+        );
+        return Ok(());
+    }
+
+    println!("Running {} Ruby verifier(s)...", scripts.len());
+    let mut blocking_failures = Vec::new();
+    let mut advisory_failures = 0usize;
+    for script in scripts {
+        let relative = script
+            .strip_prefix(&root)
+            .unwrap_or(&script)
+            .display()
+            .to_string();
+        let source = std::fs::read_to_string(&script)
+            .with_context(|| format!("read verifier {relative}"))?;
+        let advisory = source.lines().take(40).any(|line| {
+            line.trim().eq_ignore_ascii_case("# advisory: true")
+                || line.trim().eq_ignore_ascii_case("# advisory:true")
+        });
+        let result = ProcessCommand::new("ruby")
+            .arg("-Ilib")
+            .arg(&script)
+            .current_dir(&root)
+            .output();
+        let (success, code, stdout, stderr) = match result {
+            Ok(output) => (
+                output.status.success(),
+                output.status.code(),
+                output.stdout,
+                output.stderr,
+            ),
+            Err(error) => {
+                let message = format!("could not start ruby: {error}");
+                if advisory {
+                    advisory_failures += 1;
+                    println!("ADVISORY {relative}: {message}");
+                } else {
+                    blocking_failures.push(format!("{relative}: {message}"));
+                    println!("FAIL {relative}: {message}");
+                }
+                continue;
+            }
+        };
+        if !stdout.is_empty() {
+            print!("{}", String::from_utf8_lossy(&stdout));
+        }
+        if !stderr.is_empty() {
+            eprint!("{}", String::from_utf8_lossy(&stderr));
+        }
+        if success {
+            println!("PASS {relative}");
+        } else if advisory {
+            advisory_failures += 1;
+            println!(
+                "ADVISORY {relative}: exited with status {}",
+                code.map_or_else(|| "unknown".to_owned(), |code| code.to_string())
+            );
+        } else {
+            let failure = format!(
+                "{relative}: exited with status {}",
+                code.map_or_else(|| "unknown".to_owned(), |code| code.to_string())
+            );
+            blocking_failures.push(failure.clone());
+            println!("FAIL {failure}");
+        }
+    }
+    if !blocking_failures.is_empty() {
+        anyhow::bail!(
+            "{} blocking verifier(s) failed: {}",
+            blocking_failures.len(),
+            blocking_failures.join("; ")
+        );
+    }
+    if advisory_failures > 0 {
+        println!("OK: all blocking verifiers passed ({advisory_failures} advisory finding(s))");
+    } else {
+        println!("OK: all verifiers passed");
+    }
+    Ok(())
+}
+
+fn verifier_root() -> Option<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Ok(current) = std::env::current_dir() {
+        candidates.push(current);
+    }
+    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."));
+    candidates
+        .into_iter()
+        .find(|root| root.join("scripts/verifiers").is_dir() && root.join("specs").is_dir())
 }
 
 fn run_protocol(config: &Config, adapter: Option<String>, direct: Vec<String>) -> Result<()> {
@@ -770,8 +896,29 @@ struct MatrixRow {
     passed: usize,
     failed: usize,
     skipped: usize,
+    /// Concrete per-spec observations. Keeping these beside the aggregate
+    /// counters restores the differential information the legacy matrix
+    /// command displayed while remaining useful to JSON consumers.
+    results: std::collections::BTreeMap<String, MatrixResult>,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    report_path: Option<PathBuf>,
+}
+
+#[derive(Clone, serde::Serialize)]
+struct MatrixResult {
+    complexity: u16,
+    status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    outcome: Option<serde_json::Value>,
+}
+
+#[derive(Clone, serde::Serialize)]
+struct MatrixDifference {
+    name: String,
+    complexity: u16,
+    adapters: std::collections::BTreeMap<String, MatrixResult>,
 }
 
 fn run_matrix(
@@ -797,25 +944,47 @@ fn run_matrix(
                 passed: 0,
                 failed: 0,
                 skipped: 0,
+                results: Default::default(),
                 error: Some("adapter is not configured".into()),
+                report_path: None,
             },
             Some(command) => {
                 match run_matrix_adapter(command, config.timeout(Some(&adapter)), specs.clone()) {
-                    Ok(summary) => MatrixRow {
-                        adapter,
-                        status: if summary.failed == 0 { "pass" } else { "fail" },
-                        passed: summary.passed,
-                        failed: summary.failed,
-                        skipped: summary.skipped,
-                        error: None,
-                    },
+                    Ok(summary) => {
+                        let results = summary
+                            .result_entries
+                            .iter()
+                            .map(|entry| {
+                                (
+                                    entry.name.clone(),
+                                    MatrixResult {
+                                        complexity: entry.complexity,
+                                        status: entry.status.clone(),
+                                        outcome: entry.outcome.clone(),
+                                    },
+                                )
+                            })
+                            .collect();
+                        MatrixRow {
+                            adapter,
+                            status: if summary.failed == 0 { "pass" } else { "fail" },
+                            passed: summary.passed,
+                            failed: summary.failed,
+                            skipped: summary.skipped,
+                            results,
+                            error: None,
+                            report_path: None,
+                        }
+                    }
                     Err(error) => MatrixRow {
                         adapter,
                         status: "error",
                         passed: 0,
                         failed: 0,
                         skipped: 0,
+                        results: Default::default(),
                         error: Some(error.to_string()),
+                        report_path: None,
                     },
                 }
             }
@@ -823,7 +992,17 @@ fn run_matrix(
         rows.push(row);
     }
 
+    let differences = matrix_differences(&rows);
+    let report_path = write_matrix_report(namespace, &differences)?;
+    for row in &mut rows {
+        row.report_path = Some(report_path.clone());
+    }
+
     if json {
+        // Keep the historical array shape while exposing all observations and
+        // the deterministic report location through each adapter row. A
+        // consumer can reconstruct the same differences without scraping
+        // human-oriented output.
         println!("{}", serde_json::to_string_pretty(&rows)?);
     } else {
         println!("Adapter matrix ({})", namespace);
@@ -840,6 +1019,35 @@ fn run_matrix(
                 println!("  error: {error}");
             }
         }
+        if differences.is_empty() {
+            println!("All supported specs matched across adapters.");
+        } else {
+            println!("{} per-spec differences:", differences.len());
+            for difference in differences.iter().take(10) {
+                println!(
+                    "  [c={}] {} ({})",
+                    difference.complexity,
+                    difference.name,
+                    difference
+                        .adapters
+                        .iter()
+                        .map(|(adapter, result)| format!("{adapter}:{}", result.status))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+                for (adapter, result) in &difference.adapters {
+                    let output = result
+                        .outcome
+                        .as_ref()
+                        .map_or_else(|| "(skipped)".into(), serde_json::Value::to_string);
+                    println!("    {adapter}: {output}");
+                }
+            }
+            if differences.len() > 10 {
+                println!("  (... {} more)", differences.len() - 10);
+            }
+        }
+        println!("[all matrix differences in {}]", report_path.display());
     }
     if rows.iter().any(|row| row.status != "pass") {
         std::process::exit(1);
@@ -869,6 +1077,91 @@ fn run_matrix_adapter(
     let summary = session.run_specs(specs, &info.capabilities)?;
     session.shutdown()?;
     Ok(summary)
+}
+
+/// Compare concrete observations by spec rather than reducing each adapter to
+/// pass/fail counters. Skipped adapters are ignored when every adapter skips a
+/// spec; otherwise a failing expectation or differing observed output is a
+/// useful matrix difference.
+fn matrix_differences(rows: &[MatrixRow]) -> Vec<MatrixDifference> {
+    let mut by_spec: std::collections::BTreeMap<
+        String,
+        std::collections::BTreeMap<String, MatrixResult>,
+    > = Default::default();
+    for row in rows {
+        for (name, result) in &row.results {
+            by_spec
+                .entry(name.clone())
+                .or_default()
+                .insert(row.adapter.clone(), result.clone());
+        }
+    }
+    let mut differences = Vec::new();
+    for (name, adapters) in by_spec {
+        let ran = adapters
+            .values()
+            .filter(|result| result.outcome.is_some())
+            .collect::<Vec<_>>();
+        if ran.is_empty() {
+            continue;
+        }
+        let first = ran[0].outcome.as_ref();
+        let outputs_match = ran.iter().all(|result| result.outcome.as_ref() == first);
+        let expectation_mismatch = adapters.values().any(|result| result.status == "fail");
+        if !outputs_match || expectation_mismatch {
+            let complexity = adapters
+                .values()
+                .map(|result| result.complexity)
+                .min()
+                .unwrap_or(1000);
+            differences.push(MatrixDifference {
+                name,
+                complexity,
+                adapters,
+            });
+        }
+    }
+    differences.sort_by(|left, right| {
+        left.complexity
+            .cmp(&right.complexity)
+            .then_with(|| left.name.cmp(&right.name))
+    });
+    differences
+}
+
+fn write_matrix_report(namespace: &str, differences: &[MatrixDifference]) -> Result<PathBuf> {
+    use std::fmt::Write as _;
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let hash = stable_path_hash(cwd.to_string_lossy().as_bytes());
+    let path = std::env::temp_dir().join(format!("liquid-spec-matrix-{hash:016x}.txt"));
+    let mut contents = String::new();
+    writeln!(contents, "# liquid-spec matrix differential report").unwrap();
+    writeln!(contents, "# working_directory: {}", cwd.display()).unwrap();
+    writeln!(contents, "# namespace: {namespace}").unwrap();
+    if differences.is_empty() {
+        writeln!(contents, "No per-spec differences.").unwrap();
+    }
+    for difference in differences {
+        writeln!(
+            contents,
+            "DIFF [c={}] {}",
+            difference.complexity, difference.name
+        )
+        .unwrap();
+        for (adapter, result) in &difference.adapters {
+            writeln!(contents, "  adapter: {adapter}").unwrap();
+            writeln!(contents, "  status: {}", result.status).unwrap();
+            match &result.outcome {
+                Some(value) => {
+                    writeln!(contents, "  outcome: {}", value).unwrap();
+                }
+                None => writeln!(contents, "  outcome: (skipped)").unwrap(),
+            }
+        }
+    }
+    std::fs::write(&path, contents)
+        .with_context(|| format!("write matrix report {}", path.display()))?;
+    Ok(path)
 }
 
 fn init(directory: &std::path::Path, force: bool) -> Result<()> {
@@ -945,10 +1238,11 @@ newline-delimited JSON-RPC adapter (protocol v2); there is no in-process adapter
 5. Compare configured implementations with `liquid-spec tools matrix --all -n assign`.
 
 `check` evaluates the full selected corpus. Once the protocol gate succeeds, Liquid
-spec mismatches are observational and the command exits 0; protocol or adapter-process
-failures still exit nonzero. Every check overwrites a deterministic report in `/tmp`
-containing all PASS and FAIL entries ordered by complexity; human output prints its
-location as `[all failures in ...]`. `run` is retained only as a compatibility alias.
+spec mismatches make the command exit nonzero so CI can enforce semantic correctness;
+protocol or adapter-process failures also exit nonzero. Every check overwrites a
+deterministic report in `/tmp` containing all PASS and FAIL entries ordered by
+complexity; human output prints its location as `[all failures in ...]`. `run` is
+retained only as a compatibility alias.
 Use `--namespace NAME` (or `-s NAME`) for a directory under `specs/`; there is no
 separate grouping concept in the Rust runner.
 
@@ -1271,6 +1565,52 @@ fn write_check_report(summary: &session::RunSummary) -> Result<PathBuf> {
     Ok(path)
 }
 
+/// Append one JSON array per concrete spec execution to the long-lived result
+/// log consumed by `tools report`.  The shape intentionally matches the
+/// historical Ruby runner:
+/// `[run_id, version, source_file, test_name, complexity, status]`.
+fn append_results_log(config: &Config, summary: &session::RunSummary) -> Result<()> {
+    if summary.result_entries.is_empty() {
+        return Ok(());
+    }
+    let path = config.results_log_path();
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .with_context(|| format!("open result log {}", path.display()))?;
+    let run_id = result_run_id();
+    let mut entries = summary.result_entries.iter().collect::<Vec<_>>();
+    entries.sort_by(|left, right| {
+        left.complexity
+            .cmp(&right.complexity)
+            .then_with(|| left.name.cmp(&right.name))
+            .then_with(|| left.status.cmp(&right.status))
+    });
+    for entry in entries {
+        let record = serde_json::json!([
+            run_id,
+            env!("CARGO_PKG_VERSION"),
+            entry.source.to_string_lossy(),
+            entry.name,
+            entry.complexity,
+            entry.status,
+        ]);
+        writeln!(file, "{}", serde_json::to_string(&record)?)
+            .with_context(|| format!("write result log {}", path.display()))?;
+    }
+    file.flush()
+        .with_context(|| format!("flush result log {}", path.display()))?;
+    Ok(())
+}
+
+fn result_run_id() -> String {
+    let elapsed = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default();
+    format!("{}_{:09}", elapsed.as_secs(), elapsed.subsec_nanos())
+}
+
 fn stable_path_hash(bytes: &[u8]) -> u64 {
     // FNV-1a is tiny, deterministic across platforms, and avoids adding a
     // cryptographic dependency merely to derive a report filename.
@@ -1334,6 +1674,7 @@ mod tests {
             default_action: Some("check".into()),
             default_adapter: Some("candidate".into()),
             reference_adapter: None,
+            results_log: None,
             adapters: [
                 (
                     "candidate".into(),
@@ -1376,6 +1717,73 @@ mod tests {
     }
 
     #[test]
+    fn matrix_reports_per_spec_output_differences() {
+        let result = |output: &str| MatrixResult {
+            complexity: 12,
+            status: "success".into(),
+            outcome: Some(serde_json::json!({"output": output})),
+        };
+        let rows = vec![
+            MatrixRow {
+                adapter: "reference".into(),
+                status: "pass",
+                passed: 1,
+                failed: 0,
+                skipped: 0,
+                results: [("assign".into(), result("one"))].into_iter().collect(),
+                error: None,
+                report_path: None,
+            },
+            MatrixRow {
+                adapter: "candidate".into(),
+                status: "pass",
+                passed: 1,
+                failed: 0,
+                skipped: 0,
+                results: [("assign".into(), result("two"))].into_iter().collect(),
+                error: None,
+                report_path: None,
+            },
+        ];
+        let differences = matrix_differences(&rows);
+        assert_eq!(differences.len(), 1);
+        assert_eq!(differences[0].name, "assign");
+        assert_eq!(differences[0].adapters.len(), 2);
+    }
+
+    #[test]
+    fn matrix_ignores_matching_per_spec_outputs() {
+        let result = || MatrixResult {
+            complexity: 12,
+            status: "success".into(),
+            outcome: Some(serde_json::json!({"output": "same"})),
+        };
+        let rows = vec![
+            MatrixRow {
+                adapter: "reference".into(),
+                status: "pass",
+                passed: 1,
+                failed: 0,
+                skipped: 0,
+                results: [("assign".into(), result())].into_iter().collect(),
+                error: None,
+                report_path: None,
+            },
+            MatrixRow {
+                adapter: "candidate".into(),
+                status: "pass",
+                passed: 1,
+                failed: 0,
+                skipped: 0,
+                results: [("assign".into(), result())].into_iter().collect(),
+                error: None,
+                report_path: None,
+            },
+        ];
+        assert!(matrix_differences(&rows).is_empty());
+    }
+
+    #[test]
     fn check_report_orders_every_result_by_complexity() {
         let mut summary = session::RunSummary::default();
         summary.passed_entries = vec![("late_pass".into(), 30), ("early_pass".into(), 1)];
@@ -1402,5 +1810,60 @@ mod tests {
             ]
         );
         std::fs::remove_file(path).expect("remove check report");
+    }
+
+    #[test]
+    fn result_log_uses_report_array_shape_and_preserves_statuses() {
+        let path = std::env::temp_dir().join(format!(
+            "liquid-spec-results-test-{}-{}.jsonl",
+            std::process::id(),
+            result_run_id()
+        ));
+        let config = Config {
+            results_log: Some(path.clone()),
+            ..Config::default()
+        };
+        let mut summary = session::RunSummary::default();
+        summary.result_entries = vec![
+            session::ResultEntry {
+                name: "c [error_mode=lax]".into(),
+                complexity: 4,
+                source: "specs/c.yml".into(),
+                status: "skipped".into(),
+                outcome: None,
+            },
+            session::ResultEntry {
+                name: "a [error_mode=strict]".into(),
+                complexity: 2,
+                source: "specs/a.yml".into(),
+                status: "success".into(),
+                outcome: None,
+            },
+            session::ResultEntry {
+                name: "b".into(),
+                complexity: 3,
+                source: "specs/b.yml".into(),
+                status: "fail".into(),
+                outcome: None,
+            },
+        ];
+        append_results_log(&config, &summary).expect("append result log");
+        let lines = std::fs::read_to_string(&path).expect("read result log");
+        let records: Vec<serde_json::Value> = lines
+            .lines()
+            .map(|line| serde_json::from_str(line).expect("decode result record"))
+            .collect();
+        assert_eq!(records.len(), 3);
+        assert!(
+            records
+                .iter()
+                .all(|record| record.as_array().is_some_and(|v| v.len() == 6))
+        );
+        assert_eq!(records[0][1], env!("CARGO_PKG_VERSION"));
+        assert_eq!(records[0][2], "specs/a.yml");
+        assert_eq!(records[0][3], "a [error_mode=strict]");
+        assert_eq!(records[0][5], "success");
+        assert_eq!(records[2][5], "skipped");
+        std::fs::remove_file(path).expect("remove result log");
     }
 }

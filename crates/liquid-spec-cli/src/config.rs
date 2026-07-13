@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -15,6 +15,11 @@ pub struct Config {
     pub default_adapter: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference_adapter: Option<String>,
+    /// Append-only JSONL result log.  When omitted, the runner uses
+    /// `LIQUID_SPEC_RESULTS` when set and `/tmp/liquid-spec-results.jsonl`
+    /// otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub results_log: Option<PathBuf>,
     #[serde(default)]
     pub adapters: BTreeMap<String, Adapter>,
 }
@@ -51,6 +56,13 @@ impl Config {
             name.and_then(|name| self.adapters.get(name))
                 .map_or(default_timeout(), |a| a.timeout_ms),
         )
+    }
+
+    pub fn results_log_path(&self) -> PathBuf {
+        self.results_log
+            .clone()
+            .or_else(|| std::env::var_os("LIQUID_SPEC_RESULTS").map(PathBuf::from))
+            .unwrap_or_else(|| PathBuf::from("/tmp/liquid-spec-results.jsonl"))
     }
 
     /// The smallest useful manifest for a new JSON-RPC adapter. Keeping this

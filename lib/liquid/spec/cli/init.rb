@@ -478,7 +478,7 @@ module Liquid
                the next spec of the same family anyway.)
             2. **The expected output is recorded reference behavior — conform, don't
                argue.** When an expectation looks insane, it is usually a real, documented
-               quirk: read the spec's hint, then `QUIRKS.md` in the liquid-spec repository.
+               quirk: read the spec's hint, then `docs/implementers/ruby-quirks.md`.
                Liquid has many deliberate oddities (they are what "compatible" means).
             3. **Use `missing_features` honestly.** It exists for surface you are
                deliberately not building — `shopify_*` features (needed only to render
@@ -545,8 +545,8 @@ module Liquid
             | `adversarial` | generated differential mutation, fuzz-style testing, and bounded stress |
             | `json-rpc-protocol` | the non-Ruby adapter protocol |
 
-            Also read `QUIRKS.md` in the liquid-spec repository when an expectation looks
-            wrong — if the quirk is documented there, it is intentional.
+            Also read `docs/implementers/ruby-quirks.md` when an expectation looks
+            wrong — if the behavior is documented there, it is intentional.
 
             ## Architecture advice for a fresh implementation
 

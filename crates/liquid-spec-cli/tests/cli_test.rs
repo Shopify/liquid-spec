@@ -72,7 +72,7 @@ fn run_executes_a_focused_spec_through_json_rpc() {
 }
 
 #[test]
-fn check_is_observational_and_writes_all_results_report() {
+fn check_fails_semantic_mismatches_and_writes_all_results_report() {
     let directory =
         std::env::temp_dir().join(format!("liquid-spec-check-test-{}", std::process::id()));
     std::fs::create_dir_all(&directory).expect("create check working directory");
@@ -90,8 +90,8 @@ fn check_is_observational_and_writes_all_results_report() {
         .output()
         .expect("run check");
     assert!(
-        output.status.success(),
-        "check should not fail on spec mismatches"
+        !output.status.success(),
+        "check should fail on spec mismatches"
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
     let marker = "[all failures in ";
@@ -114,7 +114,10 @@ fn check_and_features_are_available_as_tool_commands() {
         .output()
         .unwrap();
     assert!(check.status.success());
-    assert!(String::from_utf8_lossy(&check.stdout).contains("7905 specs"));
+    let check_stdout = String::from_utf8_lossy(&check.stdout);
+    assert!(check_stdout.contains("7905 specs"));
+    assert!(check_stdout.contains("Running 12 Ruby verifier(s)"));
+    assert!(check_stdout.contains("PASS scripts/verifiers/spec_schema.rb"));
 
     let features = Command::new(binary())
         .args(["tools", "features"])

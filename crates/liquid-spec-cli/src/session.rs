@@ -355,37 +355,97 @@ impl Session {
         let mut summary = RunSummary::default();
         for spec in specs {
             let variants = expand_error_mode_variants(&spec, capabilities);
-            let mut ran = false;
+            let had_variants = !variants.is_empty();
+            let mut skipped_variants = 0;
             for variant in variants {
                 if variant.features.iter().any(|feature| {
                     feature != "core" && !feature_supported(feature, &supported, capabilities)
                 }) {
+                    skipped_variants += 1;
+                    summary.result_entries.push(ResultEntry {
+                        name: variant.name,
+                        complexity: variant.complexity,
+                        source: variant.source_file,
+                        status: "skipped".into(),
+                        outcome: None,
+                    });
                     continue;
                 }
-                ran = true;
-                match self.run_spec(&variant) {
-                    Ok(()) => {
-                        summary.passed += 1;
-                        summary.passed_complexities.push(variant.complexity);
-                        summary.passed_names.push(variant.name.clone());
-                        summary
-                            .passed_entries
-                            .push((variant.name, variant.complexity));
+                match self.run_spec_observed(&variant) {
+                    Ok(observed) => {
+                        let outcome = observed.to_json();
+                        match validate_observed(&observed, &variant.expected) {
+                            Ok(()) => {
+                                summary.passed += 1;
+                                summary.passed_complexities.push(variant.complexity);
+                                summary.passed_names.push(variant.name.clone());
+                                summary
+                                    .passed_entries
+                                    .push((variant.name.clone(), variant.complexity));
+                                summary.result_entries.push(ResultEntry {
+                                    name: variant.name,
+                                    complexity: variant.complexity,
+                                    source: variant.source_file,
+                                    status: "success".into(),
+                                    outcome: Some(outcome),
+                                });
+                            }
+                            Err(error) => {
+                                let message = error.to_string();
+                                summary.failures.push(Failure {
+                                    name: variant.name.clone(),
+                                    complexity: variant.complexity,
+                                    source: variant.source_file.clone(),
+                                    message: message.clone(),
+                                    hint: variant.hint,
+                                });
+                                summary.result_entries.push(ResultEntry {
+                                    name: variant.name,
+                                    complexity: variant.complexity,
+                                    source: variant.source_file,
+                                    status: "fail".into(),
+                                    outcome: Some(outcome),
+                                });
+                            }
+                        }
                     }
                     Err(error) if error.downcast_ref::<ProtocolFailure>().is_some() => {
                         return Err(error);
                     }
-                    Err(error) => summary.failures.push(Failure {
-                        name: variant.name,
-                        complexity: variant.complexity,
-                        source: variant.source_file,
-                        message: error.to_string(),
-                        hint: variant.hint,
-                    }),
+                    Err(error) => {
+                        let message = error.to_string();
+                        summary.failures.push(Failure {
+                            name: variant.name.clone(),
+                            complexity: variant.complexity,
+                            source: variant.source_file.clone(),
+                            message: message.clone(),
+                            hint: variant.hint,
+                        });
+                        summary.result_entries.push(ResultEntry {
+                            name: variant.name,
+                            complexity: variant.complexity,
+                            source: variant.source_file,
+                            status: "fail".into(),
+                            outcome: None,
+                        });
+                    }
                 }
             }
-            if !ran {
+            if skipped_variants > 0 {
+                summary.skipped += skipped_variants;
+            }
+            if !had_variants {
+                // No compatible parse mode was advertised.  Keep this source
+                // spec visible in the historical log even though there is no
+                // concrete mode variant to attach to it.
                 summary.skipped += 1;
+                summary.result_entries.push(ResultEntry {
+                    name: spec.name,
+                    complexity: spec.complexity,
+                    source: spec.source_file,
+                    status: "skipped".into(),
+                    outcome: None,
+                });
             }
         }
         // Namespace discovery is deterministic, but concatenating several
@@ -402,7 +462,7 @@ impl Session {
         Ok(summary)
     }
 
-    fn run_spec(&mut self, spec: &Spec) -> Result<()> {
+    fn run_spec_observed(&mut self, spec: &Spec) -> Result<ObservedOutcome> {
         let compile: Outcome<CompileSuccess> = self
             .request(
                 "template.compile",
@@ -415,12 +475,7 @@ impl Session {
         let template_id = match compile {
             Outcome::Ok { ok } => ok.template_id,
             Outcome::Error { error } => {
-                return match &spec.expected {
-                    Expected::Error { phase, patterns } if phase == "parse_error" => {
-                        match_error(&error, patterns)
-                    }
-                    _ => bail!("compile error [{}]: {}", error.code, error.message),
-                };
+                return Ok(ObservedOutcome::Error(error));
             }
         };
         let result: Outcome<RenderSuccess> = self
@@ -436,37 +491,10 @@ impl Session {
         let _: Value = self
             .request("template.release", json!({"template_id": template_id}))
             .map_err(|error| anyhow::Error::new(ProtocolFailure(error)))?;
-        match (result, &spec.expected) {
-            (Outcome::Ok { ok }, Expected::Output(expected))
-                if output_bytes(&ok.output)? == *expected =>
-            {
-                Ok(())
-            }
-            (Outcome::Ok { ok }, Expected::Pattern(pattern))
-                if Regex::new(pattern)?.is_match(output_text(&ok.output)?) =>
-            {
-                Ok(())
-            }
-            (Outcome::Ok { ok }, Expected::Error { phase, patterns }) if phase == "output" => {
-                match_text(output_text(&ok.output)?, patterns)
-            }
-            (Outcome::Error { error }, Expected::Error { phase, patterns })
-                if phase == "render_error" =>
-            {
-                match_error(&error, patterns)
-            }
-            (Outcome::Ok { ok }, Expected::Output(expected)) => {
-                bail!(
-                    "expected {} output bytes, got {:?}",
-                    expected.len(),
-                    ok.output
-                )
-            }
-            (Outcome::Ok { ok }, _) => bail!("unexpected output {:?}", ok.output),
-            (Outcome::Error { error }, _) => {
-                bail!("render error [{}]: {}", error.code, error.message)
-            }
-        }
+        Ok(match result {
+            Outcome::Ok { ok } => ObservedOutcome::Output(ok.output),
+            Outcome::Error { error } => ObservedOutcome::Error(error),
+        })
     }
 
     pub fn shutdown(&mut self) -> Result<()> {
@@ -485,6 +513,70 @@ impl Session {
             bail!("adapter emitted a response to shutdown: {message}");
         }
         Ok(())
+    }
+}
+
+/// The protocol result of one concrete spec execution, retained by matrix
+/// runs so adapters can be compared even when their result does not satisfy
+/// the spec's expected value.  This intentionally models only observable
+/// output/error data; compile and render timings never cross this boundary.
+#[derive(Clone, Debug)]
+pub enum ObservedOutcome {
+    Output(WireValue),
+    Error(LiquidError),
+}
+
+impl ObservedOutcome {
+    pub fn to_json(&self) -> Value {
+        match self {
+            Self::Output(output) => json!({"output": output}),
+            Self::Error(error) => json!({"error": error}),
+        }
+    }
+}
+
+fn validate_observed(observed: &ObservedOutcome, expected: &Expected) -> Result<()> {
+    match (observed, expected) {
+        (ObservedOutcome::Output(output), Expected::Output(expected))
+            if output_bytes(output)? == *expected =>
+        {
+            Ok(())
+        }
+        (ObservedOutcome::Output(output), Expected::Pattern(pattern))
+            if Regex::new(pattern)?.is_match(output_text(output)?) =>
+        {
+            Ok(())
+        }
+        (ObservedOutcome::Output(output), Expected::Error { phase, patterns })
+            if phase == "output" =>
+        {
+            match_text(output_text(output)?, patterns)
+        }
+        (ObservedOutcome::Error(error), Expected::Error { phase, patterns })
+            if (phase == "parse_error" && matches!(error.phase, ErrorPhase::Parse))
+                || (phase == "render_error" && matches!(error.phase, ErrorPhase::Render)) =>
+        {
+            match_error(error, patterns)
+        }
+        (ObservedOutcome::Output(output), Expected::Output(expected)) => {
+            bail!("expected {} output bytes, got {:?}", expected.len(), output)
+        }
+        (ObservedOutcome::Output(output), _) => bail!("unexpected output {:?}", output),
+        (ObservedOutcome::Error(error), _) => {
+            bail!(
+                "{} error [{}]: {}",
+                error_phase_name(error),
+                error.code,
+                error.message
+            )
+        }
+    }
+}
+
+fn error_phase_name(error: &LiquidError) -> &'static str {
+    match error.phase {
+        ErrorPhase::Parse => "parse",
+        ErrorPhase::Render => "render",
     }
 }
 
@@ -682,9 +774,26 @@ pub struct RunSummary {
     pub passed_names: Vec<String>,
     #[serde(skip)]
     pub passed_entries: Vec<(String, u16)>,
+    /// Concrete execution outcomes, including skipped feature variants. This
+    /// is consumed by the check command's append-only JSONL result logger and
+    /// intentionally omitted from the human/JSON summary output.
+    #[serde(skip)]
+    pub result_entries: Vec<ResultEntry>,
     pub max_complexity_reached: u16,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub all_failures_path: Option<std::path::PathBuf>,
+}
+
+#[derive(Clone, Debug)]
+pub struct ResultEntry {
+    pub name: String,
+    pub complexity: u16,
+    pub source: std::path::PathBuf,
+    pub status: String,
+    /// Canonical output or error returned by the adapter. Check's historical
+    /// JSONL log omits this field, while matrix uses it for true differential
+    /// comparisons.
+    pub outcome: Option<Value>,
 }
 
 impl RunSummary {

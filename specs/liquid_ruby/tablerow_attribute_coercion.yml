@@ -8,7 +8,8 @@
 #
 # QUIRK: this is deliberately INCONSISTENT with the for tag, whose offset:/
 # limit: validate strictly and raise "invalid integer" for the same
-# non-numeric strings. See QUIRKS.md "Tablerow vs For Attribute Coercion".
+# non-numeric strings. See docs/implementers/ruby-quirks.md for the broader
+# Ruby compatibility context.
 # All expectations validated verbatim against reference liquid.
 
 specs:

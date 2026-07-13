@@ -198,7 +198,8 @@ Some Liquid behaviors are counterintuitive. Flag these so implementers know the 
     the number of digits. This is surprising but matches liquid-ruby.
 ```
 
-See [QUIRKS.md](QUIRKS.md) for a catalog of known surprising behaviors.
+Ruby-specific surprises are captured directly in the compatibility specs and
+summarized in [Ruby quirks](docs/implementers/ruby-quirks.md).
 
 ### Link to Documentation for Complex Topics
 
