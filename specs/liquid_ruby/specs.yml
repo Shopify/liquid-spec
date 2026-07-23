@@ -6665,6 +6665,11 @@ specs:
   render_errors: false
   complexity: 90
   expected: result
+  hint: |
+    A block body made only of whitespace and non-output tags is blank. Liquid
+    removes its whitespace-only text nodes, while still executing assign. The
+    matching when therefore emits no spaces and r persists as "result". See
+    `liquid-spec docs grammar` under "Blank Block Bodies".
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/tags/standard_tag_test.rb#L263
 - name: StandardTagTest#test_case_when_comma_cbafe31a
   template: "{% case condition %}{% when 1, 2, 3 %} its 1 or 2 or 3 {% when 4 %} its
@@ -8401,6 +8406,11 @@ specs:
   url: https://github.com/Shopify/liquid/blob/59d8d0d22db3b4865deecde0ab2683bea25a1e9f/test/integration/variable_test.rb#L138
 - name: VariableTest#test_dynamic_find_var_with_drop_4ca2f954
   template: '{{ [list[settings.zero]["foo"]] }}'
+  error_mode: [lax, strict]
+  hint: |
+    A bare dynamic root, [expression], is legacy lax/strict syntax and is
+    rejected by strict2. Evaluate settings.zero through the drop, use it to
+    index list, then use the resulting value as the root variable name.
   environment:
     list:
     - foo: bar
@@ -8417,6 +8427,11 @@ specs:
   - ruby_drops
 - name: VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
   template: "{{ [list[settings.zero]] }}"
+  error_mode: [lax, strict]
+  hint: |
+    Bare-root [expression] lookup is supported by lax/strict but rejected by
+    strict2. The drop participates only in evaluating the nested index; the
+    resulting string is then resolved as a root variable name.
   environment:
     list:
     - foo

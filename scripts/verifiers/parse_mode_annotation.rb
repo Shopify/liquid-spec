@@ -57,8 +57,32 @@ module ParseModeAnnotationVerifier
           next
         end
 
-        # Check 2: for specs without errors:, run the template in all three
-        # modes. If the output differs, the spec needs an error_mode.
+        # Check 2a: parsing itself is independent of drops, filesystems, and
+        # generated environments. Always compare parse acceptance first. This
+        # closes a blind spot where instantiate:-using specs were skipped even
+        # though their syntax (for example a bare [root]) is mode-dependent.
+        parse_results = {}
+        [:lax, :strict, :strict2].each do |mode|
+          parse_results[mode] = parse_template(spec[:template], mode)
+        end
+
+        if parse_results.values.uniq.size > 1
+          offenders << {
+            file: spec[:file],
+            line: spec[:line],
+            name: spec[:name],
+            template: spec[:template][0, 60],
+            reason: "is accepted differently across parse modes",
+            lax: parse_results[:lax][0, 40],
+            strict: parse_results[:strict][0, 40],
+            strict2: parse_results[:strict2][0, 40],
+          }
+          next
+        end
+
+        # Check 2b: for self-contained specs, render in every mode as before.
+        # Rich host fixtures remain outside this phase, but no longer escape
+        # the parser-level check above.
         env = spec[:environment] || {}
         next if env.to_s.include?("instantiate:")
         next if spec[:filesystem]
@@ -72,8 +96,7 @@ module ParseModeAnnotationVerifier
           results[mode] = run_template(spec[:template], env, mode)
         end
 
-        unique = results.values.uniq
-        next if unique.size <= 1
+        next if results.values.uniq.size <= 1
 
         offenders << {
           file: spec[:file],
@@ -109,6 +132,13 @@ module ParseModeAnnotationVerifier
 
     private
 
+    def parse_template(template, mode)
+      Liquid::Template.parse(template, error_mode: mode)
+      "OK"
+    rescue => e
+      "ERROR: #{e.class.name.split('::').last}"
+    end
+
     def run_template(template, env, mode)
       parsed = Liquid::Template.parse(template, error_mode: mode)
       result = parsed.render(env)
@@ -141,7 +171,14 @@ module ParseModeAnnotationVerifier
         name_lines = index_name_lines(file)
         specs.each_with_index do |s, i|
           next unless s.is_a?(Hash)
+          # Older recordings may carry only the parse-mode feature tag. The
+          # runner treats that tag as a declaration during corpus migration, so
+          # the verifier must do the same.
+          legacy_modes = [:strict2, :strict, :lax].select do |mode|
+            Array(s["features"]).map(&:to_s).include?("#{mode}_parsing")
+          end
           spec_mode = s["error_mode"] || meta_mode || suite_mode
+          spec_mode ||= legacy_modes unless legacy_modes.empty?
           yield(
             file: file.sub("specs/", ""),
             line: name_lines[s["name"]],

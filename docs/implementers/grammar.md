@@ -56,6 +56,26 @@ Template → TemplateLexer → [RAW, TAG, VAR] → ExpressionLexer → tokens
 {% raw %}{{ not.parsed }}{% endraw %}
 ```
 
+Raw content is also exempt from delimiter trimming at its own boundaries. The
+opening tag's `{%-` may trim source *before* the raw block, and the closing tag's
+`-%}` may trim source *after* it, but the opening `-%}` must not left-trim raw
+content and `{%- endraw %}` must not right-trim raw content. Represent raw text
+with a distinct token/node so a later trim marker cannot accidentally modify it.
+
+### Irregularity: Blank Block Bodies
+
+For `if`/`unless`, `case`, and `for`, the reference detects bodies made entirely
+of blank nodes (whitespace-only text plus non-output tags such as `assign`,
+`capture`, and comments). It removes the whitespace-only text from such a body:
+
+```liquid
+{% if true %} {% assign x = "set" %} {% endif %}{{ x }} → set
+{% if true %} visible {% endif %}                         → " visible "
+```
+
+This is not global whitespace trimming. Preserve whitespace whenever any node in
+the body can produce visible output.
+
 ---
 
 ## Stage 2: Expression Lexer
@@ -99,32 +119,52 @@ nil  null  true  false  empty  blank  and  or  contains
 
 ## Expression Grammar
 
+Liquid has two expression contexts. Treating every output or assignment as a
+boolean expression is observably wrong.
+
 ```ebnf
-expression     = logical_expr
+(* Used by if/unless/elsif conditions. RIGHT-ASSOCIATIVE—unusual! *)
+condition_expr = comparison_expr
+               | comparison_expr 'and' condition_expr
+               | comparison_expr 'or' condition_expr
 
-(* RIGHT-ASSOCIATIVE—unusual! *)
-logical_expr   = comparison_expr
-               | comparison_expr 'and' logical_expr
-               | comparison_expr 'or' logical_expr
+comparison_expr = value_expr (comp_op value_expr)*
+comp_op          = '==' | '!=' | '<>' | '<' | '<=' | '>' | '>=' | 'contains'
 
-comparison_expr = primary (comp_op primary)*
-comp_op         = '==' | '!=' | '<>' | '<' | '<=' | '>' | '>=' | 'contains'
+(* Used by output, echo, assign, collections, and filter arguments. *)
+value_expr      = literal | variable | range
+range           = '(' value_expr '..' value_expr ')'
 
-primary        = literal
-               | variable
-               | '(' expression ')'           (* grouped *)
-               | '(' expression '..' expression ')'  (* range *)
-               | '[' expression ']' property* (* dynamic root *)
+literal         = 'nil' | 'null' | 'true' | 'false'
+                | 'empty' | 'blank'
+                | NUMBER | STRING
 
-literal        = 'nil' | 'null' | 'true' | 'false'
-               | 'empty' | 'blank'
-               | NUMBER | STRING
-
-variable       = IDENTIFIER property*
-property       = '.' IDENTIFIER
-               | '[' expression ']'
-               | '=>' IDENTIFIER              (* lax mode *)
+variable        = IDENTIFIER property*
+property        = '.' IDENTIFIER
+                | '[' value_expr ']'
+                | '=>' IDENTIFIER              (* lax mode *)
 ```
+
+Parentheses are not general grouping syntax: `(a..b)` is a range, while `(a)` is
+rejected by strict parsers. A dynamic root such as `[key]` is accepted by legacy
+lax/strict parsing but rejected in `strict2`; use `self[key]` in portable code.
+
+### Irregularity: Operators in Value Contexts
+
+Operators do not turn a value context into a condition. In lax mode, the
+reference consumes the first value and ignores an operator-looking suffix;
+strict and strict2 reject that trailing syntax:
+
+```liquid
+                                  lax output   strict/strict2
+{{ 1 == 2 }}                         1         parse error
+{{ true and false }}                 true      parse error
+{% assign x = "a" contains "a" %}    x = "a"  parse error
+```
+
+Conditions evaluate those operators normally in every applicable mode. Keep
+`value_expr` and `condition_expr` as separate parser entry points even if they
+share tokens and AST nodes, and make end-of-expression validation mode-aware.
 
 ### Irregularity: Keywords as Variables
 
@@ -149,11 +189,11 @@ a or b and c   →   a or (b and c)
 ## Filter Grammar
 
 ```ebnf
-filtered_expr  = expression ('|' filter)*
+filtered_expr  = value_expr ('|' filter)*
 filter         = IDENTIFIER (':' arguments)?
 arguments      = argument (',' argument)*
-argument       = IDENTIFIER ':' expression    (* keyword *)
-               | expression                   (* positional *)
+argument       = IDENTIFIER ':' value_expr    (* keyword *)
+               | value_expr                   (* positional *)
 ```
 
 ### Irregularity: Keyword Argument Order
@@ -178,25 +218,25 @@ echo_tag   = '{%' 'echo' filtered_expr '%}'
 ### Control Flow
 
 ```ebnf
-if_tag     = '{%' 'if' expression '%}'
+if_tag     = '{%' 'if' condition_expr '%}'
              block
-             ('{%' 'elsif' expression '%}' block)*
+             ('{%' 'elsif' condition_expr '%}' block)*
              ('{%' 'else' '%}' block)?
              '{%' 'endif' '%}'
 
-unless_tag = '{%' 'unless' expression '%}'
+unless_tag = '{%' 'unless' condition_expr '%}'
              block
-             ('{%' 'elsif' expression '%}' block)*   (* yes, elsif in unless *)
+             ('{%' 'elsif' condition_expr '%}' block)* (* yes, elsif in unless *)
              ('{%' 'else' '%}' block)?
              '{%' 'endunless' '%}'
 
-case_tag   = '{%' 'case' expression '%}'
+case_tag   = '{%' 'case' value_expr '%}'
              ignored_content                          (* DISCARDED *)
              (when_clause | else_clause)*
              '{%' 'endcase' '%}'
 
 when_clause = '{%' 'when' when_values '%}' block
-when_values = expression ((',' | 'or') expression)*
+when_values = value_expr ((',' | 'or') value_expr)*
 
 else_clause = '{%' 'else' '%}' block
 ```
@@ -204,27 +244,29 @@ else_clause = '{%' 'else' '%}' block
 ### Irregularity: Case/When
 
 - Content between `{% case %}` and first `{% when %}` is **discarded**
-- Multiple `{% else %}` clauses allowed—each runs only if no prior `when` matched
+- Multiple `{% else %}` clauses are allowed and may be interleaved with `when`;
+  each else renders if no earlier `when` matched
+- A matching `when` does **not** break the case: every matching `when` body renders
 - `when` can use comma OR `or` keyword for multiple values
 
 ### Loops
 
 ```ebnf
-for_tag    = '{%' 'for' IDENTIFIER 'in' expression for_opts '%}'
+for_tag    = '{%' 'for' IDENTIFIER 'in' value_expr for_opts '%}'
              block
              ('{%' 'else' '%}' block)?
              '{%' 'endfor' '%}'
 
 for_opts   = (limit | offset | 'reversed')*   (* order independent *)
-limit      = 'limit' ':' expression
-offset     = 'offset' ':' (expression | 'continue')
+limit      = 'limit' ':' value_expr
+offset     = 'offset' ':' (value_expr | 'continue')
 
-tablerow   = '{%' 'tablerow' IDENTIFIER 'in' expression tablerow_opts '%}'
+tablerow   = '{%' 'tablerow' IDENTIFIER 'in' value_expr tablerow_opts '%}'
              block
              '{%' 'endtablerow' '%}'
 
 tablerow_opts = (cols | limit | offset)*      (* no reversed, no else *)
-cols       = 'cols' ':' (expression | 'nil')
+cols       = 'cols' ':' (value_expr | 'nil')
 ```
 
 ### Irregularity: offset:continue
@@ -282,12 +324,12 @@ Track nesting depth. Also track raw depth independently:
 ```ebnf
 render     = '{%' 'render' STRING render_opts '%}'
 render_opts = (with_clause | for_clause | as_clause | kwarg)*
-with_clause = 'with' expression
-for_clause  = 'for' expression
+with_clause = 'with' value_expr
+for_clause  = 'for' value_expr
 as_clause   = 'as' IDENTIFIER
-kwarg       = IDENTIFIER ':' expression
+kwarg       = IDENTIFIER ':' value_expr
 
-include    = '{%' 'include' (STRING | expression) include_opts '%}'
+include    = '{%' 'include' (STRING | value_expr) include_opts '%}'
 ```
 
 ### Irregularity: Render vs Include

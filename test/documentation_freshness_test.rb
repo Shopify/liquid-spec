@@ -9,7 +9,12 @@ class DocumentationFreshnessTest < Minitest::Test
   DOCUMENTATION_FILES = Dir.glob(
     File.join(ROOT, "**", "{README,AGENTS}.md"),
     File::FNM_DOTMATCH
-  ).sort.freeze
+  ).reject do |path|
+    # A local `bundle install --path vendor/bundle` must not turn dependency
+    # documentation into project documentation or make the test environment-
+    # dependent.
+    path.start_with?(File.join(ROOT, "vendor", File::SEPARATOR))
+  end.sort.freeze
 
   STALE_PATTERNS = {
     /\bliquid_adapter(?:_jsonrpc)?\.rb\b/ => "pre-2.0 generated adapter filename",

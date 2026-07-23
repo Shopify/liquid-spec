@@ -391,9 +391,16 @@ Liquid uses a stack of scopes for variable lookup.
 
 ### Assignment Rules
 
-- **`{% assign x = value %}`** - Assigns to current (top) scope
-- **`{% capture x %}`** - Assigns to current (top) scope
-- **`{% for %}`** - Pushes a new scope, pops when done
+Liquid has two distinct write paths:
+
+- **`{% assign x = value %}`** - Writes to the persistent bottom scope
+- **`{% capture x %}`** - Captures output and writes it to the persistent bottom scope
+- **`{% for %}`** - Pushes a temporary top scope for the loop variable and
+  `forloop`, then pops it when done
+
+Consequently, an assignment inside a loop persists after `endfor`, but the loop
+variable does not. Do not route both operations through one generic "current scope"
+setter.
 
 ### Pseudocode
 
@@ -413,8 +420,11 @@ Context:
                 return scope[key]
         return nil
 
-    function assign(key, value):
-        scopes[0][key] = value  // Always top scope
+    function assign_tag(key, value):
+        scopes[-1][key] = value  // Persistent template assignment
+
+    function set_local(key, value):
+        scopes[0][key] = value   // Temporary loop-local binding
 ```
 
 ---

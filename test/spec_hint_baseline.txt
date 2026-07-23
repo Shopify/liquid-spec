@@ -637,7 +637,6 @@ specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_1c4e50a7
 specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_24e99100
 specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_2fc6537a
 specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_48e9912a
-specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_and_blank_body_9bbeb8c8
 specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_cbafe31a
 specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_ccd1244b
 specs/liquid_ruby/specs.yml	StandardTagTest#test_case_when_comma_d6233a08
@@ -784,8 +783,6 @@ specs/liquid_ruby/specs.yml	UnlessElseTagTest#test_unless_else_in_loop_dea538d4
 specs/liquid_ruby/specs.yml	UnlessElseTagTest#test_unless_in_loop_ecf209a0
 specs/liquid_ruby/specs.yml	VariableTest#test_double_nested_variable_lookup_b9f99226
 specs/liquid_ruby/specs.yml	VariableTest#test_dynamic_find_var_8fd4cb4f
-specs/liquid_ruby/specs.yml	VariableTest#test_dynamic_find_var_with_drop_4ca2f954
-specs/liquid_ruby/specs.yml	VariableTest#test_dynamic_find_var_with_drop_d1fd92c9
 specs/liquid_ruby/specs.yml	VariableTest#test_false_renders_as_false_405c9f47
 specs/liquid_ruby/specs.yml	VariableTest#test_false_renders_as_false_ee9dc33a
 specs/liquid_ruby/specs.yml	VariableTest#test_ignore_unknown_614171b5

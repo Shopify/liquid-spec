@@ -19,7 +19,9 @@ Variable lookup checks these layers in order:
 3. static_environments[] ← Global data (shop, theme settings)
 ```
 
-First match wins. Writes always go to `scopes[0]` (top of stack).
+First match wins. Do not use one generic write rule: loop-local bindings go to
+`scopes[0]` (the top), while `{% assign %}` and `{% capture %}` deliberately write
+to `scopes[-1]` (the persistent template scope).
 
 ## The Three Layers
 
@@ -36,10 +38,14 @@ scopes = [
 ```
 
 **Key behaviors:**
-- Lookups search top-to-bottom, return first match
-- Writes (`{% assign %}`) always go to `scopes[0]`
-- `for`/`tablerow` push a scope on entry, pop on exit
-- The bottom scope (`scopes[-1]`) is the `outer_scope` passed to render
+- Lookups search top-to-bottom and return the first match.
+- `for`/`tablerow` push a temporary top scope for their loop variable and loop drop,
+  then pop it on exit.
+- `{% assign %}` and `{% capture %}` write to the bottom scope (`scopes[-1]`), so
+  their values survive a loop scope being popped.
+- The bottom scope is the persistent `outer_scope` passed to render.
+- A low-level context setter may still target `scopes[0]`; the reference uses that
+  path for loop-local bindings. It is not the semantics of the `assign` tag.
 
 ### Layer 2: Environments
 
@@ -121,13 +127,23 @@ function evaluate_value(value, state):
   return value
 ```
 
-### Variable Assignment
+### Variable Writes
+
+Keep persistent template assignment separate from temporary local binding:
 
 ```
-function assign_variable(state, key, value):
-  # Always write to top scope
+function assign_tag_variable(state, key, value):
+  # {% assign %} and {% capture %}: survives temporary loop scopes
+  state.scopes[-1][key] = value
+
+function set_local_variable(state, key, value):
+  # for/tablerow variables and their loop metadata
   state.scopes[0][key] = value
 ```
+
+Collapsing these operations into one setter is a common implementation bug. For
+example, an assignment made inside `for` must remain visible after `endfor`, while
+the loop variable itself must disappear.
 
 ### Scope Stack Operations
 
@@ -256,9 +272,12 @@ Output: `local` (found in scopes)
 {% endfor %}
 outside: {{ x }}
 ```
-Output: `inside: inner outside: outer`
+Output: `inside: inner outside: inner`
 
-`{% assign %}` always writes to the top scope. The `for` tag pushes a new scope, so the inner assignment shadows `x` inside the loop and is discarded when the loop scope is popped.
+The `for` tag pushes a temporary scope for `i` and `forloop`, but `{% assign %}`
+writes to the persistent bottom scope. The assignment therefore changes `x` for
+the rest of the loop and remains visible after the loop. This asymmetry is
+intentional reference behavior.
 
 ### Environment Override
 
@@ -313,8 +332,9 @@ function evaluate_value(value, state):
 ## Implementation Checklist
 
 1. **Three-layer lookup:** scopes → environments → static_environments
-2. **Scope stack:** push/pop for `for`, `tablerow`, `capture`, etc.
-3. **Writes to top:** `{% assign %}` always writes to `scopes[0]`
+2. **Scope stack:** push/pop temporary scopes for `for` and `tablerow`; `capture`
+   captures output but does not isolate assignments.
+3. **Two write paths:** loop locals → `scopes[0]`; `assign`/`capture` → `scopes[-1]`.
 4. **Squash on init:** Environment values override matching outer_scope keys
 5. **Register store copy-on-write:** New wrapper for isolated contexts
 6. **Depth limiting:** Track `base_scope_depth` across isolated contexts
@@ -323,7 +343,8 @@ function evaluate_value(value, state):
 ## Common Pitfalls
 
 1. **Forgetting squash behavior:** Tests may fail if outer_scope values aren't overridden by environments
-2. **Wrong scope for assigns:** Must write to `scopes[0]`, not search and update
+2. **Wrong scope for assigns:** `assign`/`capture` must write to the persistent
+   bottom scope; only temporary loop bindings belong in the top scope.
 3. **Register store leaking:** Isolated contexts must wrap parent registers, not share directly
 4. **Depth check timing:** Must check before pushing, not after
 5. **Callable replacement:** Must replace in the original hash, not just return the value

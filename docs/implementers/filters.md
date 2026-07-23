@@ -131,6 +131,17 @@ Most languages have both variants in their standard library:
 
 ## String Filters
 
+### `split`
+
+`split` uses ordinary delimiter splitting **without** a keep-trailing-empty
+option. An empty delimiter splits into characters, and trailing empty fields are
+dropped:
+
+```liquid
+{{ "hi" | split: "" | join: "-" }}   → h-i
+{{ "a,b," | split: "," | join: "-" }} → a-b
+```
+
 ### `escape` / `escape_once` / `h`
 
 HTML entity encoding.
@@ -184,6 +195,25 @@ Note: The newline is preserved after the `<br />` tag.
 ---
 
 ## Array Filters
+
+### Shared Input Normalization
+
+Most array-style filters do **not** use the same conversion as a `for` loop. The
+reference normalizes filter input through an `InputIterator`-like abstraction:
+
+| Input | Filter iterator sees |
+|-------|----------------------|
+| Array | Recursively flattened elements |
+| Hash/map | One element: the whole hash (`[hash]`), not key/value pairs |
+| Other enumerable | The enumerable itself |
+| nil | Empty sequence |
+| Other scalar | One element (`[value]`) |
+
+This affects `join`, `sort`, `map`, `where`, `find`, `compact`, `concat`,
+`reverse`, `uniq`, and `sum`. For example, mapping property `"a"` over
+`{"a": "b"}` returns `b`, because the hash is the single item whose property is
+looked up. By contrast, iterating a hash with `{% for %}` may yield key/value
+pairs. Keep filter normalization separate from general loop iteration.
 
 ### `sort` / `sort_natural`
 
