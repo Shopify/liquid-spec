@@ -326,7 +326,7 @@ out of regular runs.
 | Suite | Tests | Description |
 |-------|-------|-------------|
 | **basics** | 945 | Essential Liquid features - start here! Ordered by complexity with implementation hints |
-| **liquid_ruby** | 2,097 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
+| **liquid_ruby** | 2,101 | Core Liquid specs from [Shopify/liquid](https://github.com/Shopify/liquid) integration tests |
 | **liquid_ruby_lax** | 121 | Lax-mode reference behavior |
 | **parser_errors** | 1,905 | Strict parser error compatibility and mutation matrices |
 | **partials** | 12 | Include/render focused compatibility specs and timings |
