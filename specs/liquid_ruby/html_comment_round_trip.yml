@@ -1,0 +1,63 @@
+---
+# HTML comments are not Liquid syntax. `<!--`, `-->` and everything between
+# them are ordinary literal text: they must pass through the parser, through
+# {% capture %}, and through string filters completely unmodified.
+#
+# Themes rely on this to build string-encoded arrays: Horizon's
+# resource-list-carousel captures slides separated by a literal
+# `<!--@list/split-->` marker, then recovers the array with
+# `| split: '<!--@list/split-->'`. An implementation that strips, escapes,
+# or otherwise rewrites HTML comments anywhere in that pipeline breaks the
+# round trip. All expectations validated verbatim against reference liquid.
+#
+# Ported from a storefront integration test per
+# https://github.com/shop/issues-merchant-workflows/issues/3882.
+
+specs:
+
+- name: html_comment_survives_capture_verbatim
+  template: "{% capture x %}A<!--@d-->B{% endcapture %}{{ x }}"
+  expected: "A<!--@d-->B"
+  complexity: 121
+  hint: |
+    HTML comments have no meaning to Liquid. `<!--@d-->` is plain literal
+    text, so capture must store it byte-for-byte and output it unchanged.
+    Do not strip, escape, or special-case `<!-- ... -->` sequences anywhere
+    in the parse or render pipeline — only `{% %}` and `{{ }}` are Liquid
+    syntax.
+
+- name: split_on_html_comment_delimiter
+  template: "{% assign parts = \"A<!--@d-->B\" | split: \"<!--@d-->\" %}{{ parts | size }}:{{ parts[0] }}:{{ parts[1] }}"
+  expected: "2:A:B"
+  complexity: 122
+  hint: |
+    The split filter takes an arbitrary literal delimiter string — including
+    one that looks like an HTML comment. Splitting "A<!--@d-->B" on
+    "<!--@d-->" yields exactly two elements: "A" and "B". If your
+    implementation rewrites or strips HTML comments in string values or
+    filter arguments, the delimiter never matches and this fails.
+
+- name: html_comment_capture_split_round_trip
+  template: "{% capture x %}A<!--@d-->B{% endcapture %}{% assign parts = x | split: \"<!--@d-->\" %}{{ parts | size }}:{{ parts[0] }}:{{ parts[1] }}"
+  expected: "2:A:B"
+  complexity: 123
+  hint: |
+    The full round trip: an HTML comment written inside a capture body must
+    survive verbatim so a later `split` on the exact same comment text can
+    find it. Capture stores raw rendered text; split matches it literally;
+    the result is two elements "A" and "B". Themes use this pattern to
+    encode arrays as delimiter-joined strings, so any HTML-comment
+    rewriting in capture or split breaks real templates.
+
+- name: html_comment_delimited_list_built_in_loop_round_trips
+  template: "{% capture slides %}{% for i in (1..3) %}slide{{ i }}<!--@list/split-->{% endfor %}{% endcapture %}{% assign parts = slides | split: \"<!--@list/split-->\" %}{{ parts | size }}:{{ parts | join: \",\" }}"
+  expected: "3:slide1,slide2,slide3"
+  complexity: 124
+  hint: |
+    The realistic theme pattern: a loop appends each item plus a trailing
+    `<!--@list/split-->` marker into a capture, then split recovers the
+    items. Note the captured string ENDS with the delimiter, and split
+    (like Ruby's String#split) drops trailing empty strings, so three
+    items with three trailing markers yield exactly 3 elements — not 4
+    with an empty tail. The comment marker must round-trip verbatim
+    through capture, the for loop body, and split.
