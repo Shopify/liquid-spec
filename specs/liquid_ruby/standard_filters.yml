@@ -979,6 +979,7 @@
   expected: 'woot: 9'
   features:
   - ruby_drops
+  - to_liquid_call_count
 - name: StandardFilterTest#test_default_446f9bac
   template: "{{ a0 | default }}"
   environment:

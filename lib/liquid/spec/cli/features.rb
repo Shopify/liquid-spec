@@ -82,6 +82,13 @@ module Liquid
             recommendation: :unnecessary,
             note: "Ruby implementation detail. Tests internal drop mechanics.",
           },
+          to_liquid_call_count: {
+            description: "Tests asserting Ruby's exact to_liquid invocation count",
+            recommendation: :unnecessary,
+            note: "Ruby implementation detail. Ruby liquifies a value in find_variable and " \
+              "again in filter invoke; engines that liquify once (or lower filters like " \
+              "`default` to bytecode) legitimately observe a different count.",
+          },
           drop_class_output: {
             description: "Tests expecting drop class name in output (Liquid::Drop)",
             recommendation: :unnecessary,
