@@ -1,0 +1,106 @@
+---
+- name: ForTagTest#test_assigned_dynamic_inclusive_and_exclusive_ranges_preserve_slice_semantics_16239422
+  template: "{% assign first = 1 %}{% assign last = 5 %}{% for i in (first..last)
+    offset:-2 limit:4 %}{{ i }}{% endfor %}"
+  render_errors: false
+  expected: '12'
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/for_tag_test.rb#L539
+  complexity: 1000
+- name: ForTagTest#test_assigned_dynamic_inclusive_and_exclusive_ranges_preserve_slice_semantics_b1b92eca
+  template: "{% for i in numbers %}{{ i }}{% endfor %}"
+  environment:
+    numbers:
+      'instantiate:Range:':
+      - 1
+      - 5
+      - true
+  render_errors: false
+  expected: '1234'
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/for_tag_test.rb#L540
+  features:
+  - ruby_drops
+  complexity: 1000
+- name: ForTagTest#test_assigned_dynamic_inclusive_and_exclusive_ranges_preserve_slice_semantics_c8c4a23c
+  template: "{% for i in (1..5) offset:2 limit:-1 %}{{ i }}{% else %}empty{% endfor
+    %}"
+  render_errors: false
+  expected: empty
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/for_tag_test.rb#L541
+  complexity: 1000
+- name: ForTagTest#test_range_break_does_not_charge_unvisited_items_or_shorten_continuation_541d6967
+  template: "{% for i in (1..10) limit:5 %}{% break %}{% endfor %}{% for i in (1..10)
+    offset:continue limit:2 %}{{ i }}{% endfor %}"
+  render_errors: false
+  expected: '67'
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/for_tag_test.rb#L532
+  complexity: 1000
+- name: TableRowTest#test_assigned_endless_range_with_a_limit_4423c4c9
+  template: "{% tablerow i in numbers limit:2 %}{{ i }}{% endtablerow %}"
+  environment:
+    numbers:
+      'instantiate:Range:':
+      - 1
+      -
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/table_row_test.rb#L584
+  features:
+  - ruby_drops
+  complexity: 1000
+- name: TableRowTest#test_assigned_endless_range_with_a_limit_9b47203f
+  template: "{% tablerow i in numbers limit:-1 %}{{ i }}{% endtablerow %}"
+  environment:
+    numbers:
+      'instantiate:Range:':
+      - 1
+      -
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    </tr>
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/table_row_test.rb#L594
+  features:
+  - ruby_drops
+  complexity: 1000
+- name: TableRowTest#test_assigned_endless_range_with_a_limit_cc799bee
+  template: "{% tablerow i in numbers limit:0 %}{{ i }}{% endtablerow %}"
+  environment:
+    numbers:
+      'instantiate:Range:':
+      - 1
+      -
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    </tr>
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/table_row_test.rb#L589
+  features:
+  - ruby_drops
+  complexity: 1000
+- name: TableRowTest#test_tablerow_assigned_dynamic_and_exclusive_ranges_3afac3d3
+  template: "{% tablerow i in numbers offset:1 %}{{ i }}{% endtablerow %}"
+  environment:
+    numbers:
+      'instantiate:Range:':
+      - 1
+      - 4
+      - true
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    <td class="col1">2</td><td class="col2">3</td></tr>
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/table_row_test.rb#L561
+  features:
+  - ruby_drops
+  complexity: 1000
+- name: TableRowTest#test_tablerow_assigned_dynamic_and_exclusive_ranges_7ce37019
+  template: "{% assign first = 1 %}{% assign last = 4 %}{% tablerow i in (first..last)
+    offset:1 %}{{ i }}{% endtablerow %}"
+  render_errors: false
+  expected: |
+    <tr class="row1">
+    <td class="col1">2</td><td class="col2">3</td><td class="col3">4</td></tr>
+  url: https://github.com/Shopify/liquid/blob/cdba4e9137d50e3a4a8f714d383e6c704a809bd1/test/integration/tags/table_row_test.rb#L557
+  complexity: 1000

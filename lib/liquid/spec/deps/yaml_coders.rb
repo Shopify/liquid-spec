@@ -13,10 +13,14 @@ require "yaml"
 
 # --- Core type coders ---
 
-# Range serializes as instantiate:Range: [begin, end]
+# Inclusive ranges retain the historical [begin, end] representation. Exclusive
+# ranges append true so their endpoint semantics survive capture; nil end supports
+# endless ranges without a special representation.
 class Range
   def encode_with(coder)
-    coder.represent_map(nil, { "instantiate:Range:" => [self.begin, self.end] })
+    params = [self.begin, self.end]
+    params << true if exclude_end?
+    coder.represent_map(nil, { "instantiate:Range:" => params })
   end
 end
 

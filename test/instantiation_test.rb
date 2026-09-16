@@ -16,8 +16,8 @@ class InstantiationTest < Minitest::Test
     end
 
     Liquid::Spec::ClassRegistry.register("Range") do |params|
-      if params.is_a?(Array) && params.size == 2
-        Range.new(params[0], params[1])
+      if params.is_a?(Array) && (2..3).cover?(params.size)
+        Range.new(params[0], params[1], params[2] || false)
       else
         params
       end
