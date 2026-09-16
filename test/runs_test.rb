@@ -14,10 +14,24 @@ class RunsTest < Minitest::Test
     assert_includes names, "json_rpc_ruby_liquid"
     refute_includes names, "liquid_c"
     refute_includes names, "liquid_c_strict"
+    refute_includes names, "liquid_ruby_range_resource_limits"
 
     runs = Liquid::Spec::CLI::Runs.new
     runs.add_all_builtin_adapters
     assert_equal names.sort, runs.adapter_names.sort
+  end
+
+  def test_default_builtin_adapters_skip_staged_range_resource_limit_specs
+    Liquid::Spec::CLI::Runs.default_builtin_adapter_paths.each do |path|
+      assert_includes File.read(path), ":range_resource_limits", "#{File.basename(path)} must skip staged range cases"
+    end
+  end
+
+  def test_explicit_liquid_c_adapters_skip_staged_range_resource_limit_specs
+    %w[liquid_c.rb liquid_c_strict.rb].each do |name|
+      path = File.expand_path("../examples/#{name}", __dir__)
+      assert_includes File.read(path), ":range_resource_limits", "#{name} must skip staged range cases"
+    end
   end
 
   def test_legacy_liquid_c_adapter_remains_explicitly_addressable

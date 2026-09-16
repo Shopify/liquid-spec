@@ -80,6 +80,7 @@ module LiquidSpec
     strict2_blank_body_errors: "strict2 surfaces inline errors even when the block body is blank",
     drops: "Standard test drop library (BooleanDrop, MethodDrop, SequenceDrop, etc.)",
     shopify_resource_limits: "Shopify resource limit enforcement (render score tracking, cumulative limits across partials)",
+    range_resource_limits: "Post-5.13 range iteration resource-limit accounting",
     randomness: "Specs using generated random values for increased coverage",
   }.freeze
   class Configuration

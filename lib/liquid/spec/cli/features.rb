@@ -129,6 +129,11 @@ module Liquid
             recommendation: :optional,
             note: "Score bookkeeping and limit enforcement is implementation plumbing, not Liquid semantics. Recursion depth / stack overflow specs are core; score-counting specs are opt-out.",
           },
+          range_resource_limits: {
+            description: "Post-5.13 range iteration resource-limit accounting",
+            recommendation: :optional,
+            note: "Requires the range iteration accounting introduced after Liquid 5.13. Keep it disabled until that behavior is implemented.",
+          },
         }.freeze
 
         RECOMMENDATION_LABELS = {

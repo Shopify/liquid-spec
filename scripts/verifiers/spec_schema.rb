@@ -51,6 +51,7 @@ VALID_FEATURES = %w[
   drops
   randomness
   shopify_resource_limits
+  range_resource_limits
   activesupport
 ].freeze
 
