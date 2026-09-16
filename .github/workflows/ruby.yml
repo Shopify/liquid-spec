@@ -21,20 +21,6 @@ jobs:
       run: bundle exec rake prepush
     - name: Run liquid-spec against reference adapter
       run: bundle exec rake run
-    - name: Checkout range resource-limit reference
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        repository: Shopify/liquid
-        ref: cdba4e9137d50e3a4a8f714d383e6c704a809bd1
-        path: liquid-range-reference
-    - name: Run staged range resource-limit specs against candidate
-      env:
-        LIQUID_RANGE_REFERENCE_PATH: ${{ github.workspace }}/liquid-range-reference
-      run: >-
-        bundle exec ruby -Ilib bin/liquid-spec run ci/liquid_ruby_range_resource_limits.rb
-        -s basics
-        -n '^(for_dynamic_range_empty_body_charges_each_item|tablerow_literal_range_empty_body_charges_each_item|for_literal_range_reversed_offset_limit_keeps_metadata|tablerow_literal_range_offset_limit_keeps_metadata|range_score_is_cumulative_across_isolated_render_partials|tablerow_capture_output_respects_assign_score_limit|tablerow_break_final_markup_respects_render_length_limit|for_nonempty_range_at_render_score_boundary|for_nonempty_range_over_render_score_boundary|for_offset_range_does_not_charge_skipped_items)$'
-        --no-max-failures
     - name: Check feature tag coverage
       run: bundle exec rake coverage_check
 

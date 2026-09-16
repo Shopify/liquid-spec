@@ -31,13 +31,6 @@ class FeatureCoverageTest < Minitest::Test
     assert_equal [:shopify_filters], result.stale_baseline
   end
 
-  def test_reference_adapter_paths_include_ci_range_candidate
-    base = File.expand_path("..", __dir__)
-    candidate = File.join(base, "ci/liquid_ruby_range_resource_limits.rb")
-
-    assert_includes FeatureCoverage.reference_adapter_paths(base), candidate
-  end
-
   private
 
   def check(orphans:, baseline:)

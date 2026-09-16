@@ -14,7 +14,6 @@ class RunsTest < Minitest::Test
     assert_includes names, "json_rpc_ruby_liquid"
     refute_includes names, "liquid_c"
     refute_includes names, "liquid_c_strict"
-    refute_includes names, "liquid_ruby_range_resource_limits"
 
     runs = Liquid::Spec::CLI::Runs.new
     runs.add_all_builtin_adapters

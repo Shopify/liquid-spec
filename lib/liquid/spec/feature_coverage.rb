@@ -5,8 +5,6 @@ require "set"
 module Liquid
   module Spec
     module FeatureCoverage
-      REFERENCE_ADAPTER_PATHS = %w[examples/*.rb ci/*.rb].freeze
-
       Result = Struct.new(:known_orphans, :new_orphans, :stale_baseline) do
         def success?
           new_orphans.empty? && stale_baseline.empty?
@@ -14,10 +12,6 @@ module Liquid
       end
 
       module_function
-
-      def reference_adapter_paths(base)
-        REFERENCE_ADAPTER_PATHS.flat_map { |glob| Dir.glob(File.join(base, glob)) }.sort
-      end
 
       def check(spec_tags:, adapter_missing:, baseline:)
         orphans = Set.new(spec_tags)

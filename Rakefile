@@ -78,7 +78,7 @@ task :coverage_check do
   # Extract missing_features from each reference adapter via static analysis.
   # We parse the config.missing_features = [...] line rather than loading the
   # adapter (which would require all adapter dependencies to be installed).
-  adapter_files = Liquid::Spec::FeatureCoverage.reference_adapter_paths(base)
+  adapter_files = Dir.glob(File.join(base, "examples/*.rb"))
   adapter_missing = {}
   adapter_files.each do |path|
     source = File.read(path, encoding: Encoding::UTF_8)
@@ -89,7 +89,7 @@ task :coverage_check do
   end
 
   if adapter_missing.empty?
-    abort "Coverage check FAILED — no reference adapters found"
+    abort "Coverage check FAILED — no reference adapters found in examples/"
   end
 
   baseline_path = File.join(base, "test/feature_coverage_baseline.txt")
