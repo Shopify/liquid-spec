@@ -5,6 +5,7 @@ require "rake/testtask"
 require "fileutils"
 
 require_relative "lib/liquid/spec/version"
+require_relative "lib/liquid/spec/feature_coverage"
 
 task default: :prepush
 
@@ -91,16 +92,30 @@ task :coverage_check do
     abort "Coverage check FAILED — no reference adapters found in examples/"
   end
 
-  # Check: every tag must be NOT-missing in at least one adapter
-  orphans = spec_tags.reject do |tag|
-    adapter_missing.any? { |_, missing| !missing.include?(tag) }
+  baseline_path = File.join(base, "test/feature_coverage_baseline.txt")
+  result = Liquid::Spec::FeatureCoverage.check(
+    spec_tags: spec_tags,
+    adapter_missing: adapter_missing,
+    baseline: Liquid::Spec::FeatureCoverage.load_baseline(baseline_path),
+  )
+
+  unless result.known_orphans.empty?
+    puts "Coverage check: known uncovered feature-tag debt:\n  #{result.known_orphans.join(', ')}"
   end
 
-  if orphans.any?
-    abort "Coverage check FAILED — no reference adapter covers these tags:\n  #{orphans.sort.join(', ')}\n\nAdd an example adapter that does not include these in missing_features."
-  else
-    puts "Coverage check passed: all #{spec_tags.size} feature tags covered across #{adapter_missing.size} reference adapters."
+  failures = []
+  unless result.new_orphans.empty?
+    failures << "new uncovered feature tags:\n  #{result.new_orphans.join(', ')}"
   end
+  unless result.stale_baseline.empty?
+    failures << "stale baseline entries:\n  #{result.stale_baseline.join(', ')}"
+  end
+
+  unless failures.empty?
+    abort "Coverage check FAILED — baseline mismatch:\n#{failures.join("\n")}\n\nAdd reference coverage for new tags or update test/feature_coverage_baseline.txt for intentional, current debt."
+  end
+
+  puts "Coverage check passed: all #{spec_tags.size} feature tags are covered or acknowledged across #{adapter_missing.size} reference adapters."
 end
 
 desc "Run all spec verifiers (prints findings, does not modify files)"
