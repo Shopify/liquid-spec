@@ -101,11 +101,12 @@ class JsonRpcSubprocessTest < Minitest::Test
   def test_timeout_kills_wedged_server_and_next_request_restarts_cleanly
     subprocess = Liquid::Spec::JsonRpc::Subprocess.new(
       "ruby #{STALLING_SERVER_PATH}",
-      timeout: 0.1,
+      timeout: 1.0,
     )
     subprocess.initialize!
     first_pid = subprocess.instance_variable_get(:@wait_thr).pid
 
+    subprocess.instance_variable_set(:@timeout, 0.1)
     error = assert_raises(Liquid::Spec::JsonRpc::SubprocessError) do
       subprocess.send_request("stall", {})
     end
@@ -113,6 +114,7 @@ class JsonRpcSubprocessTest < Minitest::Test
     assert_includes error.message, "didn't respond in timeout"
     refute subprocess.running?
 
+    subprocess.instance_variable_set(:@timeout, 1.0)
     subprocess.initialize!
     second_pid = subprocess.instance_variable_get(:@wait_thr).pid
     refute_equal first_pid, second_pid
