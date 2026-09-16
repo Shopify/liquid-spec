@@ -361,6 +361,7 @@ module Liquid
               :shopify_error_handling,
               :shopify_error_format,
               :shopify_string_access,
+              :range_resource_limits,
               :strict2_blank_body_errors,
             ]
           end

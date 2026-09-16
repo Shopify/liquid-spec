@@ -38,7 +38,7 @@ end
 LiquidSpec.configure do |config|
   config.error_modes = [:lax]
   config.render_error_modes = [:raise, :inline]
-  config.missing_features = [:drops, :ruby_types, :ruby_drops, :binary_data, :template_factory, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access]
+  config.missing_features = [:drops, :ruby_types, :ruby_drops, :binary_data, :template_factory, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :range_resource_limits]
 end
 
 LiquidSpec.compile do |ctx, source, parse_options|

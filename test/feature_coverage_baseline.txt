@@ -1,3 +1,4 @@
+range_resource_limits
 shopify_blank
 shopify_error_format
 shopify_error_handling

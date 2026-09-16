@@ -61,11 +61,16 @@ module Helpers
     File.write(path, "---\n", mode: "a+")
   end
 
-  def format_and_write_specs(capture_path, outfile, metadata: nil)
+  def format_and_write_specs(capture_path, outfile, metadata: nil, default_complexity: nil)
     yaml = File.read(capture_path, encoding: Encoding::UTF_8)
     data = YAML.safe_load(yaml, permitted_classes: [Symbol, Date, Time], aliases: true)
 
-    data.each { |spec| annotate_required_features!(spec) }
+    metadata = metadata&.transform_keys(&:to_s)
+    metadata_has_complexity = metadata && (metadata.key?("minimum_complexity") || metadata.key?("complexity"))
+    data.each do |spec|
+      annotate_features!(spec)
+      spec["complexity"] ||= default_complexity if default_complexity && !metadata_has_complexity
+    end
     data.sort_by! { |h| h["name"] }
     data.uniq!
 
@@ -77,10 +82,10 @@ module Helpers
 
   private
 
-  # Auto-detect required_features based on environment content.
+  # Auto-detect v2 feature tags based on environment content.
   # - ruby_drops: environment uses instantiate: (Drop objects)
   # - ruby_types: environment has integer keys or symbol keys
-  def annotate_required_features!(spec)
+  def annotate_features!(spec)
     features = []
 
     env = spec["environment"]
@@ -89,7 +94,9 @@ module Helpers
       features << "ruby_types" if has_ruby_type_usage?(env)
     end
 
-    spec["required_features"] = features unless features.empty?
+    existing_features = Array(spec["features"])
+    merged_features = (existing_features + features).uniq
+    spec["features"] = merged_features unless merged_features.empty?
   end
 
   def has_ruby_type_usage?(value, depth: 0)

@@ -23,8 +23,10 @@ specs:
     render_error:
       - Liquid error
   hint: |
-    Each partial renders a for-loop scoring ~10 points. Per-template limit (100)
-    is fine, but cumulative limit (25) is exceeded after the second partial.
+    Each nonempty ten-item partial loop costs 21 render-score units: one loop
+    tag, ten yielded values, and ten body renders. The caller precharges its
+    three render nodes, so the first partial reaches 24 and the second exceeds
+    the cumulative limit of 25 while it is rendering.
 
 - name: cumulative_limits_not_triggered_when_unset
   complexity: 1000

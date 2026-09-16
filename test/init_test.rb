@@ -26,6 +26,7 @@ class InitTest < Minitest::Test
     assert_includes source, "ctx[:adapter].render(ctx[:template_id], assigns, options)"
     assert_includes source, "config.error_modes = [:strict2]"
     assert_includes source, "config.render_error_modes = [:raise]"
+    assert_includes source, ":range_resource_limits,"
     refute_includes source, "LiquidSpec.render do |ctx, template_id, assigns, options|"
     assert_valid_ruby(source)
   end

@@ -188,7 +188,7 @@ LiquidSpec.configure do |config|
   config.render_error_modes = [:raise, :inline]
   # This adapter is a benchmark fixture with a few local theme filters, not a
   # full Shopify runtime. Keep production/theme suites out of its matrix row.
-  config.missing_features = [:drop_class_output, :shopify_tags, :shopify_objects, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :shopify_resource_limits]
+  config.missing_features = [:drop_class_output, :shopify_tags, :shopify_objects, :shopify_filters, :shopify_includes, :shopify_blank, :shopify_error_handling, :shopify_error_format, :shopify_string_access, :shopify_resource_limits, :range_resource_limits]
   config.suites = [:benchmarks]
   config.filter = "shopify_"
 end

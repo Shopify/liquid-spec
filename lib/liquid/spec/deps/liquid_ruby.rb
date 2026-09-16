@@ -269,9 +269,9 @@ end
 class RangeWrapper
   def self.new(params)
     if params.is_a?(Array)
-      Range.new(params[0], params[1])
+      Range.new(params[0], params[1], params[2] || false)
     elsif params.is_a?(Hash)
-      Range.new(params["begin"] || params[:begin], params["end"] || params[:end])
+      Range.new(params["begin"] || params[:begin], params["end"] || params[:end], params["exclude_end"] || params[:exclude_end] || false)
     else
       params
     end
@@ -551,8 +551,9 @@ Liquid::Spec::ClassRegistry.register("SafeProxyObject") { |p| SafeProxyObject.ne
 Liquid::Spec::ClassRegistry.register("FakeDropObject") { |p| FakeDropObject.new }
 
 
-# Range - special handling for array format [start, end]
-Liquid::Spec::ClassRegistry.register("Range") { |p| Range.new(p[0], p[1]) }
+# Range - array format [start, end] retains the historic inclusive encoding;
+# a third truthy item preserves an exclusive endpoint.
+Liquid::Spec::ClassRegistry.register("Range") { |p| Range.new(p[0], p[1], p[2] || false) }
 
 # Returns the Liquid::Drop class itself (for edge case tests)
 Liquid::Spec::ClassRegistry.register("LiquidDropClass") { |_p| Liquid::Drop }
