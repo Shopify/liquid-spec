@@ -1,0 +1,155 @@
+---
+- name: for_loop_metadata_name
+  template: "{% for item in items %}{{ forloop.name }}:{{ forloop.index0 }}/{{ forloop.length }}={{ item }};{% endfor %}"
+  environment:
+    items:
+    - a
+    - b
+  expected: item-items:0/2=a;item-items:1/2=b;
+- name: for_existing_range
+  template: "{% for item in (1..3) %}{{ item }},{% endfor %}"
+  expected: 1,2,3,
+- name: for_existing_limit_offset
+  template: "{% for item in items limit: 2 offset: 1 %}{{ item }},{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: 2,3,
+- name: for_existing_offset_continue
+  template: "{% for item in items limit: 2 %}{{ item }}{% endfor %}|{% for item in items offset: continue %}{{ item }}{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: 12|34
+- name: for_existing_reversed
+  template: "{% for item in items reversed %}{{ item }},{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+  expected: 3,2,1,
+- name: for_existing_empty_else
+  template: "{% for item in items %}{{ item }}{% else %}empty{% endfor %}"
+  environment:
+    items: []
+  expected: empty
+- name: for_when_or_alternatives_existing
+  template: "{% case value %}{% when a or b %}matched{% else %}other{% endcase %}"
+  environment:
+    value: 2
+    a: 1
+    b: 2
+  expected: matched
+- name: for_expression_modifier_workaround
+  template: "{% assign selected = fallback or items %}{% assign count = candidate or cap %}{% assign begin = skipped or start %}{% for item in selected reversed limit: count offset: begin %}{{ item }},{% endfor %}"
+  environment:
+    fallback:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    candidate:
+    cap: 2
+    skipped:
+    start: 1
+  expected: 3,2,
+- name: for_existing_lookup_metadata
+  template: "{% for item in collections[key] %}{{ forloop.name }}:{{ forloop.index0 }}={{ item }};{% endfor %}"
+  environment:
+    collections:
+      featured:
+      - a
+      - b
+    key: featured
+  expected: item-collections[key]:0=a;item-collections[key]:1=b;
+- name: for_collection_boolean_group
+  template: "{% for item in (fallback or items) %}{{ forloop.index0 }}={{ item }};{% else %}empty{% endfor %}"
+  environment:
+    fallback:
+    items:
+    - a
+    - b
+  expected: 0=a;1=b;
+  hint: A grouped WIP3 boolean expression supplies the collection; `or` returns the existing operand value.
+- name: for_limit_boolean_group
+  template: "{% for item in items limit: (candidate or cap) %}{{ item }},{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    candidate:
+    cap: 2
+  expected: 1,2,
+  hint: The WIP3 expression resolves to the existing positive integer limit; no new numeric coercion is specified.
+- name: for_offset_boolean_group
+  template: "{% for item in items offset: (candidate or start) %}{{ item }},{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    candidate:
+    start: 1
+  expected: 2,3,4,
+  hint: 'The WIP3 expression resolves to the existing positive integer offset; `offset: continue` remains separately protected by compatibility coverage.'
+- name: for_collection_boolean_expression
+  template: "{% for item in fallback or items %}{{ forloop.index0 }}={{ item }};{% else %}empty{% endfor %}"
+  environment:
+    fallback:
+    items:
+    - a
+    - b
+  expected: 0=a;1=b;
+  hint: The same existing WIP3 expression works without grouping parentheses; the enclosing for modifiers retain their syntax.
+- name: for_limit_boolean_expression
+  template: "{% for item in items limit: candidate or cap %}{{ item }},{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    candidate:
+    cap: 2
+  expected: 1,2,
+  hint: The same existing WIP3 expression works without grouping parentheses; the enclosing for modifiers retain their syntax.
+- name: for_offset_boolean_expression
+  template: "{% for item in items offset: candidate or start %}{{ item }},{% endfor %}"
+  environment:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    candidate:
+    start: 1
+  expected: 2,3,4,
+  hint: The same existing WIP3 expression works without grouping parentheses; the enclosing for modifiers retain their syntax.
+- name: for_expression_modifier_boundaries
+  template: "{% for item in fallback or items reversed limit: candidate or cap offset: skipped or start %}{{ item }},{% endfor %}"
+  environment:
+    fallback:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    candidate:
+    cap: 2
+    skipped:
+    start: 1
+  expected: 3,2,
+  hint: Equivalent to compatibility case for_expression_modifier_workaround; existing modifiers delimit the shared expressions.
