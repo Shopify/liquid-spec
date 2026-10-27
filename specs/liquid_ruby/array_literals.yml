@@ -1,0 +1,667 @@
+---
+- name: array_literals_boolean_grouped_assignment
+  template: "{% assign enabled = a and (b or c) %}{{ enabled }}"
+  environment:
+    a: true
+    b: false
+    c: true
+  expected: 'true'
+- name: array_literals_boolean_operand_values
+  template: "{{ a or b }}|{{ a and b }}"
+  environment:
+    a: first
+    b: second
+  expected: first|second
+- name: array_literals_when_or_alternatives
+  template: "{% case value %}{% when a or b %}matched{% else %}other{% endcase %}"
+  environment:
+    value: 2
+    a: 1
+    b: 2
+  expected: matched
+- name: array_literals_when_comma_value_alternatives
+  template: "{% case value %}{% when a, b %}matched{% else %}other{% endcase %}"
+  environment:
+    value: 2
+    a: 1
+    b: 2
+  expected: matched
+- name: array_literals_for_range
+  template: "{% for i in (1..3) %}{{ i }},{% endfor %}"
+  expected: 1,2,3,
+- name: array_literals_for_limit_offset
+  template: "{% for i in list limit: 2 offset: 1 %}{{ i }},{% endfor %}"
+  environment:
+    list:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: 2,3,
+- name: array_literals_for_offset_continue
+  template: "{% for i in list limit: 2 %}{{ i }}{% endfor %}|{% for i in list offset: continue %}{{ i }}{% endfor %}"
+  environment:
+    list:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: 12|34
+- name: array_literals_for_reversed
+  template: "{% for i in list reversed %}{{ i }},{% endfor %}"
+  environment:
+    list:
+    - 1
+    - 2
+    - 3
+  expected: 3,2,1,
+- name: array_literals_for_reversed_limit_offset
+  template: "{% for i in list reversed limit: 2 offset: 1 %}{{ i }},{% endfor %}"
+  environment:
+    list:
+    - 1
+    - 2
+    - 3
+    - 4
+  expected: 3,2,
+- name: array_literals_variable_for_empty_else
+  template: "{% for i in list %}{{ i }}{% else %}empty{% endfor %}"
+  environment:
+    list: []
+  expected: empty
+- name: array_literals_for_index_lookup_metadata
+  template: "{% for item in collections[key] %}{{ forloop.name }}:{{ forloop.index0 }}={{ item }};{% endfor %}"
+  environment:
+    collections:
+      featured:
+      - a
+      - b
+    key: featured
+  expected: item-collections[key]:0=a;item-collections[key]:1=b;
+- name: array_literals_for_quoted_lookup_metadata
+  template: "{% for item in collections['featured'] %}{{ forloop.name }}:{{ item }};{% endfor %}"
+  environment:
+    collections:
+      featured:
+      - a
+      - b
+  expected: item-collections['featured']:a;item-collections['featured']:b;
+- name: array_literals_for_boolean_collection
+  template: "{% for item in fallback or items %}{{ forloop.index0 }}={{ item }};{% else %}empty{% endfor %}"
+  environment:
+    fallback:
+    items:
+    - a
+    - b
+  expected: 0=a;1=b;
+- name: array_literals_for_grouped_boolean_collection
+  template: "{% for item in (fallback or items) %}{{ item }},{% else %}empty{% endfor %}"
+  environment:
+    fallback:
+    items: []
+  expected: empty
+- name: array_literals_for_dotted_logical_collection_metadata
+  template: "{% for item in settings.fallback or collections[key] %}{{ forloop.name }}:{{ item }};{% endfor %}"
+  environment:
+    settings:
+      fallback:
+    collections:
+      featured:
+      - a
+      - b
+    key: featured
+  expected: item-settings.fallback or collections[key]:a;item-settings.fallback or collections[key]:b;
+- name: array_literals_for_expression_modifiers
+  template: "{% for item in fallback or items reversed limit: candidate or cap offset: skipped or start %}{{ item }},{% endfor %}"
+  environment:
+    fallback:
+    items:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    candidate:
+    cap: 2
+    skipped:
+    start: 1
+  expected: 3,2,
+- name: array_literals_variable_for_repeated_reversed
+  template: "{% for n in (1..2) %}{% for i in list reversed %}{{ i }}{% endfor %};{% endfor %}"
+  environment:
+    list:
+    - 1
+    - 2
+    - 3
+  expected: 321;321;
+- name: array_literals_index_lookup
+  template: "{{ values[1] }}"
+  environment:
+    values:
+    - 5
+    - 6
+  expected: '6'
+- name: array_literals_index_lookup_with_whitespace
+  template: "{{ values [0] }}"
+  environment:
+    values:
+    - 5
+    - 6
+  expected: '5'
+- name: array_literals_nested_index_lookup
+  template: "{{ m[0][1] }}|{{ m[idx[0]][0] }}"
+  environment:
+    m:
+    - - 1
+      - 2
+    - - 3
+    idx:
+    - 1
+  expected: 2|3
+- name: array_literals_quoted_key_lookup
+  template: "{{ product['title'] }}|{{ product[key] }}"
+  environment:
+    product:
+      title: Shirt
+    key: title
+  expected: Shirt|Shirt
+- name: array_literals_self_lookup
+  template: "{{ self['a'] }}|{{ self[k] }}"
+  environment:
+    a: lookup
+    k: a
+  expected: lookup|lookup
+- name: array_literals_bracket_string_output
+  template: '{{ ''[1, 2]'' }}|{{ ''[1, 2]'' | size }}|{{ "[]" }}'
+  expected: "[1, 2]|6|[]"
+- name: array_literals_filter_argument_trailing_comma
+  template: "{{ x | slice: 0, }}|{{ list | concat: other, | join: ',' }}"
+  environment:
+    x: abc
+    list:
+    - 1
+    - 2
+    other:
+    - 3
+    - 4
+  expected: a|1,2,3,4
+- name: array_literals_split_fixed_list
+  template: "{% assign rows = 'top,bottom' | split: ',' %}{{ rows | join: ',' }}|{{ rows.size }}|{{ rows[1] }}"
+  expected: top,bottom|2|bottom
+- name: array_literals_split_empty_list
+  template: "{% assign rows = '' | split: ',' %}{{ rows.size }}|{{ rows | join: ',' }}"
+  expected: 0|
+- name: array_literals_variable_output
+  template: "{{ list }}"
+  environment:
+    list:
+    - 1
+    - - 2
+      - 3
+    -
+    - a
+  expected: 123a
+- name: array_literals_variable_output_empty
+  template: "{{ empty_list }}|{{ nil_list }}"
+  environment:
+    empty_list: []
+    nil_list:
+    -
+  expected: "|"
+- name: array_literals_variable_nested_sizes
+  template: "{{ m.size }}|{{ m[0].size }}|{{ m[1].size }}"
+  environment:
+    m:
+    - - 1
+      - 2
+    - []
+  expected: 2|2|0
+- name: array_literals_variable_nested_empty
+  template: "{{ m.size }}|{{ m[1][0].size }}"
+  environment:
+    m:
+    - []
+    - - []
+  expected: 2|0
+- name: array_literals_variable_elements
+  template: "{{ v[0] }}|{{ v[1] }}"
+  environment:
+    v:
+    - B
+    - true
+  expected: B|true
+- name: array_literals_variable_lookups
+  template: "{{ v.size }}|{{ v.first }}|{{ v.last }}|{{ v[-1] }}|{{ v[i] }}"
+  environment:
+    v:
+    - 5
+    - 6
+    - 7
+    i: 1
+  expected: 3|5|7|7|6
+- name: array_literals_range_assignment
+  template: "{% assign r = (1..3) %}{{ r | join: ',' }}"
+  expected: '1,2,3'
+- name: array_literals_variable_echo
+  template: "{% echo list | join: '-' %}"
+  environment:
+    list:
+    - a
+    - b
+  expected: a-b
+- name: array_literals_variable_liquid_tag
+  template: |-
+    {% liquid
+    assign rows = list
+    echo rows | join: ','
+    %}
+  environment:
+    list:
+    - top
+    - bottom
+  expected: top,bottom
+- name: array_literals_variable_concat
+  template: "{{ list | concat: other | join: ',' }}"
+  environment:
+    list:
+    - 1
+    - 2
+    other:
+    - 3
+    - 4
+  expected: '1,2,3,4'
+- name: array_literals_variable_sort
+  template: "{{ list | sort | join: ',' }}"
+  environment:
+    list:
+    - 3
+    - 1
+    - 2
+  expected: '1,2,3'
+- name: array_literals_variable_size_first_last
+  template: "{{ list | size }}|{{ list | first }}|{{ list | last }}"
+  environment:
+    list:
+    - 1
+    - 2
+    - 3
+  expected: 3|1|3
+- name: array_literals_variable_default_allow_false
+  template: "{{ flag | default: 'd', allow_false: list }}"
+  environment:
+    flag: false
+    list: []
+  expected: 'false'
+- name: array_literals_variable_boolean_operands
+  template: "{{ missing or list | join: ',' }}|{{ empty_list or 'x' }}"
+  environment:
+    list:
+    - 1
+    - 2
+    empty_list: []
+  expected: 1,2|
+- name: array_literals_variable_if_empty
+  template: "{% if list == empty %}empty{% endif %}"
+  environment:
+    list: []
+  expected: empty
+- name: array_literals_variable_if_truthy
+  template: "{% if list %}truthy{% endif %}"
+  environment:
+    list: []
+  expected: truthy
+- name: array_literals_variable_equality
+  template: "{% if list == other %}same{% endif %}{% if list != reversed %}|diff{% endif %}"
+  environment:
+    list:
+    - 1
+    - 2
+    other:
+    - 1
+    - 2
+    reversed:
+    - 2
+    - 1
+  expected: same|diff
+- name: array_literals_variable_unless_elsif
+  template: "{% unless list == other %}diff{% endunless %}|{% if false %}no{% elsif list contains 'b' %}yes{% endif %}"
+  environment:
+    list:
+    - a
+    - b
+    other:
+    - b
+    - a
+  expected: diff|yes
+- name: array_literals_variable_contains
+  template: "{% if list contains 2 %}yes{% endif %}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: 'yes'
+- name: array_literals_variable_case_when
+  template: "{% case list %}{% when other %}match{% else %}no{% endcase %}"
+  environment:
+    list:
+    - 1
+    - 2
+    other:
+    - 1
+    - 2
+  expected: match
+- name: array_literals_variable_when_comma_alternatives
+  template: "{% case list %}{% when one, two %}match{% else %}no{% endcase %}"
+  environment:
+    list:
+    - 3
+    one:
+    - 1
+    - 2
+    two:
+    - 3
+  expected: match
+- name: array_literals_variable_for
+  template: "{% for i in list %}{{ i }},{% endfor %}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: 1,2,
+- name: array_literals_variable_for_nested
+  template: "{% for row in list %}{{ row | join: '' }};{% endfor %}"
+  environment:
+    list:
+    - - 1
+      - 2
+    - - 3
+  expected: 12;3;
+- name: array_literals_variable_tablerow
+  template: "{% tablerow i in list %}{{ i }}{% endtablerow %}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+- name: array_literals_variable_cycle
+  template: "{% cycle list, 'b' %}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: '12'
+- name: array_literals_empty_assignment
+  template: "{% assign rows = [] %}{{ rows.size }}|{{ rows | join: ',' }}"
+  expected: 0|
+  hint: 'Replaces the '''' | split: '','' empty-array workaround. Expected output equals the observed baseline output of compat case array_literals_split_empty_list.'
+- name: array_literals_fixed_values
+  template: "{% assign rows = ['top', 'bottom'] %}{{ rows | join: ',' }}|{{ rows.size }}|{{ rows[1] }}"
+  expected: top,bottom|2|bottom
+  hint: Replaces the split fixed-list workaround. Expected output equals the observed baseline output of compat case array_literals_split_fixed_list.
+- name: array_literals_variable_values
+  template: "{% assign values = [a, b, c] %}{{ values | join: ',' }}"
+  environment:
+    a: 1
+    b: 2
+    c: 3
+  expected: '1,2,3'
+  hint: 'The elements of the render example in feature.md, {% render ''snip'', coll: [a, b, c] %}.'
+- name: array_literals_lookup_elements
+  template: "{{ [values[1], product.title, product['title'], self['a']] | join: '|' }}"
+  environment:
+    values:
+    - 5
+    - 6
+    product:
+      title: Shirt
+    a: lookup
+  expected: 6|Shirt|Shirt|lookup
+  hint: Elements use existing index, dot, quoted-key and self lookups; see compat cases array_literals_index_lookup, array_literals_quoted_key_lookup and array_literals_self_lookup.
+- name: array_literals_output
+  template: "{{ [1, [2, 3], nil, 'a'] }}"
+  expected: 123a
+  hint: Output uses existing Array rendering. Expected output equals the observed baseline output of compat case array_literals_variable_output.
+- name: array_literals_output_empty
+  template: "{{ [] }}|{{ [nil] }}"
+  expected: "|"
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_output_empty.
+- name: array_literals_string_element_is_not_bare_lookup
+  template: "{{ ['a'] }}"
+  environment:
+    a: lookup
+  expected: a
+  hint: A leading [ starts a literal, not the pre-WIP3 bare-bracket lookup of the variable named a.
+- name: array_literals_variable_element_is_not_bare_lookup
+  template: "{{ [key] }}"
+  environment:
+    key: k
+    k: v
+  expected: k
+  hint: The element is the value of key; the literal does not look up the variable that key names.
+- name: array_literals_nested
+  template: "{% assign m = [[1, 2], []] %}{{ m.size }}|{{ m[0].size }}|{{ m[1].size }}"
+  expected: 2|2|0
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_nested_sizes.
+- name: array_literals_nested_empty
+  template: "{% assign m = [[], [[]]] %}{{ m.size }}|{{ m[1][0].size }}"
+  expected: 2|0
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_nested_empty.
+- name: array_literals_trailing_comma
+  template: "{% assign t = [1, 2,] %}{{ t.size }}|{{ t | join: ',' }}"
+  expected: 2|1,2
+  hint: 'Confirmed: one trailing comma is allowed.'
+- name: array_literals_nested_trailing_commas
+  template: "{% assign n = [[1,], [2, 3,],] %}{{ n.size }}|{{ n[0].size }}|{{ n[1] | join: ',' }}"
+  expected: 2|1|2,3
+  hint: One trailing comma is allowed at each nesting level.
+- name: array_literals_multiline
+  template: "{% assign rows = [\n  'top' ,\n\t'bottom',\n] %}{{ rows | join: ',' }}"
+  expected: top,bottom
+  hint: Spaces, tabs and newlines may separate tokens.
+- name: array_literals_inner_whitespace
+  template: "{% assign e = [ ] %}{{ e.size }}|{{ [ 1 , 2 ] | join: ',' }}"
+  expected: 0|1,2
+- name: array_literals_expression_elements
+  template: "{% assign v = [a or b, x == y] %}{{ v[0] }}|{{ v[1] }}"
+  environment:
+    a:
+    b: B
+    x: 1
+    "y": 1
+  expected: B|true
+  hint: Elements are full WIP3 expressions. Expected output equals the observed baseline output of compat case array_literals_variable_elements.
+- name: array_literals_range_group_comparison_elements
+  template: "{% assign v = [(1..3), (a or b), n > 1] %}{{ v[0] | join: ',' }}|{{ v[1] }}|{{ v[2] }}"
+  environment:
+    a:
+    b: B
+    "n": 2
+  expected: 1,2,3|B|true
+  hint: A range element is the existing range value; see compat case array_literals_range_assignment.
+- name: array_literals_assigned_lookups
+  template: "{% assign v = [5, 6, 7] %}{{ v.size }}|{{ v.first }}|{{ v.last }}|{{ v[-1] }}|{{ v[i] }}"
+  environment:
+    i: 1
+  expected: 3|5|7|7|6
+  hint: Lookups apply to the assigned variable, not the literal. Expected output equals the observed baseline output of compat case array_literals_variable_lookups.
+- name: array_literals_echo
+  template: "{% echo ['a', 'b'] | join: '-' %}"
+  expected: a-b
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_echo.
+- name: array_literals_liquid_tag
+  template: |-
+    {% liquid
+    assign rows = ['top', 'bottom']
+    echo rows | join: ','
+    %}
+  expected: top,bottom
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_liquid_tag.
+- name: array_literals_filter_argument
+  template: "{{ list | concat: [3, 4] | join: ',' }}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: '1,2,3,4'
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_concat.
+- name: array_literals_filter_argument_trailing_commas
+  template: "{{ list | concat: [3, 4,], | join: ',' }}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: '1,2,3,4'
+  hint: The inner comma ends the literal's elements; the outer one is the existing optional trailing filter-argument comma from compat case array_literals_filter_argument_trailing_comma.
+- name: array_literals_filter_input
+  template: "{{ [3, 1, 2] | sort | join: ',' }}"
+  expected: '1,2,3'
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_sort.
+- name: array_literals_filter_size_first_last
+  template: "{{ [1, 2, 3] | size }}|{{ [1, 2, 3] | first }}|{{ [1, 2, 3] | last }}"
+  expected: 3|1|3
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_size_first_last.
+- name: array_literals_filter_keyword_argument
+  template: "{{ flag | default: 'd', allow_false: [] }}"
+  environment:
+    flag: false
+  expected: 'false'
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_default_allow_false.
+- name: array_literals_boolean_operands
+  template: "{{ missing or [1, 2] | join: ',' }}|{{ [] or 'x' }}"
+  expected: 1,2|
+  hint: or returns the existing operand value; an empty array is truthy. Expected output equals the observed baseline output of compat case array_literals_variable_boolean_operands.
+- name: array_literals_if_empty
+  template: "{% if [] == empty %}empty{% endif %}"
+  expected: empty
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_if_empty.
+- name: array_literals_if_truthy
+  template: "{% if [] %}truthy{% endif %}"
+  expected: truthy
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_if_truthy.
+- name: array_literals_equality
+  template: "{% if [1, 2] == list %}same{% endif %}{% if [1, 2] != [2, 1] %}|diff{% endif %}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: same|diff
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_equality.
+- name: array_literals_unless_elsif
+  template: "{% unless ['a', 'b'] == ['b', 'a'] %}diff{% endunless %}|{% if false %}no{% elsif ['a', 'b'] contains 'b' %}yes{% endif %}"
+  expected: diff|yes
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_unless_elsif.
+- name: array_literals_contains
+  template: "{% if [1, 2] contains 2 %}yes{% endif %}"
+  expected: 'yes'
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_contains.
+- name: array_literals_case_subject
+  template: "{% case [1, 2] %}{% when other %}match{% else %}no{% endcase %}"
+  environment:
+    other:
+    - 1
+    - 2
+  expected: match
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_case_when.
+- name: array_literals_when_value
+  template: "{% case list %}{% when [1, 2] %}match{% else %}no{% endcase %}"
+  environment:
+    list:
+    - 1
+    - 2
+  expected: match
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_case_when.
+- name: array_literals_when_comma_alternatives
+  template: "{% case list %}{% when [1, 2], [3] %}match{% else %}no{% endcase %}"
+  environment:
+    list:
+    - 3
+  expected: match
+  hint: Commas inside the brackets separate elements; the comma between literals keeps its existing meaning as a when alternative. Expected output equals the observed baseline output of compat case array_literals_variable_when_comma_alternatives.
+- name: array_literals_for_collection
+  template: "{% for i in [1, 2] %}{{ i }},{% endfor %}"
+  expected: 1,2,
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_for.
+- name: array_literals_for_nested
+  template: "{% for row in [[1, 2], [3]] %}{{ row | join: '' }};{% endfor %}"
+  expected: 12;3;
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_for_nested.
+- name: array_literals_for_modifiers
+  template: "{% for i in [1, 2, 3, 4] reversed limit: 2 offset: 1 %}{{ i }},{% endfor %}"
+  expected: 3,2,
+  hint: Existing for modifiers follow the literal collection. Expected output equals the observed baseline output of compat case array_literals_for_reversed_limit_offset.
+- name: array_literals_for_empty_else
+  template: "{% for i in [] %}{{ i }}{% else %}empty{% endfor %}"
+  expected: empty
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_for_empty_else.
+- name: array_literals_for_shared_expression_collection
+  template: "{% for item in fallback or ['a', 'b'] %}{{ forloop.index0 }}={{ item }};{% else %}empty{% endfor %}"
+  environment:
+    fallback:
+  expected: 0=a;1=b;
+  hint: A literal is an operand of the parent's shared for-collection expression. Expected output equals the observed baseline output of compat case array_literals_for_boolean_collection.
+- name: array_literals_for_grouped_shared_expression_collection
+  template: "{% for item in (fallback or []) %}{{ item }},{% else %}empty{% endfor %}"
+  environment:
+    fallback:
+  expected: empty
+  hint: Expected output equals the observed baseline output of compat case array_literals_for_grouped_boolean_collection.
+- name: array_literals_for_repeated_reversed
+  template: "{% for n in (1..2) %}{% for i in [1, 2, 3] reversed %}{{ i }}{% endfor %};{% endfor %}"
+  expected: 321;321;
+  hint: Each render iterates the same elements; reversing one loop does not change the literal. Expected output equals the observed baseline output of compat case array_literals_variable_for_repeated_reversed.
+- name: array_literals_tablerow
+  template: "{% tablerow i in [1, 2] %}{{ i }}{% endtablerow %}"
+  expected: |
+    <tr class="row1">
+    <td class="col1">1</td><td class="col2">2</td></tr>
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_tablerow.
+- name: array_literals_cycle
+  template: "{% cycle [1, 2], 'b' %}"
+  expected: '12'
+  hint: Expected output equals the observed baseline output of compat case array_literals_variable_cycle.
+- name: array_literals_empty_element_is_error
+  template: "{{ [1, , 2] }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+  hint: Only one optional trailing comma; an empty element stays a parse error.
+- name: array_literals_comma_only_is_error
+  template: "{{ [,] }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+- name: array_literals_double_trailing_comma_is_error
+  template: "{{ [1, 2,,] }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+- name: array_literals_missing_comma_is_error
+  template: "{{ [1 2] }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+- name: array_literals_unclosed_is_error
+  template: "{{ [1, 2 }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+- name: array_literals_index_on_literal_is_error
+  template: "{{ [1, 2][0] }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+  hint: This run adds no postfix lookups on a literal; assign it to a variable first.
+- name: array_literals_dot_on_literal_is_error
+  template: "{{ [1, 2].size }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+  hint: This run adds no postfix lookups on a literal; use the size filter or assign it first.
+- name: array_literals_key_value_element_is_error
+  template: "{{ [a: 1] }}"
+  errors:
+    parse_error:
+    - Liquid syntax error
+  hint: This run adds no hash or key-value syntax.
